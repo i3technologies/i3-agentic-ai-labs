@@ -1,0 +1,706 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 Unified Agentic AI Platform — Deployment Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1f2328;
+    background: #ffffff;
+    padding: 32px 16px 48px;
+  }
+  .page { max-width: 760px; margin: 0 auto; }
+
+  /* Header */
+  .header { border-bottom: 2px solid #3b82d4; padding-bottom: 16px; margin-bottom: 28px; }
+  .header h1 { font-size: 20px; font-weight: 700; color: #1f2328; }
+  .header .subtitle { color: #57606a; font-size: 13px; margin-top: 4px; }
+  .header .meta { display: flex; gap: 20px; margin-top: 10px; flex-wrap: wrap; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #f7f8fa; border: 1px solid #e5e7eb;
+    border-radius: 4px; padding: 3px 8px; font-size: 12px; color: #57606a;
+  }
+  .badge .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .dot-green { background: #22c55e; }
+  .dot-blue  { background: #3b82d4; }
+  .dot-amber { background: #f59e0b; }
+  .dot-red   { background: #ef4444; }
+
+  /* Section headings */
+  h2 {
+    font-size: 15px; font-weight: 700; color: #1f2328;
+    margin: 32px 0 10px;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 6px;
+  }
+  h3 { font-size: 13px; font-weight: 700; color: #1f2328; margin: 18px 0 6px; }
+  h4 { font-size: 12px; font-weight: 700; color: #57606a; margin: 12px 0 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  /* Phase blocks */
+  .phase {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .phase-header {
+    display: flex; align-items: center; gap: 10px;
+    background: #f7f8fa;
+    padding: 10px 14px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .phase-num {
+    background: #3b82d4; color: white;
+    font-size: 11px; font-weight: 700;
+    border-radius: 3px; padding: 2px 7px;
+    white-space: nowrap;
+  }
+  .phase-title { font-weight: 700; font-size: 13px; }
+  .phase-time { margin-left: auto; color: #57606a; font-size: 12px; white-space: nowrap; }
+  .phase-body { padding: 12px 14px; }
+
+  /* Code blocks */
+  pre {
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 10px 12px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 11.5px;
+    line-height: 1.55;
+    overflow-x: auto;
+    margin: 6px 0;
+    white-space: pre;
+  }
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 11.5px;
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 3px;
+    padding: 1px 5px;
+  }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 13px; }
+  th { background: #f7f8fa; text-align: left; padding: 7px 10px; font-weight: 600; border: 1px solid #e5e7eb; }
+  td { padding: 6px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafbfc; }
+
+  /* Alerts */
+  .alert {
+    border-radius: 4px; padding: 10px 12px; margin: 8px 0; font-size: 13px;
+    border-left: 3px solid;
+  }
+  .alert-warn  { background: #fffbeb; border-color: #f59e0b; color: #78350f; }
+  .alert-info  { background: #eff6ff; border-color: #3b82d4; color: #1e3a5f; }
+  .alert-danger{ background: #fef2f2; border-color: #ef4444; color: #7f1d1d; }
+  .alert-ok    { background: #f0fdf4; border-color: #22c55e; color: #14532d; }
+
+  /* Step list */
+  .step-list { list-style: none; padding: 0; }
+  .step-list li {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 5px 0; border-bottom: 1px solid #f3f4f6;
+  }
+  .step-list li:last-child { border-bottom: none; }
+  .step-n {
+    background: #3b82d4; color: white;
+    font-size: 10px; font-weight: 700;
+    border-radius: 50%; min-width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 2px; flex-shrink: 0;
+  }
+
+  /* Req grid */
+  .req-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0; }
+  .req-card {
+    border: 1px solid #e5e7eb; border-radius: 5px;
+    padding: 10px 12px; background: #fafbfc;
+  }
+  .req-card h4 { margin: 0 0 6px; font-size: 11px; }
+  .req-card ul { padding-left: 14px; font-size: 12.5px; }
+  .req-card ul li { margin-bottom: 2px; }
+
+  /* Namespace grid */
+  .ns-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0; }
+  .ns-item {
+    display: flex; align-items: center; gap: 8px;
+    border: 1px solid #e5e7eb; border-radius: 4px;
+    padding: 6px 9px; background: #f7f8fa; font-size: 12px;
+  }
+  .ns-label { font-family: monospace; font-size: 11px; color: #3b82d4; font-weight: 600; }
+  .ns-desc { color: #57606a; font-size: 11px; }
+  .ns-touch { color: #ef4444; font-size: 10px; font-weight: 700; margin-left: auto; }
+  .ns-managed { color: #22c55e; font-size: 10px; margin-left: auto; }
+
+  /* Make targets */
+  .make-target {
+    display: flex; align-items: baseline; gap: 8px;
+    padding: 4px 0; border-bottom: 1px solid #f3f4f6; font-size: 13px;
+  }
+  .make-target:last-child { border-bottom: none; }
+  .make-cmd { font-family: monospace; font-size: 11.5px; color: #3b82d4; font-weight: 600; min-width: 200px; }
+  .make-desc { color: #57606a; font-size: 12px; }
+
+  /* DNS table highlight */
+  .dns-warn td:first-child { color: #ef4444; font-weight: 600; }
+
+  /* Budget table */
+  .budget-total td { font-weight: 700; background: #eff6ff !important; }
+
+  /* Footer */
+  .footer {
+    margin-top: 48px; padding-top: 14px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center; font-size: 12px; color: #57606a;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  
+  <div class="header">
+    <h1>i3 Unified Agentic AI Platform</h1>
+    <div class="subtitle">Full Deployment Guide &amp; Requirements — IBM ROKS Frankfurt (eu-de)</div>
+    <div class="meta">
+      <span class="badge"><span class="dot dot-green"></span>Manifests: Complete</span>
+      <span class="badge"><span class="dot dot-blue"></span>Terraform: Initialized</span>
+      <span class="badge"><span class="dot dot-amber"></span>Cluster: Not Yet Applied</span>
+      <span class="badge"><span class="dot dot-red"></span>Secrets: Pending post-deploy</span>
+    </div>
+  </div>
+
+  
+  <h2>1. Requirements</h2>
+
+  <h3>1.1 IBM Cloud Account</h3>
+  <table>
+    <tr><th>Requirement</th><th>Value / Notes</th></tr>
+    <tr><td>Account type</td><td>Pay-As-You-Go or Subscription (not Lite)</td></tr>
+    <tr><td>Resource group</td><td><code>i3-production</code> — must exist before Terraform apply</td></tr>
+    <tr><td>Region</td><td><code>eu-de</code> (Frankfurt)</td></tr>
+    <tr><td>OCP entitlement</td><td><code>cloud_pak</code> — licence ID MW02049. Zero OCP worker licensing cost.</td></tr>
+    <tr><td>IBM Credits available</td><td>$26,467.77 across 4 pools</td></tr>
+    <tr><td>Monthly budget target</td><td>≤ $1,500 / mo (GPU off: ~$765; GPU burst 50%: ~$905)</td></tr>
+    <tr><td>Container Registry namespace</td><td><code>de.icr.io/i3-platform</code></td></tr>
+    <tr><td>COS instance</td><td><code>i3-cos-production</code> in <code>i3-production</code> resource group</td></tr>
+    <tr><td>Terraform state bucket</td><td><code>i3-tfstate-077d74db</code> (eu-de)</td></tr>
+  </table>
+
+  <h3>1.2 Local Workstation Toolchain</h3>
+  <div class="req-grid">
+    <div class="req-card">
+      <h4>Required — Infrastructure</h4>
+      <ul>
+        <li><strong>Terraform ≥ 1.7</strong> — IBM Cloud provider ~1.89</li>
+        <li><strong>IBM Cloud CLI</strong> (<code>ibmcloud</code>) with plugins:<br />
+          <code>container-service</code>, <code>container-registry</code>, <code>cos</code></li>
+        <li><strong>oc</strong> — OpenShift CLI 4.15+</li>
+        <li><strong>kubectl</strong> — for non-OCP resources</li>
+        <li><strong>jq</strong> — JSON parsing in shell scripts</li>
+      </ul>
+    </div>
+    <div class="req-card">
+      <h4>Required — Build &amp; Test</h4>
+      <ul>
+        <li><strong>buildah</strong> — OCI image builds (used by <code>make build-images</code>)</li>
+        <li><strong>Python 3.10+</strong> — cohort provisioner, testing</li>
+        <li><strong>locust</strong> — load testing (<code>pip install locust</code>)</li>
+        <li><strong>promptfoo</strong> — red-team validation (<code>npm i -g promptfoo</code>)</li>
+        <li><strong>git</strong> — image tagging by commit SHA</li>
+      </ul>
+    </div>
+    <div class="req-card">
+      <h4>Required — Secrets &amp; Operations</h4>
+      <ul>
+        <li><strong>PowerShell 7+</strong> (pwsh) — all ops scripts</li>
+        <li><strong>.env</strong> file at workspace root — loaded by <code>load-env.ps1</code></li>
+        <li><strong>IBMCLOUD_API_KEY</strong> — set in .env</li>
+        <li><strong>TF_COS_ACCESS_KEY / SECRET_KEY</strong> — COS HMAC for tfstate backend</li>
+      </ul>
+    </div>
+    <div class="req-card">
+      <h4>Optional — Month 3+</h4>
+      <ul>
+        <li><strong>RHOAI operator</strong> — Red Hat OpenShift AI (AI Lab JupyterHub workbenches)</li>
+        <li><strong>cert-manager</strong> — Let's Encrypt wildcard TLS for *.i3.tech</li>
+        <li><strong>Firecracker rootfs images</strong> — 4 ext4 images for EvalOS profiles</li>
+        <li><strong>Odoo API key</strong> — Admissions MCP connector</li>
+        <li><strong>watsonx.ai Project ID</strong> — LiteLLM tier-3 routing</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>1.3 Terraform Variables (non-sensitive)</h3>
+  <table>
+    <tr><th>Variable</th><th>Value</th></tr>
+    <tr><td><code>TF_VAR_region</code></td><td>eu-de</td></tr>
+    <tr><td><code>TF_VAR_resource_group</code></td><td>i3-production</td></tr>
+    <tr><td><code>TF_VAR_cluster_name</code></td><td>i3-platform</td></tr>
+    <tr><td><code>TF_VAR_worker_flavor</code></td><td>bx2.4x16 (4 vCPU / 16 GB)</td></tr>
+    <tr><td><code>TF_VAR_min_workers</code></td><td>2</td></tr>
+    <tr><td><code>TF_VAR_max_workers</code></td><td>10</td></tr>
+    <tr><td><code>TF_VAR_gpu_worker_flavor</code></td><td>gx2.8x64 (GPU burst — starts at 0)</td></tr>
+    <tr><td><code>TF_VAR_cos_instance_name</code></td><td>i3-cos-production</td></tr>
+    <tr><td><code>TF_VAR_kms_instance_crn</code></td><td>REPLACE_IN_PHASE_2 (Key Protect, optional)</td></tr>
+  </table>
+
+  <div class="alert alert-warn">
+    ⚠ <strong>Sensitive vars</strong> — <code>IBMCLOUD_API_KEY</code>, <code>TF_COS_ACCESS_KEY/SECRET_KEY</code>, and OpenBao unseal keys are stored only in <code>.env</code> (gitignored). <code>terraform.tfvars</code> no longer holds any credentials. Never commit <code>.env</code> or <code>/tmp/openbao-init.json</code>.
+  </div>
+
+  
+  <h2>2. 17-Namespace Cluster Topology</h2>
+  <p style="color:#57606a;font-size:13px;margin-bottom:8px">11 managed namespaces + 8 pre-existing industry solution namespaces. <strong>solution-01..08 must never be touched.</strong></p>
+
+  <div class="ns-grid">
+    <div class="ns-item"><div><div class="ns-label">i3-data</div><div class="ns-desc">Crunchy PostgreSQL HA + pgBackRest</div></div><span class="ns-managed">✓ Managed</span></div>
+    <div class="ns-item"><div><div class="ns-label">i3-messaging</div><div class="ns-desc">Strimzi Kafka KRaft (3 node)</div></div><span class="ns-managed">✓ Managed</span></div>
+    <div class="ns-item"><div><div class="ns-label">i3-security</div><div class="ns-desc">OpenBao (Vault) — Shamir 3-of-5</div></div><span class="ns-managed">✓ Managed</span></div>
+    <div class="ns-item"><div><div class="ns-label">i3-auth</div><div class="ns-desc">Keycloak RHSSO — i3 realm, 5 clients</div></div><span class="ns-managed">✓ Managed</span></div>
+    <div class="ns-item"><div><div class="ns-label">i3-gitops</div><div class="ns-desc">Argo CD + Tekton CI pipeline</div></div><span class="ns-managed">✓ Managed</span></div>
+    <div class="ns-item"><div><div class="ns-label">i3-model-gateway</div><div class="ns-desc">LiteLLM + Ollama + Langfuse + KEDA</div></div><span class="ns-managed">✓ Managed</span></div>
+    <div class="ns-item"><div><div class="ns-label">i3-ai-lab</div><div class="ns-desc">RHOAI + per-cohort namespaces</div></div><span class="ns-managed">✓ Managed</span></div>
+    <div class="ns-item"><div><div class="ns-label">i3-evalos</div><div class="ns-desc">EvalOS + Firecracker sandbox</div></div><span class="ns-managed">✓ Managed</span></div>
+    <div class="ns-item"><div><div class="ns-label">i3-ott</div><div class="ns-desc">OME + Nginx + SeaweedFS + Directus + n8n</div></div><span class="ns-managed">✓ Managed</span></div>
+    <div class="ns-item"><div><div class="ns-label">i3-admissions</div><div class="ns-desc">FastAPI RAG + ChromaDB + MCP</div></div><span class="ns-managed">✓ Managed</span></div>
+    <div class="ns-item"><div><div class="ns-label">i3-monitoring</div><div class="ns-desc">Prometheus + Grafana + OTel</div></div><span class="ns-managed">✓ Managed</span></div>
+    <div class="ns-item" style="background:#fef2f2"><div><div class="ns-label" style="color:#ef4444">solution-01..08</div><div class="ns-desc">Pre-existing Industry Solutions</div></div><span class="ns-touch">DO NOT TOUCH</span></div>
+  </div>
+
+  
+  <h2>3. Deployment Phases</h2>
+  <p style="color:#57606a;font-size:13px;margin-bottom:12px">Total estimated time: <strong>~90–100 minutes</strong>. Phases 0–2 are instant. ROKS provisioning (Phase 1) dominates at ~70 min.</p>
+
+  
+  <div class="phase">
+    <div class="phase-header">
+      <span class="phase-num">PHASE 0</span>
+      <span class="phase-title">Local Setup — Load Environment &amp; Validate CLI</span>
+      <span class="phase-time">~5 min</span>
+    </div>
+    <div class="phase-body">
+      <pre># 1. Load .env into session — sets all TF_VAR_* and IBMCLOUD_API_KEY
+. .\platform\scripts\load-env.ps1
+
+# Expected: "Loaded N environment variables. Key values set: IBMCLOUD_API_KEY : Hz4n9...[redacted]"
+
+# 2. Validate IBM Cloud CLI login, region, resource group, and plugins
+.\platform\scripts\validate-step3.ps1
+# All 9 checks must pass
+
+# If not logged in:
+ibmcloud login --apikey $env:IBMCLOUD_API_KEY -r eu-de -g i3-production</pre>
+    </div>
+  </div>
+
+  
+  <div class="phase">
+    <div class="phase-header">
+      <span class="phase-num">PHASE 1</span>
+      <span class="phase-title">Terraform — VPC, COS, IAM, ROKS</span>
+      <span class="phase-time">~70 min</span>
+    </div>
+    <div class="phase-body">
+      <pre># 3. Import orphaned IAM resources (safe to run on clean state too)
+.\platform\scripts\terraform-import-iam.ps1
+
+# 4. Plan — review what will be created
+cd platform\terraform
+terraform plan -var="ibmcloud_api_key=$env:IBMCLOUD_API_KEY" -out=tfplan.out
+cd ..\..
+# Review: VPC + 3 subnets + security groups, 4 COS buckets,
+#         IAM service IDs + trusted profile, ROKS 4.15 cluster
+
+# 5. Apply (starts ROKS provisioning — ~70 min)
+cd platform\terraform
+terraform apply tfplan.out
+cd ..\..
+
+# Monitor worker node status in a second terminal:
+make watch-workers
+
+# 6. After apply: fetch kubeconfig
+ibmcloud ks cluster config --cluster i3-platform
+oc cluster-info</pre>
+      <div class="alert alert-info">Terraform creates: <strong>VPC</strong> (3 subnets across eu-de zones), <strong>4 COS buckets</strong> (tfstate, postgres-backup, seaweedfs-dr, platform-data), <strong>IAM</strong> (Tekton CI service ID, ArgoCD deploy service ID, DevOps access group, workload trusted profile), <strong>ROKS 4.15</strong> (2× bx2.4x16 CPU workers + GPU burst pool at 0).</div>
+    </div>
+  </div>
+
+  
+  <div class="phase">
+    <div class="phase-header">
+      <span class="phase-num">PHASE 2</span>
+      <span class="phase-title">Namespace &amp; Policy Layer</span>
+      <span class="phase-time">~2 min</span>
+    </div>
+    <div class="phase-body">
+      <pre># 7. Apply 11 managed namespaces + ResourceQuotas + NetworkPolicies + LimitRanges
+make deploy-namespaces
+
+# Verify all namespaces exist and solution-01..08 are untouched
+make verify-namespaces</pre>
+    </div>
+  </div>
+
+  
+  <div class="phase">
+    <div class="phase-header">
+      <span class="phase-num">PHASE 3</span>
+      <span class="phase-title">OLM Operators — PostgreSQL, Kafka, OpenBao, Keycloak</span>
+      <span class="phase-time">~5 min apply / ~10 min until Ready</span>
+    </div>
+    <div class="phase-body">
+      <pre># 8. Install OLM subscriptions (Crunchy Postgres, Strimzi, RHSSO)
+oc apply -f platform/operators/subscriptions/operator-subscriptions.yaml
+oc rollout status deployment -n openshift-operators --timeout=5m
+
+# 9. Apply all operator CRs
+make deploy-operators
+
+# Monitor (open 4 separate terminals or use watch):
+oc get pods -n i3-data      -w   # PostgreSQL HA  — expect 3 Running
+oc get pods -n i3-messaging -w   # Kafka KRaft    — expect 3 Running
+oc get pods -n i3-security  -w   # OpenBao        — expect 3 Running (sealed)
+oc get pods -n i3-auth      -w   # Keycloak       — expect 2 Running</pre>
+    </div>
+  </div>
+
+  
+  <div class="phase">
+    <div class="phase-header">
+      <span class="phase-num">PHASE 4</span>
+      <span class="phase-title">OpenBao Bootstrap — Manual Gate ⚠</span>
+      <span class="phase-time">~10 min</span>
+    </div>
+    <div class="phase-body">
+      <div class="alert alert-danger">⚠ <strong>Critical manual step.</strong> OpenBao pods start sealed. This must be completed before any application can read secrets. Unseal keys must be stored in an offline HSM or paper vault — never committed to git.</div>
+      <pre># 10. Initialize (5 shares, threshold 3) — save output immediately
+oc exec -n i3-security openbao-0 -- bao operator init \
+  -key-shares=5 -key-threshold=3 -format=json &gt; /tmp/openbao-init.json
+#  ⚠ Copy /tmp/openbao-init.json to offline storage NOW
+
+# 11. Add 3 unseal keys to .env, then unseal all pods:
+#   OPENBAO_UNSEAL_KEY_1=&lt;key1&gt;
+#   OPENBAO_UNSEAL_KEY_2=&lt;key2&gt;
+#   OPENBAO_UNSEAL_KEY_3=&lt;key3&gt;
+. .\platform\scripts\load-env.ps1
+.\platform\scripts\unseal-openbao.ps1
+
+# 12. Apply bootstrap Job (configures KV v2, K8s auth, namespace policies)
+ROOT_TOKEN=$(cat /tmp/openbao-init.json | jq -r '.root_token')
+oc create secret generic openbao-root-token \
+  -n i3-security --from-literal=token=$ROOT_TOKEN
+oc apply -f platform/operators/openbao/openbao-bootstrap-scripts.yaml
+oc wait --for=condition=complete job/openbao-bootstrap -n i3-security --timeout=5m
+
+# 13. Revoke root token — MANDATORY security step
+oc exec -n i3-security openbao-0 -- bao token revoke $ROOT_TOKEN
+oc delete secret openbao-root-token -n i3-security</pre>
+    </div>
+  </div>
+
+  
+  <div class="phase">
+    <div class="phase-header">
+      <span class="phase-num">PHASE 5</span>
+      <span class="phase-title">Populate Application Secrets into OpenBao</span>
+      <span class="phase-time">~5 min</span>
+    </div>
+    <div class="phase-body">
+      <div class="alert alert-warn">Run <em>before</em> revoking the root token (or create a short-lived admin token first).</div>
+      <pre># 14. Write all secrets to KV v2 — generates random keys for LiteLLM, Langfuse,
+#     Directus, n8n, Grafana, PostgreSQL pgBouncer, Admissions, watsonx, Registry
+$env:OPENBAO_ROOT_TOKEN = "&lt;root-token-from-step-12&gt;"
+.\platform\scripts\populate-vault.ps1</pre>
+      <table style="margin-top:8px">
+        <tr><th>Secret Path (i3/…)</th><th>Keys Written</th><th>Requires Manual Input</th></tr>
+        <tr><td><code>model-gateway/litellm</code></td><td>master_key, salt</td><td>—</td></tr>
+        <tr><td><code>model-gateway/langfuse</code></td><td>nextauth_secret, salt, encryption_key</td><td>—</td></tr>
+        <tr><td><code>model-gateway/watsonx</code></td><td>api_key, endpoint</td><td><strong>project_id</strong></td></tr>
+        <tr><td><code>ott/directus</code></td><td>key, secret</td><td><strong>admin_password</strong></td></tr>
+        <tr><td><code>ott/n8n</code></td><td>encryption_key</td><td>—</td></tr>
+        <tr><td><code>monitoring/grafana</code></td><td>admin_password (random)</td><td>—</td></tr>
+        <tr><td><code>data/postgres</code></td><td>pgbouncer_password, replication_password</td><td>—</td></tr>
+        <tr><td><code>admissions/agent</code></td><td>chroma_token, n8n_webhook_token</td><td><strong>odoo_api_key</strong></td></tr>
+        <tr><td><code>gitops/registry</code></td><td>registry_url, namespace, api_key</td><td>—</td></tr>
+      </table>
+    </div>
+  </div>
+
+  
+  <div class="phase">
+    <div class="phase-header">
+      <span class="phase-num">PHASE 6</span>
+      <span class="phase-title">Deploy Application Workstreams</span>
+      <span class="phase-time">~5 min apply</span>
+    </div>
+    <div class="phase-body">
+      <pre># Deploy in this exact order (dependency chain: gateway → keda → apps → monitoring)
+make deploy-gateway       # LiteLLM proxy, Ollama (Granite 3.1 2B), Langfuse
+make deploy-keda          # KEDA operator + ScaledObjects (waits 60s for CRD registration)
+make deploy-evalos        # Firecracker sandbox daemon + Next.js exam engine
+make deploy-ott           # OvenMediaEngine, Nginx HLS, SeaweedFS, Directus CMS, n8n
+make deploy-admissions    # ChromaDB, FastAPI RAG agent, MCP connectors
+make deploy-monitoring    # Prometheus + Grafana + OTel collectors
+
+# Watch all at once
+oc get pods -A -w | grep -E "i3-(model-gateway|evalos|ott|admissions|monitoring)"</pre>
+    </div>
+  </div>
+
+  
+  <div class="phase">
+    <div class="phase-header">
+      <span class="phase-num">PHASE 7</span>
+      <span class="phase-title">Post-Deploy Configuration</span>
+      <span class="phase-time">~15 min</span>
+    </div>
+    <div class="phase-body">
+      <pre># 15. Keycloak: regenerate OIDC client secrets → write to OpenBao
+$env:KEYCLOAK_ADMIN_PASSWORD = "admin"   # change immediately after
+.\platform\scripts\keycloak-post-deploy.ps1
+# Writes secrets for: evalos-spa, admissions-widget, ai-lab-workbench,
+#                     directus-cms, litellm-service → i3/auth/keycloak-clients
+
+# 16. SeaweedFS DR: create rclone-secrets Kubernetes Secret in i3-ott
+.\platform\scripts\rclone-secret.ps1
+# Creates rclone.conf with SeaweedFS S3 + IBM COS HMAC credentials
+
+# 17. Get OpenShift Ingress domain for DNS setup
+oc get ingresscontroller default -n openshift-ingress-operator -o jsonpath='{.status.domain}'
+# → i3-platform-XXXXXXXX-0000.eu-de.containers.appdomain.cloud</pre>
+    </div>
+  </div>
+
+  
+  <div class="phase">
+    <div class="phase-header">
+      <span class="phase-num">PHASE 8</span>
+      <span class="phase-title">Validation</span>
+      <span class="phase-time">~5 min</span>
+    </div>
+    <div class="phase-body">
+      <pre># 18. Full 10-section health check (namespaces, operators, apps, routes, secrets)
+.\platform\scripts\post-deploy-checklist.ps1   # or: make post-deploy-check
+
+# 19. Argo CD sync status
+make verify-argo
+
+# 20. Full cluster + solution namespace check
+make verify-cluster</pre>
+      <div class="alert alert-ok">The health check validates: all 11 namespaces exist, solution-01..08 are untouched, all operator pods running, all app pods running, all routes present, all Kubernetes secrets exist.</div>
+    </div>
+  </div>
+
+  
+  <div class="phase">
+    <div class="phase-header">
+      <span class="phase-num">PHASE 9</span>
+      <span class="phase-title">Build &amp; Push Custom Container Images</span>
+      <span class="phase-time">~5 min</span>
+    </div>
+    <div class="phase-body">
+      <pre># 21. Log in to Frankfurt IBM Container Registry
+ibmcloud cr login --client buildah
+
+# 22. Build all 3 custom images + push to de.icr.io/i3-platform/
+make build-images
+
+# Images produced:
+#   de.icr.io/i3-platform/evalos-sandbox:latest    (Firecracker v1.7.0 + FastAPI)
+#   de.icr.io/i3-platform/admissions-agent:latest  (LlamaIndex RAG + Lobster Trap)
+#   de.icr.io/i3-platform/mcp-connectors:latest    (Odoo + Calendar + n8n HITL)</pre>
+    </div>
+  </div>
+
+  
+  <div class="phase">
+    <div class="phase-header">
+      <span class="phase-num">PHASE 10</span>
+      <span class="phase-title">Database Migration &amp; DNS</span>
+      <span class="phase-time">~5 min</span>
+    </div>
+    <div class="phase-body">
+      <pre># 23. EvalOS database schema migration
+oc exec -n i3-data \
+  $(oc get pods -n i3-data -l postgres-operator.crunchydata.com/role=master \
+    -o jsonpath='{.items[0].metadata.name}') \
+  -- psql -U postgres -d evalos_db \
+  -f /dev/stdin &lt; platform/evalos/schema.sql
+
+# 24. Add DNS CNAME records (see Section 5 for full table)
+# Wildcard:  *.i3.tech  →  &lt;INGRESS_DOMAIN&gt;   (TTL 300)
+# OTT ingest: ingest.i3.tech  A  &lt;OTT_LB_IP&gt;</pre>
+    </div>
+  </div>
+
+  
+  <h2>4. All Make Targets</h2>
+
+  <h3>Infrastructure</h3>
+  <div class="make-target"><span class="make-cmd">make recover-cos</span><span class="make-desc">INCIDENT: Recreate destroyed COS instance, buckets, and HMAC keys</span></div>
+  <div class="make-target"><span class="make-cmd">make tf-import-iam</span><span class="make-desc">Import pre-existing IAM resources into fresh Terraform state</span></div>
+  <div class="make-target"><span class="make-cmd">make init-infra</span><span class="make-desc">Initialize Terraform with remote COS backend (uses TF_COS_ACCESS_KEY)</span></div>
+  <div class="make-target"><span class="make-cmd">make plan-infra</span><span class="make-desc">Terraform plan — no changes applied, writes tfplan.out</span></div>
+  <div class="make-target"><span class="make-cmd">make deploy-infra</span><span class="make-desc">Apply Terraform — provision VPC, ROKS, COS, IAM (~70 min)</span></div>
+  <div class="make-target"><span class="make-cmd">make destroy-infra</span><span class="make-desc">DANGER: Destroy all Terraform-managed infrastructure (confirmation required)</span></div>
+
+  <h3>Deployment</h3>
+  <div class="make-target"><span class="make-cmd">make deploy-namespaces</span><span class="make-desc">Apply namespace topology — ResourceQuotas, NetworkPolicies, LimitRanges</span></div>
+  <div class="make-target"><span class="make-cmd">make deploy-operators</span><span class="make-desc">Deploy all Kubernetes operators (Postgres, Kafka, OpenBao, Keycloak)</span></div>
+  <div class="make-target"><span class="make-cmd">make deploy-apps</span><span class="make-desc">Deploy all 4 application workstreams (gateway, evalos, ott, admissions)</span></div>
+  <div class="make-target"><span class="make-cmd">make deploy-gateway</span><span class="make-desc">Deploy LiteLLM, Ollama, Langfuse model gateway</span></div>
+  <div class="make-target"><span class="make-cmd">make deploy-keda</span><span class="make-desc">Install KEDA operator + ScaledObjects for autoscaling</span></div>
+  <div class="make-target"><span class="make-cmd">make deploy-evalos</span><span class="make-desc">Deploy EvalOS sandbox daemon, Next.js exam engine, DB schema</span></div>
+  <div class="make-target"><span class="make-cmd">make deploy-ott</span><span class="make-desc">Deploy OvenMediaEngine, Nginx HLS, SeaweedFS, Directus, n8n</span></div>
+  <div class="make-target"><span class="make-cmd">make deploy-admissions</span><span class="make-desc">Deploy ChromaDB, Admissions Agent, MCP connectors</span></div>
+  <div class="make-target"><span class="make-cmd">make deploy-monitoring</span><span class="make-desc">Deploy Prometheus + Grafana monitoring stack</span></div>
+
+  <h3>GPU &amp; AI Lab</h3>
+  <div class="make-target"><span class="make-cmd">make gpu-up</span><span class="make-desc">Scale GPU burst pool to min 1 node (on-demand activation)</span></div>
+  <div class="make-target"><span class="make-cmd">make gpu-down</span><span class="make-desc">Scale GPU pool to 0 — cost-saving idle state</span></div>
+  <div class="make-target"><span class="make-cmd">make provision-cohort COHORT=1 STUDENTS=a,b,c</span><span class="make-desc">Provision a new AI Lab cohort namespace with RBAC + quota</span></div>
+
+  <h3>Verification &amp; Operations</h3>
+  <div class="make-target"><span class="make-cmd">make watch-workers</span><span class="make-desc">Poll ROKS worker nodes until all reach 'deployed' state</span></div>
+  <div class="make-target"><span class="make-cmd">make verify-cluster</span><span class="make-desc">Full cluster health check (namespaces + Argo CD sync)</span></div>
+  <div class="make-target"><span class="make-cmd">make verify-namespaces</span><span class="make-desc">Verify all platform namespaces exist with healthy pods</span></div>
+  <div class="make-target"><span class="make-cmd">make verify-argo</span><span class="make-desc">Verify Argo CD application sync status</span></div>
+  <div class="make-target"><span class="make-cmd">make post-deploy-check</span><span class="make-desc">Full 10-section platform health check via PowerShell script</span></div>
+
+  <h3>Disaster Recovery</h3>
+  <div class="make-target"><span class="make-cmd">make dr-backup</span><span class="make-desc">Trigger pgBackRest full backup + SeaweedFS→COS rclone sync</span></div>
+  <div class="make-target"><span class="make-cmd">make dr-restore RESTORE_TARGET="…"</span><span class="make-desc">PITR restore — requires timestamp, confirmation prompt</span></div>
+  <div class="make-target"><span class="make-cmd">make dr-test</span><span class="make-desc">Non-destructive DR validation (backup verify + rclone check dry-run)</span></div>
+
+  <h3>Testing</h3>
+  <div class="make-target"><span class="make-cmd">make test-all</span><span class="make-desc">Run full test suite (load + RAGAS + red-team)</span></div>
+  <div class="make-target"><span class="make-cmd">make test-load-evalos</span><span class="make-desc">Locust: 100 concurrent EvalOS sandbox submissions, 5 min</span></div>
+  <div class="make-target"><span class="make-cmd">make test-load-ailab</span><span class="make-desc">Locust: 2,000 concurrent AI Lab API requests, 10 min</span></div>
+  <div class="make-target"><span class="make-cmd">make test-ragas</span><span class="make-desc">RAGAS: evaluate Admissions Agent faithfulness &amp; relevancy</span></div>
+  <div class="make-target"><span class="make-cmd">make test-redteam</span><span class="make-desc">Promptfoo: prompt injection red-team validation</span></div>
+
+  <h3>Builds &amp; Logs</h3>
+  <div class="make-target"><span class="make-cmd">make build-images</span><span class="make-desc">Build all 3 custom images via buildah, push to de.icr.io/i3-platform</span></div>
+  <div class="make-target"><span class="make-cmd">make logs-gateway</span><span class="make-desc">Tail LiteLLM proxy logs</span></div>
+  <div class="make-target"><span class="make-cmd">make logs-sandbox</span><span class="make-desc">Tail EvalOS sandbox daemon logs</span></div>
+  <div class="make-target"><span class="make-cmd">make logs-pipeline</span><span class="make-desc">Tail OTT content pipeline logs</span></div>
+  <div class="make-target"><span class="make-cmd">make clean</span><span class="make-desc">Remove tfplan.out, test reports, __pycache__</span></div>
+
+  
+  <h2>5. DNS Setup — *.i3.tech</h2>
+
+  <h3>Step 1 — Get Cluster Ingress Domain</h3>
+  <pre>oc get ingresscontroller default -n openshift-ingress-operator -o jsonpath='{.status.domain}'
+# → i3-platform-a1b2c3d4-0000.eu-de.containers.appdomain.cloud</pre>
+
+  <h3>Step 2 — CNAME Records</h3>
+  <p style="font-size:13px;color:#57606a;margin-bottom:6px">Preferred: add a single wildcard <code>*.i3.tech → &lt;INGRESS_DOMAIN&gt;</code>. If your DNS provider doesn't support wildcards, use individual records:</p>
+  <table>
+    <tr><th>Hostname</th><th>Type</th><th>Target</th><th>Namespace</th></tr>
+    <tr><td>*.i3.tech</td><td>CNAME</td><td>&lt;INGRESS_DOMAIN&gt;</td><td>Wildcard</td></tr>
+    <tr><td>keycloak.i3.tech</td><td>CNAME</td><td>&lt;INGRESS_DOMAIN&gt;</td><td>i3-auth</td></tr>
+    <tr><td>argocd.i3.tech</td><td>CNAME</td><td>&lt;INGRESS_DOMAIN&gt;</td><td>i3-gitops</td></tr>
+    <tr><td>litellm.i3.tech</td><td>CNAME</td><td>&lt;INGRESS_DOMAIN&gt;</td><td>i3-model-gateway</td></tr>
+    <tr><td>langfuse.i3.tech</td><td>CNAME</td><td>&lt;INGRESS_DOMAIN&gt;</td><td>i3-model-gateway</td></tr>
+    <tr><td>grafana.i3.tech</td><td>CNAME</td><td>&lt;INGRESS_DOMAIN&gt;</td><td>i3-monitoring</td></tr>
+    <tr><td>evalos.i3.tech</td><td>CNAME</td><td>&lt;INGRESS_DOMAIN&gt;</td><td>i3-evalos</td></tr>
+    <tr><td>directus.i3.tech</td><td>CNAME</td><td>&lt;INGRESS_DOMAIN&gt;</td><td>i3-ott</td></tr>
+    <tr><td>n8n.i3.tech</td><td>CNAME</td><td>&lt;INGRESS_DOMAIN&gt;</td><td>i3-ott</td></tr>
+    <tr><td>stream.i3.tech</td><td>CNAME</td><td>&lt;INGRESS_DOMAIN&gt;</td><td>i3-ott</td></tr>
+    <tr><td>hls.i3.tech</td><td>CNAME</td><td>&lt;INGRESS_DOMAIN&gt;</td><td>i3-ott</td></tr>
+    <tr><td>admissions.i3.tech</td><td>CNAME</td><td>&lt;INGRESS_DOMAIN&gt;</td><td>i3-admissions</td></tr>
+    <tr class="dns-warn"><td>ingest.i3.tech</td><td><strong>A</strong></td><td>&lt;OTT_LB_IP&gt;</td><td>i3-ott (LoadBalancer, not Route)</td></tr>
+  </table>
+  <div class="alert alert-warn" style="margin-top:8px">⚠ <strong>OTT ingest</strong> uses a separate IBM Cloud Load Balancer for UDP (WebRTC 10000–10004, RTMP 1935, SRT 9999). Get its IP: <code>oc get svc ovenmediaengine-lb -n i3-ott -o jsonpath='{.status.loadBalancer.ingress[0].ip}'</code> then add as an A record.</div>
+
+  <h3>Step 3 — Verify OTT Security Groups (Risk R2)</h3>
+  <pre>ibmcloud is security-group-rules &lt;i3-platform-ott-sg-id&gt;
+# Required: TCP 1935 (RTMP), UDP 9999 (SRT), UDP 10000-10004 (WebRTC),
+#           TCP 3334 (WebRTC HTTPS), TCP 8080 (LL-HLS)</pre>
+
+  
+  <h2>6. Pending Manual Items (Before Go-Live)</h2>
+  <table>
+    <tr><th>#</th><th>Item</th><th>When</th><th>Script / Command</th></tr>
+    <tr><td>1</td><td>Add unseal keys to <code>.env</code> after OpenBao init</td><td>Phase 4</td><td>Edit <code>.env</code> OPENBAO_UNSEAL_KEY_1/2/3</td></tr>
+    <tr><td>2</td><td>Store <code>/tmp/openbao-init.json</code> offline</td><td>Phase 4</td><td>HSM / paper vault — never commit</td></tr>
+    <tr><td>3</td><td>Set <code>i3/ott/directus → admin_password</code></td><td>Phase 5</td><td><code>populate-vault.ps1</code> placeholder</td></tr>
+    <tr><td>4</td><td>Set <code>i3/admissions/agent → odoo_api_key</code></td><td>Phase 5</td><td>Obtain from Odoo admin console</td></tr>
+    <tr><td>5</td><td>Set <code>i3/model-gateway/watsonx → project_id</code></td><td>Phase 5</td><td>Create project at eu-de.ml.cloud.ibm.com</td></tr>
+    <tr><td>6</td><td>Change Keycloak admin password from default <code>admin</code></td><td>Phase 7</td><td>keycloak.i3.tech → Users → admin → Credentials</td></tr>
+    <tr><td>7</td><td>Add DNS CNAME / A records</td><td>Phase 10</td><td>DNS provider zone editor — see Section 5</td></tr>
+    <tr><td>8</td><td>Upload Firecracker rootfs images to EvalOS PVC</td><td>Before EvalOS go-live</td><td><code>python311-pytorch.ext4</code>, <code>iac-terraform-kubectl.ext4</code>, <code>rust-cpp-ros2.ext4</code>, <code>kali-attacker.ext4</code></td></tr>
+    <tr><td>9</td><td>Configure KMS (Key Protect) CRK</td><td>Phase 2 (Month 2)</td><td>Set <code>TF_VAR_kms_instance_crn</code> + <code>kms_crk_id</code> in <code>.env</code></td></tr>
+    <tr><td>10</td><td>Install RHOAI operator for AI Lab</td><td>Month 3</td><td>See RUNBOOK.md §9 milestone table</td></tr>
+  </table>
+
+  
+  <h2>7. Budget Guardrails (≤ $1,500 / mo)</h2>
+  <table>
+    <tr><th>Resource</th><th>State</th><th>Est. Monthly Cost</th></tr>
+    <tr><td>3× bx2.4x16 CPU workers</td><td>Always on</td><td>~$420</td></tr>
+    <tr><td>GPU burst gx2.8x64</td><td>Scale-to-zero (on-demand via <code>make gpu-up</code>)</td><td>$0–$280</td></tr>
+    <tr><td>IBM COS (~2 TB)</td><td>Always on</td><td>~$45</td></tr>
+    <tr><td>ROKS control plane</td><td>Included in cloud_pak entitlement</td><td>$0</td></tr>
+    <tr><td>OCP worker licensing</td><td>cloud_pak entitlement MW02049</td><td>$0</td></tr>
+    <tr><td>SeaweedFS PVCs (500 Gi × 3)</td><td>Retain</td><td>~$300</td></tr>
+    <tr class="budget-total"><td>Total — GPU off</td><td></td><td>~$765 / mo</td></tr>
+    <tr class="budget-total"><td>Total — GPU burst 50% uptime</td><td></td><td>~$905 / mo</td></tr>
+  </table>
+  <div class="alert alert-info" style="margin-top:8px">Run <code>make gpu-down</code> whenever GPU workloads are idle. KEDA ScaledObjects also auto-scale the GPU deployment to 0 after a 300s cooldown period with low queue depth.</div>
+
+  
+  <h2>8. 6-Month Rollout Milestones</h2>
+  <table>
+    <tr><th>Month</th><th>Milestone</th><th>Active Namespaces</th></tr>
+    <tr><td>M1</td><td>Infrastructure + GitOps baseline</td><td>i3-data, i3-messaging, i3-security, i3-auth, i3-gitops</td></tr>
+    <tr><td>M2</td><td>Model Gateway + LLM observability</td><td>+ i3-model-gateway</td></tr>
+    <tr><td>M3</td><td>EvalOS sandbox (Profiles A+B) + RHOAI install</td><td>+ i3-evalos</td></tr>
+    <tr><td>M4</td><td>OTT streaming + media pipeline</td><td>+ i3-ott</td></tr>
+    <tr><td>M5</td><td>Admissions AI + MCP connectors</td><td>+ i3-admissions</td></tr>
+    <tr><td>M6</td><td>AI Lab cohorts + full test suite (100 EvalOS / 2000 AI Lab users)</td><td>+ per-cohort namespaces</td></tr>
+  </table>
+
+  
+  <h2>9. Key Files Reference</h2>
+  <table>
+    <tr><th>File</th><th>Purpose</th></tr>
+    <tr><td><code>Makefile</code></td><td>Master orchestration — 30+ targets across 11 sections</td></tr>
+    <tr><td><code>.env</code></td><td>Live secrets — gitignored. Load with <code>load-env.ps1</code></td></tr>
+    <tr><td><code>.env.example</code></td><td>Safe-to-commit template with REPLACE_* placeholders</td></tr>
+    <tr><td><code>platform/terraform/</code></td><td>4-module Terraform: vpc, cos, iam, roks</td></tr>
+    <tr><td><code>platform/operators/</code></td><td>Crunchy PG, Strimzi Kafka, OpenBao, Keycloak CRs</td></tr>
+    <tr><td><code>platform/namespaces/</code></td><td>Namespaces, ResourceQuotas, NetworkPolicies, LimitRanges</td></tr>
+    <tr><td><code>platform/model-gateway/</code></td><td>LiteLLM, Ollama, Langfuse, KEDA</td></tr>
+    <tr><td><code>platform/evalos/</code></td><td>Firecracker sandbox, Next.js exam engine, schema.sql</td></tr>
+    <tr><td><code>platform/ott/</code></td><td>OvenMediaEngine, Nginx, SeaweedFS, Directus, n8n, pipeline</td></tr>
+    <tr><td><code>platform/admissions/</code></td><td>FastAPI RAG agent, ChromaDB, MCP connectors</td></tr>
+    <tr><td><code>platform/gitops/</code></td><td>Argo CD app-of-apps, Tekton pipeline, BuildConfigs</td></tr>
+    <tr><td><code>platform/monitoring/</code></td><td>Prometheus + Grafana + Routes</td></tr>
+    <tr><td><code>platform/scripts/load-env.ps1</code></td><td>Load .env into PowerShell session</td></tr>
+    <tr><td><code>platform/scripts/unseal-openbao.ps1</code></td><td>Unseal all 3 OpenBao pods</td></tr>
+    <tr><td><code>platform/scripts/populate-vault.ps1</code></td><td>Write all app secrets to OpenBao KV v2</td></tr>
+    <tr><td><code>platform/scripts/keycloak-post-deploy.ps1</code></td><td>Regenerate Keycloak client secrets → OpenBao</td></tr>
+    <tr><td><code>platform/scripts/rclone-secret.ps1</code></td><td>Create rclone-secrets for SeaweedFS→COS DR sync</td></tr>
+    <tr><td><code>platform/scripts/post-deploy-checklist.ps1</code></td><td>Full platform health check (PASS/FAIL report)</td></tr>
+    <tr><td><code>platform/scripts/recover-cos.ps1</code></td><td>INCIDENT: Recreate COS + HMAC keys</td></tr>
+    <tr><td><code>platform/RUNBOOK.md</code></td><td>Day-2 operations: DR, failover, GPU, Kafka, Keycloak, ArgoCD</td></tr>
+    <tr><td><code>platform/docs/first-deploy-guide.md</code></td><td>Step-by-step deploy reference (this doc, in markdown)</td></tr>
+    <tr><td><code>platform/docs/dns-setup.md</code></td><td>Full DNS CNAME table + TLS certificate setup</td></tr>
+    <tr><td><code>platform/testing/testing.py</code></td><td>Locust load tests + RAGAS + Promptfoo red-team</td></tr>
+  </table>
+
+  <div class="footer">Made with IBM Bob</div>
+</div>
+</body>
+</html>

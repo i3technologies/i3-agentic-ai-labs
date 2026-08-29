@@ -1,0 +1,581 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>PMaaS 4.0 × i3 Platform — AI Integration &amp; Interface Blueprint</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.65;
+    color: #1f2328;
+    background: #fff;
+    padding: 32px 16px 56px;
+  }
+  .page { max-width: 820px; margin: 0 auto; }
+
+  /* ── HEADER ── */
+  .header { border-bottom: 2px solid #1f2328; padding-bottom: 18px; margin-bottom: 30px; }
+  .header h1 { font-size: 23px; font-weight: 800; letter-spacing: -.3px; }
+  .header .sub { color: #57606a; font-size: 13px; margin-top: 4px; }
+  .header .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .tag { background: #f0f0f0; border-radius: 4px; padding: 3px 9px; font-size: 11.5px; font-weight: 600; color: #1f2328; }
+  .tag.blue { background: #dbeafe; color: #1d4ed8; }
+  .tag.green { background: #d1fae5; color: #065f46; }
+  .tag.purple { background: #ede9fe; color: #6d28d9; }
+  .tag.amber { background: #fef3c7; color: #92400e; }
+
+  /* ── SECTION HEADINGS ── */
+  h2 {
+    font-size: 16px; font-weight: 800; margin: 36px 0 12px;
+    padding: 10px 14px; border-radius: 6px;
+    background: #1f2328; color: #fff;
+    display: flex; align-items: center; gap: 10px;
+  }
+  h2 .emoji { font-size: 18px; }
+  h3 { font-size: 14px; font-weight: 700; margin: 22px 0 8px; color: #1f2328; border-left: 3px solid #3b82f6; padding-left: 10px; }
+  h4 { font-size: 13px; font-weight: 700; margin: 14px 0 6px; color: #1f2328; }
+
+  /* ── TABLES ── */
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 10px 0 20px; }
+  th { background: #f7f8fa; padding: 7px 10px; border: 1px solid #e5e7eb; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: #57606a; font-weight: 700; }
+  td { padding: 8px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+
+  /* ── CARDS ── */
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0 20px; }
+  .card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 16px; background: #f7f8fa; }
+  .card.highlight { border-color: #3b82f6; background: #eff6ff; }
+  .card.purple-card { border-color: #8b5cf6; background: #f5f3ff; }
+  .card.green-card { border-color: #22c55e; background: #f0fff4; }
+  .card.amber-card { border-color: #f59e0b; background: #fffbeb; }
+  .card-title { font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+  .card-body { font-size: 12.5px; color: #57606a; line-height: 1.55; }
+  .card-badge { display: inline-block; margin-top: 8px; background: #1f2328; color: #fff; border-radius: 3px; padding: 2px 7px; font-size: 10.5px; font-weight: 600; }
+
+  /* ── MODEL BADGE CHIPS ── */
+  .model-chips { display: flex; flex-wrap: wrap; gap: 7px; margin: 8px 0 16px; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid; }
+  .chip-ibm    { background: #dbeafe; color: #1d4ed8; border-color: #93c5fd; }
+  .chip-open   { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+  .chip-kimi   { background: #fce7f3; color: #9d174d; border-color: #f9a8d4; }
+  .chip-glm    { background: #ede9fe; color: #6d28d9; border-color: #c4b5fd; }
+  .chip-qwen   { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+  .chip-ds     { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+
+  /* ── ALERTS ── */
+  .alert { border-radius: 6px; padding: 12px 16px; margin: 10px 0 18px; font-size: 13px; line-height: 1.5; }
+  .alert-blue  { background: #eff6ff; border-left: 4px solid #3b82f6; }
+  .alert-green { background: #f0fff4; border-left: 4px solid #22c55e; }
+  .alert-amber { background: #fffbeb; border-left: 4px solid #f59e0b; }
+  .alert-purple{ background: #f5f3ff; border-left: 4px solid #8b5cf6; }
+  .alert strong { display: block; margin-bottom: 3px; font-size: 13px; }
+
+  /* ── INTERFACE SURFACE BLOCKS ── */
+  .surface {
+    border: 1px solid #e5e7eb; border-radius: 10px; margin: 14px 0;
+    overflow: hidden;
+  }
+  .surface-header {
+    background: #1f2328; color: #fff; padding: 10px 16px;
+    font-weight: 700; font-size: 13px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .surface-body { padding: 14px 16px; font-size: 13px; }
+  .surface-body ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .surface-body ul li::before { content: "→ "; color: #3b82f6; font-weight: 700; }
+
+  /* ── ARCHITECTURE FLOW ── */
+  .arch { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin: 12px 0 20px; font-size: 12.5px; }
+  .arch-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; flex-wrap: wrap; }
+  .arch-box { background: #fff; border: 1px solid #d0d7de; border-radius: 5px; padding: 5px 11px; font-weight: 600; font-size: 12px; white-space: nowrap; }
+  .arch-box.blue { background: #dbeafe; border-color: #93c5fd; color: #1d4ed8; }
+  .arch-box.green { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
+  .arch-box.purple { background: #ede9fe; border-color: #c4b5fd; color: #6d28d9; }
+  .arch-box.amber { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+  .arch-arrow { color: #9ca3af; font-size: 16px; }
+
+  /* ── NUMBERED LIST ── */
+  .num-list { counter-reset: nl; list-style: none; }
+  .num-list li { counter-increment: nl; padding: 7px 0 7px 36px; position: relative; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+  .num-list li:last-child { border-bottom: none; }
+  .num-list li::before { content: counter(nl); position: absolute; left: 0; top: 7px; background: #1f2328; color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+
+  code { font-family: "SFMono-Regular", Consolas, monospace; background: #f0f0f0; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+  pre { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 13px 16px; font-family: "SFMono-Regular", Consolas, monospace; font-size: 11.5px; overflow-x: auto; margin: 8px 0 16px; line-height: 1.7; }
+
+  @media (max-width: 580px) { .card-grid { grid-template-columns: 1fr; } }
+
+  footer { margin-top: 52px; padding-top: 16px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+
+<div class="header">
+  <h1>PMaaS 4.0 × i3 Agentic AI Platform</h1>
+  <div class="sub">AI Integration Blueprint · Open-Source Model Expansion · Interface Design Advisory</div>
+  <div class="tags">
+    <span class="tag blue">PMaaS 4.0</span>
+    <span class="tag green">i3 Platform</span>
+    <span class="tag purple">KIMI K3 · GLM · Qwen</span>
+    <span class="tag amber">Co-Worker Interface</span>
+    <span class="tag">IBM watsonx</span>
+    <span class="tag">Kenya 2027</span>
+  </div>
+</div>
+
+
+<h2><span class="emoji">🔍</span> Part 1 — Understanding What PMaaS 4.0 Is</h2>
+
+<p style="font-size:13px;color:#57606a;margin-bottom:14px">PMaaS 4.0 is a <strong>full-cycle AI-powered political operating system</strong> for Kenya's 2027 General Elections. After reading the complete strategy document, here are the 8 core AI technical components it requires:</p>
+
+<table>
+  <thead><tr><th>#</th><th>PMaaS Component</th><th>What It Does</th><th>Tech Currently Specified</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>AI Voice-Clone Contact Centre</td><td>Candidate's voice calls every voter 24/7 in Swahili/English. Handles Q&amp;A on manifesto.</td><td>ElevenLabs + IBM Watson TTS + Twilio / Africa's Talking</td></tr>
+    <tr><td>2</td><td>Agentic Policy Knowledge Bot</td><td>RAG over full manifesto, speeches, policy papers. Answers any voter question.</td><td>watsonx Orchestrate + watsonx.ai RAG</td></tr>
+    <tr><td>3</td><td>Real-Time Sentiment Heatmap</td><td>Ward-level live political intelligence from 7 data streams.</td><td>IBM Granite + NLP + custom dashboards</td></tr>
+    <tr><td>4</td><td>Deepfake Defense + Truth Engine</td><td>Monitors synthetic media attacks, deploys watermarked response in 90 min.</td><td>Custom AI monitoring</td></tr>
+    <tr><td>5</td><td>WhatsApp AI Bot</td><td>Text-based policy advisor, registration guide, donation flows, gamified quiz.</td><td>WhatsApp Business API + watsonx</td></tr>
+    <tr><td>6</td><td>Social Virality Engine</td><td>AI-generated TikTok/Reels scripts, trend-scan every 2 hours, influencer matching.</td><td>watsonx generative AI</td></tr>
+    <tr><td>7</td><td>Campaign War Room Intelligence</td><td>6 autonomous AI agents: Sentiment Alert, Content Scheduling, Volunteer Coord., Budget Burn, Misinformation Hunter, Sales Follow-up.</td><td>watsonx Orchestrate multi-agent</td></tr>
+    <tr><td>8</td><td>Governance AI (Post-Election)</td><td>Manifesto delivery tracker, constituency feedback bot, Hansard monitor, 'Ask Your MP' bot.</td><td>Persistent RAG + CRM integration</td></tr>
+  </tbody>
+</table>
+
+
+<h2><span class="emoji">🔗</span> Part 2 — How PMaaS Fits Into the i3 Agentic AI Platform</h2>
+
+<div class="alert alert-green">
+  <strong>✅ The Integration Is Natural — Not a New Build</strong>
+  The i3 platform already has LiteLLM (model gateway), RAG (ChromaDB + LlamaIndex), FastAPI agents, n8n automation, Directus CMS, OTT streaming, Keycloak SSO, and Langfuse tracing. PMaaS 4.0 needs ALL of these — it becomes a <strong>vertical deployment</strong> on the same infrastructure, not a separate system.
+</div>
+
+<h3>Proposed Architecture: PMaaS as a Namespace on i3 Platform</h3>
+
+<div class="arch">
+  <div style="font-weight:700;font-size:12px;margin-bottom:10px;color:#57606a">i3 SHARED INFRASTRUCTURE LAYER</div>
+  <div class="arch-row">
+    <div class="arch-box blue">Keycloak SSO (i3-auth)</div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-box blue">LiteLLM Gateway (i3-model-gateway)</div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-box blue">OpenBao Secrets (i3-security)</div>
+  </div>
+  <div style="font-weight:700;font-size:12px;margin:12px 0 8px;color:#57606a">PMaaS 4.0 WORKLOAD LAYER (New namespace: i3-pmaas)</div>
+  <div class="arch-row">
+    <div class="arch-box green">Policy RAG Agent</div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-box green">Voice-Clone TTS Service</div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-box green">Telephony Bridge (Twilio/AT)</div>
+  </div>
+  <div class="arch-row">
+    <div class="arch-box green">WhatsApp Bot</div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-box green">Sentiment Heatmap Engine</div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-box green">War Room Dashboard</div>
+  </div>
+  <div class="arch-row">
+    <div class="arch-box amber">n8n (Automation — existing)</div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-box amber">Directus CMS (Content — existing)</div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-box amber">Langfuse Traces (existing)</div>
+  </div>
+</div>
+
+<h3>What Each Existing i3 Component Provides to PMaaS</h3>
+<table>
+  <thead><tr><th>i3 Component</th><th>PMaaS Use Case</th><th>Integration Effort</th></tr></thead>
+  <tbody>
+    <tr><td><strong>LiteLLM Model Gateway</strong></td><td>Routes all PMaaS LLM calls: policy Q&amp;A, sentiment, content generation, translation (Swahili/Sheng)</td><td>Low — add PMaaS API keys + model aliases</td></tr>
+    <tr><td><strong>ChromaDB + LlamaIndex RAG</strong><br />(Admissions pattern)</td><td>Ingest full manifesto, speeches, ward data. Policy Knowledge Bot answers from this. Clone the admissions_agent.py pattern.</td><td>Low — clone &amp; adapt existing agent</td></tr>
+    <tr><td><strong>n8n Automation</strong></td><td>Voter registration flows, polling day call triggers, WhatsApp broadcast scheduling, Nyumba Kumi task dispatch</td><td>Medium — build PMaaS-specific workflows</td></tr>
+    <tr><td><strong>Directus CMS</strong></td><td>Manifesto content management, ward-specific message variants, social content calendar, merchandise QR pages</td><td>Low — new collections in existing CMS</td></tr>
+    <tr><td><strong>OTT Stack (OME + nginx-hls)</strong></td><td>Livestream campaign rallies, candidate video messages, VOD recordings with AI-generated subtitles</td><td>None — already deployed</td></tr>
+    <tr><td><strong>Langfuse</strong></td><td>Trace every voter interaction: what they asked, what model answered, sentiment score, cost per call</td><td>None — automatic via LiteLLM</td></tr>
+    <tr><td><strong>Keycloak SSO</strong></td><td>War Room access control: Campaign Manager, Field Agent, Analyst, Candidate roles</td><td>Low — add PMaaS realm clients</td></tr>
+    <tr><td><strong>Grafana + Prometheus</strong></td><td>War Room operational dashboards: call volumes, sentiment trends, ward-level heatmap data</td><td>Medium — build PMaaS dashboards</td></tr>
+  </tbody>
+</table>
+
+<h3>New PMaaS-Specific Services to Build (i3-pmaas namespace)</h3>
+<div class="card-grid">
+  <div class="card highlight">
+    <div class="card-title">1. Policy RAG Microservice</div>
+    <div class="card-body">Clone of admissions_agent.py — FastAPI + LlamaIndex + ChromaDB. Ingests manifesto, ward data, speech transcripts. Answers voter questions in Swahili/English/Sheng via voice bot and WhatsApp.</div>
+    <span class="card-badge">Clone admissions_agent.py</span>
+  </div>
+  <div class="card highlight">
+    <div class="card-title">2. Voice-Clone TTS Microservice</div>
+    <div class="card-body">ElevenLabs API wrapper + IBM Watson TTS fallback. Converts RAG responses to candidate-voice audio. Served as WAV/MP3 stream to Twilio/Africa's Talking telephony layer.</div>
+    <span class="card-badge">New service — FastAPI</span>
+  </div>
+  <div class="card purple-card">
+    <div class="card-title">3. Sentiment Heatmap Engine</div>
+    <div class="card-body">Ingests 7 data streams (social, SMS, IVR, community WhatsApp, media, rival, IEBC). Runs Granite/Qwen sentiment classification. Outputs ward-level scores to PostgreSQL → Grafana.</div>
+    <span class="card-badge">New service — Python worker</span>
+  </div>
+  <div class="card purple-card">
+    <div class="card-title">4. Deepfake Monitor Agent</div>
+    <div class="card-body">Scheduled scraper of X/TikTok/Facebook for synthetic media mentioning candidate name. Uses vision model (Granite Vision) for image/video authenticity scoring. Alert + Truth Response queue.</div>
+    <span class="card-badge">New — n8n + vision model</span>
+  </div>
+  <div class="card green-card">
+    <div class="card-title">5. Telephony Bridge</div>
+    <div class="card-body">Twilio / Africa's Talking IVR adapter. Handles inbound/outbound call routing. Connects TTS microservice to GSM network. Streams candidate voice in real time. DTMF sentiment capture.</div>
+    <span class="card-badge">New — Node.js / FastAPI</span>
+  </div>
+  <div class="card amber-card">
+    <div class="card-title">6. War Room Dashboard</div>
+    <div class="card-body">Next.js frontend (or Grafana extended) showing live heatmap, call volumes, sentiment by ward, rival activity alerts, budget burn, volunteer status, social content queue.</div>
+    <span class="card-badge">New — Next.js + Grafana</span>
+  </div>
+</div>
+
+
+<h2><span class="emoji">🌐</span> Part 3 — Adding KIMI K3, GLM &amp; Qwen to the Model Gateway</h2>
+
+<div class="alert alert-purple">
+  <strong>🧠 Why These Models Matter for PMaaS + i3 Platform</strong>
+  KIMI K3 (Moonshot AI), GLM-4 (Zhipu AI), and Qwen 2.5 (Alibaba) are world-class open-weight models with exceptional multilingual performance — critical for Swahili, Arabic, and African language support that IBM Granite does not cover as well. All three can be added through the <strong>existing LiteLLM gateway</strong> with zero architectural changes.
+</div>
+
+<h3>Model Profiles — What Each Brings</h3>
+<table>
+  <thead><tr><th>Model</th><th>Maker</th><th>Size</th><th>Strengths</th><th>Best PMaaS / i3 Use Case</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>KIMI K3</strong><br /><span style="font-size:11px;color:#9d174d">Moonshot AI</span></td>
+      <td>China</td>
+      <td>~236B MoE (open weights)</td>
+      <td>Exceptionally long context (128K+), deep reasoning, strong at structured document understanding, multilingual</td>
+      <td>Manifesto deep-dive RAG (long doc), Hansard analysis, opposition research dossiers, legal document analysis</td>
+    </tr>
+    <tr>
+      <td><strong>GLM-4</strong><br /><span style="font-size:11px;color:#6d28d9">Zhipu AI</span></td>
+      <td>China</td>
+      <td>9B / 130B variants</td>
+      <td>Best-in-class Chinese + multilingual, strong tool-calling / function call, code, long-context understanding</td>
+      <td>Swahili/Sheng policy chat, WhatsApp bot NLU, voter sentiment classification, multi-turn dialogue</td>
+    </tr>
+    <tr>
+      <td><strong>Qwen 2.5</strong><br /><span style="font-size:11px;color:#92400e">Alibaba</span></td>
+      <td>China</td>
+      <td>0.5B–72B (open weight)</td>
+      <td>Outstanding multilingual (29 languages incl. Swahili), best-in-class coding (Qwen-Coder), Math, instruction following</td>
+      <td>Swahili voter chatbot, code generation for EvalOS, AI Lab notebooks, rapid content generation in multiple languages</td>
+    </tr>
+    <tr>
+      <td><strong>KIMI K3 (API)</strong><br /><span style="font-size:11px;color:#9d174d">Moonshot API</span></td>
+      <td>China</td>
+      <td>API-only</td>
+      <td>Long document summarisation, research, agentic tool use</td>
+      <td>Tier 1 replacement alongside watsonx for complex agentic tasks</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Current Model Stack + Additions</h3>
+<div class="model-chips">
+  <span class="chip chip-ibm">IBM Granite 3.1 2B (Tier 3)</span>
+  <span class="chip chip-ibm">DistilBERT Intent (Tier 3)</span>
+  <span class="chip chip-open">Mistral NeMo 12B (Tier 2)</span>
+  <span class="chip chip-ds">DeepSeek-Coder 16B (Tier 2)</span>
+  <span class="chip chip-ibm">IBM Granite 8B watsonx (Tier 1)</span>
+  <span class="chip chip-ibm">Granite Vision 2B (Tier 1)</span>
+  <span class="chip chip-qwen">+ Qwen2.5 7B / 72B (NEW)</span>
+  <span class="chip chip-glm">+ GLM-4 9B (NEW)</span>
+  <span class="chip chip-kimi">+ KIMI K3 API (NEW)</span>
+</div>
+
+<h3>How to Add Them — LiteLLM Config Additions</h3>
+<pre>
+# Add to litellm-deploy.yaml config.yaml → model_list:
+
+# ── Qwen 2.5 72B (via Ollama local) ──────────────────────────
+- model_name: qwen25-72b
+  litellm_params:
+    model: ollama/qwen2.5:72b
+    api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
+    timeout: 90
+    max_tokens: 32768
+  model_info:
+    tier: 2
+    description: "Qwen 2.5 72B - multilingual Swahili/Sheng + coding"
+
+# ── Qwen 2.5 7B (fast edge — Swahili chat) ───────────────────
+- model_name: qwen25-7b
+  litellm_params:
+    model: ollama/qwen2.5:7b
+    api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
+    timeout: 30
+    max_tokens: 8192
+  model_info:
+    tier: 3
+    description: "Qwen 2.5 7B - fast Swahili voter chatbot"
+
+# ── GLM-4 9B (multilingual tool calling) ─────────────────────
+- model_name: glm4-9b
+  litellm_params:
+    model: ollama/glm4:9b
+    api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
+    timeout: 45
+    max_tokens: 8192
+  model_info:
+    tier: 2
+    description: "GLM-4 9B - Swahili NLU, function calling"
+
+# ── KIMI K3 (via Moonshot API — Tier 1) ──────────────────────
+- model_name: kimi-k3
+  litellm_params:
+    model: moonshot/moonshot-v1-128k
+    api_key: "os.environ/MOONSHOT_API_KEY"
+    timeout: 120
+    max_tokens: 65536
+  model_info:
+    tier: 1
+    description: "KIMI K3 - long-context manifesto analysis"
+</pre>
+
+<h3>Routing Strategy — Which Model for Which Task</h3>
+<table>
+  <thead><tr><th>Task</th><th>Recommended Model</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td>Voter policy Q&amp;A (Swahili)</td><td>Qwen2.5-7B (fast) → GLM-4-9B (complex)</td><td>Best Swahili instruction following at low latency</td></tr>
+    <tr><td>Manifesto deep analysis / long docs</td><td>KIMI K3 (128K context)</td><td>Can hold entire manifesto in context — no chunking needed</td></tr>
+    <tr><td>Sentiment classification (ward-level)</td><td>Qwen2.5-7B or GLM-4-9B</td><td>Fast, multilingual, strong classification</td></tr>
+    <tr><td>Code generation (EvalOS, AI Lab)</td><td>Qwen2.5-Coder or DeepSeek-Coder</td><td>Both world-class at coding</td></tr>
+    <tr><td>Content generation (social media)</td><td>Qwen2.5-72B or Mistral NeMo 12B</td><td>Creative, long-form multilingual content</td></tr>
+    <tr><td>Governance AI / Hansard analysis</td><td>KIMI K3</td><td>Long legal documents, structured extraction</td></tr>
+    <tr><td>Intent routing (fast)</td><td>DistilBERT (existing) / Qwen2.5-0.5B</td><td>Sub-50ms for triage</td></tr>
+  </tbody>
+</table>
+
+
+<h2><span class="emoji">🖥️</span> Part 4 — AI Interface Design: All Surfaces</h2>
+
+<div class="alert alert-blue">
+  <strong>📐 The i3 Interface Strategy</strong>
+  The platform needs 4 distinct interface surfaces, each with a different persona and purpose — from a public chatbot to a private co-worker assistant. All share the same LiteLLM backend and Keycloak authentication.
+</div>
+
+
+<div class="surface">
+  <div class="surface-header">
+    <span>💬</span> Surface 1 — i3 AI Chat (Public Conversational Interface)
+  </div>
+  <div class="surface-body">
+    <p style="margin-bottom:10px;font-size:13px">A streaming, multi-turn conversational interface. The public face of i3's AI. Used by students, admissions prospects, and voters (PMaaS).</p>
+    <table>
+      <thead><tr><th>Feature</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Chat personas</td><td>Admissions Bot · Student Tutor · Policy Advisor (PMaaS) · Governance Bot (PMaaS)</td></tr>
+        <tr><td>Input</td><td>Text + file upload (PDF, DOCX for RAG) + voice input (browser Speech API → STT)</td></tr>
+        <tr><td>Output</td><td>Streaming text tokens + rich markdown + code blocks + citations (RAG source + page)</td></tr>
+        <tr><td>Languages</td><td>English, Swahili, Sheng (route to Qwen/GLM for non-English)</td></tr>
+        <tr><td>Backend</td><td>FastAPI WebSocket → LiteLLM → Qwen/GLM/Granite based on detected language</td></tr>
+        <tr><td>Session memory</td><td>Last 20 turns in Redis; long-term user history in PostgreSQL</td></tr>
+        <tr><td>Deploy</td><td>Next.js frontend at <code>chat.i3technologies.co.ke</code> (new Route)</td></tr>
+      </tbody>
+    </table>
+    <h4>Innovative Features to Add:</h4>
+    <ul>
+      <li>Language auto-detect: if Swahili detected → switch to Qwen2.5-7B automatically</li>
+      <li>Voice input: browser mic → Whisper STT → text query → voice output TTS (PMaaS voice clone)</li>
+      <li>Reasoning trace toggle: user can click "Show thinking" to see chain-of-thought steps</li>
+      <li>Persona switcher: user selects "Tutor / Policy Advisor / Code Assistant" — adjusts system prompt + model</li>
+      <li>Source citations: every RAG answer shows document title, page, and excerpt inline</li>
+    </ul>
+  </div>
+</div>
+
+
+<div class="surface">
+  <div class="surface-header">
+    <span>💻</span> Surface 2 — i3 AI Coding Assistant (Developer Interface)
+  </div>
+  <div class="surface-body">
+    <p style="margin-bottom:10px;font-size:13px">A VS Code / JupyterHub integrated coding assistant. Serves AI Lab students, platform developers, and EvalOS exam support.</p>
+    <table>
+      <thead><tr><th>Feature</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Interface</td><td>VS Code extension (Language Server Protocol) + JupyterHub cell magic (<code>%%ai</code>)</td></tr>
+        <tr><td>Primary model</td><td>Qwen2.5-Coder-32B (best open-source coding model) + DeepSeek-Coder-V2 as fallback</td></tr>
+        <tr><td>Capabilities</td><td>Code completion, explain code, refactor, generate tests, debug stack traces, generate docstrings</td></tr>
+        <tr><td>Context</td><td>Sends open file + visible code range + error message to model; returns inline diff or explanation</td></tr>
+        <tr><td>EvalOS integration</td><td>Students click "Hint" in EvalOS → sends current code + failing test to Qwen-Coder → returns hint (not solution)</td></tr>
+        <tr><td>Security</td><td>Code never leaves the cluster — Qwen/DeepSeek run on-prem via Ollama</td></tr>
+        <tr><td>API endpoint</td><td><code>POST /v1/code/complete</code> on LiteLLM — maps to qwen25-coder alias</td></tr>
+      </tbody>
+    </table>
+    <h4>Innovative Features:</h4>
+    <ul>
+      <li>Smart hint system: 3 levels — conceptual hint → pseudocode → worked example (each costs 1 "hint credit")</li>
+      <li>Code review agent: submit PR / notebook → AI reviews for bugs, style, and efficiency</li>
+      <li>AI-generated test cases: given a function signature → generate 10 edge-case tests automatically</li>
+      <li>Plagiarism + MOSS integration: check student code similarity via EvalOS MOSS connector</li>
+    </ul>
+  </div>
+</div>
+
+
+<div class="surface">
+  <div class="surface-header">
+    <span>🤝</span> Surface 3 — i3 Co-Worker (Office &amp; Business Productivity — Like Claude for Work)
+  </div>
+  <div class="surface-body">
+    <p style="margin-bottom:10px;font-size:13px">The most ambitious interface. A persistent AI work assistant deeply integrated into daily business operations — email, documents, meetings, CRM, scheduling. Think <strong>Claude for Work + Microsoft Copilot</strong>, but running entirely on your own infrastructure with your own models.</p>
+    <table>
+      <thead><tr><th>Module</th><th>What It Does</th><th>Model / Connector</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Document Assistant</strong></td><td>Upload any Word/PDF/Excel → AI summarises, extracts key data, answers questions, rewrites sections, generates new documents from templates</td><td>KIMI K3 (long context) + Directus CMS storage</td></tr>
+        <tr><td><strong>Email &amp; Comms Drafter</strong></td><td>Draft professional emails, proposals, letters based on brief. Tone: formal / friendly / persuasive. Auto-detect language and respond in same language.</td><td>Qwen2.5-72B or Granite 8B</td></tr>
+        <tr><td><strong>Meeting Intelligence</strong></td><td>Record meeting audio → Whisper STT → AI summarises, extracts action items, assigns owners, creates follow-up tasks in n8n. Sends summary to attendees.</td><td>Whisper + Granite/Qwen + n8n</td></tr>
+        <tr><td><strong>CRM Intelligence</strong></td><td>Natural language queries of Odoo/Directus: "Show me all leads from Nairobi this month". AI updates records, writes call notes, suggests follow-up actions.</td><td>GLM-4 (function calling) + Odoo MCP</td></tr>
+        <tr><td><strong>Presentation Builder</strong></td><td>Brief → AI generates structured slide outline, writes speaker notes, suggests visuals. Export to PPTX template. PMaaS: auto-generate ward-specific campaign briefs.</td><td>Qwen2.5-72B + python-pptx</td></tr>
+        <tr><td><strong>Research &amp; Intelligence</strong></td><td>Ask any research question → AI searches internal knowledge base + web → synthesises structured briefing note with citations. PMaaS: daily rival intelligence brief.</td><td>KIMI K3 + RAG + Tavily/Brave Search API</td></tr>
+        <tr><td><strong>Task &amp; Calendar AI</strong></td><td>Natural language task creation: "Remind me to call Philip on Friday" → creates n8n task, Google Calendar event, sends WhatsApp reminder. Context-aware scheduling.</td><td>GLM-4 tool-calling + Google Calendar MCP</td></tr>
+        <tr><td><strong>Financial Briefings</strong></td><td>Upload budget spreadsheet → AI explains variances, flags overspends, generates executive summary. PMaaS: campaign budget burn vs. target by ward.</td><td>Qwen2.5-72B + pandas code agent</td></tr>
+      </tbody>
+    </table>
+    <h4>Co-Worker Interface Design:</h4>
+    <ul>
+      <li>Single pane sidebar: always-on panel accessible from any app (like Copilot sidebar in Office 365)</li>
+      <li>Context awareness: Co-Worker knows what page/app you are on — if in Directus CMS, offers "help write this content"; if in Grafana, offers "explain this spike"</li>
+      <li>Memory: remembers your preferences, writing style, common queries, and past work within your session</li>
+      <li>Action confirmation: before writing to any external system (CRM, calendar, email send), shows a confirmation card — never acts autonomously on sensitive operations</li>
+      <li>Audit trail: every Co-Worker action logged to Langfuse — who asked what, what model answered, what action was taken</li>
+      <li>Deploy: <code>coworker.i3technologies.co.ke</code> — React app + persistent WebSocket</li>
+    </ul>
+  </div>
+</div>
+
+
+<div class="surface">
+  <div class="surface-header">
+    <span>🗳️</span> Surface 4 — PMaaS War Room Interface (Campaign Operations)
+  </div>
+  <div class="surface-body">
+    <p style="margin-bottom:10px;font-size:13px">A mission-control dashboard exclusively for campaign managers and field coordinators. Real-time intelligence + AI action centre in one screen.</p>
+    <table>
+      <thead><tr><th>Panel</th><th>Contents</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Live Heatmap</strong></td><td>Kenya ward map, colour-coded by support level, updated hourly. Click any ward for drill-down: top issues, sentiment trend, last call volumes, community agent report.</td></tr>
+        <tr><td><strong>AI Agents Status</strong></td><td>6 autonomous agents shown as cards: last action, next scheduled action, alert count. One-click approve/reject pending actions.</td></tr>
+        <tr><td><strong>Call Centre Ops</strong></td><td>Live call volume, active calls, sentiment breakdown (Supporter / Undecided / Opposition), escalation queue. AI-suggested calling priority for next hour.</td></tr>
+        <tr><td><strong>Content Queue</strong></td><td>AI-generated social content waiting for human approval before posting. TikTok scripts, WhatsApp broadcasts, press response drafts.</td></tr>
+        <tr><td><strong>Rival Monitor</strong></td><td>Last 24h rival activity feed. AI-generated counter-narrative drafts. Deepfake alert panel.</td></tr>
+        <tr><td><strong>Volunteer Tracker</strong></td><td>500+ volunteer status. Task completion rates. Leaderboard. AI-suggested reactivation messages for inactive volunteers.</td></tr>
+      </tbody>
+    </table>
+    <h4>Innovative PMaaS War Room Features:</h4>
+    <ul>
+      <li>"Ask the War Room" chat: type "Which 10 wards need a call surge today?" → AI analyses heatmap + pledge data and responds in natural language with a prioritised list</li>
+      <li>Closing Argument Engine: 7 days before polling — auto-generates personalised 90-second audio messages per undecided voter in cloned candidate voice</li>
+      <li>Swing Ward Rescue Protocol: AI one-click triggers surge deployment to the 50 most winnable borderline wards</li>
+      <li>Polling Day Dashboard: live turnout by station, pledge-vs-voted gap, transport coordination queue</li>
+    </ul>
+  </div>
+</div>
+
+
+<h2><span class="emoji">💡</span> Part 5 — Innovative Ideas to Consider</h2>
+
+<div class="card-grid">
+  <div class="card highlight">
+    <div class="card-title">🎙️ Universal Voice Layer</div>
+    <div class="card-body">Every i3 interface gets a voice toggle. Chat → speak your question, hear the answer. Co-Worker → dictate documents. EvalOS → read questions aloud. PMaaS → full TTS on all messages. Backend: Whisper STT (on-cluster) + ElevenLabs/Watson TTS out.</div>
+  </div>
+  <div class="card highlight">
+    <div class="card-title">🌍 African Language Expansion</div>
+    <div class="card-body">Qwen2.5 supports 29 languages. Add Kikuyu, Luo, Kamba, Kalenjin detection to the routing layer. For PMaaS this is a massive differentiator — candidate speaks to voters in their mother tongue. First in Kenya.</div>
+  </div>
+  <div class="card purple-card">
+    <div class="card-title">🧩 AI Agent Marketplace</div>
+    <div class="card-body">Let instructors and admins create custom AI agents via a no-code UI (similar to OpenAI GPTs). Define system prompt, attach documents, choose model. Deploy as a named agent on the platform. Build agent economy inside i3.</div>
+  </div>
+  <div class="card purple-card">
+    <div class="card-title">📱 WhatsApp as Universal Interface</div>
+    <div class="card-body">Since 90%+ Kenyans use WhatsApp, expose ALL i3 AI surfaces via WhatsApp: exam results, course content Q&amp;A, policy bot, constituency feedback. One number. Zero app download needed. Uses existing n8n + WhatsApp Business API.</div>
+  </div>
+  <div class="card green-card">
+    <div class="card-title">🔄 Model Fallback + Cost Routing</div>
+    <div class="card-body">LiteLLM already supports fallbacks. Implement cost-aware routing: try Qwen local first (free) → if overloaded, fail to GLM-4 local → if complex query, escalate to watsonx/KIMI API. 80% cost reduction vs. pure API usage.</div>
+  </div>
+  <div class="card green-card">
+    <div class="card-title">📊 AI Analytics for Educators</div>
+    <div class="card-body">Langfuse already traces all LLM calls. Build an "AI Usage Dashboard" for instructors: which students are using AI Lab most, what topics are they stuck on, which exam questions generated the most hint requests → curriculum intelligence.</div>
+  </div>
+  <div class="card amber-card">
+    <div class="card-title">🛡️ i3 Trust Layer (Ethics Shield)</div>
+    <div class="card-body">Extend the Admissions Lobster Trap firewall to ALL interfaces. Add: hate speech detection (NCIC compliance), hallucination scoring, source confidence score, and an "AI Authenticity Certificate" shown on every AI-generated output — building user trust.</div>
+  </div>
+  <div class="card amber-card">
+    <div class="card-title">🤖 Multi-Agent Collaboration</div>
+    <div class="card-body">Deploy watsonx Orchestrate or LangGraph to chain agents: Research Agent → Draft Agent → Review Agent → Publish Agent. For PMaaS: Intel Agent → Narrative Agent → Approval Gate → Broadcast Agent. Fully automated with human gates at each approval step.</div>
+  </div>
+</div>
+
+
+<h2><span class="emoji">🗺️</span> Part 6 — Implementation Roadmap</h2>
+
+<table>
+  <thead><tr><th>Phase</th><th>Duration</th><th>Deliverables</th><th>Priority</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Phase 1</strong><br />Foundation</td>
+      <td>Weeks 1–4</td>
+      <td>Add Qwen2.5-7B + GLM-4-9B to LiteLLM. Clone admissions_agent.py as pmaas_policy_agent.py. Create i3-pmaas namespace. Add PMaaS Keycloak realm clients (campaign-manager, field-agent roles).</td>
+      <td style="color:#b91c1c;font-weight:700">Critical</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 2</strong><br />PMaaS Core</td>
+      <td>Weeks 5–10</td>
+      <td>Voice-clone TTS microservice (ElevenLabs). Telephony bridge (Twilio/Africa's Talking). WhatsApp bot via n8n. Sentiment heatmap engine. Manifesto RAG ingestion pipeline. War Room dashboard v1.</td>
+      <td style="color:#b91c1c;font-weight:700">Critical</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 3</strong><br />AI Interfaces</td>
+      <td>Weeks 8–14</td>
+      <td>i3 AI Chat frontend (chat.i3technologies.co.ke). Co-Worker sidebar (coworker.i3technologies.co.ke). Coding assistant (VS Code extension + JupyterHub %%ai magic). Voice input/output layer.</td>
+      <td style="color:#9a6700;font-weight:700">High</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 4</strong><br />Advanced Models</td>
+      <td>Weeks 12–18</td>
+      <td>Add Qwen2.5-72B + Qwen2.5-Coder. KIMI K3 API integration. Add African language detection routing. Multi-agent orchestration. Agent marketplace (no-code builder). Cost-aware routing rules.</td>
+      <td style="color:#9a6700;font-weight:700">High</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 5</strong><br />PMaaS Full Cycle</td>
+      <td>Months 4–6</td>
+      <td>Deepfake monitor agent. Closing Argument Engine. Polling Day Dashboard. Governance AI bot. Constituency feedback system. Hansard monitor. Full War Room v2. PMaaS Enterprise tier live.</td>
+      <td style="color:#57606a">Medium</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<h2><span class="emoji">📋</span> Part 7 — Summary: What to Do Next</h2>
+
+<ol class="num-list">
+  <li><strong>Create the i3-pmaas namespace</strong> — mirror the pattern from other namespaces in <code>platform/namespaces/namespaces.yaml</code>. Add ResourceQuotas and LimitRanges for PMaaS workloads.</li>
+  <li><strong>Add Qwen2.5-7B and GLM-4-9B to the Ollama initContainer</strong> in <code>vllm-deploy.yaml</code> — pull both models on boot alongside Granite 3.1. Register both in <code>litellm-deploy.yaml</code> model_list.</li>
+  <li><strong>Add MOONSHOT_API_KEY to OpenBao / .env.example</strong> for KIMI K3 API access. Register kimi-k3 in LiteLLM config as Tier 1 model.</li>
+  <li><strong>Clone <code>admissions_agent.py</code> as <code>pmaas_policy_agent.py</code></strong> — swap the system prompt for the voter policy advisor persona. Ingest manifesto into ChromaDB collection <code>pmaas-manifesto</code>.</li>
+  <li><strong>Create a new Keycloak realm or client set for PMaaS</strong> — roles: <code>campaign-manager</code>, <code>field-agent</code>, <code>analyst</code>, <code>candidate</code>. Route War Room to require <code>campaign-manager</code> role.</li>
+  <li><strong>Build the i3 AI Chat frontend</strong> — Next.js app at <code>chat.i3technologies.co.ke</code>. WebSocket to FastAPI backend. Language auto-detect + model routing. Add to Argo CD app-of-apps.</li>
+  <li><strong>Plan voice-clone consent and legal review</strong> — candidate consent forms, ElevenLabs API contract, DPA 2019 compliance sign-off before any voice data is processed.</li>
+  <li><strong>Design the Co-Worker sidebar</strong> — React component embeddable in every i3 frontend. Context API for current-page awareness. Authenticated via Keycloak token.</li>
+</ol>
+
+<footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>

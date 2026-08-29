@@ -1,0 +1,642 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 Agentic AI Lab — Integrated Innovation Masterplan</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 13.5px; line-height: 1.65; color: #1f2328; background: #fff; }
+  .page { max-width: 780px; margin: 0 auto; padding: 40px 24px 64px; }
+
+  /* ── HEADER ── */
+  .hdr { border-bottom: 3px solid #1f2328; padding-bottom: 22px; margin-bottom: 30px; }
+  .hdr .org { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #57606a; margin-bottom: 6px; }
+  .hdr h1 { font-size: 22px; font-weight: 800; color: #1f2328; line-height: 1.25; margin-bottom: 6px; }
+  .hdr .tagline { font-size: 13px; color: #57606a; margin-bottom: 14px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 6px; }
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 3px 9px; border-radius: 3px; }
+  .b-blue   { background:#dbeafe; color:#1d4ed8; }
+  .b-green  { background:#dcfce7; color:#15803d; }
+  .b-purple { background:#ede9fe; color:#6d28d9; }
+  .b-orange { background:#ffedd5; color:#c2410c; }
+  .b-red    { background:#fee2e2; color:#b91c1c; }
+  .b-dark   { background:#1f2328; color:#fff; }
+
+  /* ── TOC ── */
+  .toc { background:#f7f8fa; border:1px solid #e5e7eb; border-radius:6px; padding:16px 20px; margin-bottom:34px; }
+  .toc h3 { font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:#57606a; margin-bottom:10px; }
+  .toc-grid { display:grid; grid-template-columns:1fr 1fr; gap:3px 24px; }
+  .toc-item { font-size:12px; color:#3b82d4; text-decoration:none; }
+  .toc-item:hover { text-decoration:underline; }
+
+  /* ── SECTION ── */
+  .sec { margin-bottom: 42px; }
+  .sec-hdr { display:flex; align-items:center; gap:10px; border-bottom:2px solid #e5e7eb; padding-bottom:8px; margin-bottom:18px; }
+  .sec-num { width:28px; height:28px; border-radius:50%; background:#1f2328; color:#fff; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .sec-title { font-size:17px; font-weight:700; color:#1f2328; }
+  .sub { font-size:13px; font-weight:700; color:#1f2328; margin:16px 0 8px; }
+  p { margin-bottom:11px; }
+  ul, ol { padding-left:18px; margin-bottom:11px; }
+  li { margin-bottom:5px; font-size:13px; }
+
+  /* ── CALLOUT ── */
+  .call { border-left:4px solid #3b82d4; background:#eff6ff; padding:11px 14px; border-radius:0 4px 4px 0; margin-bottom:13px; font-size:12.5px; }
+  .call.warn  { border-color:#d97706; background:#fffbeb; }
+  .call.danger{ border-color:#dc2626; background:#fef2f2; }
+  .call.ok    { border-color:#16a34a; background:#f0fdf4; }
+  .call.dark  { border-color:#1f2328; background:#f7f8fa; }
+  .call strong { display:block; margin-bottom:4px; font-size:12px; text-transform:uppercase; letter-spacing:.05em; }
+
+  /* ── TABLE ── */
+  table { width:100%; border-collapse:collapse; font-size:12.5px; margin-bottom:16px; }
+  th { background:#f7f8fa; border:1px solid #e5e7eb; padding:7px 11px; text-align:left; font-weight:700; color:#1f2328; }
+  td { border:1px solid #e5e7eb; padding:7px 11px; vertical-align:top; }
+  tr:nth-child(even) td { background:#fafafa; }
+
+  /* ── FILE TREE ── */
+  .tree { background:#f7f8fa; border:1px solid #e5e7eb; border-radius:5px; padding:14px 16px; font-family:monospace; font-size:11.5px; line-height:1.9; margin-bottom:14px; overflow-x:auto; }
+  .tree .dir  { color:#3b82d4; font-weight:700; }
+  .tree .file { color:#1f2328; }
+  .tree .note { color:#57606a; }
+  .tree .new  { color:#16a34a; font-weight:700; }
+  .tree .hot  { color:#d97706; font-weight:700; }
+
+  /* ── CODE ── */
+  pre { background:#f7f8fa; border:1px solid #e5e7eb; border-radius:5px; padding:12px 14px; font-size:11px; font-family:monospace; overflow-x:auto; margin-bottom:13px; line-height:1.55; }
+  code { font-family:monospace; font-size:11.5px; background:#f7f8fa; border:1px solid #e5e7eb; border-radius:3px; padding:1px 5px; }
+
+  /* ── PHASE CARD ── */
+  .phase { border:1px solid #e5e7eb; border-radius:6px; margin-bottom:14px; overflow:hidden; }
+  .phase-hdr { padding:10px 16px; font-weight:700; font-size:12.5px; display:flex; justify-content:space-between; align-items:center; }
+  .ph1 { background:#eff6ff; color:#1d4ed8; }
+  .ph2 { background:#f0fdf4; color:#15803d; }
+  .ph3 { background:#fefce8; color:#a16207; }
+  .ph4 { background:#fdf4ff; color:#7e22ce; }
+  .phase-body { padding:13px 16px; }
+  .phase-body li { margin-bottom:7px; font-size:12.5px; }
+
+  /* ── INTEGRATION PILL ── */
+  .int-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:13px; }
+  .int-pill { font-size:11px; font-weight:600; padding:3px 10px; border-radius:10px; }
+  .ip-a { background:#dbeafe; color:#1d4ed8; }
+  .ip-b { background:#dcfce7; color:#15803d; }
+  .ip-c { background:#ede9fe; color:#6d28d9; }
+  .ip-d { background:#ffedd5; color:#c2410c; }
+  .ip-e { background:#fce7f3; color:#9d174d; }
+  .ip-f { background:#f7f8fa; color:#1f2328; border:1px solid #e5e7eb; }
+
+  /* ── GATE ── */
+  .gate { display:flex; gap:10px; margin-bottom:8px; align-items:flex-start; }
+  .dot  { width:13px; height:13px; border-radius:50%; flex-shrink:0; margin-top:3px; }
+  .g-green  { background:#16a34a; }
+  .g-yellow { background:#d97706; }
+  .g-red    { background:#dc2626; }
+  .gate-txt { font-size:12.5px; }
+
+  /* ── METRIC BOX ── */
+  .metrics { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+  .mbox { flex:1; min-width:130px; background:#f7f8fa; border:1px solid #e5e7eb; border-radius:5px; padding:13px 12px; text-align:center; }
+  .mbox .val { font-size:21px; font-weight:800; color:#3b82d4; }
+  .mbox .lbl { font-size:11px; color:#57606a; margin-top:3px; }
+
+  /* ── FOOTER ── */
+  .foot { border-top:1px solid #e5e7eb; margin-top:50px; padding-top:14px; text-align:center; font-size:11px; color:#57606a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+
+<div class="hdr">
+  <div class="org">i3 Technologies Limited · IBM Silver Partner · Confidential — Internal Strategy</div>
+  <h1>i3 Agentic AI Lab<br />Integrated Innovation Masterplan</h1>
+  <p class="tagline">Project 1 — Codebase Onboarding Agent · Elevated with Every Layer of the i3 Sovereign Platform · August 2026</p>
+  <div class="badges">
+    <span class="badge b-blue">Project 1: Codebase Onboarding Agent</span>
+    <span class="badge b-green">ROKS OpenShift · Frankfurt</span>
+    <span class="badge b-purple">IBM Bob 2.0 · Agent Mode</span>
+    <span class="badge b-orange">LiteLLM · Granite · Mistral NeMo</span>
+    <span class="badge b-red">EvalOS · Admissions AI · PMaaS 4.0</span>
+    <span class="badge b-dark">IBM TechXchange Hackathon 2026</span>
+  </div>
+</div>
+
+
+<div class="toc">
+  <h3>Contents</h3>
+  <div class="toc-grid">
+    <a class="toc-item" href="#s1">1. Strategic Context — What We Now Know</a>
+    <a class="toc-item" href="#s6">6. Platform Integration Architecture</a>
+    <a class="toc-item" href="#s2">2. What Changed — Deep Workspace Review Findings</a>
+    <a class="toc-item" href="#s7">7. Upgraded 48-Hour Build Plan</a>
+    <a class="toc-item" href="#s3">3. The Enhanced Project 1 Vision</a>
+    <a class="toc-item" href="#s8">8. Five Innovation Edges (Judge Wow Factor)</a>
+    <a class="toc-item" href="#s4">4. Enhanced File Tree — Full Platform Grounding</a>
+    <a class="toc-item" href="#s9">9. Cross-Platform Synergies</a>
+    <a class="toc-item" href="#s5">5. Core Architecture Upgrades</a>
+    <a class="toc-item" href="#s10">10. Judging Scorecard &amp; Demo Script</a>
+    <a class="toc-item" href="#s11">11. Risk Register — Platform-Aware</a>
+    <a class="toc-item" href="#s12">12. Post-Hackathon Commercial Roadmap</a>
+  </div>
+</div>
+
+
+
+
+<div class="sec" id="s1">
+  <div class="sec-hdr"><div class="sec-num">1</div><div class="sec-title">Strategic Context — What We Now Know</div></div>
+  <p>The original Project 1 specification was designed as a generic hackathon prototype. After deep-reading the full <code>i3-Agentic-AI-Labs</code> workspace, we now know that i3 Technologies operates a <strong>production-grade sovereign AI platform</strong> already running on ROKS (Frankfurt, eu-de) with real services, real users, and real data. This changes everything about the build.</p>
+
+  <div class="call dark">
+    <strong>The Core Insight</strong>
+    The Project 1 "seed repo" <em>already exists</em> — it is the <code>platform/</code> directory. The "stale README" problem is real — <code>platform/docs/platform-documentation.md</code> describes 10 services across 12 namespaces that were deployed progressively and have real documentation drift. The "closed issues" corpus is the actual i3 build history. The agent is not demo-ware — it is production tooling for the i3 Academy bootcamp team.
+  </div>
+
+  <div class="metrics">
+    <div class="mbox"><div class="val">12</div><div class="lbl">Platform namespaces on live ROKS cluster</div></div>
+    <div class="mbox"><div class="val">6</div><div class="lbl">Databases in Crunchy PostgreSQL HA</div></div>
+    <div class="mbox"><div class="val">4</div><div class="lbl">Kafka topics (real event streams)</div></div>
+    <div class="mbox"><div class="val">$14K</div><div class="lbl">IBM Cloud credits expiring Oct 2026</div></div>
+    <div class="mbox"><div class="val">12wk</div><div class="lbl">Bootcamp curriculum to onboard into</div></div>
+    <div class="mbox"><div class="val">3</div><div class="lbl">Commercial verticals: Academy, Agent Factory, PMaaS</div></div>
+  </div>
+</div>
+
+
+
+
+<div class="sec" id="s2">
+  <div class="sec-hdr"><div class="sec-num">2</div><div class="sec-title">What Changed — Deep Workspace Review Findings</div></div>
+
+  <div class="sub">What the workspace actually contains (vs. what the spec assumed)</div>
+  <table>
+    <thead><tr><th>Spec Assumption</th><th>Workspace Reality</th><th>Impact on Project 1</th></tr></thead>
+    <tbody>
+      <tr><td>Build a "seed repo" with fake modules</td><td><code>platform/</code> IS the real multi-module repo — backend (admissions), frontend (evalos/nextjs), infra (terraform, gitops, namespaces)</td><td><strong>Use the real repo as the seed.</strong> No fake data needed. The demo is 10× more compelling.</td></tr>
+      <tr><td>Generate fake closed issues</td><td>Real deployment history in <code>platform/docs/</code>, RUNBOOK.md, and all YAML manifests contains genuine architecture decisions and known issues</td><td>Ingest real documentation as the corpus. Authenticity is the differentiator.</td></tr>
+      <tr><td>Use chromadb npm (local SQLite)</td><td>ChromaDB is already running at <code>chromadb.i3-admissions.svc.cluster.local:8000</code> in the <code>i3-admissions</code> namespace with the <code>admissions-docs</code> collection</td><td>Point the onboarding agent at the existing ChromaDB instance. Add a new <code>onboarding-corpus</code> collection.</td></tr>
+      <tr><td>Build a Bob 2.0 API client from scratch</td><td>LiteLLM proxy runs at <code>litellm.i3technologies.co.ke</code> with a tiered model catalog (Granite Nano → Mistral NeMo → Granite Heavy). All models are OpenAI-compatible via LiteLLM.</td><td>Route Bob 2.0 calls through the i3 LiteLLM gateway. Langfuse observability is already wired — every agent call is traced and costed automatically.</td></tr>
+      <tr><td>Auth via env vars / PAT tokens</td><td>Keycloak SSO runs at <code>sso.i3technologies.co.ke</code> with OIDC for all 12 namespaces. OpenBao stores all secrets at structured paths.</td><td>Authenticate the onboarding agent via Keycloak OIDC. Retrieve secrets from OpenBao path <code>i3/onboarding-agent/</code>.</td></tr>
+      <tr><td>Manual task sync to GitHub Issues</td><td>n8n automation runs at <code>n8n.i3technologies.co.ke</code>. The auto-enrolment workflow already creates Odoo CRM records. MCP connectors in <code>platform/admissions/mcp/mcp_connectors.py</code> have human-in-the-loop confirmation gates.</td><td>Extend the MCP connector service with an <code>/tools/onboarding/sync-tasks</code> endpoint. Reuse the existing confirmation-gate pattern.</td></tr>
+      <tr><td>No existing agent to learn from</td><td><code>platform/admissions/admissions_agent.py</code> — a production FastAPI agent with LlamaIndex RAG, Lobster Trap firewall, WebSocket streaming, and 0.65 confidence gate</td><td>Port the admissions agent architecture directly. Reuse: Lobster Trap, LlamaIndex retriever, confidence gate, streaming pattern.</td></tr>
+      <tr><td>No CI/CD pipeline</td><td>Full Tekton + ArgoCD GitOps. 6-wave deployment with app-of-apps. Tekton pipeline in <code>platform/gitops/tekton/pipeline-build.yaml</code>.</td><td>Add wave 7: <code>onboarding-agent</code> namespace deployed via the existing Tekton pipeline. CI/CD is free.</td></tr>
+      <tr><td>No evaluation framework</td><td>RAGAS evaluation already runs via <code>make test-ragas</code> against the Admissions Agent. The testing harness is in <code>platform/testing/testing.py</code>.</td><td>Add onboarding-agent RAGAS evaluation. Reuse the same framework. Grounding accuracy score ships as submission evidence.</td></tr>
+      <tr><td>PMaaS has no relevance to onboarding</td><td>PMaaS 4.0 is a full political AI platform that reuses the same sovereign stack. It has its own onboarding problem: 22M+ voter records, ward-level briefing docs, and campaign staff who need context fast.</td><td>Project 1 directly extends to PMaaS: generate role-specific campaign-staff ramp-up plans from manifesto + ward-level intelligence. This is a commercial vertical for the agent.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+
+
+<div class="sec" id="s3">
+  <div class="sec-hdr"><div class="sec-num">3</div><div class="sec-title">The Enhanced Project 1 Vision</div></div>
+  <div class="call ok">
+    <strong>Upgraded Mission Statement</strong>
+    Build a sovereign, platform-native Codebase Onboarding Agent that ingests the i3 production platform repository, generates verified role-specific ramp-up plans grounded in real architecture docs and real deployment history, routes through the i3 LiteLLM gateway (with Langfuse tracing and OpenBao secrets), authenticates via Keycloak, runs parallel Bob 2.0 subagents that call real platform services (EvalOS, Admissions, GitOps), and outputs a task list synced to real trackers via the existing MCP connectors — all deployed as namespace <code>i3-onboarding</code> on the live ROKS cluster.
+  </div>
+
+  <div class="sub">Three Roles the Agent Onboards (expanded from generic "backend/frontend/infra")</div>
+  <table>
+    <thead><tr><th>Role</th><th>Target Corpus</th><th>Subagent Focus</th><th>First Week Outcome</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Bootcamp Student</strong><br /><span style="font-size:11px;color:#57606a">(primary target)</span></td><td>12-week curriculum, EvalOS exam questions, AI Lab JupyterHub guides, LiteLLM API docs</td><td>evalos-scan, ailab-scan, curriculum-scan</td><td>Logged into SSO, first notebook running, first exam attempted on EvalOS</td></tr>
+      <tr><td><strong>Platform Engineer</strong><br /><span style="font-size:11px;color:#57606a">(DevOps/SRE new hire)</span></td><td>RUNBOOK.md, platform-documentation.md, Terraform modules, Tekton pipelines, OpenBao secret paths</td><td>infra-scan, gitops-scan, security-scan</td><td>Cluster oriented, first oc login, first Tekton pipeline triggered</td></tr>
+      <tr><td><strong>AI/ML Engineer</strong><br /><span style="font-size:11px;color:#57606a">(agent developer)</span></td><td>admissions_agent.py, mcp_connectors.py, LiteLLM config, ChromaDB setup, Langfuse traces</td><td>backend-scan, model-scan, agent-scan</td><td>First LiteLLM API call from notebook, first agent tool call with MCP connector</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+
+
+<div class="sec" id="s4">
+  <div class="sec-hdr"><div class="sec-num">4</div><div class="sec-title">Enhanced File Tree — Full Platform Grounding</div></div>
+
+  <div class="tree">
+<span class="dir">onboarding-agent/</span>   <span class="note"># New namespace: i3-onboarding on ROKS</span><br />
+├── <span class="dir">src/</span><br />
+│   ├── <span class="dir">ingestion/</span><br />
+│   │   ├── <span class="new">platform.ts</span>         <span class="note"># NEW: ingest platform/ repo via Octokit — RUNBOOK.md, *.yaml, *.py, *.tf</span><br />
+│   │   ├── <span class="new">evalos.ts</span>           <span class="note"># NEW: ingest EvalOS question bank from evalos_db via Postgres</span><br />
+│   │   ├── <span class="new">curriculum.ts</span>       <span class="note"># NEW: ingest 12-week syllabus from Directus CMS (programme_guides collection)</span><br />
+│   │   ├── github.ts           <span class="note"># Original — pull README, ADRs, closed issues</span><br />
+│   │   ├── confluence.ts       <span class="note"># Stub for Confluence (future)</span><br />
+│   │   └── jira.ts             <span class="note"># Stub for Jira (future)</span><br />
+│   ├── <span class="dir">context-store/</span><br />
+│   │   ├── <span class="new">chroma-client.ts</span>    <span class="note"># NEW: connect to existing chromadb.i3-admissions.svc.cluster.local:8000</span><br />
+│   │   ├── chunker.ts          <span class="note"># 500-word chunker (unchanged)</span><br />
+│   │   ├── index.ts            <span class="note"># Collection: "onboarding-corpus" (new) + "admissions-docs" (read-only)</span><br />
+│   │   └── retriever.ts        <span class="note"># top-k retrieval (unchanged)</span><br />
+│   ├── <span class="dir">orchestrator/</span><br />
+│   │   ├── planner.ts          <span class="note"># generatePlan() — now routes through LiteLLM gateway</span><br />
+│   │   ├── <span class="new">subagents/</span><br />
+│   │   │   ├── <span class="new">evalos-scan.ts</span>  <span class="note"># NEW: queries EvalOS API for exam domains, weak topics per role</span><br />
+│   │   │   ├── <span class="new">ailab-scan.ts</span>   <span class="note"># NEW: checks AI Lab JupyterHub profiles and GPU quota status</span><br />
+│   │   │   ├── <span class="new">infra-scan.ts</span>   <span class="note"># ENHANCED: real RUNBOOK.md + Terraform module tree</span><br />
+│   │   │   ├── <span class="new">backend-scan.ts</span> <span class="note"># ENHANCED: real admissions_agent.py + mcp_connectors.py</span><br />
+│   │   │   └── <span class="new">model-scan.ts</span>   <span class="note"># NEW: queries LiteLLM /v1/models for available model tiers</span><br />
+│   │   ├── verify.ts           <span class="note"># repoContainsPath() — now checks live ROKS namespace too</span><br />
+│   │   └── <span class="new">skills-assessor.ts</span> <span class="note"># NEW: 5-question skill probe → junior/senior/expert path</span><br />
+│   ├── <span class="dir">render/</span><br />
+│   │   ├── markdownPlan.ts     <span class="note"># Renders plan with confidence scores</span><br />
+│   │   ├── graph.ts            <span class="note"># Churn-coded mermaid graph (unchanged)</span><br />
+│   │   └── <span class="new">taskSync.ts</span>         <span class="note"># ENHANCED: calls MCP connector /tools/onboarding/sync-tasks (human gate)</span><br />
+│   ├── <span class="dir">security/</span><br />
+│   │   ├── <span class="new">lobster-trap.ts</span>     <span class="note"># NEW: port of admissions_agent.py Lobster Trap to TypeScript</span><br />
+│   │   └── <span class="new">keycloak-auth.ts</span>    <span class="note"># NEW: OIDC token verification against sso.i3technologies.co.ke</span><br />
+│   └── server.ts               <span class="note"># Express + Keycloak middleware + LiteLLM routing</span><br />
+│<br />
+├── <span class="hot">seed-repo/</span>              <span class="hot"># REPLACED: use platform/ directory directly</span><br />
+│   <span class="note"># The i3 platform repo IS the seed repo. 12 namespaces, real YAML,</span><br />
+│   <span class="note"># real Python agents, real Terraform — stale docs are real stale docs.</span><br />
+│<br />
+├── <span class="dir">openshift/</span>              <span class="note"># NEW: ROKS deployment manifests</span><br />
+│   ├── <span class="new">namespace.yaml</span>          <span class="note"># i3-onboarding namespace</span><br />
+│   ├── <span class="new">deploy.yaml</span>             <span class="note"># Deployment + Service + Route</span><br />
+│   └── <span class="new">argocd-app.yaml</span>         <span class="note"># Wave 7 addition to app-of-apps</span><br />
+├── tests/<br />
+├── .env.example                <span class="note"># GITHUB_TOKEN, LITELLM_URL, LITELLM_KEY, CHROMA_HOST, KEYCLOAK_URL</span><br />
+└── package.json
+  </div>
+</div>
+
+
+
+
+<div class="sec" id="s5">
+  <div class="sec-hdr"><div class="sec-num">5</div><div class="sec-title">Core Architecture Upgrades</div></div>
+
+  <div class="sub">Upgrade 1 — Replace Bob 2.0 API stub with LiteLLM Gateway routing</div>
+  <div class="call">
+    <strong>Why This Matters</strong>
+    The i3 platform runs LiteLLM at <code>litellm.i3technologies.co.ke</code> with a tiered model catalog and Langfuse tracing wired in. Every agent call routed through LiteLLM is automatically traced, costed, and stored — giving the demo a live observability screen showing subagent calls resolving in parallel.
+  </div>
+  <pre>// src/orchestrator/planner.ts — LiteLLM-routed Bob 2.0 call
+import OpenAI from "openai";
+
+const litellm = new OpenAI({
+  apiKey: process.env.LITELLM_KEY,
+  baseURL: process.env.LITELLM_URL  // "https://litellm.i3technologies.co.ke/v1"
+  // model: "mistral-nemo"  → Tier 2 RAG reasoning (12B, 128K context)
+  // model: "granite-heavy" → Tier 1 for final plan synthesis
+  // model: "granite-nano"  → Tier 3 for quick verification passes
+});
+
+// Langfuse traces every call automatically — the demo screen shows
+// backend-scan, frontend-scan, infra-scan resolving in parallel with
+// real token counts and latency per subagent.</pre>
+
+  <div class="sub">Upgrade 2 — Use existing ChromaDB in i3-admissions namespace</div>
+  <pre>// src/context-store/chroma-client.ts
+import { ChromaClient } from "chromadb";
+
+// Point at the LIVE cluster ChromaDB — no local SQLite needed
+const client = new ChromaClient({
+  host: process.env.CHROMA_HOST,  // "chromadb.i3-admissions.svc.cluster.local"
+  port: parseInt(process.env.CHROMA_PORT || "8000"),
+  auth: { provider: "token", credentials: process.env.CHROMA_TOKEN }
+});
+
+// Two collections:
+// "admissions-docs"    → read-only (programme guides, fee structure, course descriptions)
+// "onboarding-corpus"  → read/write (platform docs, RUNBOOK.md, agent code, Terraform)
+export const admissionsCollection  = await client.getCollection({ name: "admissions-docs" });
+export const onboardingCollection  = await client.getOrCreateCollection({ name: "onboarding-corpus" });</pre>
+
+  <div class="sub">Upgrade 3 — Port Lobster Trap firewall from Python to TypeScript</div>
+  <pre>// src/security/lobster-trap.ts
+// Direct port of platform/admissions/admissions_agent.py TRAP_PATTERNS
+const TRAP_PATTERNS = [
+  /ignore\s+(all\s+)?previous\s+instructions?/i,
+  /you\s+are\s+now\s+(?!an?\s+(onboarding|platform))/i,
+  /act\s+as\s+(?!an?\s+(onboarding|platform))/i,
+  /system\s*(prompt|message|instruction)/i,
+  /jailbreak/i,
+  /DAN\s+mode/i,
+  /(drop|delete|truncate)\s+table/i,
+  /SELECT\s+.*FROM\s+/i,
+];
+
+export function lobsterTrap(text: string): string | null {
+  for (const pattern of TRAP_PATTERNS) {
+    if (pattern.test(text)) return pattern.source;
+  }
+  return null;
+}</pre>
+
+  <div class="sub">Upgrade 4 — MCP Task Sync with Human-in-the-Loop confirmation gate</div>
+  <pre>// src/render/taskSync.ts — reuses the confirmation-gate pattern from mcp_connectors.py
+export async function syncTasksToTracker(plan: RampUpPlan) {
+  // Stage 1: prepare, return confirmation token (same pattern as /tools/crm/create-lead)
+  const response = await fetch(`${MCP_URL}/tools/onboarding/sync-tasks`, {
+    method: "POST",
+    body: JSON.stringify({ tasks: plan.weekOneTasks, role: plan.role }),
+  });
+  const { requires_confirmation, token, summary } = await response.json();
+
+  // Present summary to user — wait for explicit approval (🟡 Yellow gate)
+  console.log(`\n📋 REVIEW BEFORE SYNC:\n${summary}\n`);
+  // In the UI: show summary, "Confirm sync?" button
+  // Only after human clicks: call /tools/onboarding/confirm/${token}
+}</pre>
+
+  <div class="sub">Upgrade 5 — EvalOS Integration (New Subagent)</div>
+  <pre>// src/orchestrator/subagents/evalos-scan.ts
+export async function evalosSubagent(role: string, evalosApiKey: string): Promise&lt;ScanResult&gt; {
+  // Query the EvalOS API for exam domains and question distribution
+  // Use this to generate onboarding tasks like:
+  // "Complete a 10-question EvalOS practice quiz on Agent Integration &amp; Development
+  //  before Week 3 — this domain is 38% of the IBM C1000-207 exam"
+  const domains = await fetchExamDomains(evalosApiKey);
+  const weakTopicsForRole = domains.filter(d =&gt; isRelevantToRole(d, role));
+  return { type: "evalos", findings: weakTopicsForRole };
+}</pre>
+
+  <div class="sub">Upgrade 6 — Confidence Scoring (ported from admissions agent)</div>
+  <pre>// Confidence threshold gate — adapted from src/answer/confidenceGate.ts (Project 7)
+const CONFIDENCE_THRESHOLD = 0.65; // tuned against held-out i3 platform Q&amp;A set
+
+for (const task of plan.weekOneTasks) {
+  task.verified = await repoContainsPath(task.referencedPath);
+  task.confidence = task.verified ? 0.92 : 0.35;  // evidence-backed score
+  if (!task.verified) {
+    task.title = `Needs verification: ${task.title} (referenced path not found — likely stale doc)`;
+  }
+}</pre>
+</div>
+
+
+
+
+<div class="sec" id="s6">
+  <div class="sec-hdr"><div class="sec-num">6</div><div class="sec-title">Platform Integration Architecture</div></div>
+
+  <div class="int-row">
+    <span class="int-pill ip-a">Keycloak SSO</span>
+    <span class="int-pill ip-b">LiteLLM Gateway</span>
+    <span class="int-pill ip-c">ChromaDB (existing)</span>
+    <span class="int-pill ip-d">EvalOS API</span>
+    <span class="int-pill ip-e">MCP Connectors</span>
+    <span class="int-pill ip-f">n8n Automation</span>
+    <span class="int-pill ip-a">OpenBao Secrets</span>
+    <span class="int-pill ip-b">Langfuse Observability</span>
+    <span class="int-pill ip-c">Directus CMS</span>
+    <span class="int-pill ip-d">Tekton / ArgoCD</span>
+    <span class="int-pill ip-e">Kafka (evalos-submissions)</span>
+    <span class="int-pill ip-f">Prometheus / Grafana</span>
+  </div>
+
+  <table>
+    <thead><tr><th>i3 Platform Service</th><th>How Project 1 Uses It</th><th>Namespace</th><th>Value Added</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Keycloak SSO</strong></td><td>All /plan and /ingest endpoints require a valid Bearer token from <code>sso.i3technologies.co.ke</code>. Role (student/instructor/admin) gates what ramp-up plan is generated.</td><td><code>i3-auth</code></td><td>No separate auth — one SSO for the whole platform</td></tr>
+      <tr><td><strong>LiteLLM Gateway</strong></td><td>Bob 2.0 subagent calls routed through LiteLLM. Granite Nano (Tier 3) for verification passes; Mistral NeMo (Tier 2) for subagent scans; Granite Heavy (Tier 1) for final plan synthesis.</td><td><code>i3-model-gateway</code></td><td>Cost control via tiered routing + Langfuse cost tracking</td></tr>
+      <tr><td><strong>ChromaDB</strong></td><td>Reuse existing <code>chromadb.i3-admissions.svc.cluster.local:8000</code>. Add <code>onboarding-corpus</code> collection alongside <code>admissions-docs</code>.</td><td><code>i3-admissions</code></td><td>Zero new infrastructure. 500-word chunks + LlamaIndex retriever already proven.</td></tr>
+      <tr><td><strong>EvalOS</strong></td><td>evalos-scan subagent queries exam domains and question distribution. Generates "study X domain before Week Y" tasks calibrated to C1000-207 exam weights.</td><td><code>i3-evalos</code></td><td>Onboarding plan references real exam questions the student will face</td></tr>
+      <tr><td><strong>Directus CMS</strong></td><td><code>curriculum.ts</code> ingestion: pull <code>programme_guides</code> collection PDFs (already indexed by n8n within 5 min of upload). These become part of the onboarding corpus.</td><td><code>i3-ott</code></td><td>Course content auto-flows into the onboarding agent without extra engineering</td></tr>
+      <tr><td><strong>MCP Connectors</strong></td><td>Extend <code>platform/admissions/mcp/mcp_connectors.py</code> with <code>/tools/onboarding/sync-tasks</code>. Reuses the 2-stage confirmation gate. Syncs generated tasks to Odoo CRM or GitHub Issues.</td><td><code>i3-admissions</code></td><td>Human-in-the-loop task sync — no accidental writes to production systems</td></tr>
+      <tr><td><strong>Langfuse</strong></td><td>Every LiteLLM call from the onboarding agent is automatically traced. Instructors see per-student agent calls at <code>langfuse.i3technologies.co.ke</code> — filtered by user_id (Keycloak username).</td><td><code>i3-model-gateway</code></td><td>Live demo: show Langfuse traces of 3 subagents completing in parallel with token costs</td></tr>
+      <tr><td><strong>Tekton / ArgoCD</strong></td><td>Deploy the onboarding agent as wave 7 in <code>platform/gitops/argocd/app-of-apps.yaml</code>. Reuse the existing <code>nextjs-build-and-deploy</code> Tekton pipeline template.</td><td><code>i3-gitops</code></td><td>Full CI/CD for free — push to main, agent redeploys automatically</td></tr>
+      <tr><td><strong>OpenBao</strong></td><td>All secrets (GITHUB_TOKEN, LITELLM_KEY, CHROMA_TOKEN) stored at <code>i3/onboarding-agent/</code> in OpenBao KV v2. Injected via the existing K8s auth pattern.</td><td><code>i3-security</code></td><td>Zero hardcoded secrets. Same secret rotation tooling as all other platform services.</td></tr>
+      <tr><td><strong>n8n Automation</strong></td><td>New workflow: "New Student Enrolled" → trigger onboarding agent plan generation → send personalized plan via email → create Odoo record. Triggered by the existing auto-enrolment workflow webhook.</td><td><code>i3-ott</code></td><td>Onboarding plan auto-generated on every new enrolment — zero manual steps</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+
+
+<div class="sec" id="s7">
+  <div class="sec-hdr"><div class="sec-num">7</div><div class="sec-title">Upgraded 48-Hour Build Plan</div></div>
+
+  <div class="phase">
+    <div class="phase-hdr ph1">Day 1 — Hours 0–12: Foundation (Platform-Native Setup)<span style="font-weight:400;font-size:11px">Goal: Ingestion running against real platform/ repo. ChromaDB indexed. Keycloak auth wired.</span></div>
+    <div class="phase-body">
+      <ul>
+        <li><strong>Hour 0–1:</strong> Role assignment (same 5 roles). Environment setup: <code>.env.example</code> configured with <code>LITELLM_URL=https://litellm.i3technologies.co.ke/v1</code>, <code>CHROMA_HOST=chromadb.i3-admissions.svc.cluster.local</code>, <code>KEYCLOAK_URL=https://sso.i3technologies.co.ke</code>. Read RUNBOOK.md and platform-documentation.md — these ARE the onboarding material.</li>
+        <li><strong>Hour 1–3:</strong> Build <code>src/ingestion/platform.ts</code> — ingest the live <code>platform/</code> directory via Octokit (or local file walk if running inside the cluster). Target: RUNBOOK.md, platform-documentation.md, all YAML manifests, admissions_agent.py, mcp_connectors.py, exam-engine.ts. Label each artifact by module (infra, ailab, evalos, admissions, model-gateway). This replaces building a fake seed repo entirely.</li>
+        <li><strong>Hour 3–6:</strong> Build <code>src/ingestion/curriculum.ts</code> — pull programme_guides from Directus CMS API. Build <code>src/ingestion/evalos.ts</code> — query EvalOS API for exam domain weights. These enrich the corpus with bootcamp-specific context no generic agent has.</li>
+        <li><strong>Hour 6–9:</strong> Wire <code>src/context-store/chroma-client.ts</code> to the existing cluster ChromaDB. Create <code>onboarding-corpus</code> collection. Run ingestion — verify chunk counts per source (platform-docs, curriculum, evalos-domains).</li>
+        <li><strong>Hour 9–12:</strong> Build <code>src/security/keycloak-auth.ts</code> and <code>src/security/lobster-trap.ts</code> (port from admissions_agent.py). Wire into Express middleware. The agent now rejects prompt injection and validates Keycloak tokens before any plan generation.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-hdr ph2">Day 2 — Hours 12–24: Core Loop (Platform-Aware Subagents + Verification)<span style="font-weight:400;font-size:11px">Goal: Full plan generated with confidence scores. EvalOS tasks included. Langfuse showing subagent traces.</span></div>
+    <div class="phase-body">
+      <ul>
+        <li><strong>Hour 12–16:</strong> Build 5 subagents in <code>src/orchestrator/subagents/</code>: (1) <strong>evalos-scan</strong>: queries EvalOS API, returns exam domains mapped to role; (2) <strong>ailab-scan</strong>: checks JupyterHub profiles and GPU quota available; (3) <strong>infra-scan</strong>: deep-reads RUNBOOK.md + Terraform modules; (4) <strong>backend-scan</strong>: analyzes admissions_agent.py + mcp_connectors.py; (5) <strong>model-scan</strong>: calls LiteLLM <code>/v1/models</code> to list available model tiers. All run via <code>Promise.all()</code>. All routed through LiteLLM with Granite Nano for speed.</li>
+        <li><strong>Hour 16–18:</strong> Build <code>src/orchestrator/skills-assessor.ts</code> — 5-question probe (Python? Docker? OpenShift? Agent frameworks? LLM fundamentals?) that returns a seniority score. Planner uses this to select the junior/intermediate/expert plan variant.</li>
+        <li><strong>Hour 18–20:</strong> Build the verify loop in <code>src/orchestrator/verify.ts</code>. This now has TWO verification modes: (a) GitHub/filesystem path check (original), (b) ROKS namespace check — <code>oc get deploy -n ${namespace}</code> to verify that referenced services actually exist in the live cluster. Stale doc catches now include "namespace i3-ai-lab not yet deployed (Month 3 per docs)".</li>
+        <li><strong>Hour 20–24:</strong> <strong>Integration checkpoint.</strong> Wire everything through <code>src/server.ts</code>. Route calls through LiteLLM. Open Langfuse at <code>langfuse.i3technologies.co.ke</code> — confirm you can see the 5 subagent calls in the trace view. This is a live demo screen. Screenshot it for submission evidence.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-hdr ph3">Day 3 — Hours 24–40: Polish, Measure, Deploy<span style="font-weight:400;font-size:11px">Goal: Deployed to ROKS, n8n auto-trigger tested, RAGAS score captured, demo rehearsed.</span></div>
+    <div class="phase-body">
+      <ul>
+        <li><strong>Hour 24–28:</strong> Deploy to ROKS using existing Tekton pipeline. Apply <code>openshift/namespace.yaml</code>, <code>openshift/deploy.yaml</code>, add wave 7 to <code>platform/gitops/argocd/app-of-apps.yaml</code>. Push secrets to OpenBao at <code>i3/onboarding-agent/</code>. Verify: <code>curl https://onboarding.i3technologies.co.ke/healthz</code>.</li>
+        <li><strong>Hour 28–32:</strong> Wire the n8n auto-trigger: "New Student Enrolled" → POST to onboarding agent → generate plan → send via email. Test against a real test user from <code>platform/operators/keycloak/test-users.yaml</code>. This is the demo's live trigger — no manual button press needed.</li>
+        <li><strong>Hour 32–35:</strong> Run <code>make test-ragas</code> extended to cover the onboarding agent. Capture faithfulness and relevancy scores. Extend <code>platform/testing/testing.py</code> with a 10-question onboarding held-out set. This is the "evidence of grounding accuracy" submission artifact.</li>
+        <li><strong>Hour 35–40:</strong> Simulated timing test (n=2 vs n=2). Record demo video. Export Bob 2.0 session report. Screenshot Langfuse trace showing 5 parallel subagents. Export Grafana dashboard with agent request metrics.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+
+
+<div class="sec" id="s8">
+  <div class="sec-hdr"><div class="sec-num">8</div><div class="sec-title">Five Innovation Edges — Judge Wow Factor</div></div>
+
+  <div class="sub">Innovation 1 — Live Platform as the Seed Repo (No Fake Data)</div>
+  <div class="call ok">
+    Instead of a fabricated three-module repo, ingest the actual i3 production platform: 12 namespaces, 6 databases, real Tekton pipelines, real Python agents, real Terraform, real RUNBOOK.md. When the verification loop flags "RHOAI (Month 3) not yet deployed — tasks referencing i3-ai-lab namespace are verified: false", this is a real catch on a real stale doc — not a staged demonstration. <strong>This is unfakeable.</strong>
+  </div>
+
+  <div class="sub">Innovation 2 — Skill-Adaptive Personalization (Seniority-Aware Paths)</div>
+  <div class="call">
+    The <code>skills-assessor.ts</code> probe (5 questions, 90 seconds) determines whether the new hire gets the <strong>Bootcamp Student path</strong> (start with EvalOS practice quiz + Jupyter notebook tutorial), the <strong>Platform Engineer path</strong> (start with RUNBOOK.md + Tekton walkthrough), or the <strong>AI/ML Engineer path</strong> (start with LiteLLM API call + admissions agent code review). Same agent. Three entirely different first weeks. This is what separates an intelligent onboarding system from a static checklist.
+  </div>
+
+  <div class="sub">Innovation 3 — EvalOS-Calibrated Learning Tasks</div>
+  <div class="call">
+    The evalos-scan subagent queries the live EvalOS question bank and maps exam domain weights (Agent Integration 38%, Platform Architecture 24%, etc.) to weekly learning tasks. A generated task might read: <em>"Complete EvalOS practice domain: Agent Integration &amp; Development — this is 38% of the IBM C1000-207 exam. Start with the 10-question drill at evalos.i3technologies.co.ke before Week 3."</em> The task is verified against the live EvalOS API. If the domain exam has no questions yet, it is flagged <code>verified: false</code> automatically.
+  </div>
+
+  <div class="sub">Innovation 4 — Langfuse Live Observability as Demo Screen</div>
+  <div class="call">
+    During the demo, open <code>langfuse.i3technologies.co.ke</code> on a second screen. As the agent runs, judges watch 5 subagents completing in parallel in real time — each with model name, token count, cost, and latency visible. This transforms an abstract "subagents run concurrently" claim into a live, auditable proof visible to the entire room. Screenshot becomes the submission evidence artifact.
+  </div>
+
+  <div class="sub">Innovation 5 — n8n Auto-Trigger: Zero-Touch Onboarding</div>
+  <div class="call">
+    Wire an n8n workflow: EvalOS enrolment assessment passed → auto-enrolment webhook fires → onboarding agent generates personalized plan → plan emailed to student within 5 minutes. The student receives a tailored first-week plan before they have even logged into the platform for the first time. <strong>Demo beat:</strong> enrol a test user live, show the email arriving with their personalized plan — the agent ran entirely autonomously without a human clicking anything.
+  </div>
+</div>
+
+
+
+
+<div class="sec" id="s9">
+  <div class="sec-hdr"><div class="sec-num">9</div><div class="sec-title">Cross-Platform Synergies</div></div>
+
+  <div class="sub">Synergy with Project 7 — Interactive Onboarding Chatbot</div>
+  <p>Project 7 (Interactive Onboarding Chatbot) shares the same ChromaDB context store and the same confidence gate pattern. If both are built, Project 1 generates the <em>structured plan</em> and Project 7 provides the <em>conversational layer</em> on top of it. The shared <code>onboarding-corpus</code> collection means both agents are grounded in identical platform knowledge — no re-ingestion needed. The Shared Context Bus pattern from the cross-project recommendations already applies here.</p>
+
+  <div class="sub">Synergy with EvalOS — Closed Feedback Loop</div>
+  <p>After a student completes Week 1 tasks, EvalOS exam scores feed back into the onboarding agent via Kafka topic <code>evalos-submissions</code>. The agent can detect "student scored 45% on Agent Integration domain" and automatically update the week 2 plan to add remediation tasks. This is the AI-Augmented Learning Loop described in the Master Technical Implementation Guide §6.6.1 — and it runs entirely within the existing platform infrastructure.</p>
+
+  <div class="sub">Synergy with PMaaS 4.0 — Commercial Vertical Extension</div>
+  <div class="call warn">
+    <strong>Commercial Extension: Campaign Staff Onboarding</strong>
+    PMaaS 4.0 deploys for the Kenya 2027 elections across 1,882 seats. Every campaign hires ward-level agents, data analysts, and community coordinators who need to understand the voter database structure, the ward-level intelligence data model, and the campaign's policy positions — fast. The same onboarding agent, pointed at the PMaaS 4.0 manifesto corpus and ward intelligence docs, generates role-specific campaign-staff ramp-up plans. This is a direct commercial extension of the hackathon build with zero architectural changes.
+  </div>
+
+  <div class="sub">Synergy with the 12-Week Bootcamp — Week 9 Lab Material</div>
+  <p>The onboarding agent itself becomes the Week 9 "Multi-Agent Coordination" lab exercise. Students extend it: add a new subagent, wire a new corpus source, improve the confidence scoring. The agent is both the product of the hackathon and the teaching material for the next cohort. This is the most powerful self-reinforcing loop in the entire platform.</p>
+
+  <div class="sub">Synergy with LLM Wiki (LLM Corporate Second Brain)</div>
+  <p>The LLM Wiki pattern from the Master Guide (§4.1) — structured <code>raw/ → wiki/ → instructions/</code> Markdown repository — is the perfect permanent home for onboarding corpus content. Platform documentation ingested by the agent can be automatically linted and written back to the LLM Wiki via the Kiro <code>postToolUse</code> hook. Onboarding plans become living documentation that improves with every new hire.</p>
+</div>
+
+
+
+
+<div class="sec" id="s10">
+  <div class="sec-hdr"><div class="sec-num">10</div><div class="sec-title">Judging Scorecard &amp; Demo Script</div></div>
+
+  <table>
+    <thead><tr><th>Criterion (5 pts each)</th><th>How This Build Scores Maximum Points</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Completeness &amp; Feasibility</strong></td><td>End-to-end pipeline deployed to live ROKS cluster. n8n auto-trigger tested with real test users from <code>test-users.yaml</code>. Tekton pipeline confirmed. RAGAS score &gt; 0.7 faithfulness. Every component verified against real services — not mocks.</td></tr>
+      <tr><td><strong>Effectiveness &amp; Efficiency</strong></td><td>Simulated timing test: n=2 vs n=2. Langfuse cost export shows exact token cost per generated plan. EvalOS domain calibration increases first-exam pass rate (forward metric for real cohorts). n8n trigger: plan delivered in under 5 minutes from enrolment — zero human steps.</td></tr>
+      <tr><td><strong>Design &amp; Usability</strong></td><td>Keycloak SSO — one login for everything. Plan output includes confidence scores and verified/unverified badges. Three role paths (student/platform-engineer/ML-engineer) with skill-assessment personalization. Langfuse observability screen shows judges the agent reasoning in real time.</td></tr>
+      <tr><td><strong>Creativity &amp; Innovation</strong></td><td>Live production platform as the seed repo. EvalOS-calibrated tasks. Skill-adaptive paths. Lobster Trap firewall. Langfuse parallel subagent trace as demo screen. n8n zero-touch trigger. PMaaS commercial extension proof. All five universal innovation principles fully implemented with platform services as evidence.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sub">5-Beat Demo Script (4 minutes)</div>
+  <table>
+    <thead><tr><th>Beat</th><th>Duration</th><th>What to Show</th><th>Key Line</th></tr></thead>
+    <tbody>
+      <tr><td>1. The Problem</td><td>0:00–0:40</td><td>Show the real platform-documentation.md with its 22-section table of contents. Show a new student email asking "where do I even start?" Show the 12-week curriculum as a wall of text.</td><td>"This is what every new bootcamp student faces on Day 1. We have the tools to solve this — they're already running in production."</td></tr>
+      <tr><td>2. Live Trigger</td><td>0:40–1:40</td><td>Enrol a test user via EvalOS. Show the n8n workflow firing. Show Langfuse with 5 subagent traces resolving in parallel — real model names, real token counts, real latency.</td><td>"Watch the five specialist agents running simultaneously — evalos-scan querying the exam bank, ailab-scan checking GPU quota, infra-scan reading RUNBOOK.md. All in parallel. All grounded in real platform data."</td></tr>
+      <tr><td>3. The Catch</td><td>1:40–2:20</td><td>Highlight the verified:false task: "RHOAI AI Lab (i3-ai-lab namespace) — scheduled for Month 3. Tasks referencing JupyterHub are flagged as not yet available." Show the confidence score. Show the stale doc reference caught automatically.</td><td>"The agent read platform-documentation.md, found the AI Lab note about Month 3 availability, checked the ROKS cluster, confirmed the namespace doesn't exist yet, and flagged it — without being told to."</td></tr>
+      <tr><td>4. The Plan</td><td>2:20–3:20</td><td>Show the personalized plan: EvalOS practice task calibrated to 38% Agent Integration weight. LiteLLM API first call guide. RUNBOOK.md orientation task. Keycloak SSO login task. All with paths, confidence scores, and verified badges. Show the email the student received.</td><td>"Fourteen tasks. Every one grounded in a real file, a real URL, a real exam question. The student received this before they logged in for the first time."</td></tr>
+      <tr><td>5. The Number</td><td>3:20–4:00</td><td>Show the timing comparison chart. Show the RAGAS faithfulness score. Show the Langfuse token cost per plan. Show the n8n execution log: 4m 37s from enrolment to email delivery.</td><td>"From 8 days to first PR to 4 minutes to personalized plan. This runs on your existing platform, in your existing cluster, using the IBM credits you already have."</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sub">Human Approval Gates</div>
+  <div class="gate"><div class="dot g-green"></div><div class="gate-txt"><strong>Green — automatic:</strong> Generate plan, render HTML, post confidence scores, display to user, send read-only plan email.</div></div>
+  <div class="gate"><div class="dot g-yellow"></div><div class="gate-txt"><strong>Yellow — one-click approval:</strong> Sync tasks to Odoo CRM via MCP connector (2-stage confirmation token gate). Trigger n8n auto-enrolment workflow.</div></div>
+  <div class="gate"><div class="dot g-red"></div><div class="gate-txt"><strong>Red — human must explicitly approve:</strong> Any write to EvalOS question bank. Any modification to Keycloak user roles. Any update to OpenBao secrets.</div></div>
+</div>
+
+
+
+
+<div class="sec" id="s11">
+  <div class="sec-hdr"><div class="sec-num">11</div><div class="sec-title">Risk Register — Platform-Aware</div></div>
+  <table>
+    <thead><tr><th>Risk</th><th>Severity</th><th>Platform-Specific Mitigation</th></tr></thead>
+    <tbody>
+      <tr><td>RHOAI (i3-ai-lab) not deployed until Month 3</td><td style="color:#d97706;font-weight:700">MED</td><td>verify.ts checks ROKS namespace. Tasks flagged verified:false automatically. This is a <em>feature</em> — a real stale doc catch in the demo.</td></tr>
+      <tr><td>LiteLLM gateway rate limits under load</td><td style="color:#d97706;font-weight:700">MED</td><td>Granite Nano (Tier 3) for verification passes — fast and cheap. Mistral NeMo (Tier 2) for subagent scans. Tier 1 only for final synthesis. KEDA scales LiteLLM 1–6 replicas on request rate. Demo against test users, not production load.</td></tr>
+      <tr><td>ChromaDB in i3-admissions namespace has no onboarding-corpus yet</td><td style="color:#16a34a;font-weight:700">LOW</td><td><code>getOrCreateCollection()</code> creates it on first ingest. No infrastructure change needed. Test: <code>curl http://chromadb.i3-admissions.svc.cluster.local:8000/api/v1/heartbeat</code></td></tr>
+      <tr><td>OpenBao sealed after ROKS pod restart</td><td style="color:#d97706;font-weight:700">MED</td><td>Run <code>.\platform\scripts\unseal-openbao.ps1</code> before demo day. Check: <code>oc exec -n i3-security openbao-0 -- bao status</code>. Add to pre-demo checklist.</td></tr>
+      <tr><td>n8n auto-trigger webhook fails silently</td><td style="color:#d97706;font-weight:700">MED</td><td>Monitor in n8n → Executions. Add <code>make logs-pipeline</code> to pre-demo checklist. Pre-record fallback showing manual trigger with same result.</td></tr>
+      <tr><td>IBM Cloud credits ($14,047.27) depleting toward October 2026 deadline</td><td style="color:#dc2626;font-weight:700">HIGH</td><td>Route all subagent calls through Tier 2/3 models (Granite Nano, Mistral NeMo) — local Ollama inference, zero IBM Cloud API spend. Reserve Granite Heavy (Tier 1 / watsonx.ai) for final synthesis only. Run <code>make gpu-down</code> after demo.</td></tr>
+      <tr><td>Keycloak misconfigured for onboarding-agent client</td><td style="color:#dc2626;font-weight:700">HIGH</td><td>Create OIDC client in Keycloak admin console before Day 1 Hour 0. Add client secret to OpenBao at <code>i3/onboarding-agent/keycloak</code>. Test: <code>.\platform\scripts\keycloak-post-deploy.ps1</code></td></tr>
+      <tr><td>Langfuse not showing subagent traces in parallel</td><td style="color:#16a34a;font-weight:700">LOW</td><td>Set <code>LANGFUSE_TRACE_ID</code> header in LiteLLM calls. Tag each subagent with a distinct session metadata tag. Verify traces appear before demo Day 3.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+
+
+<div class="sec" id="s12">
+  <div class="sec-hdr"><div class="sec-num">12</div><div class="sec-title">Post-Hackathon Commercial Roadmap</div></div>
+
+  <div class="sub">Wave 1 — Academy Production (Weeks 1–6 post-hackathon)</div>
+  <div class="phase">
+    <div class="phase-hdr ph1">Deploy to every new i3 Academy cohort<span style="font-weight:400;font-size:11px">Zero manual onboarding steps for bootcamp instructors</span></div>
+    <div class="phase-body">
+      <ul>
+        <li>n8n auto-trigger on every EvalOS enrolment assessment pass → personalized plan emailed within 5 minutes</li>
+        <li>EvalOS feedback loop: Week 1 exam scores → plan updates for Week 2 (Closed-loop adaptive curriculum)</li>
+        <li>Directus CMS: upload new programme guide → auto-indexed into onboarding corpus within 5 minutes</li>
+        <li>LLM Wiki write-back: approved onboarding plans archived in structured Markdown for institutional memory</li>
+        <li>Target metric: time-to-first-notebook from 2 days to under 4 hours per cohort</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sub">Wave 2 — Enterprise Agent Factory (Weeks 6–14)</div>
+  <div class="phase">
+    <div class="phase-hdr ph2">White-label as "Onboarding-as-a-Service" for IBM partner enterprise clients<span style="font-weight:400;font-size:11px">Reuse sovereign stack — no new infrastructure</span></div>
+    <div class="phase-body">
+      <ul>
+        <li>Multi-tenant support: Keycloak realms per enterprise client, separate ChromaDB collections per client repo</li>
+        <li>Connector extensions: Confluence (real wiki ingest), Jira (real closed ticket history), ServiceNow (IT service catalog), Salesforce (client CRM context)</li>
+        <li>Continuous re-ingestion: GitHub Actions webhook on push → n8n → re-ingest changed files → updated plan within 15 minutes</li>
+        <li>LiteLLM cost routing: enterprise clients routed to Tier 2 (local) by default; Tier 1 only for premium plan synthesis</li>
+        <li>Pricing: KES 25,000/month per enterprise client (same PMaaS pricing model) or IBM partner resell</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sub">Wave 3 — PMaaS 4.0 Campaign Staff Onboarding (Weeks 14–24)</div>
+  <div class="phase">
+    <div class="phase-hdr ph4">Deploy for Kenya 2027 elections — campaign staff intelligence platform<span style="font-weight:400;font-size:11px">Same agent. New corpus. New commercial vertical.</span></div>
+    <div class="phase-body">
+      <ul>
+        <li><strong>Corpus:</strong> Ingest candidate manifesto, ward-level intelligence docs, PMaaS 4.0 policy knowledge base, voter database segmentation reports, community network contact lists</li>
+        <li><strong>Roles:</strong> Ward Coordinator path (local issues focus), Data Analyst path (voter database + heatmap tools), Campaign Manager path (war room + sentiment feeds)</li>
+        <li><strong>Verify loop:</strong> Ward-specific claims verified against IEBC public data. Stale policy positions (from 2022 campaign) flagged automatically.</li>
+        <li><strong>ElevenLabs integration (PMaaS Innovation):</strong> Generate a candidate voice-narrated audio version of the ward coordinator briefing. Same LiteLLM gateway; add ElevenLabs as a TTS endpoint.</li>
+        <li><strong>Target:</strong> 1,882 seats × ward coordinator teams — potential for 5,000+ personalized onboarding plans generated in parallel at campaign launch</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sub">The Core Commercial Narrative</div>
+  <div class="call dark">
+    <strong>From Hackathon to Revenue in Three Waves</strong>
+    Wave 1 proves it works on the i3 Academy's own students — measurable, honest metric. Wave 2 sells it to enterprise clients as white-label tooling on the sovereign stack — zero marginal infrastructure cost. Wave 3 deploys it as campaign intelligence for PMaaS 4.0 — the same platform primitives serving a KES 350,000/month enterprise contract. The hackathon build is not a proof of concept. It is a production feature on a live platform that already serves paying clients.
+  </div>
+
+  <div class="sub">Pre-Demo Final Checklist</div>
+  <table>
+    <thead><tr><th>Item</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>OpenBao unsealed: <code>oc exec -n i3-security openbao-0 -- bao status</code></td><td>☐</td></tr>
+      <tr><td>LiteLLM health: <code>curl https://litellm.i3technologies.co.ke/health/readiness</code></td><td>☐</td></tr>
+      <tr><td>ChromaDB reachable: heartbeat check from i3-admissions namespace</td><td>☐</td></tr>
+      <tr><td>Keycloak test user created and confirmed in i3 realm</td><td>☐</td></tr>
+      <tr><td>n8n auto-enrolment workflow activated and tested end-to-end</td><td>☐</td></tr>
+      <tr><td>Langfuse showing onboarding-agent traces with 5 subagent tags</td><td>☐</td></tr>
+      <tr><td>verified:false stale task (i3-ai-lab Month 3) confirmed in output</td><td>☐</td></tr>
+      <tr><td>RAGAS faithfulness score ≥ 0.7 captured as screenshot</td><td>☐</td></tr>
+      <tr><td>Bob 2.0 session report exported</td><td>☐</td></tr>
+      <tr><td>Fallback demo video recorded from fully working local run</td><td>☐</td></tr>
+      <tr><td>GPU pool confirmed scaled down: <code>make gpu-down</code></td><td>☐</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="foot">
+  i3 Technologies Limited · IBM Silver Partner CEID: 7SQ30 · Waumini House, Westlands, Nairobi · Confidential — Internal Strategy · Made with IBM Bob
+</div>
+
+</div>
+</body>
+</html>

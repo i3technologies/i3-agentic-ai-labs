@@ -1,0 +1,476 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 Platform — Access Guide &amp; User Creation Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.6; background: #ffffff; color: #1f2328; }
+  .page { max-width: 760px; margin: 0 auto; padding: 32px 24px 48px; }
+
+  h1 { font-size: 22px; font-weight: 700; color: #1f2328; border-bottom: 2px solid #3b82d4; padding-bottom: 10px; margin-bottom: 6px; }
+  .subtitle { color: #57606a; font-size: 13px; margin-bottom: 28px; }
+
+  h2 { font-size: 15px; font-weight: 700; color: #1f2328; margin: 28px 0 10px; padding: 6px 10px; background: #f7f8fa; border-left: 3px solid #3b82d4; }
+  h3 { font-size: 13px; font-weight: 700; color: #3b82d4; margin: 16px 0 8px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px; }
+  th { background: #f7f8fa; color: #1f2328; font-weight: 600; text-align: left; padding: 7px 10px; border: 1px solid #e5e7eb; }
+  td { padding: 7px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafbfc; }
+
+  .badge { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .badge-green  { background: #dcfce7; color: #166534; }
+  .badge-yellow { background: #fef9c3; color: #854d0e; }
+  .badge-red    { background: #fee2e2; color: #991b1b; }
+  .badge-blue   { background: #dbeafe; color: #1e40af; }
+  .badge-purple { background: #ede9fe; color: #5b21b6; }
+  .badge-gray   { background: #f3f4f6; color: #374151; }
+
+  code { font-family: "Consolas", "Fira Code", monospace; font-size: 12px; background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 4px; padding: 1px 5px; color: #0f172a; }
+  pre { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px 14px; font-family: "Consolas", monospace; font-size: 12px; overflow-x: auto; margin: 8px 0 14px; line-height: 1.5; }
+  .comment { color: #57606a; }
+
+  .warning-box { background: #fef9c3; border: 1px solid #fbbf24; border-radius: 6px; padding: 10px 14px; margin: 12px 0; font-size: 13px; }
+  .info-box    { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 10px 14px; margin: 12px 0; font-size: 13px; }
+  .success-box { background: #f0fdf4; border: 1px solid #86efac; border-radius: 6px; padding: 10px 14px; margin: 12px 0; font-size: 13px; }
+  .error-box   { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 6px; padding: 10px 14px; margin: 12px 0; font-size: 13px; }
+
+  .step-block { border: 1px solid #e5e7eb; border-radius: 6px; margin: 10px 0; overflow: hidden; }
+  .step-header { background: #f7f8fa; padding: 8px 12px; font-weight: 600; font-size: 13px; border-bottom: 1px solid #e5e7eb; }
+  .step-body { padding: 10px 14px; font-size: 13px; }
+
+  .role-row td:first-child { font-weight: 600; color: #1f2328; }
+
+  ul, ol { padding-left: 20px; margin: 6px 0; font-size: 13px; }
+  li { margin-bottom: 3px; }
+
+  .section-intro { color: #57606a; font-size: 13px; margin-bottom: 10px; }
+
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>i3 Platform — Current Report &amp; Access Guide</h1>
+  <div class="subtitle">ROKS Cluster: <strong>i3-platform</strong> · Region: <strong>eu-de (Frankfurt)</strong> · Generated: July 2026</div>
+
+  
+  <h2>1. Platform Build Status</h2>
+  <p class="section-intro">All manifests are authored and ready to deploy. The cluster must be provisioned before routes resolve.</p>
+
+  <table>
+    <tr><th>Component</th><th>Namespace</th><th>Manifests</th><th>Deploy Phase</th></tr>
+    <tr><td>PostgreSQL HA (Crunchy)</td><td><code>i3-data</code></td><td><span class="badge badge-green">Ready</span></td><td>M1 — Now</td></tr>
+    <tr><td>Kafka KRaft (Strimzi)</td><td><code>i3-messaging</code></td><td><span class="badge badge-green">Ready</span></td><td>M1 — Now</td></tr>
+    <tr><td>OpenBao Vault</td><td><code>i3-security</code></td><td><span class="badge badge-green">Ready</span></td><td>M1 — Manual gate</td></tr>
+    <tr><td>Keycloak SSO (RHSSO)</td><td><code>i3-auth</code></td><td><span class="badge badge-green">Ready</span></td><td>M1 — Now</td></tr>
+    <tr><td>Argo CD + Tekton</td><td><code>i3-gitops</code></td><td><span class="badge badge-green">Ready</span></td><td>M1 — Now</td></tr>
+    <tr><td>LiteLLM + Ollama + Langfuse</td><td><code>i3-model-gateway</code></td><td><span class="badge badge-green">Ready</span></td><td>M2 — Now</td></tr>
+    <tr><td>EvalOS + Firecracker sandbox</td><td><code>i3-evalos</code></td><td><span class="badge badge-green">Ready</span></td><td>M2–M3</td></tr>
+    <tr><td>OTT (OME + Nginx + SeaweedFS + Directus + n8n)</td><td><code>i3-ott</code></td><td><span class="badge badge-green">Ready</span></td><td>M2–M4</td></tr>
+    <tr><td>Admissions AI Agent + ChromaDB + MCP</td><td><code>i3-admissions</code></td><td><span class="badge badge-green">Ready</span></td><td>M1 — Day 10</td></tr>
+    <tr><td>Prometheus + Grafana</td><td><code>i3-monitoring</code></td><td><span class="badge badge-green">Ready</span></td><td>M1 — Now</td></tr>
+    <tr><td>AI Lab (RHOAI + cohort provisioner)</td><td><code>i3-ai-lab</code></td><td><span class="badge badge-green">Ready</span></td><td>M3–M6</td></tr>
+    <tr><td>ROKS Cluster + VPC + COS (Terraform)</td><td>IBM Cloud</td><td><span class="badge badge-yellow">Needs apply</span></td><td>Run <code>make deploy-infra</code></td></tr>
+    <tr><td>Solution namespaces 01–08</td><td><code>solution-01..08</code></td><td><span class="badge badge-blue">Pre-existing</span></td><td>DO NOT TOUCH</td></tr>
+  </table>
+
+  <div class="warning-box">
+    <strong>⚠ Prerequisite:</strong> All URLs below only become accessible after <code>make deploy-infra</code> provisions the ROKS cluster <em>and</em> you add DNS CNAME records pointing <code>*.i3.tech</code> → the cluster Ingress subdomain (shown by <code>terraform output cluster_ingress_hostname</code>).
+  </div>
+
+  
+  <h2>2. All Public URLs (Internet Access)</h2>
+  <p class="section-intro">All routes use HTTPS with edge TLS termination on OpenShift. HTTP redirects automatically to HTTPS.</p>
+
+  <table>
+    <tr><th>Application</th><th>Internet URL</th><th>Auth Method</th><th>Who Accesses</th></tr>
+    <tr>
+      <td><strong>Keycloak SSO Admin</strong></td>
+      <td><code>https://sso.i3.tech</code></td>
+      <td><span class="badge badge-red">Admin password</span></td>
+      <td>Platform admins only</td>
+    </tr>
+    <tr>
+      <td><strong>EvalOS (Exam Engine)</strong></td>
+      <td><code>https://evalos.i3.tech</code></td>
+      <td><span class="badge badge-blue">Keycloak OIDC</span></td>
+      <td>Students, instructors</td>
+    </tr>
+    <tr>
+      <td><strong>Admissions Chatbot</strong></td>
+      <td><code>https://admissions.i3.tech</code></td>
+      <td><span class="badge badge-green">Public (no login)</span></td>
+      <td>Prospective students</td>
+    </tr>
+    <tr>
+      <td><strong>OTT Live / VOD Stream</strong></td>
+      <td><code>https://stream.i3.tech</code></td>
+      <td><span class="badge badge-blue">Keycloak OIDC</span></td>
+      <td>Enrolled students</td>
+    </tr>
+    <tr>
+      <td><strong>Directus CMS</strong></td>
+      <td><code>https://cms.i3.tech</code></td>
+      <td><span class="badge badge-blue">Keycloak OIDC</span></td>
+      <td>Instructors, content admins</td>
+    </tr>
+    <tr>
+      <td><strong>n8n Automation</strong></td>
+      <td><code>https://n8n.i3.tech</code></td>
+      <td><span class="badge badge-red">n8n admin password</span></td>
+      <td>Platform / ops team</td>
+    </tr>
+    <tr>
+      <td><strong>Langfuse Observability</strong></td>
+      <td><code>https://langfuse.i3.tech</code></td>
+      <td><span class="badge badge-red">Langfuse credentials</span></td>
+      <td>AI engineers, admins</td>
+    </tr>
+    <tr>
+      <td><strong>Grafana Dashboards</strong></td>
+      <td><code>https://grafana.i3.tech</code> <em>*</em></td>
+      <td><span class="badge badge-red">Grafana admin</span></td>
+      <td>Platform admins</td>
+    </tr>
+    <tr>
+      <td><strong>Argo CD GitOps</strong></td>
+      <td><code>https://argocd.i3-gitops.&lt;ingress-subdomain&gt;</code> <em>**</em></td>
+      <td><span class="badge badge-blue">Keycloak OIDC</span></td>
+      <td>Platform admins</td>
+    </tr>
+    <tr>
+      <td><strong>LiteLLM Gateway API</strong></td>
+      <td><code>https://litellm.i3-model-gateway.&lt;ingress-subdomain&gt;</code> <em>**</em></td>
+      <td><span class="badge badge-purple">API key (Bearer)</span></td>
+      <td>Applications, developers</td>
+    </tr>
+    <tr>
+      <td><strong>OTT RTMP Ingest (OBS)</strong></td>
+      <td>TCP <code>&lt;ome-ingest-LB-IP&gt;:1935</code></td>
+      <td><span class="badge badge-purple">Stream key</span></td>
+      <td>Instructors (OBS Studio)</td>
+    </tr>
+    <tr>
+      <td><strong>OTT SRT Ingest</strong></td>
+      <td>UDP <code>&lt;ome-ingest-LB-IP&gt;:9999</code></td>
+      <td><span class="badge badge-purple">Passphrase</span></td>
+      <td>Instructors (OBS SRT mode)</td>
+    </tr>
+  </table>
+
+  <p style="font-size:12px;color:#57606a;margin-top:-8px"><em>* Grafana route uses auto-generated OpenShift hostname unless you add a custom DNS entry for grafana.i3.tech.</em><br />
+  <em>** Argo CD and LiteLLM use the auto-generated OpenShift ingress hostname until custom DNS is added.</em></p>
+
+  
+  <h2>3. DNS Setup (Required for Custom Domains)</h2>
+
+  <div class="step-block">
+    <div class="step-header">Step A — Get the cluster ingress hostname (after Terraform apply)</div>
+    <div class="step-body">
+      <pre>terraform -chdir=platform/terraform output cluster_ingress_hostname
+<span class="comment"># Returns: *.apps.i3-platform.eu-de.containers.appdomain.cloud</span></pre>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">Step B — Add these CNAME records in your DNS provider (e.g. Cloudflare, IBM CIS)</div>
+    <div class="step-body">
+      <table style="margin:0">
+        <tr><th>Record Type</th><th>Name</th><th>Value (CNAME target)</th></tr>
+        <tr><td>CNAME</td><td><code>sso.i3.tech</code></td><td><code>*.apps.i3-platform.eu-de.containers.appdomain.cloud</code></td></tr>
+        <tr><td>CNAME</td><td><code>evalos.i3.tech</code></td><td>same</td></tr>
+        <tr><td>CNAME</td><td><code>admissions.i3.tech</code></td><td>same</td></tr>
+        <tr><td>CNAME</td><td><code>stream.i3.tech</code></td><td>same</td></tr>
+        <tr><td>CNAME</td><td><code>cms.i3.tech</code></td><td>same</td></tr>
+        <tr><td>CNAME</td><td><code>n8n.i3.tech</code></td><td>same</td></tr>
+        <tr><td>CNAME</td><td><code>langfuse.i3.tech</code></td><td>same</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>IBM CIS (CDN/WAF) users:</strong> If using IBM Cloud Internet Services, add the CNAMEs there and enable the proxy/WAF for the admissions widget and stream URL. The cluster ingress already handles TLS termination.
+  </div>
+
+  
+  <h2>4. Identity Architecture — How Auth Works</h2>
+  <p class="section-intro">All user identities live in <strong>one Keycloak realm: <code>i3</code></strong> at <code>https://sso.i3.tech/realms/i3</code>. Every application is an OIDC client of this realm.</p>
+
+  <table>
+    <tr><th>Keycloak Role</th><th>Who Gets It</th><th>Applications They Can Access</th></tr>
+    <tr class="role-row"><td>admin</td><td>Platform team</td><td>All apps + Keycloak Admin Console, Argo CD, Grafana, Langfuse, n8n, Directus</td></tr>
+    <tr class="role-row"><td>instructor</td><td>Course instructors</td><td>EvalOS (question creation, grading), Directus CMS, OTT stream portal (live + VOD)</td></tr>
+    <tr class="role-row"><td>student</td><td>Enrolled learners</td><td>EvalOS (take exams), AI Lab workbench, OTT (watch streams), Admissions chatbot</td></tr>
+    <tr class="role-row"><td>admissions-agent</td><td>Service account</td><td>Admissions API — not a human login</td></tr>
+  </table>
+
+  
+  <h2>5. How to Create Users</h2>
+
+  <h3>Method A — Keycloak Admin Console (GUI)</h3>
+
+  <div class="step-block">
+    <div class="step-header">1. Log in to Keycloak Admin Console</div>
+    <div class="step-body">
+      Navigate to <code>https://sso.i3.tech/admin</code><br />
+      Username: from <code>keycloak-admin-secret</code> (set during deploy)<br />
+      Password: from the same secret<br /><br />
+      <strong>First time only — retrieve the initial admin password:</strong>
+      <pre>oc get secret keycloak-admin-secret -n i3-auth \
+  -o jsonpath='{.data.password}' | base64 -d</pre>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">2. Switch to the i3 realm</div>
+    <div class="step-body">
+      In the top-left dropdown, select <strong>i3</strong> (not <em>master</em>).<br />
+      All students, instructors, and admins must be created in the <strong>i3</strong> realm.
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">3. Create a single user</div>
+    <div class="step-body">
+      <ol>
+        <li>Left sidebar → <strong>Users</strong> → <strong>Add user</strong></li>
+        <li>Fill: <strong>Username</strong> (e.g. <code>alice.mwangi</code>), <strong>Email</strong>, <strong>First name</strong>, <strong>Last name</strong></li>
+        <li>Toggle <strong>Email verified</strong> → On</li>
+        <li>Click <strong>Create</strong></li>
+        <li>Go to <strong>Credentials</strong> tab → Set Password → uncheck <em>Temporary</em> → <strong>Save password</strong></li>
+        <li>Go to <strong>Role mappings</strong> tab → <strong>Assign role</strong> → filter by realm → pick <code>student</code> / <code>instructor</code> / <code>admin</code></li>
+      </ol>
+    </div>
+  </div>
+
+  <h3>Method B — Keycloak CLI (bulk import, scripted)</h3>
+
+  <div class="step-block">
+    <div class="step-header">Bulk-create students from a CSV via kcadm.sh</div>
+    <div class="step-body">
+      <pre><span class="comment"># Run inside the Keycloak pod</span>
+KC_POD=$(oc get pods -n i3-auth -l app=keycloak -o jsonpath='{.items[0].metadata.name}')
+oc exec -n i3-auth $KC_POD -- /opt/keycloak/bin/kcadm.sh \
+  config credentials \
+  --server https://localhost:8443 \
+  --realm master \
+  --user admin \
+  --password "$KEYCLOAK_ADMIN_PASSWORD"
+
+<span class="comment"># Create one user</span>
+oc exec -n i3-auth $KC_POD -- /opt/keycloak/bin/kcadm.sh \
+  create users -r i3 \
+  -s username=alice.mwangi \
+  -s email=alice@example.com \
+  -s firstName=Alice \
+  -s lastName=Mwangi \
+  -s enabled=true \
+  -s emailVerified=true
+
+<span class="comment"># Set password</span>
+USER_ID=$(oc exec -n i3-auth $KC_POD -- \
+  /opt/keycloak/bin/kcadm.sh get users -r i3 -q username=alice.mwangi \
+  | grep '"id"' | head -1 | cut -d'"' -f4)
+
+oc exec -n i3-auth $KC_POD -- /opt/keycloak/bin/kcadm.sh \
+  set-password -r i3 --username alice.mwangi --new-password "Temp@1234!"
+
+<span class="comment"># Assign role</span>
+oc exec -n i3-auth $KC_POD -- /opt/keycloak/bin/kcadm.sh \
+  add-roles -r i3 --uusername alice.mwangi --rolename student</pre>
+    </div>
+  </div>
+
+  <h3>Method C — Provision via Auto-Enrolment (n8n → Keycloak)</h3>
+  <p style="font-size:13px;margin-bottom:8px">When a student passes EvalOS, the enrolment queue triggers the n8n workflow which can call Keycloak's REST API to auto-create the user. This is the M5 automated path — no manual steps needed after EvalOS PASS.</p>
+
+  <h3>Method D — AI Lab Cohort Provisioning (Makefile)</h3>
+  <div class="step-block">
+    <div class="step-header">Provision a cohort namespace + RBAC for students</div>
+    <div class="step-body">
+      <pre><span class="comment"># Creates ai-lab-cohort-01 namespace with RBAC for 3 students</span>
+make provision-cohort COHORT=1 STUDENTS=alice.mwangi,bob.otieno,carol.kamau GPU_QUOTA=0</pre>
+      Students identified here must also exist as Keycloak users (Methods A/B above). Their Keycloak username becomes their RBAC subject in the format <code>username@i3.tech</code>.
+    </div>
+  </div>
+
+  
+  <h2>6. First-Login Procedure Per Application</h2>
+
+  <h3>EvalOS — Student Assessment</h3>
+  <table>
+    <tr><th>Step</th><th>Action</th></tr>
+    <tr><td>1</td><td>Browse to <code>https://evalos.i3.tech</code></td></tr>
+    <tr><td>2</td><td>Click <strong>Sign in</strong> → redirected to <code>sso.i3.tech</code></td></tr>
+    <tr><td>3</td><td>Enter Keycloak username + password → redirected back</td></tr>
+    <tr><td>4</td><td>Role <code>student</code>: sees available exams. Role <code>instructor</code>: sees question bank + grading dashboard.</td></tr>
+  </table>
+
+  <h3>Directus CMS — Content Management</h3>
+  <table>
+    <tr><th>Step</th><th>Action</th></tr>
+    <tr><td>1</td><td>Browse to <code>https://cms.i3.tech</code></td></tr>
+    <tr><td>2</td><td>Click <strong>Login with Keycloak</strong></td></tr>
+    <tr><td>3</td><td>Must have role <code>instructor</code> or <code>admin</code> to access CMS data</td></tr>
+    <tr><td>4</td><td><strong>First admin setup:</strong> use <code>ADMIN_EMAIL = admin@i3.tech</code> and the <code>ADMIN_PASSWORD</code> from the <code>directus-secrets</code> Kubernetes secret</td></tr>
+  </table>
+
+  <h3>Langfuse — LLM Observability</h3>
+  <table>
+    <tr><th>Step</th><th>Action</th></tr>
+    <tr><td>1</td><td>Browse to <code>https://langfuse.i3.tech</code></td></tr>
+    <tr><td>2</td><td>First login: <code>admin@i3.tech</code> / password from <code>LANGFUSE_INIT_USER_PASSWORD</code> in <code>langfuse-secrets</code></td></tr>
+    <tr><td>3</td><td>Organisation and project pre-seeded as <em>i3 Technologies</em> / <em>i3 Platform</em></td></tr>
+    <tr><td>4</td><td>Create API keys for LiteLLM integration under <strong>Settings → API Keys</strong></td></tr>
+  </table>
+
+  <h3>Grafana — Monitoring Dashboards</h3>
+  <table>
+    <tr><th>Step</th><th>Action</th></tr>
+    <tr><td>1</td><td>Get the auto-generated route: <code>oc get route grafana -n i3-monitoring -o jsonpath='{.spec.host}'</code></td></tr>
+    <tr><td>2</td><td>First login: <code>admin</code> / <code>i3-grafana-admin</code> (override via OpenBao — see <code>GF_SECURITY_ADMIN_PASSWORD</code>)</td></tr>
+    <tr><td>3</td><td>Change the default password immediately after first login</td></tr>
+  </table>
+
+  <h3>n8n — Workflow Automation</h3>
+  <table>
+    <tr><th>Step</th><th>Action</th></tr>
+    <tr><td>1</td><td>Browse to <code>https://n8n.i3.tech</code></td></tr>
+    <tr><td>2</td><td>First boot creates an owner account — set email + password on first visit</td></tr>
+    <tr><td>3</td><td>Import workflow: <strong>Workflows → Import from file</strong> → select <code>platform/ott/pipeline/n8n-workflow.json</code></td></tr>
+  </table>
+
+  <h3>Argo CD — GitOps Console</h3>
+  <table>
+    <tr><th>Step</th><th>Action</th></tr>
+    <tr><td>1</td><td><code>oc get route argocd-server -n i3-gitops -o jsonpath='{.spec.host}'</code></td></tr>
+    <tr><td>2</td><td>Login via <strong>Log in via Keycloak</strong> — requires Keycloak role <code>admin</code> and group membership <code>i3-platform-admins</code></td></tr>
+    <tr><td>3</td><td>Or use the local admin: <code>oc get secret argocd-initial-admin-secret -n i3-gitops -o jsonpath='{.data.password}' | base64 -d</code></td></tr>
+  </table>
+
+  <h3>OTT Live Streaming — Instructor (OBS Studio)</h3>
+  <table>
+    <tr><th>Step</th><th>Action</th></tr>
+    <tr><td>1</td><td>Get ingest IP: <code>oc get svc ome-ingest -n i3-ott -o jsonpath='{.status.loadBalancer.ingress[0].ip}'</code></td></tr>
+    <tr><td>2</td><td>OBS Studio → Settings → Stream → Service: <strong>Custom</strong></td></tr>
+    <tr><td>3</td><td>Server: <code>rtmp://&lt;INGEST-IP&gt;:1935/live</code></td></tr>
+    <tr><td>4</td><td>Stream key: <code>class-session-01</code> (any alphanumeric string — becomes the stream name)</td></tr>
+    <tr><td>5</td><td>Students watch at: <code>https://stream.i3.tech/hls/live/class-session-01/master.m3u8</code></td></tr>
+  </table>
+
+  
+  <h2>7. First-Deploy Command Sequence</h2>
+
+  <div class="step-block">
+    <div class="step-header">Phase 1 — Infrastructure (run once)</div>
+    <div class="step-body">
+      <pre><span class="comment"># 1. Set up environment</span>
+Copy-Item .env.example .env   <span class="comment"># then fill in API key</span>
+. .\platform\scripts\load-env.ps1
+
+<span class="comment"># 2. Provision IBM Cloud infrastructure (~70 min)</span>
+make init-infra
+make plan-infra
+make deploy-infra
+
+<span class="comment"># 3. Wait for ROKS workers</span>
+make watch-workers
+
+<span class="comment"># 4. Point kubectl at new cluster</span>
+ibmcloud ks cluster config --cluster i3-platform --admin</pre>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">Phase 2 — Deploy Platform (in order)</div>
+    <div class="step-body">
+      <pre><span class="comment"># 5. Namespaces, quotas, limits, network policies</span>
+oc apply -f platform/namespaces/
+
+<span class="comment"># 6. Operators (subscriptions install from OperatorHub)</span>
+oc apply -f platform/operators/subscriptions/operator-subscriptions.yaml
+
+<span class="comment"># 7. Deploy operators (wait ~5 min for CRDs to register)</span>
+make deploy-operators
+
+<span class="comment"># 8. OpenBao manual gate — see RUNBOOK.md Section 2</span>
+oc apply -f platform/operators/openbao/openbao-deploy.yaml
+<span class="comment"># ... unseal manually, then:</span>
+oc apply -f platform/operators/openbao/openbao-bootstrap-scripts.yaml
+
+<span class="comment"># 9. GitOps + CI/CD</span>
+oc apply -f platform/gitops/argocd/argocd-instance.yaml
+oc apply -f platform/gitops/argocd/app-of-apps.yaml
+
+<span class="comment"># 10. Deploy all applications</span>
+make deploy-apps
+
+<span class="comment"># 11. Install KEDA autoscaler</span>
+make deploy-keda
+
+<span class="comment"># 12. Verify everything</span>
+make verify-cluster</pre>
+    </div>
+  </div>
+
+  
+  <h2>8. Secrets Requiring Manual Values Before Go-Live</h2>
+  <p class="section-intro">These placeholder values (<code>REPLACE_FROM_VAULT</code>) must be substituted. Write them to OpenBao first, then the agent sidecar injects them at pod startup.</p>
+
+  <table>
+    <tr><th>Secret Name</th><th>Namespace</th><th>Keys to Fill</th><th>How to Get Value</th></tr>
+    <tr><td><code>keycloak-admin-secret</code></td><td><code>i3-auth</code></td><td><code>username, password</code></td><td>Choose a strong admin password</td></tr>
+    <tr><td><code>litellm-secrets</code></td><td><code>i3-model-gateway</code></td><td><code>LITELLM_MASTER_KEY</code></td><td><code>openssl rand -hex 32</code></td></tr>
+    <tr><td><code>litellm-secrets</code></td><td><code>i3-model-gateway</code></td><td><code>WATSONX_API_KEY, WATSONX_PROJECT_ID</code></td><td>IBM Cloud → watsonx.ai project</td></tr>
+    <tr><td><code>langfuse-secrets</code></td><td><code>i3-model-gateway</code></td><td><code>NEXTAUTH_SECRET, SALT, LANGFUSE_INIT_USER_PASSWORD</code></td><td><code>openssl rand -hex 32</code></td></tr>
+    <tr><td><code>evalos-secrets</code></td><td><code>i3-evalos</code></td><td><code>DATABASE_URL, NEXTAUTH_SECRET</code></td><td>PGO auto-creates DB user creds in <code>i3-postgres-pguser-evalos</code></td></tr>
+    <tr><td><code>admissions-secrets</code></td><td><code>i3-admissions</code></td><td><code>LITELLM_MASTER_KEY, ODOO_URL, ODOO_PASSWORD, GOOGLE_CALENDAR_CREDENTIALS</code></td><td>Your Odoo/Google API credentials</td></tr>
+    <tr><td><code>directus-secrets</code></td><td><code>i3-ott</code></td><td><code>KEY, SECRET, ADMIN_PASSWORD, KEYCLOAK_CLIENT_SECRET</code></td><td><code>openssl rand -hex 32</code> + Keycloak admin console</td></tr>
+    <tr><td><code>n8n-secrets</code></td><td><code>i3-ott</code></td><td><code>DB_USER, DB_PASSWORD, ENCRYPTION_KEY</code></td><td>PGO creds + <code>openssl rand -hex 32</code></td></tr>
+    <tr><td><code>pgbackrest-cos-secret</code></td><td><code>i3-data</code></td><td>COS HMAC keys</td><td><code>make tf-import-iam</code> then extract from IAM module output</td></tr>
+    <tr><td><code>rclone-secrets</code></td><td><code>i3-ott</code></td><td>SeaweedFS + COS rclone config</td><td>Generate rclone.conf with both S3 endpoints</td></tr>
+  </table>
+
+  <div class="info-box">
+    <strong>Tip — Write to OpenBao instead of Kubernetes secrets:</strong>
+    <pre style="margin:6px 0 0">bao kv put secret/i3-platform/model-gateway/litellm \
+  LITELLM_MASTER_KEY="$(openssl rand -hex 32)" \
+  WATSONX_API_KEY="your-key" \
+  WATSONX_PROJECT_ID="your-project-id"</pre>
+    OpenBao agent sidecars will auto-inject these at pod startup. No raw <code>oc create secret</code> needed.
+  </div>
+
+  
+  <h2>9. Password Policy (Keycloak Enforced)</h2>
+  <p class="section-intro">All user passwords in the <code>i3</code> realm must meet this policy (configured in <a href="platform/operators/keycloak/keycloak-realm.yaml">keycloak-realm.yaml</a>):</p>
+  <ul>
+    <li>Minimum <strong>12 characters</strong></li>
+    <li>At least <strong>1 uppercase</strong> letter</li>
+    <li>At least <strong>1 lowercase</strong> letter</li>
+    <li>At least <strong>1 digit</strong></li>
+    <li>At least <strong>1 special character</strong></li>
+    <li>Brute-force protection: <strong>5 failed attempts</strong> → account temporarily locked</li>
+    <li>Password reset: allowed (email-based)</li>
+    <li>Token lifetime: <strong>1 hour</strong> access token / <strong>10 hour</strong> SSO session</li>
+  </ul>
+  <p style="font-size:13px;margin-top:8px;color:#57606a">Example valid password: <code>AcademyAI@2026!</code></p>
+
+  
+  <h2>10. Current Budget Status</h2>
+  <table>
+    <tr><th>State</th><th>Monthly Cost</th><th>Notes</th></tr>
+    <tr><td>GPU off (idle)</td><td><strong>~$765/mo</strong></td><td>3× bx2.4x16 + COS + SeaweedFS PVCs</td></tr>
+    <tr><td>GPU burst (50% time)</td><td><strong>~$905/mo</strong></td><td>gx2.8x64 on-demand pool active</td></tr>
+    <tr><td>Full platform (month 7+)</td><td><strong>$695–$1,180/mo</strong></td><td>Within ≤$1,500/mo cap</td></tr>
+    <tr><td>IBM Credit runway</td><td colspan="2"><strong>~21 months</strong> — $26,467.77 across 4 pools</td></tr>
+  </table>
+  <div class="success-box">Run <code>make gpu-down</code> after every training/inference burst to return GPU pool to zero and save ~$140–280/mo.</div>
+
+  <footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>

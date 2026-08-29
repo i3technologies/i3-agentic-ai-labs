@@ -1,0 +1,774 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>i3 Onboarding Agent — Technical Documentation</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.65;color:#1f2328;background:#fff}
+.page{max-width:820px;margin:0 auto;padding:40px 32px 60px}
+h1{font-size:24px;font-weight:700;margin-bottom:6px;color:#1f2328}
+h2{font-size:17px;font-weight:700;margin:36px 0 12px;padding-bottom:6px;border-bottom:2px solid #e5e7eb;color:#1f2328}
+h3{font-size:14px;font-weight:700;margin:22px 0 8px;color:#1f2328}
+h4{font-size:13px;font-weight:600;margin:16px 0 6px;color:#3b82d4}
+p{margin-bottom:10px;color:#1f2328}
+code{font-family:"SFMono-Regular",Consolas,monospace;font-size:12px;background:#f7f8fa;border:1px solid #e5e7eb;border-radius:3px;padding:1px 5px;color:#1f2328}
+pre{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:14px 16px;overflow-x:auto;margin:12px 0}
+pre code{background:none;border:none;padding:0;font-size:12px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:#f7f8fa;font-weight:600;text-align:left;padding:7px 10px;border:1px solid #e5e7eb;color:#1f2328}
+td{padding:7px 10px;border:1px solid #e5e7eb;vertical-align:top;color:#1f2328}
+tr:nth-child(even) td{background:#fafafa}
+.badge{display:inline-block;font-size:11px;font-weight:600;border-radius:3px;padding:1px 7px;margin-right:4px}
+.badge-high{background:#fee2e2;color:#b91c1c}
+.badge-med{background:#fef9c3;color:#854d0e}
+.badge-low{background:#dcfce7;color:#166534}
+.badge-auto{background:#d1fae5;color:#065f46}
+.badge-click{background:#fef9c3;color:#92400e}
+.badge-never{background:#fee2e2;color:#b91c1c}
+.badge-tier1{background:#ede9fe;color:#5b21b6}
+.badge-tier2{background:#e0f2fe;color:#0369a1}
+.badge-tier3{background:#f0fdf4;color:#166534}
+.note{background:#eff6ff;border-left:3px solid #3b82d4;padding:10px 14px;border-radius:0 4px 4px 0;margin:12px 0;font-size:13px}
+.warn{background:#fffbeb;border-left:3px solid #f59e0b;padding:10px 14px;border-radius:0 4px 4px 0;margin:12px 0;font-size:13px}
+.danger{background:#fef2f2;border-left:3px solid #ef4444;padding:10px 14px;border-radius:0 4px 4px 0;margin:12px 0;font-size:13px}
+.section-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#57606a;margin-bottom:4px}
+.subtitle{color:#57606a;font-size:13px;margin-bottom:28px}
+.toc{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:16px 20px;margin:20px 0 36px}
+.toc h3{margin:0 0 10px;font-size:13px;color:#57606a;font-weight:600}
+.toc ol{margin-left:18px}
+.toc li{margin:3px 0;font-size:13px}
+.toc a{color:#3b82d4;text-decoration:none}
+.toc a:hover{text-decoration:underline}
+.file-ref{font-family:"SFMono-Regular",Consolas,monospace;font-size:12px;color:#7c5cd8;background:#f5f3ff;border:1px solid #e9d5ff;border-radius:3px;padding:1px 5px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0}
+.box{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:14px 16px}
+.box h4{margin-top:0;color:#1f2328;font-size:13px}
+.divider{border:none;border-top:1px solid #e5e7eb;margin:32px 0}
+ul{margin:8px 0 10px 20px}
+li{margin:3px 0}
+.schema-field{display:flex;gap:8px;margin:4px 0;font-size:13px}
+.schema-field .fname{font-family:"SFMono-Regular",Consolas,monospace;color:#7c5cd8;min-width:160px;flex-shrink:0}
+.schema-field .ftype{color:#3b82d4;min-width:80px;flex-shrink:0}
+.schema-field .fdesc{color:#57606a}
+.route-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px}
+.method{font-family:monospace;font-size:11px;font-weight:700;padding:2px 7px;border-radius:3px;min-width:52px;text-align:center}
+.get{background:#dcfce7;color:#166534}
+.post{background:#dbeafe;color:#1d4ed8}
+.del{background:#fee2e2;color:#b91c1c}
+.route-path{font-family:monospace;font-size:12px;color:#1f2328;min-width:260px}
+.route-desc{color:#57606a;flex:1}
+footer{margin-top:48px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:center;font-size:12px;color:#57606a}
+</style>
+</head>
+<body>
+<div class="page">
+
+
+<div class="section-label">IBM TechXchange Hackathon 2026 · Aug 28–30</div>
+<h1>i3 Onboarding Agent</h1>
+<p class="subtitle">Full Technical Documentation · Project 1: Codebase Onboarding Agent · i3 Agentic AI Labs</p>
+
+
+<div class="toc">
+  <h3>Contents</h3>
+  <ol>
+    <li><a href="#overview">System Overview</a></li>
+    <li><a href="#architecture">Architecture &amp; Component Map</a></li>
+    <li><a href="#dataflow">Request Data Flow</a></li>
+    <li><a href="#security">Security Model</a></li>
+    <li><a href="#ingestion">Corpus Ingestion Pipeline</a></li>
+    <li><a href="#context">Context Store (ChromaDB)</a></li>
+    <li><a href="#subagents">Subagent System</a></li>
+    <li><a href="#orchestrator">Orchestrator: Verify &amp; Plan</a></li>
+    <li><a href="#render">Render Layer</a></li>
+    <li><a href="#api">API Reference</a></li>
+    <li><a href="#schema">RampUpPlan JSON Schema</a></li>
+    <li><a href="#roles">Onboarding Roles</a></li>
+    <li><a href="#mcp">MCP Connector Extension</a></li>
+    <li><a href="#deploy">Deployment &amp; GitOps</a></li>
+    <li><a href="#env">Environment Variables</a></li>
+    <li><a href="#testing">Testing Strategy</a></li>
+    <li><a href="#constraints">Hard Constraints &amp; Forbidden Actions</a></li>
+    <li><a href="#filemap">Complete File Map</a></li>
+  </ol>
+</div>
+
+
+<h2 id="overview">1. System Overview</h2>
+
+<p>The <strong>i3 Onboarding Agent</strong> is a production-grade, RAG-powered AI service that ingests the i3 Agentic AI Labs platform repository and generates <em>verified, role-specific, 5-day ramp-up plans</em> for new team members. It is deployed as namespace <code>i3-onboarding</code> on the live ROKS 4.15 cluster (Frankfurt, eu-de) as ArgoCD wave 7.</p>
+
+<div class="two-col">
+  <div class="box">
+    <h4>What it does</h4>
+    <ul>
+      <li>Ingests real platform repo files into ChromaDB</li>
+      <li>Fires 3 parallel subagents per role request</li>
+      <li>Verifies every file path against the live repo</li>
+      <li>Flags stale docs (<code>verified: false</code>)</li>
+      <li>Synthesises a 5-day JSON plan via granite-heavy</li>
+      <li>Renders Markdown + Mermaid Gantt output</li>
+      <li>Syncs tasks to Directus CRM (one-click gate)</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h4>What it does NOT do</h4>
+    <ul>
+      <li>Auto-write to EvalOS or Keycloak (🔴 blocked)</li>
+      <li>Touch solution-01…08 namespaces (hard constraint)</li>
+      <li>Accept requests without Keycloak JWT</li>
+      <li>Pass user input to LLM before Lobster Trap check</li>
+      <li>Store secrets in code or git (OpenBao only)</li>
+      <li>Call watsonx.ai for Tier 2/3 tasks (credit conservation)</li>
+    </ul>
+  </div>
+</div>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Language / Runtime</td><td>TypeScript · Node.js 20 · CommonJS</td></tr>
+  <tr><td>Framework</td><td>Express 4</td></tr>
+  <tr><td>Namespace</td><td><code>i3-onboarding</code></td></tr>
+  <tr><td>Port</td><td>3000</td></tr>
+  <tr><td>External URL</td><td><code>https://onboarding.i3technologies.co.ke</code></td></tr>
+  <tr><td>ArgoCD Wave</td><td>7 (after admissions, wave 6)</td></tr>
+  <tr><td>Replicas</td><td>1–3 (HPA, CPU 70%)</td></tr>
+  <tr><td>Base Image</td><td>ubi9/nodejs-20-minimal (FIPS-compatible)</td></tr>
+  <tr><td>Secret Store</td><td>OpenBao KV v2 at <code>i3/onboarding-agent/</code></td></tr>
+  <tr><td>IBM Cloud Credits</td><td>$14,047.27 (exp. Oct 2026) — prefer Ollama Tier 2/3</td></tr>
+</table>
+
+
+<h2 id="architecture">2. Architecture &amp; Component Map</h2>
+
+<h3>Module Hierarchy</h3>
+<pre><code>onboarding-agent/
+├── src/
+│   ├── server.ts                  ← Express entrypoint, all routes
+│   ├── security/
+│   │   ├── lobster-trap.ts        ← 12-pattern prompt injection firewall
+│   │   └── keycloak-auth.ts       ← JWT validation, requireAuth / requireRole
+│   ├── ingestion/
+│   │   ├── types.ts               ← RawArtifact interface (8 source types)
+│   │   ├── platform.ts            ← File-walk: platform/ → RawArtifact[]
+│   │   ├── github.ts              ← Octokit: README, ADRs, closed issues
+│   │   ├── curriculum.ts          ← Directus CMS: programme_guides collection
+│   │   └── evalos.ts              ← EvalOS domain weights (+ C1000-207 fallback)
+│   ├── context-store/
+│   │   ├── chroma-client.ts       ← ChromaDB client (onboarding-corpus collection)
+│   │   ├── chunker.ts             ← Role-aware chunking (Markdown/Code/SQL/YAML)
+│   │   ├── index.ts               ← Batch upsert pipeline (200 chunks/batch)
+│   │   └── retriever.ts           ← HNSW cosine search + role/source filtering
+│   ├── orchestrator/
+│   │   ├── skills-assessor.ts     ← Role → 3 subagents, parallel RAG + scan
+│   │   ├── verify.ts              ← File-system + RHOAI namespace live check
+│   │   ├── planner.ts             ← granite-heavy synthesis, confidence gate 0.65
+│   │   └── subagents/
+│   │       ├── types.ts           ← OnboardingRole, SubagentFinding, SubagentInput
+│   │       ├── base-scan.ts       ← Abstract: LiteLLM call, Zod parse, retry
+│   │       ├── evalos-scan.ts     ← Bootcamp Student focus
+│   │       ├── ailab-scan.ts      ← AI/ML Engineer focus (RHOAI stale-doc flag)
+│   │       ├── infra-scan.ts      ← Platform Engineer focus
+│   │       ├── backend-scan.ts    ← Backend Engineer focus
+│   │       └── model-scan.ts      ← AI/ML Engineer model-eval focus
+│   └── render/
+│       ├── markdownPlan.ts        ← Markdown + badge render
+│       ├── graph.ts               ← Mermaid Gantt + service topology
+│       └── taskSync.ts            ← 2-stage CRM sync (🟡 one-click gate)
+├── openshift/
+│   ├── namespace.yaml             ← i3-onboarding namespace
+│   ├── deploy.yaml                ← Deployment, Service, Route, HPA, Secret
+│   └── argocd-app.yaml            ← ArgoCD Application (wave 7)
+├── Dockerfile                     ← Multi-stage UBI9 build
+├── .env.example                   ← All 20 env vars documented
+├── package.json                   ← Node 20 · engines field set
+└── tsconfig.json                  ← ES2022 target, CommonJS modules</code></pre>
+
+<h3>Platform Files Modified</h3>
+<table>
+  <tr><th>File</th><th>Change</th></tr>
+  <tr><td><span class="file-ref">platform/gitops/argocd/app-of-apps.yaml</span></td><td>Wave 7 element added to ApplicationSet; <code>i3-onboarding</code> added to AppProject destinations</td></tr>
+  <tr><td><span class="file-ref">platform/admissions/mcp/mcp_connectors.py</span></td><td><code>/tools/onboarding/sync-tasks</code> + <code>/tools/onboarding/confirm/{token}</code> added</td></tr>
+  <tr><td><span class="file-ref">platform/testing/testing.py</span></td><td>Section 5: <code>run_onboarding_ragas_evaluation()</code> + <code>--ragas-onboarding</code> flag</td></tr>
+  <tr><td><span class="file-ref">Makefile</span></td><td>Section 11: <code>deploy-onboarding</code>, <code>build-onboarding</code>, <code>onboarding-ingest</code>, <code>onboarding-logs</code>, <code>test-onboarding</code></td></tr>
+  <tr><td><span class="file-ref">.env.example</span></td><td>20 onboarding env vars appended with cluster-internal URLs</td></tr>
+</table>
+
+
+<h2 id="dataflow">3. Request Data Flow</h2>
+
+<h3>Plan Generation — POST /api/onboarding/plan</h3>
+<pre><code>Client (Keycloak JWT)
+  │
+  ▼
+[1] Lobster Trap Firewall         ← 12 regex patterns, blocks injection
+  │  (lobster-trap.ts)
+  ▼
+[2] Keycloak JWT Validation       ← jwks-rsa, RS256, issuer check
+  │  (keycloak-auth.ts)           → attaches req.user { sub, email, roles }
+  ▼
+[3] Skills Assessor               ← maps role → 3 ScanPlan entries
+  │  (skills-assessor.ts)
+  ├─ Subagent A ──────────────┐
+  ├─ Subagent B ──────────────┤  ← 3 subagents run in PARALLEL
+  └─ Subagent C ──────────────┘
+        │ each:
+        │  [3a] retrieveAsContext()  ← ChromaDB HNSW cosine search
+        │       (retriever.ts)       → role-tagged RAG context (top-10 chunks)
+        │  [3b] LiteLLM call         ← mistral-nemo (Tier 2)
+        │       (base-scan.ts)       → JSON findings[] with Zod validation
+        ▼
+[4] Verify Pass                   ← existsSync() on every filePath
+  │  (verify.ts)                  ← RHOAI namespace live-check (Kube API)
+  │                               → verified: false + stale-doc prefix if missing
+  ▼
+[5] Plan Synthesis                ← granite-heavy (Tier 1), 120s timeout
+  │  (planner.ts)                 → confidence gate 0.65 applied
+  │                               → RampUpPlanSchema (Zod) validated
+  ▼
+[6] Store + Render                ← in-memory planStore
+  │  (server.ts)                  → markdown + gantt pre-rendered
+  ▼
+Response: { planId, plan, totalVerified, totalUnverified, staleDocWarnings }</code></pre>
+
+<h3>Task Sync — 2-Stage Confirmation</h3>
+<pre><code>Client
+  │ POST /api/onboarding/sync/prepare  { planId }
+  ▼
+taskSync.prepareSyncTasks()
+  → stores in _pending Map (TTL: 5 min)
+  → returns { pendingId, taskCount, previewTasks[0..4], expiresAt }
+  │
+  │  ← Human reviews preview, clicks Confirm
+  │
+  │ POST /api/onboarding/sync/confirm/:pendingId
+  ▼
+taskSync.confirmSyncTasks()
+  → validates userId matches
+  → validates TTL not expired
+  → POST each task → Directus /items/onboarding_tasks
+  → fires n8n webhook (best-effort)
+  → returns { success, syncedCount, skippedCount, directusIds[] }</code></pre>
+
+
+<h2 id="security">4. Security Model</h2>
+
+<h3>4.1 Lobster Trap — Prompt Injection Firewall</h3>
+<p>File: <span class="file-ref">src/security/lobster-trap.ts</span> · Ported from <span class="file-ref">platform/admissions/admissions_agent.py</span></p>
+<p>Applied <strong>pre-LLM</strong> on all user-supplied text fields (<code>role</code>, <code>context</code>, <code>query</code>, <code>note</code>) in every request body before any model call is made.</p>
+
+<table>
+  <tr><th>#</th><th>Pattern</th><th>Catches</th></tr>
+  <tr><td>1</td><td><code>/ignore\s+(all\s+)?previous\s+instructions?/i</code></td><td>Classic injection opener</td></tr>
+  <tr><td>2</td><td><code>/you\s+are\s+now\s+(?!an?\s+(onboarding|platform|i3))/i</code></td><td>Persona hijack</td></tr>
+  <tr><td>3</td><td><code>/act\s+as\s+(?!an?\s+(onboarding|platform|i3))/i</code></td><td>Role override</td></tr>
+  <tr><td>4</td><td><code>/system\s*(prompt|message|instruction)/i</code></td><td>System prompt exfil</td></tr>
+  <tr><td>5</td><td><code>/jailbreak/i</code></td><td>Jailbreak attempts</td></tr>
+  <tr><td>6</td><td><code>/DAN\s+mode/i</code></td><td>DAN jailbreak variant</td></tr>
+  <tr><td>7</td><td><code>/&lt;\s*(script|img|iframe|svg)/i</code></td><td>HTML/XSS injection</td></tr>
+  <tr><td>8</td><td><code>/(drop|delete|truncate)\s+table/i</code></td><td>SQL DDL injection</td></tr>
+  <tr><td>9</td><td><code>/SELECT\s+.+FROM\s+/i</code></td><td>SQL exfiltration</td></tr>
+  <tr><td>10</td><td><code>/prompt\s+injection/i</code></td><td>Self-referential injection</td></tr>
+  <tr><td>11</td><td><code>/disregard\s+(all\s+)?previous/i</code></td><td>Instruction override variant</td></tr>
+  <tr><td>12</td><td><code>/\bexfiltrate\b/i</code></td><td>Data exfiltration intent</td></tr>
+</table>
+
+<p>On match: HTTP 400 returned with <code>{ error: "Request blocked by security policy", pattern: "&lt;matched&gt;" }</code>. No LLM call is made.</p>
+
+<h3>4.2 Keycloak JWT Authentication</h3>
+<p>File: <span class="file-ref">src/security/keycloak-auth.ts</span></p>
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Realm</td><td><code>https://sso.i3technologies.co.ke/realms/i3</code></td></tr>
+  <tr><td>JWKS URI</td><td><code>.../realms/i3/protocol/openid-connect/certs</code></td></tr>
+  <tr><td>Algorithm</td><td>RS256</td></tr>
+  <tr><td>Key cache TTL</td><td>10 minutes</td></tr>
+  <tr><td>Session length</td><td>10 hours (Keycloak realm setting)</td></tr>
+  <tr><td>On success</td><td>Attaches <code>req.user = { sub, email, preferred_username, roles[] }</code></td></tr>
+  <tr><td>On failure</td><td>HTTP 401 with <code>{ error, detail }</code></td></tr>
+</table>
+
+<h3>4.3 Human Approval Gates</h3>
+<table>
+  <tr><th>Gate</th><th>Colour</th><th>Action</th><th>Routes</th></tr>
+  <tr><td>Auto</td><td><span class="badge badge-auto">🟢 AUTO</span></td><td>Plan generation fires immediately</td><td>POST /api/onboarding/plan, GET plan endpoints</td></tr>
+  <tr><td>One-click</td><td><span class="badge badge-click">🟡 ONE-CLICK</span></td><td>2-stage token confirmation required</td><td>sync/prepare → sync/confirm/:id, MCP /tools/onboarding/</td></tr>
+  <tr><td>Never</td><td><span class="badge badge-never">🔴 NEVER</span></td><td>Blocked — manual operator action only</td><td>Any write to EvalOS tables, Keycloak realm/users</td></tr>
+</table>
+
+<h3>4.4 Secret Management</h3>
+<p>All secrets are injected at runtime from <strong>OpenBao KV v2</strong> at path <code>i3/onboarding-agent/</code> via vault-agent sidecar annotations on the Deployment. The <span class="file-ref">openshift/deploy.yaml</span> Secret manifest contains only empty placeholder values — actual values are never committed to git.</p>
+
+<div class="danger"><strong>⛔ Never hardcode:</strong> LITELLM_KEY, CHROMA_TOKEN, DIRECTUS_TOKEN, EVALOS_API_KEY, GITHUB_TOKEN, KEYCLOAK_SECRET in any file. These must only exist in OpenBao.</div>
+
+
+<h2 id="ingestion">5. Corpus Ingestion Pipeline</h2>
+
+<p>Ingestion populates the <code>onboarding-corpus</code> ChromaDB collection. It runs at deploy time and on demand via <code>POST /api/onboarding/ingest</code> (admin-only) or <code>make onboarding-ingest</code>.</p>
+
+<h3>Ingestion Sources</h3>
+<table>
+  <tr><th>Source Type</th><th>File</th><th>What it ingests</th></tr>
+  <tr><td><code>platform-doc</code></td><td><span class="file-ref">ingestion/platform.ts</span></td><td>platform/docs/*.md, RUNBOOK.md (.md/.yaml/.py/.ts/.tf/.sql files, max 256KB each, skips solution-01…08)</td></tr>
+  <tr><td><code>platform-code</code></td><td><span class="file-ref">ingestion/platform.ts</span></td><td>Source files classified by extension; gitops/infra yaml, Python agents, TypeScript modules</td></tr>
+  <tr><td><code>curriculum</code></td><td><span class="file-ref">ingestion/curriculum.ts</span></td><td>Directus CMS <code>programme_guides</code> collection (graceful degradation if unavailable)</td></tr>
+  <tr><td><code>evalos-domain</code></td><td><span class="file-ref">ingestion/evalos.ts</span></td><td>EvalOS domain weights; fallback to hardcoded C1000-207 IBM exam domains (Agent Integration 23q=38%)</td></tr>
+  <tr><td><code>readme</code> / <code>adr</code> / <code>issue</code></td><td><span class="file-ref">ingestion/github.ts</span></td><td>Octokit: README, Architecture Decision Records, closed GitHub issues (historical bugs)</td></tr>
+</table>
+
+<h3>RawArtifact Interface</h3>
+<p>File: <span class="file-ref">src/ingestion/types.ts</span></p>
+<pre><code>interface RawArtifact {
+  source:    "platform-doc" | "platform-code" | "curriculum" | "evalos-domain"
+           | "readme" | "adr" | "issue" | "wiki";
+  path:      string;       // relative path for display
+  content:   string;       // full text content (max 256KB)
+  updatedAt: string;       // ISO 8601
+  metadata?: Record&lt;string, string&gt;;
+}</code></pre>
+
+
+<h2 id="context">6. Context Store (ChromaDB)</h2>
+
+<p>Collection: <code>onboarding-corpus</code> · Endpoint: <code>chromadb.i3-admissions.svc.cluster.local:8000</code> · Distance: cosine HNSW</p>
+<p>Sits alongside the existing <code>admissions-docs</code> collection. Upsert is idempotent (stable deterministic chunk IDs via DJB2 hash).</p>
+
+<h3>Chunking Strategy</h3>
+<p>File: <span class="file-ref">src/context-store/chunker.ts</span></p>
+<table>
+  <tr><th>Source Type</th><th>Strategy</th><th>Max Chunk Size</th></tr>
+  <tr><td>documentation, runbook</td><td>Split on H2/H3 headings, then 800-token windows</td><td>3,200 chars</td></tr>
+  <tr><td>schema (SQL)</td><td>Split per semicolon-delimited statement</td><td>1 statement</td></tr>
+  <tr><td>infra, gitops (YAML)</td><td>Split on top-level key blocks</td><td>3,200 chars</td></tr>
+  <tr><td>code, agent</td><td>60-line windows</td><td>60 lines</td></tr>
+  <tr><td>Any (&lt;400 chars)</td><td>Single chunk</td><td>400 chars</td></tr>
+</table>
+
+<h3>Role Tagging</h3>
+<p>Every chunk receives a <code>role_tags</code> metadata field (comma-separated) inferred from filename + content keywords:</p>
+<table>
+  <tr><th>Role Tag</th><th>Trigger Keywords</th></tr>
+  <tr><td><code>bootcamp_student</code></td><td>evalos, quiz, exam, bloom, enrolment, curriculum</td></tr>
+  <tr><td><code>platform_engineer</code></td><td>k8s, kubernetes, argocd, tekton, dockerfile, helm, openshift, roks</td></tr>
+  <tr><td><code>ai_ml_engineer</code></td><td>litellm, chroma, rag, llm, granite, mistral, langchain, agent, subagent</td></tr>
+  <tr><td><code>backend_engineer</code></td><td>express, route, controller, middleware, api, endpoint</td></tr>
+  <tr><td><code>security_engineer</code></td><td>secret, vault, openbao, keycloak, rbac, cert-manager, lobster</td></tr>
+</table>
+
+<h3>Retrieval</h3>
+<p>File: <span class="file-ref">src/context-store/retriever.ts</span></p>
+<table>
+  <tr><th>Parameter</th><th>Default</th><th>Description</th></tr>
+  <tr><td><code>topK</code></td><td>8</td><td>Chunks returned per query</td></tr>
+  <tr><td><code>minScore</code></td><td>0.30</td><td>Minimum cosine similarity</td></tr>
+  <tr><td><code>roleTag</code></td><td>""</td><td>ChromaDB <code>$contains</code> filter on <code>role_tags</code></td></tr>
+  <tr><td><code>sourceTypes</code></td><td>[]</td><td>Optional <code>$in</code> / <code>$eq</code> filter on <code>source_type</code></td></tr>
+</table>
+
+
+<h2 id="subagents">7. Subagent System</h2>
+
+<p>File: <span class="file-ref">src/orchestrator/subagents/</span></p>
+<p>All subagents extend <span class="file-ref">base-scan.ts</span> which handles: LiteLLM call via openai-compatible client, <code>mistral-nemo</code> (Tier 2), Zod schema validation of JSON response, 2 retries, markdown-fence stripping.</p>
+
+<h3>Subagent Directory</h3>
+<table>
+  <tr><th>Subagent</th><th>Primary Role</th><th>Key Platform Files Referenced</th><th>Special Behaviour</th></tr>
+  <tr><td><code>evalos-scan</code></td><td>bootcamp_student</td><td>platform/evalos/schema.sql, platform/evalos/nextjs/exam-engine.ts, platform/admissions/admissions_agent.py</td><td>EvalOS schema, Bloom taxonomy, n8n enrolment trigger, anti-cheat</td></tr>
+  <tr><td><code>ailab-scan</code></td><td>ai_ml_engineer</td><td>platform/admissions/admissions_agent.py, platform/admissions/mcp/mcp_connectors.py, platform/docs/platform-documentation.md</td><td><strong>RHOAI stale-doc flag</strong> — if i3-ai-lab mentioned without live namespace confirmation, emits <code>historicalIssueRef: "stale-doc: RHOAI namespace availability"</code> at priority: high</td></tr>
+  <tr><td><code>infra-scan</code></td><td>platform_engineer</td><td>platform/gitops/argocd/app-of-apps.yaml, platform/gitops/tekton/pipeline-build.yaml, platform/RUNBOOK.md</td><td>Finding #1 is always the FORBIDDEN solution-01…08 rule</td></tr>
+  <tr><td><code>backend-scan</code></td><td>backend_engineer</td><td>platform/admissions/admissions_agent.py, platform/evalos/schema.sql, platform/docs/platform-documentation.md</td><td>FastAPI patterns, JWT auth, OpenBao env-var conventions</td></tr>
+  <tr><td><code>model-scan</code></td><td>ai_ml_engineer (deep)</td><td>platform/testing/testing.py, platform/admissions/admissions_agent.py, platform/docs/platform-documentation.md</td><td>RAGAS/promptfoo config, confidence gate tuning, IBM credit conservation</td></tr>
+</table>
+
+<h3>SubagentFinding Schema</h3>
+<p>File: <span class="file-ref">src/orchestrator/subagents/types.ts</span></p>
+<div class="schema-field"><span class="fname">title</span><span class="ftype">string</span><span class="fdesc">Human-readable heading for the finding</span></div>
+<div class="schema-field"><span class="fname">description</span><span class="ftype">string</span><span class="fdesc">Task rationale fed into the planner</span></div>
+<div class="schema-field"><span class="fname">filePaths</span><span class="ftype">string[]</span><span class="fdesc">Referenced paths — verified against repo in Step 3</span></div>
+<div class="schema-field"><span class="fname">priority</span><span class="ftype">"high"|"medium"|"low"</span><span class="fdesc">Importance ranking</span></div>
+<div class="schema-field"><span class="fname">suggestedDay</span><span class="ftype">1|2|3|4|5</span><span class="fdesc">Which onboarding day to assign this task</span></div>
+<div class="schema-field"><span class="fname">roles</span><span class="ftype">OnboardingRole[]</span><span class="fdesc">Relevant onboarding roles</span></div>
+<div class="schema-field"><span class="fname">historicalIssueRef?</span><span class="ftype">string</span><span class="fdesc">Optional reference to a closed GitHub issue or stale-doc warning</span></div>
+
+<h3>Role → Subagent Mapping</h3>
+<table>
+  <tr><th>Role</th><th>Subagent 1</th><th>Subagent 2</th><th>Subagent 3</th></tr>
+  <tr><td>bootcamp_student</td><td>evalos-scan</td><td>ailab-scan</td><td>infra-scan</td></tr>
+  <tr><td>platform_engineer</td><td>infra-scan</td><td>ailab-scan</td><td>backend-scan</td></tr>
+  <tr><td>ai_ml_engineer</td><td>ailab-scan</td><td>model-scan</td><td>backend-scan</td></tr>
+  <tr><td>backend_engineer</td><td>backend-scan</td><td>evalos-scan</td><td>infra-scan</td></tr>
+  <tr><td>security_engineer</td><td>infra-scan</td><td>ailab-scan</td><td>backend-scan</td></tr>
+</table>
+
+
+<h2 id="orchestrator">8. Orchestrator: Verify &amp; Plan</h2>
+
+<h3>8.1 Verify (verify.ts)</h3>
+<p>File: <span class="file-ref">src/orchestrator/verify.ts</span></p>
+<p>Runs after all subagents complete. For every <code>SubagentFinding</code>:</p>
+<ol style="margin-left:20px;margin-top:8px">
+  <li>Calls <code>existsSync(join(PLATFORM_REPO_PATH, filePath))</code> for each path</li>
+  <li>Checks if finding mentions <code>rhoai</code> or <code>i3-ai-lab</code>, then calls live Kubernetes API (<code>GET /api/v1/namespaces/i3-ai-lab</code>) with SA token</li>
+  <li>If any path missing OR RHOAI check fails → <code>verified: false</code>, title prefixed with <code>"Needs verification: [title] (referenced path not found — likely stale doc)"</code></li>
+  <li>RHOAI result is cached per process (lazy singleton)</li>
+</ol>
+
+<div class="note"><strong>Demo Proof-Point:</strong> <span class="file-ref">platform/docs/platform-documentation.md</span> states RHOAI (<code>i3-ai-lab</code> namespace) is "available from Month 3". The live Kubernetes API confirms it does not exist → <code>verified: false</code> is emitted automatically. This is the primary demo moment showing the agent catches stale documentation.</div>
+
+<h3>8.2 Planner (planner.ts)</h3>
+<p>File: <span class="file-ref">src/orchestrator/planner.ts</span> · Model: <code>granite-heavy</code> (Tier 1) · Temperature: 0.15 · Max tokens: 4,000</p>
+
+<table>
+  <tr><th>Step</th><th>Detail</th></tr>
+  <tr><td>Input</td><td>Verified findings summary (all subagents), architectural summary, role</td></tr>
+  <tr><td>Output</td><td>12–15 tasks spanning Days 1–5, each with confidence score</td></tr>
+  <tr><td>Confidence gate</td><td>0.65 — tasks below threshold are dropped</td></tr>
+  <tr><td>Fallback</td><td>If LLM call fails or returns 0 tasks, <code>buildFallbackTasks()</code> constructs plan deterministically from verified findings</td></tr>
+  <tr><td>Guaranteed tasks</td><td>Always includes a Day-1 developer-tools install task (Makefile + RUNBOOK.md)</td></tr>
+  <tr><td>Historical issue</td><td>At least one task must include <code>historicalIssueRef</code> (from closed GitHub issues in corpus)</td></tr>
+</table>
+
+<h3>LiteLLM Model Tiers</h3>
+<table>
+  <tr><th>Tier</th><th>Model Alias</th><th>Backend</th><th>Used For</th><th>Cost</th></tr>
+  <tr><td><span class="badge badge-tier3">Tier 3</span></td><td><code>granite-nano</code></td><td>Ollama (local)</td><td>Embeddings, fast verification</td><td>Free</td></tr>
+  <tr><td><span class="badge badge-tier2">Tier 2</span></td><td><code>mistral-nemo</code></td><td>Ollama (local)</td><td>All 5 subagent scans</td><td>Free</td></tr>
+  <tr><td><span class="badge badge-tier1">Tier 1</span></td><td><code>granite-heavy</code></td><td>watsonx.ai</td><td>Final plan synthesis only</td><td>IBM credits</td></tr>
+</table>
+
+
+<h2 id="render">9. Render Layer</h2>
+
+<h3>markdownPlan.ts</h3>
+<p>File: <span class="file-ref">src/render/markdownPlan.ts</span> · Served at <code>GET /api/onboarding/plan/:planId/markdown</code></p>
+<p>Sections: header with generated timestamp (EAT timezone), stale-doc warnings block, architectural summary table, 5 day-themed sections (Orientation, Core Architecture, Hands-On Integration, Domain Mastery, Independent Contribution), per-task badges (priority, hours, verified, confidence %), historical issue callout.</p>
+
+<h3>graph.ts</h3>
+<p>File: <span class="file-ref">src/render/graph.ts</span> · Served at <code>GET /api/onboarding/plan/:planId/gantt</code> and <code>GET /api/onboarding/graph</code></p>
+<ul>
+  <li><strong>Gantt</strong>: Mermaid gantt chart, days as sections, tasks proportional to estimatedHours, priority → <code>crit</code>/<code>active</code> modifier</li>
+  <li><strong>Service topology</strong>: Static Mermaid flowchart of all 11 i3 platform services — Keycloak → agents → LiteLLM tiers → MCP → n8n → EvalOS → ArgoCD</li>
+</ul>
+
+<h3>taskSync.ts — 2-Stage CRM Sync</h3>
+<p>File: <span class="file-ref">src/render/taskSync.ts</span> · Mirrors <span class="file-ref">platform/admissions/mcp/mcp_connectors.py</span> <code>_pending</code> pattern</p>
+<ul>
+  <li>Stage 1 (<code>prepareSyncTasks</code>): generates UUID pending token, stores in <code>Map&lt;string, PendingSync&gt;</code>, TTL 5 minutes, returns preview of first 5 tasks</li>
+  <li>Stage 2 (<code>confirmSyncTasks</code>): validates userId + TTL, writes to Directus <code>/items/onboarding_tasks</code>, fires n8n webhook (best-effort, non-blocking), returns <code>{ syncedCount, skippedCount, directusIds[] }</code></li>
+  <li>Production note: replace in-memory <code>_pending</code> Map with Redis for multi-replica deployments</li>
+</ul>
+
+
+<h2 id="api">10. API Reference</h2>
+
+<p>Base URL (production): <code>https://onboarding.i3technologies.co.ke</code><br />
+All protected routes require: <code>Authorization: Bearer &lt;keycloak-token&gt;</code></p>
+
+<div class="route-row">
+  <span class="method get">GET</span>
+  <span class="route-path">/health</span>
+  <span class="route-desc">Liveness probe. No auth. Returns <code>{ status: "ok", service: "i3-onboarding-agent" }</code></span>
+</div>
+<div class="route-row">
+  <span class="method get">GET</span>
+  <span class="route-path">/ready</span>
+  <span class="route-desc">Readiness probe. No auth. Checks ChromaDB connectivity. 200 = ready, 503 = not ready.</span>
+</div>
+<div class="route-row">
+  <span class="method post">POST</span>
+  <span class="route-path">/api/onboarding/plan</span>
+  <span class="route-desc"><span class="badge badge-auto">🟢 AUTO</span> Generate ramp-up plan. Body: <code>{ role: OnboardingRole, note?: string }</code>. Fires 3 parallel subagents → verify → granite-heavy synthesis. Returns full plan JSON + planId.</span>
+</div>
+<div class="route-row">
+  <span class="method get">GET</span>
+  <span class="route-path">/api/onboarding/plan/:planId</span>
+  <span class="route-desc">Retrieve stored plan as JSON. 404 if planId not found.</span>
+</div>
+<div class="route-row">
+  <span class="method get">GET</span>
+  <span class="route-path">/api/onboarding/plan/:planId/markdown</span>
+  <span class="route-desc">Retrieve plan as rendered Markdown document. Content-Type: text/markdown.</span>
+</div>
+<div class="route-row">
+  <span class="method get">GET</span>
+  <span class="route-path">/api/onboarding/plan/:planId/gantt</span>
+  <span class="route-desc">Retrieve Mermaid Gantt chart string for the plan.</span>
+</div>
+<div class="route-row">
+  <span class="method get">GET</span>
+  <span class="route-path">/api/onboarding/graph</span>
+  <span class="route-desc">Static i3 platform service topology as Mermaid flowchart.</span>
+</div>
+<div class="route-row">
+  <span class="method post">POST</span>
+  <span class="route-path">/api/onboarding/sync/prepare</span>
+  <span class="route-desc"><span class="badge badge-click">🟡 ONE-CLICK</span> Stage 1: stage tasks for CRM sync. Body: <code>{ planId }</code>. Returns <code>{ pendingId, taskCount, previewTasks, expiresAt }</code>.</span>
+</div>
+<div class="route-row">
+  <span class="method post">POST</span>
+  <span class="route-path">/api/onboarding/sync/confirm/:pendingId</span>
+  <span class="route-desc"><span class="badge badge-click">🟡 ONE-CLICK</span> Stage 2: execute sync after user confirms. Writes to Directus + fires n8n webhook. Returns <code>{ success, syncedCount, directusIds[] }</code>.</span>
+</div>
+<div class="route-row">
+  <span class="method del">DEL</span>
+  <span class="route-path">/api/onboarding/sync/:pendingId</span>
+  <span class="route-desc">Cancel a pending sync (user clicked Dismiss). Returns <code>{ cancelled: true }</code>.</span>
+</div>
+<div class="route-row">
+  <span class="method post">POST</span>
+  <span class="route-path">/api/onboarding/ingest</span>
+  <span class="route-desc"><span class="badge badge-never">🔴 ADMIN</span> Re-index platform corpus into ChromaDB. Requires role <code>i3-admin</code>. Returns IndexResult stats.</span>
+</div>
+<div class="route-row">
+  <span class="method get">GET</span>
+  <span class="route-path">/api/onboarding/status</span>
+  <span class="route-desc">ChromaDB stats, pending sync count, cached plan count, active model aliases.</span>
+</div>
+
+
+<h2 id="schema">11. RampUpPlan JSON Schema</h2>
+
+<p>File: <span class="file-ref">src/orchestrator/planner.ts</span> · Validated with Zod at every synthesis step</p>
+
+<h3>RampUpPlan (root)</h3>
+<div class="schema-field"><span class="fname">schemaVersion</span><span class="ftype">"1.0"</span><span class="fdesc">Literal version string</span></div>
+<div class="schema-field"><span class="fname">generatedAt</span><span class="ftype">string</span><span class="fdesc">ISO 8601 timestamp</span></div>
+<div class="schema-field"><span class="fname">role</span><span class="ftype">string</span><span class="fdesc">OnboardingRole value used to generate plan</span></div>
+<div class="schema-field"><span class="fname">architecturalSummary</span><span class="ftype">object</span><span class="fdesc">Cluster version, region, namespace count, key services, forbidden actions, credit budget</span></div>
+<div class="schema-field"><span class="fname">tasks</span><span class="ftype">RampUpTask[]</span><span class="fdesc">12–15 tasks spanning Days 1–5, sorted by day then priority</span></div>
+<div class="schema-field"><span class="fname">totalVerified</span><span class="ftype">number</span><span class="fdesc">Count of tasks with verified: true</span></div>
+<div class="schema-field"><span class="fname">totalUnverified</span><span class="ftype">number</span><span class="fdesc">Count of tasks with verified: false (stale-doc warnings)</span></div>
+<div class="schema-field"><span class="fname">staleDocWarnings</span><span class="ftype">string[]</span><span class="fdesc">Unique list of missing file paths that triggered verified: false</span></div>
+
+<h3>RampUpTask</h3>
+<div class="schema-field"><span class="fname">day</span><span class="ftype">1|2|3|4|5</span><span class="fdesc">Which onboarding day</span></div>
+<div class="schema-field"><span class="fname">title</span><span class="ftype">string</span><span class="fdesc">If verified:false, prefixed with "Needs verification: … (referenced path not found — likely stale doc)"</span></div>
+<div class="schema-field"><span class="fname">description</span><span class="ftype">string</span><span class="fdesc">Actionable task description referencing specific file paths</span></div>
+<div class="schema-field"><span class="fname">filePaths</span><span class="ftype">string[]</span><span class="fdesc">Platform repo paths this task references</span></div>
+<div class="schema-field"><span class="fname">verified</span><span class="ftype">boolean</span><span class="fdesc">true = all filePaths confirmed present in repo and RHOAI check passed</span></div>
+<div class="schema-field"><span class="fname">verificationNote</span><span class="ftype">string?</span><span class="fdesc">Details when verified:false (missing paths, RHOAI note)</span></div>
+<div class="schema-field"><span class="fname">priority</span><span class="ftype">"high"|"medium"|"low"</span><span class="fdesc">Task importance</span></div>
+<div class="schema-field"><span class="fname">estimatedHours</span><span class="ftype">number (0.5–8)</span><span class="fdesc">Realistic time estimate</span></div>
+<div class="schema-field"><span class="fname">historicalIssueRef</span><span class="ftype">string?</span><span class="fdesc">Closed GitHub issue or stale-doc reference for learning exercise</span></div>
+<div class="schema-field"><span class="fname">roles</span><span class="ftype">string[]</span><span class="fdesc">OnboardingRole values this task applies to</span></div>
+<div class="schema-field"><span class="fname">confidence</span><span class="ftype">number (0–1)</span><span class="fdesc">LLM-assigned confidence. Tasks below 0.65 are excluded.</span></div>
+
+<h3>Example Task — Stale Doc (verified: false)</h3>
+<pre><code>{
+  "day": 2,
+  "title": "Needs verification: Explore RHOAI AI Lab Namespace (referenced path not found — likely stale doc)",
+  "description": "platform/docs/platform-documentation.md states RHOAI (i3-ai-lab) is available from Month 3. Live cluster check confirms namespace does not yet exist.",
+  "filePaths": ["platform/docs/platform-documentation.md"],
+  "verified": false,
+  "verificationNote": "RHOAI/i3-ai-lab namespace not live — platform-documentation.md states 'available from Month 3'",
+  "priority": "high",
+  "estimatedHours": 1,
+  "historicalIssueRef": "stale-doc: RHOAI namespace availability",
+  "roles": ["ai_ml_engineer"],
+  "confidence": 0.91
+}</code></pre>
+
+
+<h2 id="roles">12. Onboarding Roles</h2>
+
+<table>
+  <tr><th>Role</th><th>Code Value</th><th>Primary Focus</th><th>Day 1 Mandatory</th></tr>
+  <tr><td>Bootcamp Student</td><td><code>bootcamp_student</code></td><td>EvalOS quiz flow, Bloom taxonomy, admissions agent chat, C1000-207 exam prep</td><td>EvalOS schema, enrolment flow, Keycloak SSO login</td></tr>
+  <tr><td>Platform Engineer</td><td><code>platform_engineer</code></td><td>ROKS namespace topology, ArgoCD waves, Tekton pipeline, OpenBao secrets, FORBIDDEN namespaces</td><td>RUNBOOK.md, Makefile, solution-01…08 forbidden rule</td></tr>
+  <tr><td>AI/ML Engineer</td><td><code>ai_ml_engineer</code></td><td>LiteLLM tiers, ChromaDB RAG, Lobster Trap, RAGAS eval, RHOAI stale-doc risk</td><td>admissions_agent.py, LiteLLM gateway config, credit budget</td></tr>
+  <tr><td>Backend Engineer</td><td><code>backend_engineer</code></td><td>FastAPI patterns, EvalOS schema, Keycloak JWT middleware, API URL directory</td><td>admissions_agent.py routes, evalos/schema.sql, env-var conventions</td></tr>
+  <tr><td>Security Engineer</td><td><code>security_engineer</code></td><td>OpenBao KV, Keycloak RBAC, cert-manager TLS, Trivy scan, Lobster Trap extension</td><td>RUNBOOK.md secrets section, RBAC policy review, solution-01…08 protection</td></tr>
+</table>
+
+
+<h2 id="mcp">13. MCP Connector Extension</h2>
+
+<p>File: <span class="file-ref">platform/admissions/mcp/mcp_connectors.py</span></p>
+<p>Two new endpoints added to the existing FastAPI MCP Connector service, reusing the same in-memory <code>_pending</code> dict pattern and 2-stage confirmation gate:</p>
+
+<h3>POST /tools/onboarding/sync-tasks (Stage 1)</h3>
+<p>Body: <code>SyncTasksRequest { role, user_id, tasks: OnboardingTask[] }</code></p>
+<p>Returns: <code>{ requires_confirmation: true, token, task_count, preview: [{ day, title, priority }], summary }</code></p>
+<p>Token TTL: 5 minutes. Stored in <code>_pending</code> dict with <code>action: "onboarding_sync_tasks"</code>.</p>
+
+<h3>POST /tools/onboarding/confirm/{token} (Stage 2)</h3>
+<p>Validates token exists, action matches, TTL not expired. Writes each task to <code>DIRECTUS_URL/items/onboarding_tasks</code> with full field set. Fires <code>N8N_ONBOARDING_WEBHOOK_URL</code> (best-effort, 5s timeout). Returns <code>{ success, synced_count, skipped_count, directus_ids[] }</code>.</p>
+
+<div class="warn"><strong>Production Note:</strong> The <code>_pending</code> dict is in-memory. For multi-replica deployments of mcp_connectors, replace with Redis to avoid token-not-found errors across pod restarts.</div>
+
+
+<h2 id="deploy">14. Deployment &amp; GitOps</h2>
+
+<h3>Build Pipeline</h3>
+<pre><code>git push → Tekton i3-build-deploy pipeline
+  ├── git-clone
+  ├── npm ci + tsc (TypeScript compile)
+  ├── buildah bud -f onboarding-agent/Dockerfile
+  │     Stage 1: ubi9/nodejs-20 → npm ci + tsc
+  │     Stage 2: ubi9/nodejs-20-minimal → npm ci --omit=dev
+  ├── trivy image scan
+  └── oc rollout (rolling update, maxUnavailable=0, maxSurge=1)</code></pre>
+
+<h3>ArgoCD Wave Ordering</h3>
+<table>
+  <tr><th>Wave</th><th>Workstream</th><th>Namespace</th></tr>
+  <tr><td>1</td><td>core-operators</td><td>i3-data</td></tr>
+  <tr><td>2</td><td>model-gateway</td><td>i3-model-gateway</td></tr>
+  <tr><td>3</td><td>ai-lab</td><td>i3-ai-lab</td></tr>
+  <tr><td>4</td><td>evalos</td><td>i3-evalos</td></tr>
+  <tr><td>5</td><td>ott</td><td>i3-ott</td></tr>
+  <tr><td>6</td><td>admissions</td><td>i3-admissions</td></tr>
+  <tr><td><strong>7</strong></td><td><strong>onboarding</strong></td><td><strong>i3-onboarding</strong></td></tr>
+</table>
+
+<p>ArgoCD Application: <span class="file-ref">onboarding-agent/openshift/argocd-app.yaml</span> · sync-wave annotation: <code>"7"</code> · prune: true · selfHeal: true · CreateNamespace=true · ServerSideApply=true. Secret diffs ignored (OpenBao fills at runtime).</p>
+
+<h3>Makefile Targets (Section 11)</h3>
+<table>
+  <tr><th>Target</th><th>Action</th></tr>
+  <tr><td><code>make deploy-onboarding</code></td><td>oc apply namespace + deploy manifests</td></tr>
+  <tr><td><code>make build-onboarding</code></td><td>buildah build + push to ICR</td></tr>
+  <tr><td><code>make onboarding-ingest</code></td><td>curl POST /api/onboarding/ingest (requires ONBOARDING_TOKEN=)</td></tr>
+  <tr><td><code>make onboarding-logs</code></td><td>oc logs -n i3-onboarding -l app=onboarding-agent -f</td></tr>
+  <tr><td><code>make test-onboarding</code></td><td>python testing.py --ragas-onboarding</td></tr>
+</table>
+
+<h3>Resource Limits</h3>
+<table>
+  <tr><th></th><th>CPU</th><th>Memory</th></tr>
+  <tr><td>Request</td><td>100m</td><td>256Mi</td></tr>
+  <tr><td>Limit</td><td>500m</td><td>512Mi</td></tr>
+  <tr><td>HPA min</td><td colspan="2">1 replica</td></tr>
+  <tr><td>HPA max</td><td colspan="2">3 replicas (CPU 70% trigger)</td></tr>
+</table>
+
+
+<h2 id="env">15. Environment Variables</h2>
+
+<p>File: <span class="file-ref">onboarding-agent/.env.example</span> · All secrets injected from OpenBao <code>i3/onboarding-agent/</code></p>
+
+<table>
+  <tr><th>Variable</th><th>Default / Example</th><th>Source</th><th>Notes</th></tr>
+  <tr><td><code>LITELLM_URL</code></td><td>http://litellm-proxy.i3-litellm.svc.cluster.local:4000/v1</td><td>ConfigMap</td><td>Cluster-internal; use external URL for local dev</td></tr>
+  <tr><td><code>LITELLM_KEY</code></td><td>—</td><td>OpenBao</td><td>Master LiteLLM API key</td></tr>
+  <tr><td><code>LITELLM_MODEL_FAST</code></td><td>granite-nano</td><td>ConfigMap</td><td>Tier 3 — embeddings</td></tr>
+  <tr><td><code>LITELLM_MODEL_SCAN</code></td><td>mistral-nemo</td><td>ConfigMap</td><td>Tier 2 — subagent scans</td></tr>
+  <tr><td><code>LITELLM_MODEL_SYNTH</code></td><td>granite-heavy</td><td>ConfigMap</td><td>Tier 1 — plan synthesis</td></tr>
+  <tr><td><code>CHROMA_HOST</code></td><td>chromadb.i3-admissions.svc.cluster.local</td><td>ConfigMap</td><td>Existing cluster instance</td></tr>
+  <tr><td><code>CHROMA_PORT</code></td><td>8000</td><td>ConfigMap</td><td></td></tr>
+  <tr><td><code>CHROMA_TOKEN</code></td><td>—</td><td>OpenBao</td><td></td></tr>
+  <tr><td><code>CHROMA_COLLECTION</code></td><td>onboarding-corpus</td><td>ConfigMap</td><td>Separate from admissions-docs</td></tr>
+  <tr><td><code>KEYCLOAK_ISSUER</code></td><td>https://sso.i3technologies.co.ke/realms/i3</td><td>ConfigMap</td><td></td></tr>
+  <tr><td><code>KEYCLOAK_CLIENT_ID</code></td><td>onboarding-agent</td><td>ConfigMap</td><td></td></tr>
+  <tr><td><code>KEYCLOAK_JWKS_URI</code></td><td>…/realms/i3/protocol/openid-connect/certs</td><td>ConfigMap</td><td></td></tr>
+  <tr><td><code>EVALOS_API_URL</code></td><td>http://evalos-api.i3-evalos.svc.cluster.local:8080</td><td>ConfigMap</td><td></td></tr>
+  <tr><td><code>EVALOS_API_KEY</code></td><td>—</td><td>OpenBao</td><td></td></tr>
+  <tr><td><code>DIRECTUS_URL</code></td><td>https://cms.i3technologies.co.ke</td><td>ConfigMap</td><td></td></tr>
+  <tr><td><code>DIRECTUS_TOKEN</code></td><td>—</td><td>OpenBao</td><td></td></tr>
+  <tr><td><code>MCP_CONNECTORS_URL</code></td><td>http://mcp-connectors.i3-admissions.svc.cluster.local:8001</td><td>ConfigMap</td><td></td></tr>
+  <tr><td><code>N8N_ONBOARDING_WEBHOOK_URL</code></td><td>https://n8n.i3technologies.co.ke/webhook/onboarding</td><td>ConfigMap</td><td></td></tr>
+  <tr><td><code>GITHUB_TOKEN</code></td><td>—</td><td>OpenBao</td><td>For closed-issue ingestion</td></tr>
+  <tr><td><code>PLATFORM_REPO_PATH</code></td><td>../platform</td><td>ConfigMap</td><td>Seed corpus path for verify.ts</td></tr>
+  <tr><td><code>PORT</code></td><td>3000</td><td>ConfigMap</td><td></td></tr>
+  <tr><td><code>KUBE_API_URL</code></td><td>(in-cluster auto)</td><td>SA token</td><td>For RHOAI namespace live-check</td></tr>
+  <tr><td><code>KUBE_SA_TOKEN</code></td><td>(in-cluster auto)</td><td>SA token</td><td>For RHOAI namespace live-check</td></tr>
+</table>
+
+
+<h2 id="testing">16. Testing Strategy</h2>
+
+<h3>RAGAS Evaluation — Onboarding Agent</h3>
+<p>File: <span class="file-ref">platform/testing/testing.py</span> · Section 5 · Run: <code>python testing.py --ragas-onboarding</code> or <code>make test-onboarding</code></p>
+
+<table>
+  <tr><th>Metric</th><th>Target Threshold</th><th>Test Dataset Size</th></tr>
+  <tr><td>Faithfulness</td><td>≥ 0.80</td><td>4 questions</td></tr>
+  <tr><td>Answer Relevancy</td><td>≥ 0.75</td><td>4 questions</td></tr>
+</table>
+
+<h3>RAGAS Test Questions</h3>
+<table>
+  <tr><th>#</th><th>Question</th><th>Role</th><th>Key Ground Truth</th></tr>
+  <tr><td>1</td><td>What files should a new Platform Engineer read on Day 1?</td><td>platform_engineer</td><td>RUNBOOK.md, app-of-apps.yaml, Makefile, solution-01…08 forbidden</td></tr>
+  <tr><td>2</td><td>What is the RHOAI namespace availability status?</td><td>ai_ml_engineer</td><td>Not live — "Month 3" in platform-documentation.md → verified:false</td></tr>
+  <tr><td>3</td><td>How does an AI/ML Engineer run the admissions agent locally?</td><td>ai_ml_engineer</td><td>admissions_agent.py, uvicorn, Lobster Trap, confidence gate 0.65</td></tr>
+  <tr><td>4</td><td>What installer tools are required before starting development?</td><td>platform_engineer</td><td>oc, argocd, tekton, bao, Node.js 20, buildah — Makefile + RUNBOOK.md</td></tr>
+</table>
+
+<h3>Admissions Agent RAGAS (existing, unchanged)</h3>
+<p><code>python testing.py --ragas</code> · Faithfulness ≥ 0.85 · Answer Relevancy ≥ 0.80</p>
+
+<h3>Red-Team (promptfoo)</h3>
+<p><code>python testing.py --promptfoo-config | promptfoo eval</code> · 50 red-team tests · strategies: jailbreak, prompt-injection, harmful:hate, pii:leak · plugins: OWASP LLM-01, LLM-06</p>
+
+<h3>Load Tests (Locust)</h3>
+<p>Existing tests unchanged: <code>make test-load-evalos</code> (100 users) and <code>make test-load-ailab</code> (2,000 users).</p>
+
+
+<h2 id="constraints">17. Hard Constraints &amp; Forbidden Actions</h2>
+
+<div class="danger">
+  <strong>⛔ ABSOLUTE RULES — violations cause production incidents:</strong>
+  <ul style="margin-top:8px">
+    <li><strong>Never modify</strong> solution-01, solution-02, solution-03, solution-04, solution-05, solution-06, solution-07, or solution-08 namespaces for any reason</li>
+    <li><strong>Never auto-write</strong> to EvalOS tables (questions, quiz_attempts, enrolment_queue) or Keycloak realm/users without 🔴 manual operator approval</li>
+    <li><strong>Never hardcode secrets</strong> — LITELLM_KEY, CHROMA_TOKEN, DIRECTUS_TOKEN, GITHUB_TOKEN must only exist in OpenBao at <code>i3/onboarding-agent/</code></li>
+    <li><strong>Never skip Lobster Trap</strong> on any user-supplied text before an LLM call</li>
+    <li><strong>Never commit</strong> .env files, bearer tokens, or OpenBao keys to git</li>
+    <li><strong>Never use granite-heavy (Tier 1 / watsonx.ai)</strong> for anything except final plan synthesis — IBM credits expire Oct 2026 ($14,047.27 remaining)</li>
+  </ul>
+</div>
+
+
+<h2 id="filemap">18. Complete File Map</h2>
+
+<table>
+  <tr><th>File</th><th>Lines</th><th>Purpose</th></tr>
+  <tr><td><span class="file-ref">src/server.ts</span></td><td>280</td><td>Express entrypoint, all 10 routes, plan store, Lobster Trap middleware</td></tr>
+  <tr><td><span class="file-ref">src/security/lobster-trap.ts</span></td><td>34</td><td>12-pattern prompt injection firewall</td></tr>
+  <tr><td><span class="file-ref">src/security/keycloak-auth.ts</span></td><td>105</td><td>JWT validation, requireAuth, requireRole</td></tr>
+  <tr><td><span class="file-ref">src/ingestion/types.ts</span></td><td>20</td><td>RawArtifact interface</td></tr>
+  <tr><td><span class="file-ref">src/ingestion/platform.ts</span></td><td>~120</td><td>Platform repo file-walk ingestion</td></tr>
+  <tr><td><span class="file-ref">src/ingestion/github.ts</span></td><td>~90</td><td>Octokit: README, ADRs, closed issues</td></tr>
+  <tr><td><span class="file-ref">src/ingestion/curriculum.ts</span></td><td>~70</td><td>Directus CMS programme_guides</td></tr>
+  <tr><td><span class="file-ref">src/ingestion/evalos.ts</span></td><td>~60</td><td>EvalOS domain weights + C1000-207 fallback</td></tr>
+  <tr><td><span class="file-ref">src/context-store/chroma-client.ts</span></td><td>72</td><td>ChromaDB client, getCollection, chromaHealthy</td></tr>
+  <tr><td><span class="file-ref">src/context-store/chunker.ts</span></td><td>168</td><td>Role-aware chunking strategies</td></tr>
+  <tr><td><span class="file-ref">src/context-store/index.ts</span></td><td>87</td><td>Batch upsert pipeline</td></tr>
+  <tr><td><span class="file-ref">src/context-store/retriever.ts</span></td><td>130</td><td>HNSW cosine search + role/source filtering</td></tr>
+  <tr><td><span class="file-ref">src/orchestrator/subagents/types.ts</span></td><td>47</td><td>OnboardingRole, SubagentFinding, SubagentInput</td></tr>
+  <tr><td><span class="file-ref">src/orchestrator/subagents/base-scan.ts</span></td><td>96</td><td>Abstract LiteLLM scanner with Zod validation</td></tr>
+  <tr><td><span class="file-ref">src/orchestrator/subagents/evalos-scan.ts</span></td><td>72</td><td>Bootcamp Student subagent</td></tr>
+  <tr><td><span class="file-ref">src/orchestrator/subagents/ailab-scan.ts</span></td><td>82</td><td>AI/ML Engineer subagent (RHOAI stale-doc)</td></tr>
+  <tr><td><span class="file-ref">src/orchestrator/subagents/infra-scan.ts</span></td><td>80</td><td>Platform Engineer subagent</td></tr>
+  <tr><td><span class="file-ref">src/orchestrator/subagents/backend-scan.ts</span></td><td>76</td><td>Backend Engineer subagent</td></tr>
+  <tr><td><span class="file-ref">src/orchestrator/subagents/model-scan.ts</span></td><td>78</td><td>AI/ML Engineer model-eval subagent</td></tr>
+  <tr><td><span class="file-ref">src/orchestrator/skills-assessor.ts</span></td><td>244</td><td>Role → 3 subagents, parallel RAG + scan</td></tr>
+  <tr><td><span class="file-ref">src/orchestrator/verify.ts</span></td><td>175</td><td>File-system + RHOAI live-check verification</td></tr>
+  <tr><td><span class="file-ref">src/orchestrator/planner.ts</span></td><td>260</td><td>granite-heavy synthesis, confidence gate, RampUpPlanSchema</td></tr>
+  <tr><td><span class="file-ref">src/render/markdownPlan.ts</span></td><td>118</td><td>Markdown render with badges</td></tr>
+  <tr><td><span class="file-ref">src/render/graph.ts</span></td><td>106</td><td>Mermaid Gantt + service topology</td></tr>
+  <tr><td><span class="file-ref">src/render/taskSync.ts</span></td><td>181</td><td>2-stage CRM sync (one-click gate)</td></tr>
+  <tr><td><span class="file-ref">Dockerfile</span></td><td>46</td><td>Multi-stage UBI9 build, UID 1001</td></tr>
+  <tr><td><span class="file-ref">openshift/namespace.yaml</span></td><td>15</td><td>i3-onboarding namespace</td></tr>
+  <tr><td><span class="file-ref">openshift/deploy.yaml</span></td><td>210</td><td>Deployment, Service, Route, HPA, Secret template</td></tr>
+  <tr><td><span class="file-ref">openshift/argocd-app.yaml</span></td><td>49</td><td>ArgoCD Application, wave 7</td></tr>
+  <tr><td><span class="file-ref">package.json</span></td><td>48</td><td>Dependencies, scripts, Node 20 engine requirement</td></tr>
+  <tr><td><span class="file-ref">.env.example</span></td><td>60</td><td>All 22 env vars with cluster-internal URLs</td></tr>
+  <tr><td colspan="3" style="background:#f7f8fa;font-weight:600">Platform files modified</td></tr>
+  <tr><td><span class="file-ref">platform/gitops/argocd/app-of-apps.yaml</span></td><td>+12 lines</td><td>Wave 7 element + i3-onboarding AppProject destination</td></tr>
+  <tr><td><span class="file-ref">platform/admissions/mcp/mcp_connectors.py</span></td><td>+150 lines</td><td>/tools/onboarding/sync-tasks + /confirm/{token}</td></tr>
+  <tr><td><span class="file-ref">platform/testing/testing.py</span></td><td>+154 lines</td><td>Section 5: RAGAS onboarding evaluation</td></tr>
+  <tr><td><span class="file-ref">Makefile</span></td><td>+35 lines</td><td>Section 11: onboarding targets</td></tr>
+  <tr><td><span class="file-ref">.env.example (root)</span></td><td>+44 lines</td><td>All onboarding env vars appended</td></tr>
+</table>
+
+<hr class="divider" />
+
+<footer>Made with IBM Bob  ·  i3 Agentic AI Labs  ·  IBM TechXchange Hackathon 2026  ·  Project 1: Codebase Onboarding Agent</footer>
+</div>
+</body>
+</html>

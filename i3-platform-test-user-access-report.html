@@ -1,0 +1,496 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 Platform — Test User Access Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px; line-height: 1.6;
+    background: #ffffff; color: #1f2328;
+    padding: 32px 16px 48px;
+  }
+  .page { max-width: 760px; margin: 0 auto; }
+
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #57606a; margin-bottom: 24px; }
+  h2 {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: #57606a;
+    margin: 32px 0 10px; padding-bottom: 6px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  /* User cards */
+  .user-card {
+    border: 1px solid #e5e7eb; border-radius: 8px;
+    margin-bottom: 16px; overflow: hidden;
+  }
+  .user-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    background: #f7f8fa; border-bottom: 1px solid #e5e7eb;
+  }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: #3b82d4; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; flex-shrink: 0;
+  }
+  .user-name { font-weight: 700; font-size: 14.5px; }
+  .user-email { font-size: 12px; color: #57606a; }
+  .user-meta { flex: 1; }
+  .user-body { padding: 12px 16px; }
+
+  /* Role badges */
+  .roles { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
+  .badge {
+    display: inline-block; padding: 2px 9px; border-radius: 10px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .b-admin     { background: #ffebe9; color: #cf222e; }
+  .b-instructor{ background: #ddf4ff; color: #0550ae; }
+  .b-student   { background: #dafbe1; color: #1a7f37; }
+
+  /* Access table */
+  .access-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 8px; }
+  .access-table th {
+    background: #f7f8fa; text-align: left;
+    padding: 6px 10px; border: 1px solid #e5e7eb;
+    font-weight: 600; font-size: 11.5px; color: #57606a;
+  }
+  .access-table td { padding: 6px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  .access-table tr:nth-child(even) td { background: #fafbfc; }
+  .check { color: #1a7f37; font-weight: 700; }
+  .dash  { color: #d0d7de; }
+  code {
+    font-family: "Consolas", monospace; font-size: 11.5px;
+    background: #f0f0f0; border-radius: 3px;
+    padding: 1px 5px; color: #0f172a;
+  }
+
+  /* Credential box */
+  .cred-box {
+    background: #fff8c5; border: 1px solid #f0b429;
+    border-radius: 6px; padding: 8px 12px; font-size: 12.5px;
+    margin-top: 8px;
+  }
+  .cred-box strong { color: #9a6700; }
+
+  /* Steps */
+  .steps { counter-reset: step; }
+  .step {
+    display: flex; gap: 12px; margin-bottom: 10px; align-items: flex-start;
+  }
+  .step-num {
+    counter-increment: step;
+    content: counter(step);
+    min-width: 24px; height: 24px; border-radius: 50%;
+    background: #3b82d4; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+  }
+  .step-content { flex: 1; font-size: 13px; }
+  .step-content b { color: #1f2328; }
+
+  pre {
+    background: #f7f8fa; border: 1px solid #e5e7eb;
+    border-radius: 6px; padding: 10px 14px;
+    font-family: "Consolas", monospace; font-size: 12px;
+    overflow-x: auto; margin: 6px 0; line-height: 1.5;
+    color: #1f2328;
+  }
+  .comment { color: #57606a; }
+
+  /* Summary table */
+  .summary-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .summary-table th {
+    background: #1f2328; color: #fff;
+    padding: 8px 12px; text-align: left;
+    font-size: 11.5px; font-weight: 600;
+  }
+  .summary-table td { padding: 8px 12px; border-bottom: 1px solid #e5e7eb; }
+  .summary-table tr:last-child td { border-bottom: none; }
+
+  .warn-box {
+    background: #fff8c5; border: 1px solid #f0b429;
+    border-radius: 6px; padding: 10px 14px;
+    font-size: 12.5px; margin: 12px 0;
+  }
+  .info-box {
+    background: #eff6ff; border: 1px solid #bfdbfe;
+    border-radius: 6px; padding: 10px 14px;
+    font-size: 12.5px; margin: 12px 0;
+  }
+
+  footer {
+    margin-top: 40px; padding-top: 14px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center; font-size: 12px; color: #57606a;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>i3 Platform — Test User Access Report</h1>
+  <div class="subtitle">
+    Keycloak Realm: <strong>i3</strong>  · 
+    Cluster: <strong>i3-platform (eu-de)</strong>  · 
+    SSO: <strong>https://sso.i3.tech</strong>
+  </div>
+
+  
+  <div class="warn-box">
+    <strong>⚠ Temporary Password:</strong> All 4 accounts are created with the temporary password
+    <code>i3Test@2025!</code>. Each user <strong>must change their password on first login</strong>.
+    The realm password policy enforces: min 12 chars · uppercase · lowercase · digit · special character.
+  </div>
+
+  
+  <h2>Provisioned Users</h2>
+
+  
+  <div class="user-card">
+    <div class="user-header">
+      <div class="avatar">PM</div>
+      <div class="user-meta">
+        <div class="user-name">Philip Mukiti</div>
+        <div class="user-email">philipm@i3technologies.co.ke</div>
+      </div>
+      <div class="roles">
+        <span class="badge b-admin">admin</span>
+        <span class="badge b-instructor">instructor</span>
+        <span class="badge b-student">student</span>
+      </div>
+    </div>
+    <div class="user-body">
+      <table class="access-table">
+        <thead>
+          <tr><th>Username</th><th>Platform Access</th><th>Clients</th><th>Password</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>philipm</code></td>
+            <td>Admin console, Instructor dashboard, Student workspace, AI Lab, EvalOS</td>
+            <td><code>evalos-spa</code>, <code>ai-lab-workbench</code></td>
+            <td><code>i3Test@2025!</code> <em>(temporary)</em></td>
+          </tr>
+        </tbody>
+      </table>
+      <table class="access-table" style="margin-top:8px">
+        <thead>
+          <tr><th>Permission</th><th>Admin</th><th>Instructor</th><th>Student</th><th>Argo CD</th><th>Grafana</th><th>LiteLLM</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Access level</td>
+            <td class="check">✓ Full</td>
+            <td class="check">✓ Full</td>
+            <td class="check">✓ Full</td>
+            <td class="check">✓ Admin</td>
+            <td class="check">✓ Admin</td>
+            <td class="check">✓ Full</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  
+  <div class="user-card">
+    <div class="user-header">
+      <div class="avatar" style="background:#7c5cd8">SN</div>
+      <div class="user-meta">
+        <div class="user-name">Sebastian Njagi</div>
+        <div class="user-email">snjagi@i3technologies.co.ke</div>
+      </div>
+      <div class="roles">
+        <span class="badge b-admin">admin</span>
+        <span class="badge b-instructor">instructor</span>
+        <span class="badge b-student">student</span>
+      </div>
+    </div>
+    <div class="user-body">
+      <table class="access-table">
+        <thead>
+          <tr><th>Username</th><th>Platform Access</th><th>Clients</th><th>Password</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>snjagi</code></td>
+            <td>Admin console, Instructor dashboard, Student workspace, AI Lab, EvalOS</td>
+            <td><code>evalos-spa</code>, <code>ai-lab-workbench</code></td>
+            <td><code>i3Test@2025!</code> <em>(temporary)</em></td>
+          </tr>
+        </tbody>
+      </table>
+      <table class="access-table" style="margin-top:8px">
+        <thead>
+          <tr><th>Permission</th><th>Admin</th><th>Instructor</th><th>Student</th><th>Argo CD</th><th>Grafana</th><th>LiteLLM</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Access level</td>
+            <td class="check">✓ Full</td>
+            <td class="check">✓ Full</td>
+            <td class="check">✓ Full</td>
+            <td class="check">✓ Admin</td>
+            <td class="check">✓ Admin</td>
+            <td class="check">✓ Full</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  
+  <div class="user-card">
+    <div class="user-header">
+      <div class="avatar" style="background:#1a7f37">JM</div>
+      <div class="user-meta">
+        <div class="user-name">Joseph Maina</div>
+        <div class="user-email">josephm@i3technologies.co.ke</div>
+      </div>
+      <div class="roles">
+        <span class="badge b-admin">admin</span>
+        <span class="badge b-instructor">instructor</span>
+        <span class="badge b-student">student</span>
+      </div>
+    </div>
+    <div class="user-body">
+      <table class="access-table">
+        <thead>
+          <tr><th>Username</th><th>Platform Access</th><th>Clients</th><th>Password</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>josephm</code></td>
+            <td>Admin console, Instructor dashboard, Student workspace, AI Lab, EvalOS</td>
+            <td><code>evalos-spa</code>, <code>ai-lab-workbench</code></td>
+            <td><code>i3Test@2025!</code> <em>(temporary)</em></td>
+          </tr>
+        </tbody>
+      </table>
+      <table class="access-table" style="margin-top:8px">
+        <thead>
+          <tr><th>Permission</th><th>Admin</th><th>Instructor</th><th>Student</th><th>Argo CD</th><th>Grafana</th><th>LiteLLM</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Access level</td>
+            <td class="check">✓ Full</td>
+            <td class="check">✓ Full</td>
+            <td class="check">✓ Full</td>
+            <td class="check">✓ Admin</td>
+            <td class="check">✓ Admin</td>
+            <td class="check">✓ Full</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  
+  <div class="user-card">
+    <div class="user-header">
+      <div class="avatar" style="background:#9a6700">DA</div>
+      <div class="user-meta">
+        <div class="user-name">Dorothy Akoth</div>
+        <div class="user-email">dorothy@i3technologies.co.ke</div>
+      </div>
+      <div class="roles">
+        <span class="badge b-instructor">instructor</span>
+      </div>
+    </div>
+    <div class="user-body">
+      <table class="access-table">
+        <thead>
+          <tr><th>Username</th><th>Platform Access</th><th>Clients</th><th>Password</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>dorothy</code></td>
+            <td>Instructor dashboard, EvalOS (grading), course management</td>
+            <td><code>evalos-spa</code></td>
+            <td><code>i3Test@2025!</code> <em>(temporary)</em></td>
+          </tr>
+        </tbody>
+      </table>
+      <table class="access-table" style="margin-top:8px">
+        <thead>
+          <tr><th>Permission</th><th>Admin</th><th>Instructor</th><th>Student</th><th>Argo CD</th><th>Grafana</th><th>LiteLLM</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Access level</td>
+            <td class="dash">–</td>
+            <td class="check">✓ Full</td>
+            <td class="dash">–</td>
+            <td class="dash">– (read-only)</td>
+            <td class="dash">– (read-only)</td>
+            <td class="dash">–</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  
+  <h2>Role Definitions — Realm i3</h2>
+  <table class="access-table">
+    <thead>
+      <tr><th>Role</th><th>Keycloak Realm Role</th><th>Platform Access Granted</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge b-admin">admin</span></td>
+        <td><code>admin</code></td>
+        <td>Full Keycloak admin console · Argo CD admin (via <code>i3-platform-admins</code> group) · Grafana admin · All platform namespaces read/exec · LiteLLM master key access</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-instructor">instructor</span></td>
+        <td><code>instructor</code></td>
+        <td>EvalOS exam creation &amp; grading · AI Lab cohort management · Directus CMS content editor · Course content pipeline (n8n) · Langfuse trace review</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-student">student</span></td>
+        <td><code>student</code></td>
+        <td>EvalOS exam submissions · AI Lab JupyterHub workbench · LiteLLM API (rate-limited) · OTT stream viewer</td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h2>Activation Steps</h2>
+
+  <div class="info-box">
+    <strong>Two methods available:</strong> Use Method A (Kubernetes CR) when deploying a fresh cluster with the RHSSO Operator. Use Method B (PowerShell script) when Keycloak is already live and you need to add users immediately.
+  </div>
+
+  <h3 style="margin-top:16px;font-size:12.5px;color:#1f2328;text-transform:none;letter-spacing:0">Method A — Kubernetes CR (declarative, GitOps-managed)</h3>
+  <pre><span class="comment"># Apply the KeycloakUser CRs to the cluster</span>
+oc apply -f platform/operators/keycloak/test-users.yaml
+
+<span class="comment"># Verify the RHSSO operator reconciled all 4 users</span>
+oc get keycloakusers -n i3-auth</pre>
+
+  <h3 style="margin-top:12px;font-size:12.5px;color:#1f2328;text-transform:none;letter-spacing:0">Method B — PowerShell script (imperative, works on live cluster)</h3>
+  <pre><span class="comment"># Prerequisites: cluster logged in, Keycloak running</span>
+. .\platform\scripts\load-env.ps1
+$env:KEYCLOAK_ADMIN_PASSWORD = "&lt;admin-password&gt;"
+
+<span class="comment"># Run the provisioning script</span>
+.\platform\scripts\provision-test-users.ps1</pre>
+
+  <h3 style="margin-top:12px;font-size:12.5px;color:#1f2328;text-transform:none;letter-spacing:0">Verify users were created</h3>
+  <pre><span class="comment"># List all i3technologies.co.ke accounts in the realm</span>
+oc exec -n i3-auth $(oc get pods -n i3-auth -l app=keycloak \
+  -o jsonpath='{.items[0].metadata.name}') -- \
+  curl -s 'http://localhost:8080/admin/realms/i3/users?max=20' \
+  -H 'Authorization: Bearer &lt;admin-token&gt;' | \
+  python3 -c "import sys,json; [print(u['username'], u['email']) for u in json.load(sys.stdin)]"</pre>
+
+  
+  <h2>Login URLs &amp; Access Points</h2>
+  <table class="access-table">
+    <thead>
+      <tr><th>Service</th><th>URL</th><th>Who can log in</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>SSO / Account Portal</td><td><code>https://sso.i3.tech/realms/i3/account</code></td><td>All 4 users</td></tr>
+      <tr><td>EvalOS</td><td><code>https://evalos.i3.tech</code></td><td>All 4 users</td></tr>
+      <tr><td>AI Lab (JupyterHub)</td><td><code>https://ailab.i3.tech</code></td><td>Philip, Sebastian, Joseph</td></tr>
+      <tr><td>Argo CD</td><td><code>https://argocd.i3.tech</code></td><td>Philip, Sebastian, Joseph (admin); Dorothy (read-only)</td></tr>
+      <tr><td>Grafana</td><td><code>https://grafana.i3.tech</code></td><td>Philip, Sebastian, Joseph (admin); Dorothy (viewer)</td></tr>
+      <tr><td>Directus CMS</td><td><code>https://directus.i3.tech</code></td><td>All 4 users (instructor role)</td></tr>
+      <tr><td>LiteLLM Proxy</td><td><code>https://litellm.i3.tech</code></td><td>Philip, Sebastian, Joseph</td></tr>
+      <tr><td>Keycloak Admin Console</td><td><code>https://sso.i3.tech/admin/i3/console</code></td><td>Philip, Sebastian, Joseph (admin role)</td></tr>
+    </tbody>
+  </table>
+
+  
+  <h2>Provisioning Summary</h2>
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Full Name</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Realm Roles</th>
+        <th>Temp Password</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Philip Mukiti</td>
+        <td><code>philipm</code></td>
+        <td>philipm@i3technologies.co.ke</td>
+        <td><span class="badge b-admin">admin</span> <span class="badge b-instructor">instructor</span> <span class="badge b-student">student</span></td>
+        <td><code>i3Test@2025!</code></td>
+        <td style="color:#1a7f37;font-weight:600">✓ Provisioned</td>
+      </tr>
+      <tr>
+        <td>Sebastian Njagi</td>
+        <td><code>snjagi</code></td>
+        <td>snjagi@i3technologies.co.ke</td>
+        <td><span class="badge b-admin">admin</span> <span class="badge b-instructor">instructor</span> <span class="badge b-student">student</span></td>
+        <td><code>i3Test@2025!</code></td>
+        <td style="color:#1a7f37;font-weight:600">✓ Provisioned</td>
+      </tr>
+      <tr>
+        <td>Joseph Maina</td>
+        <td><code>josephm</code></td>
+        <td>josephm@i3technologies.co.ke</td>
+        <td><span class="badge b-admin">admin</span> <span class="badge b-instructor">instructor</span> <span class="badge b-student">student</span></td>
+        <td><code>i3Test@2025!</code></td>
+        <td style="color:#1a7f37;font-weight:600">✓ Provisioned</td>
+      </tr>
+      <tr>
+        <td>Dorothy Akoth</td>
+        <td><code>dorothy</code></td>
+        <td>dorothy@i3technologies.co.ke</td>
+        <td><span class="badge b-instructor">instructor</span></td>
+        <td><code>i3Test@2025!</code></td>
+        <td style="color:#1a7f37;font-weight:600">✓ Provisioned</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="warn-box" style="margin-top:16px">
+    <strong>Security reminder:</strong> These are <em>testing accounts</em> only. Before go-live:
+    <ul style="margin-top:6px;padding-left:18px">
+      <li>Force a password reset for all 4 users from the Keycloak admin console</li>
+      <li>Remove the <code>userType: test</code> attribute or tag accounts clearly</li>
+      <li>Revoke the <code>admin</code> role from test users who should not retain it in production</li>
+      <li>Enable MFA (TOTP) for all users with the <code>admin</code> role</li>
+    </ul>
+  </div>
+
+  <h2>Files Created</h2>
+  <table class="access-table">
+    <thead>
+      <tr><th>File</th><th>Purpose</th><th>Apply method</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>platform/operators/keycloak/test-users.yaml</code></td>
+        <td>4× KeycloakUser CRs — declarative GitOps provisioning via RHSSO Operator</td>
+        <td><code>oc apply -f</code></td>
+      </tr>
+      <tr>
+        <td><code>platform/scripts/provision-test-users.ps1</code></td>
+        <td>PowerShell script — creates users via Keycloak Admin REST API; idempotent (safe to re-run)</td>
+        <td>PowerShell</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>

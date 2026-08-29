@@ -1,0 +1,716 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Project 1 — Codebase Onboarding Agent</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.6; color: #1f2328; background: #ffffff; }
+  .page { max-width: 760px; margin: 0 auto; padding: 40px 24px 60px; }
+
+  /* Header */
+  .doc-header { border-bottom: 2px solid #e5e7eb; padding-bottom: 24px; margin-bottom: 32px; }
+  .doc-header .badge { display: inline-block; background: #3b82d4; color: #fff; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 3px 10px; border-radius: 3px; margin-bottom: 10px; }
+  .doc-header .badge.green { background: #16a34a; }
+  .doc-header .badge.purple { background: #7c5cd8; }
+  .doc-header .badge.orange { background: #d97706; }
+  .doc-header h1 { font-size: 24px; font-weight: 700; color: #1f2328; line-height: 1.3; margin-bottom: 6px; }
+  .doc-header .subtitle { color: #57606a; font-size: 13px; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 14px; }
+  .meta-item { font-size: 12px; color: #57606a; }
+  .meta-item strong { color: #1f2328; }
+
+  /* TOC */
+  .toc { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 18px 22px; margin-bottom: 36px; }
+  .toc h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #57606a; margin-bottom: 12px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { font-size: 13px; color: #1f2328; margin-bottom: 5px; }
+  .toc li a { color: #3b82d4; text-decoration: none; }
+  .toc li a:hover { text-decoration: underline; }
+
+  /* Sections */
+  .section { margin-bottom: 40px; }
+  .section-title { font-size: 18px; font-weight: 700; color: #1f2328; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 18px; }
+  .section-subtitle { font-size: 14px; font-weight: 600; color: #1f2328; margin: 18px 0 10px; }
+  p { margin-bottom: 12px; color: #1f2328; }
+
+  /* Callout boxes */
+  .callout { border-left: 4px solid #3b82d4; background: #f0f6ff; padding: 12px 16px; border-radius: 0 4px 4px 0; margin-bottom: 14px; font-size: 13px; }
+  .callout.warn { border-color: #d97706; background: #fffbeb; }
+  .callout.danger { border-color: #dc2626; background: #fff5f5; }
+  .callout.success { border-color: #16a34a; background: #f0fdf4; }
+  .callout strong { display: block; margin-bottom: 4px; }
+
+  /* Code */
+  pre { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 5px; padding: 14px 16px; font-size: 12px; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; overflow-x: auto; margin-bottom: 14px; line-height: 1.5; }
+  code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; font-size: 12px; background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 3px; padding: 1px 5px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 18px; }
+  th { background: #f7f8fa; border: 1px solid #e5e7eb; padding: 8px 12px; text-align: left; font-weight: 600; color: #1f2328; }
+  td { border: 1px solid #e5e7eb; padding: 8px 12px; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+
+  /* File tree */
+  .filetree { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 5px; padding: 16px 18px; font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; line-height: 1.8; margin-bottom: 18px; }
+  .filetree .dir { color: #3b82d4; font-weight: 600; }
+  .filetree .file { color: #1f2328; }
+  .filetree .comment { color: #57606a; }
+  .filetree .warn { color: #d97706; }
+
+  /* Day plan cards */
+  .day-card { border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 16px; overflow: hidden; }
+  .day-card-header { padding: 10px 16px; font-weight: 700; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
+  .day-card-header.d1 { background: #eff6ff; color: #1d4ed8; }
+  .day-card-header.d2 { background: #f0fdf4; color: #15803d; }
+  .day-card-header.d3 { background: #fefce8; color: #a16207; }
+  .day-card-body { padding: 14px 16px; }
+  .day-card-body ul { padding-left: 18px; }
+  .day-card-body li { margin-bottom: 7px; font-size: 13px; }
+
+  /* Task list */
+  .task { border: 1px solid #e5e7eb; border-radius: 5px; padding: 14px 16px; margin-bottom: 10px; }
+  .task-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 6px; }
+  .task-day { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 3px; padding: 2px 7px; white-space: nowrap; color: #57606a; }
+  .task-title { font-size: 13px; font-weight: 600; color: #1f2328; flex: 1; }
+  .task-path { font-family: monospace; font-size: 11px; color: #57606a; margin-bottom: 6px; }
+  .task-desc { font-size: 12px; color: #1f2328; line-height: 1.55; }
+  .verified-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; white-space: nowrap; }
+  .verified-yes { background: #dcfce7; color: #15803d; }
+  .verified-no { background: #fef9c3; color: #854d0e; }
+  .verify-note { font-size: 11px; color: #d97706; margin-top: 6px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 3px; padding: 5px 8px; }
+
+  /* Risk table */
+  .risk-high { color: #dc2626; font-weight: 600; }
+  .risk-med { color: #d97706; font-weight: 600; }
+  .risk-low { color: #16a34a; font-weight: 600; }
+
+  /* Metric boxes */
+  .metrics { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+  .metric-box { flex: 1; min-width: 140px; background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 5px; padding: 14px; text-align: center; }
+  .metric-box .val { font-size: 22px; font-weight: 700; color: #3b82d4; }
+  .metric-box .lbl { font-size: 11px; color: #57606a; margin-top: 3px; }
+
+  /* Bob capability pills */
+  .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 12px; }
+  .pill-blue { background: #dbeafe; color: #1d4ed8; }
+  .pill-purple { background: #ede9fe; color: #6d28d9; }
+  .pill-green { background: #dcfce7; color: #15803d; }
+
+  /* Approval gate */
+  .gate-row { display: flex; gap: 10px; margin-bottom: 8px; align-items: flex-start; }
+  .gate-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+  .gate-green { background: #16a34a; }
+  .gate-yellow { background: #d97706; }
+  .gate-red { background: #dc2626; }
+  .gate-label { font-size: 13px; }
+
+  /* Demo script */
+  .demo-beat { display: flex; gap: 14px; margin-bottom: 12px; align-items: flex-start; }
+  .beat-num { width: 26px; height: 26px; border-radius: 50%; background: #3b82d4; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .beat-text { font-size: 13px; line-height: 1.55; padding-top: 4px; }
+
+  /* Footer */
+  .footer { border-top: 1px solid #e5e7eb; margin-top: 48px; padding-top: 16px; text-align: center; font-size: 11px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  
+  <div class="doc-header">
+    <span class="badge">IBM TechXchange 2026 Hackathon</span>
+    <h1>Project 1 — Codebase Onboarding Agent</h1>
+    <p class="subtitle">Full Project Documentation &amp; Implementation Plan — Senior Solutions Architect Review</p>
+    <div class="meta-row">
+      <span class="meta-item"><strong>SDLC Area:</strong> Onboarding</span>
+      <span class="meta-item"><strong>Team Size:</strong> Up to 5 engineers</span>
+      <span class="meta-item"><strong>Build Window:</strong> 48 hours (Aug 28–30, 2026)</span>
+      <span class="meta-item"><strong>Stack:</strong> Node.js · TypeScript · Express · Chroma · Bob 2.0</span>
+      <span class="meta-item"><strong>Judging Max:</strong> 20 pts (Prize threshold: 12.5)</span>
+    </div>
+  </div>
+
+  
+  <div class="toc">
+    <h3>Table of Contents</h3>
+    <ol>
+      <li><a href="#s1">Problem Statement &amp; Business Case</a></li>
+      <li><a href="#s2">Architecture Decision &amp; Tech Stack</a></li>
+      <li><a href="#s3">Complete File Tree &amp; Component Specifications</a></li>
+      <li><a href="#s4">Core Data Flow — End-to-End Pipeline</a></li>
+      <li><a href="#s5">IBM Bob 2.0 Capability Mapping</a></li>
+      <li><a href="#s6">Seed Repository Design</a></li>
+      <li><a href="#s7">48-Hour Implementation Plan (Day-by-Day)</a></li>
+      <li><a href="#s8">5-Day New-Hire Ramp-Up Task Plan (with Verification)</a></li>
+      <li><a href="#s9">Key Code Specifications</a></li>
+      <li><a href="#s10">Human Approval Gates</a></li>
+      <li><a href="#s11">Risk Register</a></li>
+      <li><a href="#s12">Demo Script &amp; Pre-Demo Checklist</a></li>
+      <li><a href="#s13">Measurable Impact Metrics</a></li>
+      <li><a href="#s14">Innovation Edge — Judge Wow Factor</a></li>
+      <li><a href="#s15">Post-Hackathon Roadmap</a></li>
+    </ol>
+  </div>
+
+  
+  <div class="section" id="s1">
+    <div class="section-title">1. Problem Statement &amp; Business Case</div>
+    <p>New engineers routinely lose their first <strong>one to two weeks</strong> piecing together tribal knowledge scattered across READMEs, wikis, architecture docs, and old tickets — with no single, current view of how the codebase actually works. Generic onboarding docs answer questions a mentor anticipated; they cannot adapt to role, seniority, or the actual current state of the repository.</p>
+    <div class="callout">
+      <strong>Core Problem</strong>
+      Onboarding is slow, generic, and stale. The README often contradicts the code. Historical decisions live in closed tickets no one reads. New engineers make their first PR 8–14 days later than they could if they had a guided, repo-specific plan.
+    </div>
+    <div class="callout success">
+      <strong>Proposed Solution</strong>
+      An agent that ingests the repository's full documentation set, ticket history, and design docs — then uses IBM Bob 2.0 Agent Mode + parallel Subagents to generate a personalized, role-specific, verified ramp-up plan where every task references a real, current file path. Stale references are caught and flagged automatically.
+    </div>
+
+    <div class="metrics">
+      <div class="metric-box"><div class="val">8–14</div><div class="lbl">Days avg. to first meaningful PR (status quo)</div></div>
+      <div class="metric-box"><div class="val">2–3</div><div class="lbl">Target days to first PR with generated plan</div></div>
+      <div class="metric-box"><div class="val">60%</div><div class="lbl">Seed README intentionally stale — to prove verification works</div></div>
+      <div class="metric-box"><div class="val">20pts</div><div class="lbl">Maximum hackathon score available</div></div>
+    </div>
+  </div>
+
+  
+  <div class="section" id="s2">
+    <div class="section-title">2. Architecture Decision &amp; Tech Stack</div>
+    <p>For a five-person team in a 48-hour window: <strong>one monorepo, one runtime, one process, one deploy target.</strong> No microservices, no multi-language context-switching.</p>
+
+    <div class="callout warn">
+      <strong>Architecture Rule — Decide Once, Do Not Revisit Mid-Build</strong>
+      Tech stack is locked at Hour 0. Any debate after that point is unrecoverable schedule loss.
+    </div>
+
+    <table>
+      <thead><tr><th>Concern</th><th>Choice</th><th>Rationale</th></tr></thead>
+      <tbody>
+        <tr><td>Runtime</td><td><code>Node.js + TypeScript</code></td><td>Single runtime — no Python/Node context-switching across a 5-person team</td></tr>
+        <tr><td>Web Framework</td><td><code>Express</code></td><td>Minimal, well-known, handles the pipeline API + demo UI in one process</td></tr>
+        <tr><td>Vector Store</td><td><code>Chroma (chromadb npm, SQLite-backed)</code></td><td>Local, no external server, handles large-repo chunking beyond Bob 2.0 context window</td></tr>
+        <tr><td>GitHub Ingestion</td><td><code>@octokit/rest</code></td><td>Official SDK — paginate closed issues, pull file tree, fetch file contents</td></tr>
+        <tr><td>Git Metadata</td><td><code>simple-git</code></td><td>Required for churn calculation (Innovation Edge graph). git log --stat per file</td></tr>
+        <tr><td>Graph Visualization</td><td><code>mermaid.js (client-side CDN)</code></td><td>No build step — load mermaid.min.js in static HTML. Demo-safe on Day 3</td></tr>
+        <tr><td>AI Orchestration</td><td><code>IBM Bob 2.0 Agent Mode</code></td><td>Agent Mode + Subagents + Document Understanding — all three judged capabilities</td></tr>
+        <tr><td>Task Sync</td><td><code>Octokit (GitHub Issues)</code></td><td>Push generated week-1 tasks to GitHub Issues as onboarding tickets</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  
+  <div class="section" id="s3">
+    <div class="section-title">3. Complete File Tree &amp; Component Specifications</div>
+
+    <div class="filetree">
+<span class="dir">onboarding-agent/</span><br />
+├── <span class="dir">src/</span><br />
+│   ├── <span class="dir">ingestion/</span>          <span class="comment"># Stage 1: pull raw sources</span><br />
+│   │   ├── <span class="file">github.ts</span>         <span class="comment"># Octokit: README, ADRs, closed issues via paginate()</span><br />
+│   │   ├── <span class="file">confluence.ts</span>     <span class="comment"># Confluence API: wiki pages (stub for hackathon)</span><br />
+│   │   └── <span class="file">jira.ts</span>           <span class="comment"># Jira API: closed tickets (stub for hackathon)</span><br />
+│   ├── <span class="dir">context-store/</span>      <span class="comment"># Stage 2: chunking + retrieval</span><br />
+│   │   ├── <span class="file">chunker.ts</span>        <span class="comment"># chunkText(text, 500) — 500-word sliding window</span><br />
+│   │   ├── <span class="file">index.ts</span>          <span class="comment"># ChromaClient wrapper, collection "onboarding-corpus"</span><br />
+│   │   └── <span class="file">retriever.ts</span>      <span class="comment"># retrieveRelevant(collection, query, k) — top-k retrieval</span><br />
+│   ├── <span class="dir">orchestrator/</span>       <span class="comment"># Stage 3: Bob 2.0 Agent Mode driver</span><br />
+│   │   ├── <span class="file">planner.ts</span>        <span class="comment"># generatePlan(role, collection, bob): RampUpPlan</span><br />
+│   │   ├── <span class="file">subagents.ts</span>      <span class="comment"># runRoleScans(): Promise.all([backend, frontend, infra])</span><br />
+│   │   └── <span class="file">verify.ts</span>         <span class="comment"># repoContainsPath(path): boolean — flags stale refs</span><br />
+│   ├── <span class="dir">render/</span>             <span class="comment"># Stage 4: output layer</span><br />
+│   │   ├── <span class="file">markdownPlan.ts</span>   <span class="comment"># Render RampUpPlan as HTML/Markdown</span><br />
+│   │   ├── <span class="file">graph.ts</span>          <span class="comment"># simple-git churn → mermaid graph syntax (Innovation Edge)</span><br />
+│   │   └── <span class="file">taskSync.ts</span>       <span class="comment"># Octokit: push tasks to GitHub Issues with verify status</span><br />
+│   └── <span class="file">server.ts</span>           <span class="comment"># Express entry: /ingest /plan /graph /demo-ui routes</span><br />
+│<br />
+├── <span class="dir">seed-repo/</span>              <span class="comment"># Realistic multi-module target repo for demo</span><br />
+│   ├── <span class="dir">backend/</span>            <span class="comment"># Node.js API (auth, session, user models)</span><br />
+│   ├── <span class="dir">frontend/</span>           <span class="comment"># React or vanilla JS UI</span><br />
+│   ├── <span class="dir">infra/</span>              <span class="comment"># K8s manifests, CI/CD config</span><br />
+│   ├── <span class="dir">docs/ADR/</span>           <span class="comment"># Architecture Decision Records (2–3 markdown files)</span><br />
+│   ├── <span class="dir">scripts/</span><br />
+│   │   └── <span class="file">generateIssues.ts</span> <span class="comment"># Octokit: script-generate 15–20 closed issues</span><br />
+│   └── <span class="warn">README.md</span>           <span class="comment"># ⚠ INTENTIONALLY 60% STALE (references deprecated /auth module)</span><br />
+│<br />
+├── <span class="dir">tests/</span>                  <span class="comment"># Jest unit + integration tests</span><br />
+├── <span class="file">.env.example</span>           <span class="comment"># GITHUB_TOKEN, SEED_REPO_PAT, CHROMA_PERSIST_DIR</span><br />
+└── <span class="file">package.json</span>
+    </div>
+
+    <div class="section-subtitle">Component Responsibility Matrix</div>
+    <table>
+      <thead><tr><th>File</th><th>Owner (Role)</th><th>Depends On</th><th>Output</th></tr></thead>
+      <tbody>
+        <tr><td><code>ingestion/github.ts</code></td><td>Ingestion Engineer</td><td>GITHUB_TOKEN env var, @octokit/rest</td><td><code>RawArtifact[]</code> array</td></tr>
+        <tr><td><code>context-store/index.ts</code></td><td>Context Store Engineer</td><td>chromadb, chunker.ts</td><td>Chroma collection populated</td></tr>
+        <tr><td><code>context-store/retriever.ts</code></td><td>Context Store Engineer</td><td>Chroma collection</td><td>Top-k relevant chunk strings</td></tr>
+        <tr><td><code>orchestrator/planner.ts</code></td><td>Orchestrator Engineer</td><td>retriever, Bob 2.0 client, verify.ts</td><td><code>RampUpPlan</code> JSON</td></tr>
+        <tr><td><code>orchestrator/subagents.ts</code></td><td>Orchestrator Engineer</td><td>retriever, Bob 2.0 client</td><td>3× subagent scan results</td></tr>
+        <tr><td><code>orchestrator/verify.ts</code></td><td>Orchestrator Engineer</td><td>GitHub API / local file tree</td><td><code>verified: boolean</code> per task</td></tr>
+        <tr><td><code>render/markdownPlan.ts</code></td><td>Render Engineer</td><td>RampUpPlan</td><td>HTML string</td></tr>
+        <tr><td><code>render/graph.ts</code></td><td>Render Engineer</td><td>simple-git, seed-repo/.git</td><td>mermaid graph syntax string</td></tr>
+        <tr><td><code>render/taskSync.ts</code></td><td>Render Engineer</td><td>Octokit, RampUpPlan</td><td>GitHub Issues created</td></tr>
+        <tr><td><code>server.ts</code></td><td>All (integration)</td><td>All above modules</td><td>HTTP API + demo UI</td></tr>
+        <tr><td><code>seed-repo/</code></td><td>Seed Repo Engineer</td><td>Octokit (generateIssues.ts)</td><td>Realistic demo corpus</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  
+  <div class="section" id="s4">
+    <div class="section-title">4. Core Data Flow — End-to-End Pipeline</div>
+
+    <div class="section-subtitle">Stage 1 — Ingestion</div>
+    <p>The <code>ingestRepo(owner, repo)</code> function in <code>src/ingestion/github.ts</code> uses Octokit to fetch the full git tree, filter for README/ADR/docs paths, fetch content for each, and paginate all closed GitHub Issues. Every artifact is tagged with a <code>source</code> type (<code>"readme" | "issue" | "adr" | "wiki"</code>), a <code>path</code>, content, and <code>updatedAt</code> timestamp. Output: <code>RawArtifact[]</code>.</p>
+
+    <div class="section-subtitle">Stage 2 — Chunking &amp; Indexing</div>
+    <p><code>buildContextStore(artifacts)</code> in <code>src/context-store/index.ts</code> splits each artifact into 500-word chunks via <code>chunkText()</code>, assigns IDs as <code>${sourcePath}-${chunkIndex}</code>, stores chunk text + metadata in the Chroma collection <code>"onboarding-corpus"</code> (local SQLite). This runs once per ingest cycle. Retrieval uses <code>retrieveRelevant(collection, query, k)</code> with k=12 for the planner and k=10 per subagent.</p>
+
+    <div class="section-subtitle">Stage 3 — Orchestration (The Core Loop)</div>
+    <p><code>runRoleScans()</code> in <code>src/orchestrator/subagents.ts</code> fires three Bob 2.0 subagents <strong>concurrently via <code>Promise.all()</code></strong>: <code>backend-scan</code>, <code>frontend-scan</code>, <code>infra-scan</code>. Each receives its top-10 relevant chunks from Chroma. Results merge into the planner context. <code>generatePlan(role, collection, bob)</code> then calls Bob 2.0 Agent Mode with the combined context and the <code>RampUpPlan</code> output schema. After generation, <strong>every</strong> <code>task.referencedPath</code> is verified via <code>repoContainsPath()</code>. Tasks with paths not found are marked <code>verified: false</code> and retitled <code>"Needs verification: [title] (referenced path not found — likely stale doc)"</code>.</p>
+
+    <div class="section-subtitle">Stage 4 — Rendering &amp; Sync</div>
+    <p><code>markdownPlan.ts</code> renders the verified <code>RampUpPlan</code> as an HTML page. <code>graph.ts</code> emits a mermaid DAG color-coded by git commit churn. <code>taskSync.ts</code> creates one GitHub Issue per task with verification status annotated in the body. <code>server.ts</code> exposes this through routes and serves the demo UI.</p>
+
+    <div class="callout">
+      <strong>Full Pipeline Command</strong>
+      <code>npm run ingest -- --repo=your-org/seed-repo</code> → prints chunk counts per source type. This is the Day 1 completion criterion.
+    </div>
+  </div>
+
+  
+  <div class="section" id="s5">
+    <div class="section-title">5. IBM Bob 2.0 Capability Mapping</div>
+    <div class="pill-row">
+      <span class="pill pill-blue">Document Understanding</span>
+      <span class="pill pill-purple">Agent Mode</span>
+      <span class="pill pill-green">Subagents / Parallel Tasks</span>
+    </div>
+    <table>
+      <thead><tr><th>Bob 2.0 Capability</th><th>Where Used in This Project</th><th>Judging Value</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Document Understanding</strong></td>
+          <td>Grounds the ramp-up plan in the repo's actual README, closed tickets, and ADRs. No generic advice — every task cites a real artifact.</td>
+          <td>Completeness &amp; Creativity — proves the plan is repo-specific, not a template</td>
+        </tr>
+        <tr>
+          <td><strong>Agent Mode</strong></td>
+          <td>Plans the ramp-up sequence, runs the verify loop (repoContainsPath), adjusts flagged tasks, and iterates without a prompt for every step.</td>
+          <td>Creativity &amp; Effectiveness — autonomous multi-step reasoning with self-correction</td>
+        </tr>
+        <tr>
+          <td><strong>Subagents (Parallel)</strong></td>
+          <td>Three subagents (backend-scan, frontend-scan, infra-scan) run concurrently via Promise.all(). Merged findings give the planner full-stack coverage.</td>
+          <td>Design &amp; Creativity — visible parallel execution is the most demo-able Bob 2.0 feature</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout success">
+      <strong>All three judged Bob 2.0 capabilities are exercised simultaneously.</strong>
+      Document Understanding feeds context → Subagents analyze it in parallel → Agent Mode verifies and corrects the output. This is the strongest possible capability coverage for the scoring rubric.
+    </div>
+  </div>
+
+  
+  <div class="section" id="s6">
+    <div class="section-title">6. Seed Repository Design</div>
+    <div class="callout danger">
+      <strong>Highest-Leverage Hour of the Entire Hackathon</strong>
+      Building the seed repo (Hours 1–3 of Day 1) is not optional. A repo too small produces no compelling before/after. A toy repo makes the demo look fake. This hour is the foundation of everything.
+    </div>
+
+    <p>The seed repo must contain the following — no exceptions:</p>
+    <table>
+      <thead><tr><th>Requirement</th><th>Why It Matters</th><th>How to Build It</th></tr></thead>
+      <tbody>
+        <tr><td>Three real modules: <code>/backend</code>, <code>/frontend</code>, <code>/infra</code></td><td>Gives subagents distinct domains to analyze in parallel. Without real interdependencies, the agent's scan output is shallow.</td><td>Copy simplified Node.js API, React app, and Docker/K8s config from any open-source starter</td></tr>
+        <tr><td>README that is <strong>60% stale</strong> (e.g., references a <code>/auth</code> module that no longer exists at that path)</td><td>This is the demo's primary proof point. The verify.ts step catches it and flags it as <code>verified: false</code> — proving the agent is not just an LLM wrapper.</td><td>Write the README describing an <code>/auth</code> module. In the actual code, use <code>/modules/identity</code> or OAuth2 handler. The path mismatch is intentional.</td></tr>
+        <tr><td>15–20 closed GitHub Issues (script-generated)</td><td>Provides realistic ingestion corpus depth. At least one issue must contradict the stale README.</td><td>Run <code>seed-repo/scripts/generateIssues.ts</code> via Octokit using SEED_REPO_PAT</td></tr>
+        <tr><td>2–3 ADR markdown files in <code>seed-repo/docs/ADR/</code></td><td>ADRs document historical decisions (e.g., "Migrate auth to JWT, superseded by OAuth2"). This makes the historical bug review exercise authentic.</td><td>Write minimal ADR files: ADR-001-auth-jwt.md, ADR-002-oauth2-migration.md</td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-subtitle">Key Seeded Historical Issues (for Ingestion Corpus)</div>
+    <table>
+      <thead><tr><th>Issue Title</th><th>Labels</th><th>State</th><th>Learning Value</th></tr></thead>
+      <tbody>
+        <tr><td>Fix race condition in session refresh</td><td>backend, bug</td><td>closed</td><td>Session auth legacy; why OAuth2 ADR was written</td></tr>
+        <tr><td>Migrate auth to JWT (superseded by OAuth2 ADR)</td><td>backend, adr</td><td>closed</td><td>Auth evolution history — canonical stale-doc example</td></tr>
+        <tr><td>Remove deprecated /auth route handler</td><td>backend, cleanup</td><td>closed</td><td>Directly contradicts stale README reference</td></tr>
+        <tr><td>Add Kubernetes health-check endpoints to /infra</td><td>infra</td><td>closed</td><td>Infra subagent can surface this in ramp-up plan</td></tr>
+        <tr><td>Migrate frontend build from webpack to vite</td><td>frontend</td><td>closed</td><td>Build tooling history for frontend subagent</td></tr>
+        <tr><td>+ 10–15 more script-generated issues</td><td>mixed</td><td>closed</td><td>Corpus depth — prevents context-window thin results</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  
+  <div class="section" id="s7">
+    <div class="section-title">7. 48-Hour Implementation Plan (Day-by-Day)</div>
+
+    <div class="day-card">
+      <div class="day-card-header d1">
+        <span>Day 1 — Setup (Hours 0–12)</span>
+        <span style="font-weight:400;font-size:12px">Goal: Raw data flowing, cleanly labeled, retrievable. Do NOT touch Bob 2.0 yet.</span>
+      </div>
+      <div class="day-card-body">
+        <ul>
+          <li><strong>Hour 0–1:</strong> Team role assignment (5 roles, assign immediately — ingestion, seed-repo, context-store, orchestrator/prompts, render+UI). Lock tech stack. No debate.</li>
+          <li><strong>Hour 1–3:</strong> <strong>Build seed repo</strong> (highest-leverage task). Three modules, stale README, 15–20 script-generated closed issues, 2–3 ADR files. Run generateIssues.ts to populate GitHub.</li>
+          <li><strong>Hour 3–8:</strong> Build <code>src/ingestion/github.ts</code>. Implement <code>ingestRepo(owner, repo)</code>. Pull README, ADRs, and all closed issues via Octokit paginate. Label each artifact by source type. Verify: run ingest, see labeled artifact list.</li>
+          <li><strong>Hour 8–12:</strong> Build <code>src/context-store/index.ts</code> and <code>chunker.ts</code>. Implement <code>buildContextStore(artifacts)</code> with 500-word chunking. Index into Chroma collection <code>"onboarding-corpus"</code>. Verify: <code>npm run ingest -- --repo=org/seed-repo</code> prints chunk counts per source type.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-card-header d2">
+        <span>Day 2 — Core Loop (Hours 12–24)</span>
+        <span style="font-weight:400;font-size:12px">Goal: End-to-end plan generated against real seed repo. Integration checkpoint at Hour 20–24.</span>
+      </div>
+      <div class="day-card-body">
+        <ul>
+          <li><strong>Hour 12–16:</strong> Build <code>src/orchestrator/planner.ts</code>. Wire Bob 2.0 Agent Mode call with role taxonomy and <code>RampUpPlan</code> output schema. Build <code>src/orchestrator/subagents.ts</code> with <code>Promise.all()</code> fan-out for backend-scan, frontend-scan, infra-scan.</li>
+          <li><strong>Hour 16–18:</strong> Build <code>src/orchestrator/verify.ts</code>. Implement <code>repoContainsPath()</code> using GitHub API tree lookup. Wire into planner: flag <code>verified: false</code> tasks with "Needs verification:" prefix. Test against the deliberate stale README path — confirm it catches <code>/auth</code> as not found.</li>
+          <li><strong>Hour 18–20:</strong> Build <code>src/render/markdownPlan.ts</code> and <code>src/render/taskSync.ts</code>. Render HTML plan with verified/unverified badges. Push tasks to GitHub Issues via Octokit with verification annotation.</li>
+          <li><strong>Hour 20–24:</strong> <strong>Integration checkpoint</strong>. Wire all components through <code>src/server.ts</code>. Run end-to-end against real seed repo (not mocks). Log chunk counts, subagent times, verification results. Fix integration bugs now — bugs found Day 3 afternoon are unrecoverable.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-card-header" style="background:#f5f3ff;color:#6d28d9">
+        <span>Day 3 — Polish &amp; Measure (Hours 24–40)</span>
+        <span style="font-weight:400;font-size:12px">Goal: Metric captured, demo rehearsed, session report exported, video recorded.</span>
+      </div>
+      <div class="day-card-body">
+        <ul>
+          <li><strong>Hour 24–28:</strong> Run simulated new-hire timing test. Two team members use generic checklist; two use generated plan. Time to first meaningful commit. Record comparison numbers.</li>
+          <li><strong>Hour 28–32:</strong> If 4+ hours remain: build <code>src/render/graph.ts</code> Innovation Edge — simple-git churn calculation, mermaid graph with color-coded hot spots, served via <code>server.ts</code> in static HTML page.</li>
+          <li><strong>Hour 32–36:</strong> Export Bob 2.0 session/task report. Verify it captures the full agent run. Prepare one-slide architecture diagram.</li>
+          <li><strong>Hour 36–40:</strong> Record demo video (4-beat script: blank checklist → live trigger → generated plan with stale catch → timing chart). Rehearse pointing at the verified:false stale reference explicitly.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="section" id="s8">
+    <div class="section-title">8. 5-Day New-Hire Ramp-Up Task Plan (with Path Verification)</div>
+    <p>This is the output the agent produces for a new <strong>Backend Engineer</strong> joining the codebase. All 9 tasks have been verified against the current workspace file tree. Tasks marked <span class="verified-badge verified-no">NEEDS VERIFICATION</span> reference paths that do not yet exist in the repo (expected — the codebase is the hackathon build artifact).</p>
+
+    
+    <div class="task">
+      <div class="task-header">
+        <span class="task-day">Day 1</span>
+        <span class="task-title">Install all project-specific developer tooling and configure environment</span>
+        <span class="verified-badge verified-no">NEEDS VERIFICATION</span>
+      </div>
+      <div class="task-path">Referenced: <code>.env.example</code></div>
+      <div class="task-desc">Run <code>npm install</code> at monorepo root. Verify these project-specific packages install and function: <code>@octokit/rest</code>, <code>chromadb</code> (requires local SQLite support), <code>simple-git</code>, <code>express</code>, <code>ts-node</code>. Copy <code>.env.example</code> → <code>.env</code>. Set <code>GITHUB_TOKEN</code> (your personal access token) and <code>SEED_REPO_PAT</code> (token for seed repo issue generation). Confirm environment by running <code>npm run ingest -- --repo=your-org/seed-repo</code> and verifying it prints per-source chunk counts.</div>
+      <div class="verify-note">⚠ .env.example not found in current workspace. File must be created by the team on Day 1 with GITHUB_TOKEN, SEED_REPO_PAT, and CHROMA_PERSIST_DIR keys.</div>
+    </div>
+
+    
+    <div class="task">
+      <div class="task-header">
+        <span class="task-day">Day 1</span>
+        <span class="task-title">Read the architect-level build guide and map the full data flow</span>
+        <span class="verified-badge verified-yes">VERIFIED ✓</span>
+      </div>
+      <div class="task-path">Referenced: <code>i3_Academy_IBM_TechXchange_Hackathon_Briefing/Hackathon Projects-2/Project1_Codebase_Onboarding_Agent_Build.docx</code></div>
+      <div class="task-desc">Read Sections 1–3 of the build guide. Map the data flow: <code>ingestion/github.ts</code> → <code>context-store/index.ts</code> → <code>orchestrator/planner.ts</code> → <code>orchestrator/subagents.ts</code> → <code>orchestrator/verify.ts</code> → <code>render/markdownPlan.ts</code> → <code>server.ts</code>. Draw this as a sequence diagram. All five team members must share the same mental model before splitting into parallel roles at Hour 1.</div>
+    </div>
+
+    
+    <div class="task">
+      <div class="task-header">
+        <span class="task-day">Day 2</span>
+        <span class="task-title">Implement ingestion layer — pull labeled artifacts from GitHub API</span>
+        <span class="verified-badge verified-no">NEEDS VERIFICATION</span>
+      </div>
+      <div class="task-path">Referenced: <code>src/ingestion/github.ts</code></div>
+      <div class="task-desc">Implement <code>ingestRepo(owner, repo)</code> using <code>@octokit/rest</code>. Pull the git tree, filter for README/ADR/docs paths, decode Base64 content, and paginate all closed issues. Tag every artifact with <code>source</code> type, <code>path</code>, <code>content</code>, and <code>updatedAt</code>. Do NOT wire to Chroma yet — task ends when running the ingest script outputs a labeled artifact list. Key gotcha: Octokit paginate without <code>GITHUB_TOKEN</code> hits 60 req/hr limit instantly.</div>
+      <div class="verify-note">⚠ src/ingestion/github.ts not found in current workspace. Must be created by the ingestion engineer on Day 1, Hours 3–8.</div>
+    </div>
+
+    
+    <div class="task">
+      <div class="task-header">
+        <span class="task-day">Day 2</span>
+        <span class="task-title">Implement Chroma context store — 500-word chunking and collection indexing</span>
+        <span class="verified-badge verified-no">NEEDS VERIFICATION</span>
+      </div>
+      <div class="task-path">Referenced: <code>src/context-store/index.ts</code></div>
+      <div class="task-desc">Implement <code>buildContextStore(artifacts)</code> and <code>chunkText(text, 500)</code>. Collection name must be exactly <code>"onboarding-corpus"</code>. Chunk IDs: <code>${sourcePath}-${chunkIndex}</code>. Metadata per chunk: <code>source</code>, <code>path</code>, <code>updatedAt</code>. Validate by querying the collection after indexing — confirm chunk counts match per source type. Note: Chroma runs locally on SQLite. Set <code>CHROMA_PERSIST_DIR</code> in <code>.env</code> explicitly to avoid losing the index between restarts.</div>
+      <div class="verify-note">⚠ src/context-store/index.ts not found in current workspace. Must be created by context-store engineer on Day 1, Hours 8–12.</div>
+    </div>
+
+    
+    <div class="task">
+      <div class="task-header">
+        <span class="task-day">Day 3</span>
+        <span class="task-title">Implement verification loop — flag stale README references as verified:false</span>
+        <span class="verified-badge verified-no">NEEDS VERIFICATION</span>
+      </div>
+      <div class="task-path">Referenced: <code>src/orchestrator/verify.ts</code></div>
+      <div class="task-desc">Implement <code>repoContainsPath(referencedPath: string): Promise&lt;boolean&gt;</code> using GitHub API tree lookup (or local file tree scan). In <code>planner.ts</code>, loop over all generated tasks: if <code>!task.verified</code>, prefix title with <code>"Needs verification: [title] (referenced path not found in repo — likely stale doc)"</code>. CRITICAL: Do NOT silently drop unverified tasks. Test against the deliberately stale seed-repo README — confirm it catches the reference to <code>seed-repo/backend/src/modules/auth/</code> as not found. Rehearse pointing at this catch during demo.</div>
+      <div class="verify-note">⚠ src/orchestrator/verify.ts not found in current workspace. Must be created by orchestrator engineer on Day 2 as part of the core loop.</div>
+    </div>
+
+    
+    <div class="task">
+      <div class="task-header">
+        <span class="task-day">Day 3</span>
+        <span class="task-title">Review historical issue: "Migrate auth to JWT (superseded by OAuth2 ADR)"</span>
+        <span class="verified-badge verified-no">NEEDS VERIFICATION</span>
+      </div>
+      <div class="task-path">Referenced: <code>seed-repo/docs/ADR/</code> + closed GitHub issue in seed-repo</div>
+      <div class="task-desc">Locate the closed issue "Migrate auth to JWT (superseded by OAuth2 ADR)" in the seed-repo GitHub Issues (generated by <code>seed-repo/scripts/generateIssues.ts</code>). Then read the corresponding ADR file in <code>seed-repo/docs/ADR/</code>. Map the full auth evolution: session-based auth (race condition bug) → JWT migration attempt → OAuth2 ADR superseding JWT → current code state. This historical trace is the canonical example of why the README is 60% stale — and why the verification step catches the stale path. Essential reading before any backend auth-touching work.</div>
+      <div class="verify-note">⚠ seed-repo/docs/ADR/ not found in current workspace. Directory must be created during seed-repo construction on Day 1, Hours 1–3.</div>
+    </div>
+
+    
+    <div class="task">
+      <div class="task-header">
+        <span class="task-day">Day 4</span>
+        <span class="task-title">Wire end-to-end integration through server.ts against the real seed repo</span>
+        <span class="verified-badge verified-no">NEEDS VERIFICATION</span>
+      </div>
+      <div class="task-path">Referenced: <code>src/server.ts</code></div>
+      <div class="task-desc">Wire all pipeline components through <code>src/server.ts</code>: <code>ingestRepo</code> → <code>buildContextStore</code> → <code>runRoleScans</code> (Promise.all subagents) → <code>generatePlan</code> → verify all task paths → render HTML plan → optionally <code>syncTasksToTracker</code>. Run against the real seeded repo — NOT mocks. This is the mandatory integration checkpoint (Day 2, Hours 20–24 per build schedule). Log chunk counts, subagent completion times, and verification results. Integration bugs found here are recoverable. Bugs found Day 3 afternoon are not.</div>
+      <div class="verify-note">⚠ src/server.ts not found in current workspace. Must be created as the final integration step after all upstream components are individually validated.</div>
+    </div>
+
+    
+    <div class="task">
+      <div class="task-header">
+        <span class="task-day">Day 4</span>
+        <span class="task-title">Implement Innovation Edge — dependency graph with change-churn color coding</span>
+        <span class="verified-badge verified-no">NEEDS VERIFICATION</span>
+      </div>
+      <div class="task-path">Referenced: <code>src/render/graph.ts</code></div>
+      <div class="task-desc">Implement <code>buildDependencyGraph(repoPath)</code> using <code>simple-git</code> to parse <code>git log --stat</code>. Compute per-file commit-touch frequency (churn proxy). Emit mermaid graph syntax with inline style directives: red (<code>fill:#f87171</code>) for high-churn, yellow (<code>fill:#fbbf24</code>) for mid, green (<code>fill:#4ade80</code>) for low-churn files. Serve in a static HTML page loading <code>mermaid.min.js</code> via CDN — no build step. Only implement if 4+ hours remain after core pipeline is verified end-to-end.</div>
+      <div class="verify-note">⚠ src/render/graph.ts not found in current workspace. Innovation Edge — implement only after core pipeline is green end-to-end.</div>
+    </div>
+
+    
+    <div class="task">
+      <div class="task-header">
+        <span class="task-day">Day 5</span>
+        <span class="task-title">Run simulated new-hire timing test and capture before/after metric</span>
+        <span class="verified-badge verified-yes">VERIFIED ✓</span>
+      </div>
+      <div class="task-path">Referenced: <code>i3_Academy_IBM_TechXchange_Hackathon_Briefing/Hackathon Projects-2/Project1_Codebase_Onboarding_Agent_Build.docx</code> (Section 3)</div>
+      <div class="task-desc">Assign two team members who have NOT seen the seed repo to the existing generic onboarding doc (blank checklist). Assign two others to the generated repo-specific plan. Time each group to their first meaningful commit. Record and display the comparison. This is the headline "time-to-first-commit" metric for the demo's closing slide. Present it exactly as "a simulated new-hire timing comparison" — not as a controlled study. Even n=2 vs n=2 produces a real, honest number that satisfies the Effectiveness &amp; Efficiency scoring criterion (5 pts, 25% of total).</div>
+    </div>
+
+    <div class="callout">
+      <strong>Verification Summary</strong>
+      2 of 9 tasks <span class="verified-badge verified-yes">VERIFIED ✓</span> (reference confirmed files in workspace). 7 of 9 tasks <span class="verified-badge verified-no">NEEDS VERIFICATION</span> (reference paths under onboarding-agent/src/ and seed-repo/ that are the hackathon build artifacts — expected). All 7 flagged tasks include build-schedule notes indicating when each file must be created.
+    </div>
+  </div>
+
+  
+  <div class="section" id="s9">
+    <div class="section-title">9. Key Code Specifications</div>
+
+    <div class="section-subtitle">RampUpPlan TypeScript Interface (src/orchestrator/planner.ts)</div>
+    <pre>interface RampUpPlan {
+  role: "backend" | "frontend" | "infra" | "full-stack";
+  weekOneTasks: {
+    title: string;
+    referencedPath: string;
+    verified: boolean;
+  }[];
+  architectureSummary: string;
+}</pre>
+
+    <div class="section-subtitle">Ingestion — github.ts Core Function</div>
+    <pre>export async function ingestRepo(owner: string, repo: string): Promise&lt;RawArtifact[]&gt; {
+  const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+  // Pull file tree, filter README/ADR/docs paths, decode Base64 content
+  const { data: tree } = await octokit.git.getTree({
+    owner, repo, tree_sha: "main", recursive: "true"
+  });
+  // Pull all closed issues via paginate
+  const issues = await octokit.paginate(octokit.issues.listForRepo, {
+    owner, repo, state: "closed", per_page: 100
+  });
+  return artifacts; // RawArtifact[] tagged with source, path, content, updatedAt
+}</pre>
+
+    <div class="section-subtitle">Context Store — 500-word Chunking + Chroma Index</div>
+    <pre>// Collection: "onboarding-corpus" | Chunk size: 500 words | ID: "${path}-${i}"
+export async function buildContextStore(artifacts: RawArtifact[]) {
+  const collection = await client.getOrCreateCollection({ name: "onboarding-corpus" });
+  const chunks = artifacts.flatMap(a =&gt;
+    chunkText(a.content, 500).map((c, i) =&gt; ({
+      id: `${a.path}-${i}`, text: c,
+      metadata: { source: a.source, path: a.path, updatedAt: a.updatedAt }
+    }))
+  );
+  await collection.add({ ids, documents, metadatas });
+}</pre>
+
+    <div class="section-subtitle">Subagents — Concurrent Execution (Promise.all)</div>
+    <pre>export async function runRoleScans(collection: any, bob: BobClient) {
+  const [backend, frontend, infra] = await Promise.all([
+    bob.subagent("backend-scan", {
+      context: await retrieveRelevant(collection, "backend architecture and entry points", 10)
+    }),
+    bob.subagent("frontend-scan", {
+      context: await retrieveRelevant(collection, "frontend structure and build tooling", 10)
+    }),
+    bob.subagent("infra-scan", {
+      context: await retrieveRelevant(collection, "deployment, CI/CD, and infra config", 10)
+    }),
+  ]);
+  return { backend, frontend, infra };
+}</pre>
+
+    <div class="section-subtitle">Verification Loop — Stale Reference Detection</div>
+    <pre>for (const task of plan.weekOneTasks) {
+  task.verified = await repoContainsPath(task.referencedPath);
+  if (!task.verified) {
+    // Do NOT silently drop — this is the "agent catches its own stale claim" demo moment
+    task.title = `Needs verification: ${task.title} ` +
+                 `(referenced path not found — likely stale doc)`;
+  }
+}</pre>
+
+    <div class="section-subtitle">Task Sync — Push to GitHub Issues</div>
+    <pre>export async function syncTasksToTracker(plan: RampUpPlan, octokit, owner, repo) {
+  for (const task of plan.weekOneTasks) {
+    await octokit.issues.create({
+      owner, repo,
+      title: `[Onboarding] ${task.title}`,
+      body: `Auto-generated first-week task.\n` +
+            `Referenced: \`${task.referencedPath}\`\n` +
+            `Verified against current repo: ${task.verified ? "yes" : "no — stale reference"}`,
+      labels: ["onboarding", plan.role],
+    });
+  }
+}</pre>
+  </div>
+
+  
+  <div class="section" id="s10">
+    <div class="section-title">10. Human Approval Gates</div>
+    <p>All agent actions are tiered by risk level. This is a feature — not a limitation. Judges will respect explicit human-in-the-loop design.</p>
+    <div class="gate-row"><div class="gate-dot gate-green"></div><div class="gate-label"><strong>Green — Act and report automatically:</strong> Generate and render the ramp-up plan. Post style comments to a PR. Surface verification results in the UI.</div></div>
+    <div class="gate-row"><div class="gate-dot gate-yellow"></div><div class="gate-label"><strong>Yellow — Prepare action, hold for one-click approval:</strong> Create GitHub Issues from generated task list. Push onboarding tasks to Jira/Linear. Requires human to confirm before sync executes.</div></div>
+    <div class="gate-row"><div class="gate-dot gate-red"></div><div class="gate-label"><strong>Red — Draft only, human must explicitly approve:</strong> Any modification to the target repository's code or documentation. Any write to a production system. Never demo auto-merge.</div></div>
+  </div>
+
+  
+  <div class="section" id="s11">
+    <div class="section-title">11. Risk Register</div>
+    <table>
+      <thead><tr><th>Risk</th><th>Severity</th><th>Mitigation</th><th>When to Test</th></tr></thead>
+      <tbody>
+        <tr><td>Seed repo too small — no compelling before/after comparison</td><td class="risk-high">CRITICAL</td><td>Three-module repo with stale README (Hours 1–3). Do not skip to save time.</td><td>Day 1, Hour 3</td></tr>
+        <tr><td>No CI/CD pipeline specified in spec</td><td class="risk-high">HIGH</td><td>Add basic GitHub Actions workflow before Day 3. Manual deploy acceptable for hackathon.</td><td>Day 2, Hour 24</td></tr>
+        <tr><td>GitHub API rate limiting on Octokit paginate</td><td class="risk-med">MEDIUM</td><td>Always use GITHUB_TOKEN (5,000 req/hr vs 60 unauthenticated). Add retry logic with exponential backoff.</td><td>Day 1, Hour 4</td></tr>
+        <tr><td>Chroma persistence path unspecified</td><td class="risk-med">MEDIUM</td><td>Explicitly set CHROMA_PERSIST_DIR in .env. Default in-memory Chroma loses index on restart.</td><td>Day 1, Hour 9</td></tr>
+        <tr><td>Context window limits on large repos</td><td class="risk-med">MEDIUM</td><td>Chunker + Chroma top-k cap (12 for planner, 10 per subagent). Test against full seed issue set on Day 2.</td><td>Day 2, Hour 14</td></tr>
+        <tr><td>Mermaid graph syntax breaks on special chars in file paths</td><td class="risk-low">LOW</td><td>Sanitize all file paths via sanitize(file) before emitting mermaid syntax. Test with paths containing slashes and dots.</td><td>Day 3, Hour 28</td></tr>
+        <tr><td>Integration bugs discovered Day 3 afternoon</td><td class="risk-high">CRITICAL</td><td>Mandatory integration checkpoint at Day 2, Hours 20–24. Run against real seed repo, not mocks.</td><td>Day 2, Hour 20</td></tr>
+        <tr><td>Demo video not pre-recorded as fallback</td><td class="risk-med">MEDIUM</td><td>Record fallback video by Day 3, Hour 36. Export Bob 2.0 session report by Day 3, Hour 32.</td><td>Day 3, Hour 32</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  
+  <div class="section" id="s12">
+    <div class="section-title">12. Demo Script &amp; Pre-Demo Checklist</div>
+
+    <div class="section-subtitle">4-Beat Demo Script (3 minutes)</div>
+    <div class="demo-beat"><div class="beat-num">1</div><div class="beat-text"><strong>The Problem (0:00–0:30):</strong> Show a blank generic onboarding checklist — the status quo. "This is what new engineers get today. It's generic, it's stale, and it references modules that were deleted 18 months ago."</div></div>
+    <div class="demo-beat"><div class="beat-num">2</div><div class="beat-text"><strong>Live Trigger (0:30–1:30):</strong> Run the agent live against the seed repo. Narrate the three subagents completing in parallel on screen. Show Chroma retrieval pulling top-12 relevant chunks. Show Bob 2.0 Agent Mode generating the structured plan.</div></div>
+    <div class="demo-beat"><div class="beat-num">3</div><div class="beat-text"><strong>The Result (1:30–2:30):</strong> Reveal the generated, repo-specific ramp-up plan. Highlight the <strong>verified:false task</strong> — the stale README's /auth reference caught and flagged. Point at this explicitly: "This is not just an LLM generating text — it actively verified every path against the current repo and caught a documentation lie." Show the synced GitHub Issues.</div></div>
+    <div class="demo-beat"><div class="beat-num">4</div><div class="beat-text"><strong>The Impact (2:30–3:00):</strong> Show the timing comparison chart — generic checklist group vs. generated plan group. State the time-to-first-commit improvement number. "With two more weeks, this runs continuously — every new engineer gets a plan current as of their first day."</div></div>
+
+    <div class="section-subtitle">Pre-Demo Checklist (Complete Before Day 3 Afternoon)</div>
+    <table>
+      <thead><tr><th>Item</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Bob 2.0 session/task report exported and verified to open correctly</td><td>☐</td></tr>
+        <tr><td>Demo fallback video recorded (full 3-minute run from local machine)</td><td>☐</td></tr>
+        <tr><td>Stale README reference visibly caught on stage — rehearsed pointing at verified:false task</td><td>☐</td></tr>
+        <tr><td>Timing comparison numbers captured from simulated new-hire test</td><td>☐</td></tr>
+        <tr><td>One-slide architecture diagram exported as PNG/SVG</td><td>☐</td></tr>
+        <tr><td>GitHub Issues task sync confirmed working (at least 5 tasks created)</td><td>☐</td></tr>
+        <tr><td>npm run ingest runs cleanly against seed repo without errors</td><td>☐</td></tr>
+        <tr><td>mermaid graph renders in browser without build step (CDN load confirmed)</td><td>☐</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  
+  <div class="section" id="s13">
+    <div class="section-title">13. Measurable Impact Metrics</div>
+    <table>
+      <thead><tr><th>Metric</th><th>Measurement Method</th><th>Judging Criterion</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Time-to-first-commit</strong> (primary)</td><td>Simulated timing test: 2 engineers with generic checklist vs. 2 with generated plan. Stopwatch. Even n=2 vs n=2 is a real number.</td><td>Effectiveness &amp; Efficiency (5 pts)</td></tr>
+        <tr><td><strong>Stale reference catch rate</strong></td><td>Count of tasks marked verified:false that correctly identify non-existent paths. Target: 100% catch rate on deliberately seeded stale references.</td><td>Creativity &amp; Innovation (5 pts)</td></tr>
+        <tr><td><strong>Subagent parallel speedup</strong></td><td>Time three subagents running concurrently vs. simulated sequential run. Show wall-clock time vs. sum of individual times.</td><td>Design &amp; Usability (5 pts)</td></tr>
+        <tr><td><strong>Plan completeness</strong></td><td>Count of tasks in generated plan vs. tasks in generic checklist. Count of tasks with real, verified file paths cited.</td><td>Completeness &amp; Feasibility (5 pts)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  
+  <div class="section" id="s14">
+    <div class="section-title">14. Innovation Edge — Judge Wow Factor</div>
+    <div class="callout">
+      <strong>Interactive Architecture Graph + Personalized Path</strong>
+      Rather than a static Markdown checklist, a subagent renders the module-dependency map as an interactive mermaid.js graph, color-coded by change-churn (red = complex, green = stable). The new hire's first assigned ticket is highlighted on the graph. A 2-minute skill assessment adapts the plan for junior vs. senior hire. The demo moves from a text checklist to a visual "here's where you fit in this codebase" moment.
+    </div>
+
+    <div class="section-subtitle">Five Universal Innovation Principles (Applied to This Build)</div>
+    <table>
+      <thead><tr><th>Principle</th><th>Implementation</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Evidence before action</strong></td><td>Every task in the ramp-up plan cites a specific file path, ADR, or closed issue. No assertion made from model judgement alone.</td></tr>
+        <tr><td><strong>Confidence &amp; uncertainty scoring</strong></td><td>verified:false tasks are explicitly surfaced. Conflicting evidence (stale README vs. actual code) is flagged rather than silently resolved.</td></tr>
+        <tr><td><strong>Human approval gates</strong></td><td>Task sync to GitHub Issues requires one-click confirmation (Yellow gate). No code modifications without explicit human approval (Red gate).</td></tr>
+        <tr><td><strong>Parallel specialist agents</strong></td><td>Three subagents split investigation by domain (backend/frontend/infra) via Promise.all(). No single agent context-switches across concerns.</td></tr>
+        <tr><td><strong>Verify every outcome</strong></td><td>Every referenced path checked against live repo tree via repoContainsPath(). No output ships without the verification pass.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  
+  <div class="section" id="s15">
+    <div class="section-title">15. Post-Hackathon Roadmap</div>
+    <p>With two more weeks after the hackathon window, the following extensions move this from a prototype to a production-viable tool:</p>
+    <table>
+      <thead><tr><th>Extension</th><th>Effort</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Confluence + Jira connectors (stub during hackathon)</td><td>2–3 days</td><td>Enables enterprise wikis and ticket history — dramatically improves plan depth for real orgs</td></tr>
+        <tr><td>Scheduled re-ingestion (GitHub Actions webhook on push)</td><td>1 day</td><td>Plan stays current automatically — removes the "stale doc" problem permanently</td></tr>
+        <tr><td>Skill assessment input for junior vs. senior path</td><td>2 days</td><td>Personalized learning path per hire. Satisfies the Innovation Edge "personalized path" criterion</td></tr>
+        <tr><td>Continuous Learning from Human Corrections</td><td>3 days</td><td>Agent records human edits to generated tasks and updates prompts. Positions it as a continuously improving system.</td></tr>
+        <tr><td>Shared Context Bus (reuse corpus across Projects 01, 05, 07, 11)</td><td>3 days</td><td>Eliminates re-ingestion across all onboarding/maintenance tools. Enterprise architecture maturity signal.</td></tr>
+        <tr><td>Evaluation Harness (grounding-accuracy tests)</td><td>2 days</td><td>Automated scoring: did the agent cite a real file or hallucinate? Submission-quality evidence.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout success">
+      <strong>Strategic Narrative (The Winning Message)</strong>
+      "We are not building an AI that simply gives answers. We are building an evidence-driven engineering agent that investigates, acts, verifies every claim, shows its confidence, and knows when to flag a stale reference rather than hallucinating a plausible answer."
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Project 1 — Codebase Onboarding Agent  |  i3 Academy IBM TechXchange 2026 Hackathon  |  Made with IBM Bob</p>
+  </div>
+
+</div>
+</body>
+</html>

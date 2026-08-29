@@ -1,0 +1,633 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>i3 Technologies Platform — Login &amp; Testing Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1f2328;
+    background: #ffffff;
+    padding: 32px 16px 48px;
+  }
+  .page { max-width: 780px; margin: 0 auto; }
+
+  /* Header */
+  .header { border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 28px; }
+  .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .header .sub { color: #57606a; font-size: 13px; }
+  .header .meta { display: flex; gap: 20px; margin-top: 12px; flex-wrap: wrap; }
+  .meta-item { display: flex; flex-direction: column; }
+  .meta-label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: #57606a; }
+  .meta-value { font-size: 13px; font-weight: 600; }
+
+  /* Alert banner */
+  .alert {
+    border-radius: 6px;
+    padding: 13px 16px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .alert-warn  { background: #fff8e1; border-left: 4px solid #f59e0b; }
+  .alert-green { background: #f0fff4; border-left: 4px solid #22c55e; }
+  .alert-blue  { background: #eff6ff; border-left: 4px solid #3b82f6; }
+  .alert strong { display: block; margin-bottom: 2px; }
+
+  /* Section headings */
+  h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1f2328;
+    margin: 32px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  h2 .num {
+    background: #1f2328;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 50%;
+    width: 20px; height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  h3 { font-size: 13.5px; font-weight: 700; margin: 18px 0 8px; color: #1f2328; }
+
+  /* SSO flow diagram */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 12px 0 20px;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .flow-box {
+    background: #ffffff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #1f2328;
+    text-align: center;
+  }
+  .flow-box.highlight {
+    background: #dbeafe;
+    border-color: #3b82f6;
+    color: #1d4ed8;
+  }
+  .flow-arrow { font-size: 18px; color: #57606a; padding: 0 4px; }
+  .flow-label { font-size: 11px; color: #57606a; text-align: center; margin-top: 3px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0 18px; }
+  th {
+    background: #f7f8fa;
+    text-align: left;
+    padding: 7px 10px;
+    border: 1px solid #e5e7eb;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #57606a;
+    font-weight: 700;
+  }
+  td { padding: 8px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+
+  /* Credential cards */
+  .user-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0 20px; }
+  .user-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 14px 16px;
+    background: #f7f8fa;
+  }
+  .user-card .name { font-weight: 700; font-size: 13.5px; margin-bottom: 6px; }
+  .user-card .row { display: flex; justify-content: space-between; font-size: 12.5px; border-bottom: 1px solid #e5e7eb; padding: 4px 0; }
+  .user-card .row:last-child { border-bottom: none; }
+  .user-card .key { color: #57606a; }
+  .user-card .val { font-family: "SFMono-Regular", Consolas, monospace; font-size: 11.5px; background: #fff; border-radius: 3px; padding: 1px 5px; border: 1px solid #e5e7eb; }
+  .badge {
+    display: inline-block; border-radius: 4px; padding: 1px 7px;
+    font-size: 11px; font-weight: 600; margin-top: 6px; margin-right: 3px;
+  }
+  .badge-admin    { background: #fee2e2; color: #b91c1c; }
+  .badge-instr    { background: #fef3c7; color: #92400e; }
+  .badge-student  { background: #d1fae5; color: #065f46; }
+
+  /* Password rule box */
+  .pw-rules {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 12.5px;
+    margin: 10px 0 18px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 20px;
+  }
+  .pw-rule::before { content: "✓ "; color: #d97706; font-weight: 700; }
+
+  /* URL directory */
+  .url-list { list-style: none; margin: 10px 0 18px; display: flex; flex-direction: column; gap: 6px; }
+  .url-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 8px 12px;
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    flex-wrap: wrap;
+  }
+  .url-list .app-name { font-weight: 600; font-size: 13px; min-width: 160px; }
+  .url-list .app-url  { font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; color: #3b82d4; }
+  .url-list .app-who  { margin-left: auto; font-size: 11.5px; color: #57606a; }
+
+  /* Test checklist */
+  .check-group { margin-bottom: 20px; }
+  .check-row {
+    display: grid;
+    grid-template-columns: 20px 1fr 1fr 1fr;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 12.5px;
+    align-items: start;
+  }
+  .check-row:last-child { border-bottom: none; }
+  .check-row .cb { width: 16px; height: 16px; border: 2px solid #d0d7de; border-radius: 3px; margin-top: 2px; }
+  .check-row .test-name { font-weight: 600; }
+  .check-row .where { color: #57606a; font-size: 12px; }
+  .check-row .expect { color: #1a7f37; font-size: 12px; }
+  .check-header {
+    display: grid;
+    grid-template-columns: 20px 1fr 1fr 1fr;
+    gap: 8px;
+    padding: 5px 0;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #57606a;
+    border-bottom: 2px solid #e5e7eb;
+    margin-bottom: 4px;
+  }
+
+  /* Pre/code */
+  pre {
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 13px 16px;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+    overflow-x: auto;
+    margin: 8px 0 16px;
+    line-height: 1.7;
+  }
+  code {
+    font-family: "SFMono-Regular", Consolas, monospace;
+    background: #f0f0f0;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 12px;
+  }
+
+  /* Summary box */
+  .summary-box {
+    background: #1f2328;
+    color: #e6edf3;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-top: 28px;
+    font-size: 13px;
+  }
+  .summary-box h3 { color: #79c0ff; margin: 0 0 14px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; }
+  .summary-row { display: flex; gap: 10px; padding: 5px 0; border-bottom: 1px solid #30363d; }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-key { color: #8b949e; min-width: 160px; font-size: 12.5px; }
+  .summary-val { font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; color: #a5d6ff; }
+
+  footer {
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+    font-size: 12px;
+    color: #57606a;
+  }
+
+  @media (max-width: 560px) {
+    .user-grid { grid-template-columns: 1fr; }
+    .pw-rules { grid-template-columns: 1fr; }
+    .check-row, .check-header { grid-template-columns: 20px 1fr; }
+    .check-row .where, .check-row .expect,
+    .check-header span:nth-child(3), .check-header span:nth-child(4) { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  
+  <div class="header">
+    <h1>i3 Technologies Platform — Login &amp; Testing Guide</h1>
+    <div class="sub">Unified Agentic AI Platform · IBM ROKS Frankfurt (eu-de)</div>
+    <div class="meta">
+      <div class="meta-item"><span class="meta-label">Domain</span><span class="meta-value">i3technologies.co.ke</span></div>
+      <div class="meta-item"><span class="meta-label">SSO System</span><span class="meta-value">Keycloak (RHSSO)</span></div>
+      <div class="meta-item"><span class="meta-label">Realm</span><span class="meta-value">i3</span></div>
+      <div class="meta-item"><span class="meta-label">Temp Password</span><span class="meta-value">i3Test@2025!</span></div>
+    </div>
+  </div>
+
+  
+  <div class="alert alert-warn">
+    <strong>⚠️ Platform Not Yet Live — Infrastructure Pending</strong>
+    The ROKS cluster, DNS records, and Keycloak have been fully defined in code but not yet deployed.
+    The URLs in this guide will not resolve until the ops team completes the 10 prerequisite actions listed in Step 1 below.
+    Once the cluster is live, this entire guide applies as-is — no changes needed.
+  </div>
+
+  
+  <h2><span class="num">1</span> Infrastructure Prerequisites (Ops Team)</h2>
+  <p style="font-size:13px;color:#57606a;margin-bottom:10px">These must be completed before any login is possible. They are ordered by dependency.</p>
+
+  <table>
+    <thead><tr><th>#</th><th>Action</th><th>Priority</th><th>Dependency</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Rotate leaked IBM Cloud API key in IAM console</td><td style="color:#b91c1c;font-weight:600">Critical — do first</td><td>None</td></tr>
+      <tr><td>2</td><td>Create <code>.env</code> from <code>.env.example</code>, fill all secrets (new API key, COS HMAC, KMS CRN/CRK)</td><td style="color:#b91c1c;font-weight:600">Critical</td><td>Step 1</td></tr>
+      <tr><td>3</td><td>Run <code>terraform apply tfplan.out</code> — provision VPC, COS, ROKS cluster</td><td style="color:#b91c1c;font-weight:600">Critical</td><td>Step 2</td></tr>
+      <tr><td>4</td><td>Add wildcard CNAME <code>*.i3technologies.co.ke → &lt;INGRESS_DOMAIN&gt;</code> at Kenya registrar</td><td style="color:#b91c1c;font-weight:600">Critical</td><td>Step 3</td></tr>
+      <tr><td>5</td><td>Add OTT A record <code>ingest.i3technologies.co.ke → &lt;OTT_LB_IP&gt;</code></td><td style="color:#b91c1c;font-weight:600">Critical</td><td>Step 3</td></tr>
+      <tr><td>6</td><td>Initialize OpenBao — run <code>bao operator init</code>, store unseal keys in <code>.env</code>, then run <code>unseal-openbao.ps1</code></td><td style="color:#b91c1c;font-weight:600">Critical</td><td>Step 3</td></tr>
+      <tr><td>7</td><td>Fill <code>populate-vault.ps1</code> remaining placeholders: <code>directus_admin_password</code>, <code>odoo_api_key</code>, <code>watsonx_project_id</code></td><td style="color:#9a6700;font-weight:600">High</td><td>Step 6</td></tr>
+      <tr><td>8</td><td>Provision TLS wildcard cert for <code>*.i3technologies.co.ke</code> via cert-manager or IBM Secrets Manager</td><td style="color:#9a6700;font-weight:600">High</td><td>Step 4</td></tr>
+      <tr><td>9</td><td>Run <code>post-deploy-checklist.ps1</code> — validates all routes, pods, and secrets</td><td style="color:#9a6700;font-weight:600">High</td><td>Steps 3–8</td></tr>
+      <tr><td>10</td><td>Run <code>provision-test-users.ps1</code> — creates 4 test accounts in live Keycloak automatically</td><td style="color:#57606a">Medium</td><td>Step 6</td></tr>
+    </tbody>
+  </table>
+
+  
+  <h2><span class="num">2</span> How the Login System Works</h2>
+  <p style="font-size:13px;color:#57606a;margin-bottom:12px">The platform uses a <strong>Single Sign-On (SSO)</strong> system. You log in <em>once</em> at the SSO portal — every application then recognises your session automatically for up to 10 hours.</p>
+
+  <div class="flow">
+    <div>
+      <div class="flow-box">Your Browser</div>
+      <div class="flow-label">Open any app</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div>
+      <div class="flow-box">evalos.i3technologies.co.ke<br /><span style="font-size:11px;font-weight:400;color:#57606a">(or any other app)</span></div>
+      <div class="flow-label">"Not logged in — redirect"</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div>
+      <div class="flow-box highlight">sso.i3technologies.co.ke<br /><span style="font-size:11px;font-weight:400">Enter credentials HERE</span></div>
+      <div class="flow-label">Token issued</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div>
+      <div class="flow-box">Back to app<br /><span style="font-size:11px;font-weight:400;color:#57606a">Fully authenticated</span></div>
+      <div class="flow-label">Session shared 10 hrs</div>
+    </div>
+  </div>
+
+  
+  <h2><span class="num">3</span> Test Account Credentials</h2>
+  <p style="font-size:13px;color:#57606a;margin-bottom:12px">Four accounts are pre-provisioned by <code>provision-test-users.ps1</code>. All share the same temporary password — <strong>each user must change it on first login</strong>.</p>
+
+  <div class="user-grid">
+    <div class="user-card">
+      <div class="name">Philip Mukiti</div>
+      <div class="row"><span class="key">Username</span><span class="val">philipm</span></div>
+      <div class="row"><span class="key">Email</span><span class="val">philipm@i3technologies.co.ke</span></div>
+      <div class="row"><span class="key">Temp Password</span><span class="val">i3Test@2025!</span></div>
+      <div style="margin-top:8px">
+        <span class="badge badge-admin">Admin</span>
+        <span class="badge badge-instr">Instructor</span>
+        <span class="badge badge-student">Student</span>
+      </div>
+    </div>
+    <div class="user-card">
+      <div class="name">Sebastian Njagi</div>
+      <div class="row"><span class="key">Username</span><span class="val">snjagi</span></div>
+      <div class="row"><span class="key">Email</span><span class="val">snjagi@i3technologies.co.ke</span></div>
+      <div class="row"><span class="key">Temp Password</span><span class="val">i3Test@2025!</span></div>
+      <div style="margin-top:8px">
+        <span class="badge badge-admin">Admin</span>
+        <span class="badge badge-instr">Instructor</span>
+        <span class="badge badge-student">Student</span>
+      </div>
+    </div>
+    <div class="user-card">
+      <div class="name">Joseph Maina</div>
+      <div class="row"><span class="key">Username</span><span class="val">josephm</span></div>
+      <div class="row"><span class="key">Email</span><span class="val">josephm@i3technologies.co.ke</span></div>
+      <div class="row"><span class="key">Temp Password</span><span class="val">i3Test@2025!</span></div>
+      <div style="margin-top:8px">
+        <span class="badge badge-admin">Admin</span>
+        <span class="badge badge-instr">Instructor</span>
+        <span class="badge badge-student">Student</span>
+      </div>
+    </div>
+    <div class="user-card">
+      <div class="name">Dorothy Akoth</div>
+      <div class="row"><span class="key">Username</span><span class="val">dorothy</span></div>
+      <div class="row"><span class="key">Email</span><span class="val">dorothy@i3technologies.co.ke</span></div>
+      <div class="row"><span class="key">Temp Password</span><span class="val">i3Test@2025!</span></div>
+      <div style="margin-top:8px">
+        <span class="badge badge-instr">Instructor</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-warn">
+    <strong>⚠️ Password Policy — New Password Must Meet All 4 Rules</strong>
+    <div class="pw-rules">
+      <div class="pw-rule">Minimum 12 characters</div>
+      <div class="pw-rule">At least 1 uppercase letter (A–Z)</div>
+      <div class="pw-rule">At least 1 lowercase letter (a–z)</div>
+      <div class="pw-rule">At least 1 digit (0–9)</div>
+      <div class="pw-rule">At least 1 special character (!@#$…)</div>
+      <div class="pw-rule">Session lasts 10 hours before expiry</div>
+    </div>
+  </div>
+
+  
+  <h2><span class="num">4</span> Login Process — Step by Step</h2>
+
+  <h3>First-Time Login</h3>
+  <table>
+    <thead><tr><th>Step</th><th>Action</th><th>What Happens</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Open browser, go to:<br /><code>https://sso.i3technologies.co.ke/realms/i3/account</code></td><td>Keycloak login page loads</td></tr>
+      <tr><td>2</td><td>Enter your <strong>username</strong> (e.g. <code>philipm</code>) and the temporary password <code>i3Test@2025!</code></td><td>Keycloak validates credentials</td></tr>
+      <tr><td>3</td><td>Keycloak immediately shows <strong>"Update Password"</strong> screen — set your personal password</td><td>Password changed; must meet policy above</td></tr>
+      <tr><td>4</td><td>You land on your <strong>Account Portal</strong> home page</td><td>Login complete — session active for 10 hours</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Accessing Any Application (After First Login)</h3>
+  <p style="font-size:13px;color:#57606a;margin-bottom:10px">Navigate directly to the app URL. You are redirected to Keycloak, authenticated silently, and returned to the app — no second password entry needed.</p>
+
+  <h3>Forgotten Password</h3>
+  <table>
+    <thead><tr><th>Step</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>On any app login page, click <strong>Forgot Password?</strong></td></tr>
+      <tr><td>2</td><td>Enter your email address (e.g. <code>philipm@i3technologies.co.ke</code>)</td></tr>
+      <tr><td>3</td><td>Check your email for a reset link — valid for <strong>15 minutes</strong></td></tr>
+      <tr><td>4</td><td>Follow the link and set a new password meeting the policy above</td></tr>
+    </tbody>
+  </table>
+
+  
+  <h2><span class="num">5</span> Platform URL Directory</h2>
+  <ul class="url-list">
+    <li>
+      <span class="app-name">SSO Account Portal</span>
+      <span class="app-url">https://sso.i3technologies.co.ke/realms/i3/account</span>
+      <span class="app-who">All users — login here first</span>
+    </li>
+    <li>
+      <span class="app-name">Keycloak Admin Console</span>
+      <span class="app-url">https://sso.i3technologies.co.ke/admin/i3/console</span>
+      <span class="app-who">Admins only</span>
+    </li>
+    <li>
+      <span class="app-name">EvalOS (Exams)</span>
+      <span class="app-url">https://evalos.i3technologies.co.ke</span>
+      <span class="app-who">Students, Instructors</span>
+    </li>
+    <li>
+      <span class="app-name">Directus CMS</span>
+      <span class="app-url">https://cms.i3technologies.co.ke</span>
+      <span class="app-who">Instructors, Admins</span>
+    </li>
+    <li>
+      <span class="app-name">n8n Automation</span>
+      <span class="app-url">https://n8n.i3technologies.co.ke</span>
+      <span class="app-who">Instructors, Admins</span>
+    </li>
+    <li>
+      <span class="app-name">Langfuse Traces</span>
+      <span class="app-url">https://langfuse.i3technologies.co.ke</span>
+      <span class="app-who">Admins, Instructors</span>
+    </li>
+    <li>
+      <span class="app-name">Grafana Dashboards</span>
+      <span class="app-url">https://grafana.i3technologies.co.ke</span>
+      <span class="app-who">Admins</span>
+    </li>
+    <li>
+      <span class="app-name">Argo CD (GitOps)</span>
+      <span class="app-url">https://argocd.i3technologies.co.ke</span>
+      <span class="app-who">Admins</span>
+    </li>
+    <li>
+      <span class="app-name">Admissions Chatbot</span>
+      <span class="app-url">https://admissions.i3technologies.co.ke</span>
+      <span class="app-who">Public / Prospective students</span>
+    </li>
+    <li>
+      <span class="app-name">Live Stream / VOD</span>
+      <span class="app-url">https://stream.i3technologies.co.ke</span>
+      <span class="app-who">All users</span>
+    </li>
+    <li>
+      <span class="app-name">AI Lab (JupyterHub)</span>
+      <span class="app-url">https://ailab.i3technologies.co.ke</span>
+      <span class="app-who">Students, Instructors — Month 3</span>
+    </li>
+  </ul>
+
+  
+  <h2><span class="num">6</span> What to Test After Login</h2>
+
+  <h3>Student Testing — use: philipm, snjagi, or josephm</h3>
+  <div class="check-group">
+    <div class="check-header">
+      <span></span><span>Test</span><span>Where</span><span>Expected Result</span>
+    </div>
+    <div class="check-row">
+      <div class="cb"></div>
+      <div class="test-name">SSO first login + forced password change</div>
+      <div class="where">sso.i3technologies.co.ke</div>
+      <div class="expect">Password update screen appears immediately</div>
+    </div>
+    <div class="check-row">
+      <div class="cb"></div>
+      <div class="test-name">Navigate to EvalOS — auto SSO redirect</div>
+      <div class="where">evalos.i3technologies.co.ke</div>
+      <div class="expect">Redirected to Keycloak, then back to EvalOS dashboard</div>
+    </div>
+    <div class="check-row">
+      <div class="cb"></div>
+      <div class="test-name">EvalOS dashboard loads correctly</div>
+      <div class="where">EvalOS Dashboard</div>
+      <div class="expect">Shows upcoming exams, past attempts, practice exercises</div>
+    </div>
+    <div class="check-row">
+      <div class="cb"></div>
+      <div class="test-name">Run a code sandbox submission (Python)</div>
+      <div class="where">EvalOS → any coding question → Run Tests</div>
+      <div class="expect">Code executes in ~125 ms, pass/fail returned</div>
+    </div>
+    <div class="check-row">
+      <div class="cb"></div>
+      <div class="test-name">Session persists across tabs (SSO)</div>
+      <div class="where">Open Grafana in a new tab</div>
+      <div class="expect">No second login prompt — auto-authenticated</div>
+    </div>
+    <div class="check-row">
+      <div class="cb"></div>
+      <div class="test-name">Forgot password flow</div>
+      <div class="where">Login page → Forgot Password?</div>
+      <div class="expect">Reset email arrives within 2 minutes, link valid 15 min</div>
+    </div>
+    <div class="check-row">
+      <div class="cb"></div>
+      <div class="test-name">Account portal — view profile and sessions</div>
+      <div class="where">sso.i3technologies.co.ke/realms/i3/account</div>
+      <div class="expect">Profile details visible; active sessions listed</div>
+    </div>
+  </div>
+
+  <h3>Instructor Testing — use: dorothy (or any admin account)</h3>
+  <div class="check-group">
+    <div class="check-header">
+      <span></span><span>Test</span><span>Where</span><span>Expected Result</span>
+    </div>
+    <div class="check-row">
+      <div class="cb"></div>
+      <div class="test-name">Login to Directus CMS via SSO</div>
+      <div class="where">cms.i3technologies.co.ke</div>
+      <div class="expect">"Login with Keycloak" button — lands in Directus dashboard</div>
+    </div>
+    <div class="check-row">
+      <div class="cb"></div>
+      <div class="test-name">Access n8n automation workflows</div>
+      <div class="where">n8n.i3technologies.co.ke</div>
+      <div class="expect">Workflow list visible, SSO login accepted</div>
+    </div>
+    <div class="check-row">
+      <div class="cb"></div>
+      <div class="test-name">View LLM traces in Langfuse</div>
+      <div class="where">langfuse.i3technologies.co.ke</div>
+      <div class="expect">Traces list loads; filterable by user_id / model</div>
+    </div>
+    <div class="check-row">
+      <div class="cb"></div>
+      <div class="test-name">Create an exam in EvalOS Instructor Panel</div>
+      <div class="where">EvalOS → Instructor Panel → Exams → New Exam</div>
+      <div class="expect">Exam builder form accessible, can save draft</div>
+    </div>
+  </div>
+
+  <h3>Admin Testing — use: philipm, snjagi, or josephm</h3>
+  <div class="check-group">
+    <div class="check-header">
+      <span></span><span>Test</span><span>Where</span><span>Expected Result</span>
+    </div>
+    <div class="check-row">
+      <div class="cb"></div>
+      <div class="test-name">Access Keycloak Admin Console</div>
+      <div class="where">sso.i3technologies.co.ke/admin/i3/console</div>
+      <div class="expect">Full realm management UI — users, clients, roles visible</div>
+    </div>
+    <div class="check-row">
+      <div class="cb"></div>
+      <div class="test-name">Access Argo CD GitOps dashboard</div>
+      <div class="where">argocd.i3technologies.co.ke</div>
+      <div class="expect">6 ApplicationSets listed with sync status</div>
+    </div>
+    <div class="check-row">
+      <div class="cb"></div>
+      <div class="test-name">Access Grafana dashboards</div>
+      <div class="where">grafana.i3technologies.co.ke</div>
+      <div class="expect">Prometheus metrics dashboards load, data visible</div>
+    </div>
+    <div class="check-row">
+      <div class="cb"></div>
+      <div class="test-name">Run post-deploy checklist script</div>
+      <div class="where">Terminal: <code>.\platform\scripts\post-deploy-checklist.ps1</code></div>
+      <div class="expect">All 7 routes return HTTP 200/302; all pods Running</div>
+    </div>
+    <div class="check-row">
+      <div class="cb"></div>
+      <div class="test-name">Verify all 4 test users exist in realm</div>
+      <div class="where">Keycloak Admin Console → Users</div>
+      <div class="expect">philipm, snjagi, josephm, dorothy listed and enabled</div>
+    </div>
+  </div>
+
+  
+  <h2><span class="num">7</span> Preflight Verification (Before First Login)</h2>
+  <p style="font-size:13px;color:#57606a;margin-bottom:10px">Run these commands to confirm the cluster and routes are ready before attempting a browser login.</p>
+
+  <h3>Check Keycloak is Running</h3>
+  <pre>oc get pods -n i3-auth
+# Expected: 2 pods with STATUS = Running</pre>
+
+  <h3>Check SSO Route Resolves</h3>
+  <pre>curl -sk -o /dev/null -w "%{http_code}" https://sso.i3technologies.co.ke/
+# Expected: 200 or 302</pre>
+
+  <h3>Check All Routes at Once</h3>
+  <pre>oc get routes -A --no-headers | grep "i3-" | awk '{print $1, $3}' | column -t</pre>
+
+  <h3>Run Full Automated Checklist</h3>
+  <pre># Load environment first
+. .\platform\scripts\load-env.ps1
+
+# Run the 10-section post-deploy validation
+.\platform\scripts\post-deploy-checklist.ps1</pre>
+
+  <h3>Provision Test Users (if not yet done)</h3>
+  <pre># Set the Keycloak admin password first
+$env:KEYCLOAK_ADMIN_PASSWORD = "&lt;keycloak-admin-password&gt;"
+
+# Run provisioning — idempotent, safe to re-run
+.\platform\scripts\provision-test-users.ps1</pre>
+
+  
+  <div class="summary-box">
+    <h3>Quick Reference — Everything You Need</h3>
+    <div class="summary-row"><span class="summary-key">Login URL</span><span class="summary-val">https://sso.i3technologies.co.ke/realms/i3/account</span></div>
+    <div class="summary-row"><span class="summary-key">Admin Console</span><span class="summary-val">https://sso.i3technologies.co.ke/admin/i3/console</span></div>
+    <div class="summary-row"><span class="summary-key">Usernames</span><span class="summary-val">philipm / snjagi / josephm / dorothy</span></div>
+    <div class="summary-row"><span class="summary-key">Temp Password</span><span class="summary-val">i3Test@2025!  (must change on first login)</span></div>
+    <div class="summary-row"><span class="summary-key">Password Policy</span><span class="summary-val">12+ chars · uppercase · lowercase · digit · special</span></div>
+    <div class="summary-row"><span class="summary-key">Session Duration</span><span class="summary-val">10 hours · auto-saved on exam disconnect</span></div>
+    <div class="summary-row"><span class="summary-key">Provision Script</span><span class="summary-val">.\platform\scripts\provision-test-users.ps1</span></div>
+    <div class="summary-row"><span class="summary-key">Health Check Script</span><span class="summary-val">.\platform\scripts\post-deploy-checklist.ps1</span></div>
+    <div class="summary-row"><span class="summary-key">Blocker</span><span class="summary-val">.env must be created + cluster provisioned before any login works</span></div>
+  </div>
+
+</div>
+
+<footer>Made with IBM Bob</footer>
+
+</body>
+</html>

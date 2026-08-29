@@ -1,0 +1,281 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 Unified Agentic AI Platform</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.6; background: #ffffff; color: #1f2328; }
+  .page { max-width: 760px; margin: 0 auto; padding: 32px 24px 48px; }
+  h1 { font-size: 22px; font-weight: 700; color: #1f2328; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #57606a; margin-bottom: 28px; }
+  h2 { font-size: 15px; font-weight: 700; color: #1f2328; margin: 28px 0 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
+  h3 { font-size: 13px; font-weight: 700; color: #1f2328; margin: 16px 0 6px; }
+  p  { margin-bottom: 10px; color: #1f2328; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+  .badge-green  { background: #dcfce7; color: #15803d; }
+  .badge-purple { background: #ede9fe; color: #6d28d9; }
+  .badge-orange { background: #ffedd5; color: #c2410c; }
+  .badge-gray   { background: #f3f4f6; color: #374151; }
+  .ws-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+  .ws-card { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 14px; }
+  .ws-card h3 { margin: 0 0 6px; font-size: 13px; color: #3b82d4; }
+  .ws-card ul { list-style: none; padding: 0; }
+  .ws-card li { font-size: 12px; color: #57606a; padding: 2px 0; }
+  .ws-card li::before { content: "→ "; color: #3b82d4; font-weight: 700; }
+  .file-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px; }
+  .file-table th { text-align: left; padding: 6px 8px; background: #f7f8fa; border-bottom: 2px solid #e5e7eb; font-weight: 600; color: #57606a; }
+  .file-table td { padding: 5px 8px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+  .file-table tr:hover td { background: #f7f8fa; }
+  .file-path { font-family: "Courier New", monospace; color: #3b82d4; font-size: 11px; }
+  .constraint-box { background: #f7f8fa; border: 1px solid #e5e7eb; border-left: 3px solid #3b82d4; border-radius: 4px; padding: 12px 14px; margin: 12px 0; }
+  .constraint-box .label { font-size: 11px; font-weight: 700; color: #3b82d4; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .arch-row { display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
+  .arch-pill { background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 20px; padding: 3px 10px; font-size: 11px; color: #374151; }
+  .arch-pill.active { background: #dbeafe; border-color: #93c5fd; color: #1d4ed8; }
+  .budget-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .budget-table th { background: #f7f8fa; padding: 6px 10px; text-align: left; border-bottom: 2px solid #e5e7eb; color: #57606a; font-weight: 600; }
+  .budget-table td { padding: 5px 10px; border-bottom: 1px solid #e5e7eb; }
+  .budget-total { font-weight: 700; background: #f0fdf4; }
+  .timeline-row { display: flex; margin: 14px 0; gap: 0; }
+  .tl-month { min-width: 60px; font-size: 11px; font-weight: 700; color: #3b82d4; padding-top: 2px; }
+  .tl-bar { flex: 1; border-left: 2px solid #e5e7eb; padding-left: 12px; margin-left: 4px; }
+  .tl-bar h4 { font-size: 12px; font-weight: 700; margin: 0 0 2px; }
+  .tl-bar p { font-size: 11px; color: #57606a; margin: 0; }
+  .alert { background: #fffbeb; border: 1px solid #fde68a; border-radius: 4px; padding: 10px 12px; font-size: 12px; color: #92400e; margin: 12px 0; }
+  .alert strong { display: block; margin-bottom: 2px; }
+  .footer { text-align: center; font-size: 12px; color: #57606a; border-top: 1px solid #e5e7eb; margin-top: 40px; padding-top: 16px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  
+  <h1>i3 Unified Agentic AI Platform</h1>
+  <div class="subtitle">
+    Lead Principal Solutions Architect Blueprint  ·  Single ROKS Cluster  ·  eu-de Frankfurt  ·  17-Namespace Topology
+    <br />
+    <span class="badge badge-blue">OpenShift 4.15</span>
+    <span class="badge badge-green">Red Hat MW02049</span>
+    <span class="badge badge-purple">Zero-Trust</span>
+    <span class="badge badge-orange">≤$1,500/mo</span>
+    <span class="badge badge-gray">6-Month Rollout</span>
+  </div>
+
+  
+  <div class="alert">
+    <strong>⚠ Critical Boundary Condition — Enforced Throughout All Workstreams</strong>
+    Solutions <code>solution-01</code> through <code>solution-08</code> are running, fully functional, and must remain completely untouched. All Argo CD AppProject destinations, NetworkPolicies, and RBAC bindings explicitly exclude these namespaces. The <code>make verify-cluster</code> target audits this at every CI run.
+  </div>
+
+  
+  <h2>Architecture Foundations</h2>
+  <div class="constraint-box">
+    <div class="label">Compute &amp; Storage</div>
+    <div class="arch-row">
+      <span class="arch-pill active">ROKS entitlement=cloud_pak → $0 OCP licensing</span>
+      <span class="arch-pill active">bx2.4x16 × 3 workers (always on)</span>
+      <span class="arch-pill active">gx2.8x64 GPU burst pool (scale-to-zero via KEDA)</span>
+      <span class="arch-pill">SeaweedFS 3.71 S3 (primary)</span>
+      <span class="arch-pill">IBM COS eu-de (DR replica, hourly rclone sync)</span>
+      <span class="arch-pill">Crunchy PGO v5 (3-node HA + pgBackRest)</span>
+    </div>
+  </div>
+  <div class="constraint-box">
+    <div class="label">Security &amp; Secrets</div>
+    <div class="arch-row">
+      <span class="arch-pill active">OpenBao Raft (3-node, manual 3-of-5 Shamir unseal)</span>
+      <span class="arch-pill active">Keycloak 24 multi-tenant realm</span>
+      <span class="arch-pill active">Lobster Trap regex firewall (&lt;0.3ms)</span>
+      <span class="arch-pill">Zero-Trust NetworkPolicies per namespace</span>
+      <span class="arch-pill">No hardcoded secrets — all injected at runtime</span>
+      <span class="arch-pill">Remote TF state: IBM COS encrypted</span>
+    </div>
+  </div>
+  <div class="constraint-box">
+    <div class="label">GitOps &amp; CI/CD</div>
+    <div class="arch-row">
+      <span class="arch-pill active">Argo CD App-of-Apps + ApplicationSet (6 workstreams)</span>
+      <span class="arch-pill active">Tekton Pipelines (Buildah → Trivy scan → rolling deploy)</span>
+      <span class="arch-pill">Sync waves 1–6 enforce provisioning order</span>
+      <span class="arch-pill">prune: false — no accidental production deletions</span>
+    </div>
+  </div>
+
+  
+  <h2>5 Implemented Workstreams</h2>
+  <div class="ws-grid">
+    <div class="ws-card">
+      <h3>WS1 — Core Infrastructure</h3>
+      <ul>
+        <li>Terraform VPC / ROKS / COS / IAM modules</li>
+        <li>Remote state: IBM COS + HMAC encryption</li>
+        <li>Crunchy PostgreSQL HA (3-node + pgBackRest)</li>
+        <li>Strimzi Kafka 3.7 KRaft (no ZooKeeper)</li>
+        <li>OpenBao Raft (manual bootstrap gate)</li>
+        <li>Keycloak 24 realm (8 OIDC clients, Entra ID federation)</li>
+        <li>Argo CD App-of-Apps + Tekton buildah pipeline</li>
+      </ul>
+    </div>
+    <div class="ws-card">
+      <h3>WS2 — Model Gateway &amp; AI Lab</h3>
+      <ul>
+        <li>LiteLLM Proxy: Tier 3/2/1 routing rules</li>
+        <li>DistilBERT intent → Granite 4.0 Nano (edge)</li>
+        <li>Mistral NeMo 12B + DeepSeek Coder V2 Lite (RAG)</li>
+        <li>vLLM + PagedAttention + KEDA scale-to-zero GPU</li>
+        <li>Langfuse token cost tracing + OTel export</li>
+        <li>Cohort provisioner: Namespace + Quota + NetPol + RBAC</li>
+        <li>Student workbench isolation from production DBs</li>
+      </ul>
+    </div>
+    <div class="ws-card">
+      <h3>WS3 — EvalOS &amp; Test Engine</h3>
+      <ul>
+        <li>Firecracker MicroVM daemon (~125ms boot target)</li>
+        <li>4 execution profiles (Python/ML, IaC, Rust/C++, Dual-VM)</li>
+        <li>Network blackholing + cgroup CPU/mem limits</li>
+        <li>PostgreSQL DDL: questions, quiz_attempts, user_weaknesses</li>
+        <li>Next.js 14 randomized exam + option shuffle</li>
+        <li>Anti-cheat: focus/clipboard/fullscreen event hooks</li>
+        <li>Stanford MOSS + AST plagiarism integration</li>
+      </ul>
+    </div>
+    <div class="ws-card">
+      <h3>WS4 — OTT Streaming &amp; Media</h3>
+      <ul>
+        <li>OvenMediaEngine: SRT+RTMP ingest, LL-HLS+WebRTC egress</li>
+        <li>ABR ladder: 240p/300kbps → 1080p/4Mbps (4 renditions)</li>
+        <li>Nginx HLS cache: 2s TTL live / 1hr TTL VOD</li>
+        <li>SeaweedFS 3-master + 3-volume HA cluster</li>
+        <li>Hourly rclone → IBM COS DR replication CronJob</li>
+        <li>Pipeline: stream-end → FFmpeg transcode → Whisper SRT → SeaweedFS → Directus CMS</li>
+      </ul>
+    </div>
+    <div class="ws-card">
+      <h3>WS5 — Admissions Agent &amp; MCP</h3>
+      <ul>
+        <li>FastAPI + WebSocket streaming chat</li>
+        <li>LlamaIndex RAG + ChromaDB vector store</li>
+        <li>IBM Docling layout-aware PDF ingestion</li>
+        <li>Lobster Trap firewall (12 injection patterns)</li>
+        <li>Keycloak JWT OIDC validation middleware</li>
+        <li>FastMCP: Odoo 19 / Salesforce / Google Calendar</li>
+        <li>Human-in-the-Loop: 5-min approval gate, /confirm webhook</li>
+      </ul>
+    </div>
+    <div class="ws-card">
+      <h3>WS6 — Testing &amp; Operations</h3>
+      <ul>
+        <li>Locust: 100 concurrent EvalOS submissions (5 min)</li>
+        <li>Locust: 2,000 concurrent AI Lab API calls (10 min)</li>
+        <li>RAGAS eval: faithfulness ≥0.85, relevancy ≥0.80</li>
+        <li>Promptfoo red-team: OWASP LLM 01 + 06 coverage</li>
+        <li>Master Makefile: 20+ targets, full automation</li>
+        <li>Day-2 Runbook: OpenBao bootstrap, PITR restore, GPU ops</li>
+      </ul>
+    </div>
+  </div>
+
+  
+  <h2>Generated Artifact Index (27 files)</h2>
+  <table class="file-table">
+    <thead>
+      <tr><th>File</th><th>Type</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="file-path">platform/terraform/main.tf</td><td><span class="badge badge-orange">Terraform</span></td><td>Root module, COS remote backend, module wiring</td></tr>
+      <tr><td class="file-path">platform/terraform/variables.tf</td><td><span class="badge badge-orange">Terraform</span></td><td>All input variables with defaults + sensitivity flags</td></tr>
+      <tr><td class="file-path">platform/terraform/modules/vpc/main.tf</td><td><span class="badge badge-orange">Terraform</span></td><td>VPC, subnets (3 zones), public gateways, ACLs, SGs</td></tr>
+      <tr><td class="file-path">platform/terraform/modules/roks/main.tf</td><td><span class="badge badge-orange">Terraform</span></td><td>ROKS 4.15, cloud_pak entitlement, GPU burst pool</td></tr>
+      <tr><td class="file-path">platform/terraform/modules/cos/main.tf</td><td><span class="badge badge-orange">Terraform</span></td><td>COS instance, platform + tfstate + DR buckets, HMAC</td></tr>
+      <tr><td class="file-path">platform/terraform/modules/iam/main.tf</td><td><span class="badge badge-orange">Terraform</span></td><td>IAM groups, service IDs (Tekton, Argo CD), trusted profiles</td></tr>
+      <tr><td class="file-path">platform/operators/postgres/postgres-cluster.yaml</td><td><span class="badge badge-blue">YAML</span></td><td>Crunchy PGO PostgresCluster: 3-node HA, pgBackRest COS, PgBouncer</td></tr>
+      <tr><td class="file-path">platform/operators/kafka/kafka-kraft.yaml</td><td><span class="badge badge-blue">YAML</span></td><td>Strimzi Kafka 3.7 KRaft: 3 controller + 3 broker node pools</td></tr>
+      <tr><td class="file-path">platform/operators/openbao/openbao-deploy.yaml</td><td><span class="badge badge-blue">YAML</span></td><td>OpenBao Raft StatefulSet + manual bootstrap Job</td></tr>
+      <tr><td class="file-path">platform/operators/keycloak/keycloak-realm.yaml</td><td><span class="badge badge-blue">YAML</span></td><td>Keycloak 24: i3 realm, 8 OIDC clients, Entra ID IDP, roles</td></tr>
+      <tr><td class="file-path">platform/gitops/argocd/app-of-apps.yaml</td><td><span class="badge badge-blue">YAML</span></td><td>Argo CD App-of-Apps, AppProject (solutions 01-08 excluded), ApplicationSet</td></tr>
+      <tr><td class="file-path">platform/gitops/tekton/pipeline-build.yaml</td><td><span class="badge badge-blue">YAML</span></td><td>Tekton: buildah Task, Trivy scan, rolling-update Task, EventListener</td></tr>
+      <tr><td class="file-path">platform/model-gateway/litellm/litellm-deploy.yaml</td><td><span class="badge badge-blue">YAML</span></td><td>LiteLLM Proxy: 3-tier routing, Redis cache, Langfuse callbacks</td></tr>
+      <tr><td class="file-path">platform/model-gateway/vllm/vllm-deploy.yaml</td><td><span class="badge badge-blue">YAML</span></td><td>vLLM GPU (Granite 3.1) + CPU mid-tier + KEDA ScaledObjects</td></tr>
+      <tr><td class="file-path">platform/model-gateway/langfuse/langfuse-deploy.yaml</td><td><span class="badge badge-blue">YAML</span></td><td>Langfuse 2.56 deployment + OpenShift Route</td></tr>
+      <tr><td class="file-path">platform/ai-lab/namespaces/provision_cohort.py</td><td><span class="badge badge-green">Python</span></td><td>Cohort provisioner: Namespace, ResourceQuota, LimitRange, NetworkPolicy, RBAC</td></tr>
+      <tr><td class="file-path">platform/evalos/sandbox/daemon.py</td><td><span class="badge badge-green">Python</span></td><td>Firecracker MicroVM daemon: 4 profiles, boot/run/cleanup, FastAPI endpoints</td></tr>
+      <tr><td class="file-path">platform/evalos/db/schema.sql</td><td><span class="badge badge-gray">SQL</span></td><td>DDL: questions, exams, quiz_attempts, answer_details, user_weaknesses, sandbox_results</td></tr>
+      <tr><td class="file-path">platform/evalos/nextjs/exam-engine.ts</td><td><span class="badge badge-purple">TypeScript</span></td><td>Next.js 14 exam start route, question draw, anti-cheat hooks, MOSS client</td></tr>
+      <tr><td class="file-path">platform/ott/ome/ome-deploy.yaml</td><td><span class="badge badge-blue">YAML</span></td><td>OvenMediaEngine: SRT/RTMP ingest, LL-HLS+WebRTC egress, ABR 4-rung ladder</td></tr>
+      <tr><td class="file-path">platform/ott/nginx/nginx-hls.yaml</td><td><span class="badge badge-blue">YAML</span></td><td>Nginx: live 2s cache TTL, VOD 1hr immutable cache, CORS, Route</td></tr>
+      <tr><td class="file-path">platform/ott/seaweedfs/seaweedfs-deploy.yaml</td><td><span class="badge badge-blue">YAML</span></td><td>SeaweedFS 3-master+3-volume HA + S3 filer + hourly rclone CronJob</td></tr>
+      <tr><td class="file-path">platform/ott/pipeline/pipeline.py</td><td><span class="badge badge-green">Python</span></td><td>FFmpeg ABR transcode → Whisper SRT → SeaweedFS upload → Directus CMS update</td></tr>
+      <tr><td class="file-path">platform/admissions/fastapi/admissions_agent.py</td><td><span class="badge badge-green">Python</span></td><td>FastAPI + LlamaIndex RAG + ChromaDB + Lobster Trap firewall + WebSocket streaming</td></tr>
+      <tr><td class="file-path">platform/admissions/mcp/mcp_connectors.py</td><td><span class="badge badge-green">Python</span></td><td>FastMCP: Odoo 19, Salesforce, Google Calendar with HITL confirmation gates</td></tr>
+      <tr><td class="file-path">platform/testing/testing.py</td><td><span class="badge badge-green">Python</span></td><td>Locust (100+2000 users), RAGAS eval, Promptfoo red-team config</td></tr>
+      <tr><td class="file-path">Makefile</td><td><span class="badge badge-gray">Makefile</span></td><td>20+ targets: init-infra, gpu-up/down, test-all, dr-backup/restore, verify-cluster</td></tr>
+      <tr><td class="file-path">platform/RUNBOOK.md</td><td><span class="badge badge-gray">Markdown</span></td><td>Day-2 ops: OpenBao bootstrap, PITR restore, Kafka ops, budget guardrails</td></tr>
+    </tbody>
+  </table>
+
+  
+  <h2>Budget Guardrails (≤$1,500/mo)</h2>
+  <table class="budget-table">
+    <thead><tr><th>Resource</th><th>Configuration</th><th>Est. Cost</th></tr></thead>
+    <tbody>
+      <tr><td>CPU Worker Pool (3× bx2.4x16)</td><td>Always on, 3 AZs</td><td>~$420/mo</td></tr>
+      <tr><td>GPU Burst Pool (gx2.8x64)</td><td>KEDA scale-to-zero; $0 idle</td><td>$0 – $280/mo</td></tr>
+      <tr><td>OCP Worker Licensing</td><td><code>entitlement=cloud_pak</code> (MW02049)</td><td class="badge-green" style="color:#15803d;font-weight:700">$0</td></tr>
+      <tr><td>ROKS Control Plane</td><td>Included in IBM Cloud entitlement</td><td class="badge-green" style="color:#15803d;font-weight:700">$0</td></tr>
+      <tr><td>IBM COS Storage (~2 TB)</td><td>Smart tier + lifecycle to cold at 90d</td><td>~$45/mo</td></tr>
+      <tr><td>SeaweedFS PVCs (500Gi × 3 volumes)</td><td>ibmc-vpc-block-retain-10iops</td><td>~$300/mo</td></tr>
+      <tr class="budget-total"><td>Total (GPU idle)</td><td>Run <code>make gpu-down</code> when no inference jobs</td><td>~$765/mo</td></tr>
+      <tr class="budget-total"><td>Total (GPU 50% active)</td><td>Typical training day</td><td>~$905/mo</td></tr>
+    </tbody>
+  </table>
+
+  
+  <h2>6-Month Progressive Rollout</h2>
+  <div class="timeline-row"><div class="tl-month">M 1</div><div class="tl-bar"><h4>Infrastructure &amp; GitOps Baseline</h4><p>Terraform apply → ROKS, COS, VPC, IAM. Operators: Crunchy PG, Kafka KRaft, OpenBao, Keycloak. Argo CD + Tekton wired.</p></div></div>
+  <div class="timeline-row"><div class="tl-month">M 2</div><div class="tl-bar"><h4>Model Gateway &amp; Observability</h4><p>LiteLLM tiered proxy live. vLLM CPU mid-tier running. Langfuse token tracing active. GPU burst pool validated (scale test).</p></div></div>
+  <div class="timeline-row"><div class="tl-month">M 3</div><div class="tl-bar"><h4>EvalOS Sandbox (Profiles A + B)</h4><p>Firecracker daemon deployed. Profile A (Python/ML) and B (IaC) certified. PostgreSQL schema migrated. Anti-cheat hooks live.</p></div></div>
+  <div class="timeline-row"><div class="tl-month">M 4</div><div class="tl-bar"><h4>OTT Streaming &amp; Media Pipeline</h4><p>OvenMediaEngine live ingest tested. ABR 4-rung ladder serving. SeaweedFS HA + hourly COS DR sync running. Whisper pipeline automated.</p></div></div>
+  <div class="timeline-row"><div class="tl-month">M 5</div><div class="tl-bar"><h4>Admissions Agent &amp; MCP Connectors</h4><p>FastAPI admissions agent serving. ChromaDB populated via Docling. Lobster Trap red-team passed. MCP Odoo/Salesforce/Calendar HITL confirmed.</p></div></div>
+  <div class="timeline-row"><div class="tl-month">M 6</div><div class="tl-bar"><h4>AI Lab Cohorts + Full Test Suite</h4><p>Cohort provisioner operational. First 12-week lab cohort onboarded. Locust/RAGAS/Promptfoo suite passing. DR drill completed.</p></div></div>
+
+  
+  <h2>Essential Day-1 Commands</h2>
+  <div class="constraint-box">
+    <div class="label">Ordered Execution Sequence</div>
+    <pre style="font-size:11px;color:#1f2328;line-height:1.8;overflow-x:auto">
+# 1. Bootstrap infrastructure
+make init-infra    # init Terraform with COS remote backend
+make plan-infra    # review changes
+make deploy-infra  # provision VPC, ROKS, COS, IAM
+
+# 2. Deploy operators (manual OpenBao unseal required after)
+make deploy-operators
+
+# 3. Deploy all application workstreams (sync wave order enforced by Argo CD)
+make deploy-apps
+
+# 4. Verify everything is healthy
+make verify-cluster
+
+# 5. Run full test suite
+make test-all
+
+# 6. GPU ops (on-demand)
+make gpu-up        # activate for training / heavy inference
+make gpu-down      # return to $0 idle cost
+
+# 7. DR validation
+make dr-test       # non-destructive backup integrity check
+    </pre>
+  </div>
+
+  <div class="footer">
+    Made with IBM Bob  ·  i3 Technologies  ·  Unified Agentic AI Platform Blueprint
+  </div>
+</div>
+</body>
+</html>

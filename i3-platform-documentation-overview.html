@@ -1,0 +1,334 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>i3 Platform — Documentation Overview</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.6;background:#fff;color:#1f2328;padding:32px 16px 48px}
+  .page{max-width:760px;margin:0 auto}
+  h1{font-size:20px;font-weight:700;margin-bottom:4px}
+  .subtitle{font-size:13px;color:#57606a;margin-bottom:24px}
+  h2{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#57606a;margin:28px 0 10px;padding-bottom:5px;border-bottom:1px solid #e5e7eb}
+  .doc-file{display:inline-block;background:#f0f0f0;border-radius:4px;padding:2px 7px;font-family:monospace;font-size:12px;color:#0f172a;margin-bottom:10px}
+
+  /* Section cards */
+  .section{border:1px solid #e5e7eb;border-radius:8px;margin-bottom:12px;overflow:hidden}
+  .section-header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f7f8fa;border-bottom:1px solid #e5e7eb}
+  .section-icon{font-size:16px;flex-shrink:0}
+  .section-title{font-weight:700;font-size:13.5px;flex:1}
+  .audience-badges{display:flex;gap:5px;flex-wrap:wrap}
+  .ab{font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;white-space:nowrap}
+  .ab-all     {background:#e8e8e8;color:#444}
+  .ab-student {background:#dafbe1;color:#1a7f37}
+  .ab-instructor{background:#ddf4ff;color:#0550ae}
+  .ab-admin   {background:#ffebe9;color:#cf222e}
+
+  .section-body{padding:10px 14px}
+  .section-body p{font-size:12.5px;color:#57606a;margin-bottom:8px}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+  th{background:#f7f8fa;text-align:left;padding:5px 9px;border:1px solid #e5e7eb;font-weight:600;font-size:11.5px;color:#57606a}
+  td{padding:5px 9px;border:1px solid #e5e7eb;vertical-align:top}
+  tr:nth-child(even) td{background:#fafbfc}
+  code{font-family:"Consolas",monospace;font-size:11.5px;background:#f0f0f0;border-radius:3px;padding:1px 4px;color:#0f172a}
+  .url{color:#3b82d4;font-weight:600}
+
+  /* URL grid */
+  .url-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+  .url-item{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;font-size:12px}
+  .url-item .name{font-weight:700;margin-bottom:2px}
+  .url-item .addr{color:#3b82d4;font-size:11.5px;word-break:break-all}
+  .url-item .who{color:#57606a;font-size:11px;margin-top:2px}
+
+  /* Topic rows */
+  .topic-row{display:flex;gap:8px;align-items:baseline;padding:5px 0;border-bottom:1px solid #f0f0f0;font-size:12.5px}
+  .topic-row:last-child{border-bottom:none}
+  .topic-num{font-weight:700;color:#3b82d4;min-width:20px}
+  .topic-text{flex:1}
+  .topic-text strong{color:#1f2328}
+
+  footer{margin-top:40px;padding-top:14px;border-top:1px solid #e5e7eb;text-align:center;font-size:12px;color:#57606a}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>i3 Technologies Unified Platform — Documentation</h1>
+<div class="subtitle">Complete user &amp; administrator reference  ·  ROKS 4.15 eu-de  ·  Realm: <strong>i3</strong></div>
+
+<div class="doc-file">platform/docs/platform-documentation.md</div>
+
+
+<h2>Application URLs</h2>
+<div class="url-grid">
+  <div class="url-item"><div class="name">SSO / Account Portal</div><div class="addr">https://sso.i3.tech</div><div class="who">All users</div></div>
+  <div class="url-item"><div class="name">EvalOS Assessments</div><div class="addr">https://evalos.i3.tech</div><div class="who">Students, instructors</div></div>
+  <div class="url-item"><div class="name">AI Lab (JupyterHub)</div><div class="addr">https://ailab.i3.tech</div><div class="who">Students, instructors</div></div>
+  <div class="url-item"><div class="name">Admissions Chatbot</div><div class="addr">https://admissions.i3.tech</div><div class="who">Prospective students</div></div>
+  <div class="url-item"><div class="name">Directus CMS</div><div class="addr">https://cms.i3.tech</div><div class="who">Instructors, admins</div></div>
+  <div class="url-item"><div class="name">n8n Automation</div><div class="addr">https://n8n.i3.tech</div><div class="who">Instructors, admins</div></div>
+  <div class="url-item"><div class="name">Live Streaming</div><div class="addr">https://stream.i3.tech</div><div class="who">All users</div></div>
+  <div class="url-item"><div class="name">VOD Library</div><div class="addr">https://hls.i3.tech</div><div class="who">All users</div></div>
+  <div class="url-item"><div class="name">Langfuse Traces</div><div class="addr">https://langfuse.i3.tech</div><div class="who">Admins, instructors</div></div>
+  <div class="url-item"><div class="name">Grafana Dashboards</div><div class="addr">https://grafana.i3.tech</div><div class="who">Admins</div></div>
+  <div class="url-item"><div class="name">LiteLLM API</div><div class="addr">https://litellm.i3.tech</div><div class="who">Developers, admins</div></div>
+  <div class="url-item"><div class="name">Argo CD GitOps</div><div class="addr">https://argocd.i3.tech</div><div class="who">Admins</div></div>
+</div>
+
+
+<h2>User Guides</h2>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">🔐</span>
+    <span class="section-title">§2 — Keycloak SSO (Single Sign-On)</span>
+    <div class="audience-badges"><span class="ab ab-all">All Users</span></div>
+  </div>
+  <div class="section-body">
+    <p>How to log in for the first time, change your password, set up 2FA (TOTP), manage active sessions, and recover a forgotten password.</p>
+    <table><thead><tr><th>Topic</th><th>Key Point</th></tr></thead><tbody>
+      <tr><td>First login</td><td>Temporary password <code>i3Test@2025!</code> — must change immediately</td></tr>
+      <tr><td>Password policy</td><td>Min 12 chars · uppercase · lowercase · digit · special char</td></tr>
+      <tr><td>Session duration</td><td>10 hours; exam state preserved on session expiry</td></tr>
+      <tr><td>Account portal</td><td><code>https://sso.i3.tech/realms/i3/account</code></td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">📝</span>
+    <span class="section-title">§3 — EvalOS Assessment Platform</span>
+    <div class="audience-badges"><span class="ab ab-student">Student</span><span class="ab ab-instructor">Instructor</span></div>
+  </div>
+  <div class="section-body">
+    <p>Taking exams, submitting code in the Firecracker sandbox, understanding the anti-cheat system, viewing results, and resuming interrupted attempts.</p>
+    <table><thead><tr><th>Feature</th><th>Detail</th></tr></thead><tbody>
+      <tr><td>Code sandbox</td><td>Firecracker MicroVM — boots ~125 ms, network blackholed, 30 s timeout</td></tr>
+      <tr><td>Profiles</td><td>A: Python/PyTorch · B: Terraform/kubectl · C: Rust/C++ · D: Security dual-VM</td></tr>
+      <tr><td>Anti-cheat</td><td>Tracks focus loss (5), fullscreen exit (3), clipboard (10) before auto-flag</td></tr>
+      <tr><td>Resume</td><td>In-progress attempts are server-side; reconnect and resume from same question</td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">🔬</span>
+    <span class="section-title">§4 — AI Lab (RHOAI JupyterHub)</span>
+    <div class="audience-badges"><span class="ab ab-student">Student</span><span class="ab ab-instructor">Instructor</span></div>
+  </div>
+  <div class="section-body">
+    <p>Launching notebook workbenches, choosing container sizes, accessing LiteLLM from notebooks, saving work to persistent volumes, and stopping servers to free resources.</p>
+    <table><thead><tr><th>Model (from notebook)</th><th>Tier</th><th>Best for</th></tr></thead><tbody>
+      <tr><td><code>granite-nano</code></td><td>3 — Edge</td><td>Quick queries, classification</td></tr>
+      <tr><td><code>mistral-nemo</code></td><td>2 — RAG</td><td>Reasoning, long context</td></tr>
+      <tr><td><code>deepseek-coder</code></td><td>2 — RAG</td><td>Code generation</td></tr>
+      <tr><td><code>granite-heavy</code></td><td>1 — watsonx</td><td>Production inference</td></tr>
+      <tr><td><code>granite-vision</code></td><td>1 — watsonx</td><td>Multimodal / images</td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">🤖</span>
+    <span class="section-title">§5 — Admissions Assistant Chatbot</span>
+    <div class="audience-badges"><span class="ab ab-all">Prospective Students</span></div>
+  </div>
+  <div class="section-body">
+    <p>Using the AI chatbot for programme enquiries, scheduling intro calls, and understanding the Human-in-the-Loop confirmation gate for CRM/calendar actions. Includes Lobster Trap prompt-injection firewall behaviour.</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">📋</span>
+    <span class="section-title">§6 — Directus CMS</span>
+    <div class="audience-badges"><span class="ab ab-instructor">Instructor</span><span class="ab ab-admin">Admin</span></div>
+  </div>
+  <div class="section-body">
+    <p>Managing course content, editing auto-populated VOD records, uploading programme PDFs that feed the Admissions RAG pipeline, and managing class schedules.</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">📺</span>
+    <span class="section-title">§7 — OTT Live Streaming (Viewer)</span>
+    <div class="audience-badges"><span class="ab ab-all">All Users</span></div>
+  </div>
+  <div class="section-body">
+    <p>Watching live streams (WebRTC / LL-HLS), watching VOD recordings, using AI-generated subtitles, keyboard shortcuts, and adaptive bitrate quality selection (1080p / 720p / 480p / 240p).</p>
+  </div>
+</div>
+
+
+<h2>Instructor Guides</h2>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">🎓</span>
+    <span class="section-title">§8 — EvalOS Exam Management</span>
+    <div class="audience-badges"><span class="ab ab-instructor">Instructor</span></div>
+  </div>
+  <div class="section-body">
+    <p>Creating exams with stratified random draw specifications, managing the question bank (MCQ/code/short-answer), setting Bloom levels, publishing exams to cohorts, reviewing anti-cheat flags, and grading open-ended questions.</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">👥</span>
+    <span class="section-title">§9 — AI Lab Cohort Management</span>
+    <div class="audience-badges"><span class="ab ab-instructor">Instructor</span></div>
+  </div>
+  <div class="section-body">
+    <p>Provisioning cohort namespaces (<code>make provision-cohort</code>), adjusting per-student GPU quotas, monitoring student LLM usage in Langfuse, and stopping workbenches after lab sessions.</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">⚙️</span>
+    <span class="section-title">§10 — n8n Automation Workflows</span>
+    <div class="audience-badges"><span class="ab ab-instructor">Instructor</span></div>
+  </div>
+  <div class="section-body">
+    <p>Pre-built workflows: OTT post-class pipeline (automatic), auto-enrolment, and manual pipeline triggers. Creating new workflows with nodes and activating them.</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">🎥</span>
+    <span class="section-title">§11 — OTT Live Broadcasting</span>
+    <div class="audience-badges"><span class="ab ab-instructor">Instructor</span></div>
+  </div>
+  <div class="section-body">
+    <p>OBS Studio setup for RTMP and SRT ingest, recommended settings for 1080p30, stream key usage, and automatic post-stream pipeline (transcode → subtitles → VOD → CMS update).</p>
+    <table><thead><tr><th>Protocol</th><th>Server</th><th>Port</th><th>Latency</th></tr></thead><tbody>
+      <tr><td>RTMP</td><td><code>rtmp://ingest.i3.tech:1935/live</code></td><td>1935 TCP</td><td>~3–5 s</td></tr>
+      <tr><td>SRT</td><td><code>srt://ingest.i3.tech:9999</code></td><td>9999 UDP</td><td>&lt;2 s</td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+
+<h2>Administrator Guides</h2>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">🔑</span>
+    <span class="section-title">§12 — Keycloak Admin</span>
+    <div class="audience-badges"><span class="ab ab-admin">Admin</span></div>
+  </div>
+  <div class="section-body">
+    <p>User creation, role assignment, client secret rotation (<code>keycloak-post-deploy.ps1</code>), forced password resets, ExampleDS removal verification, session management.</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">🧠</span>
+    <span class="section-title">§13 — LiteLLM Model Gateway</span>
+    <div class="audience-badges"><span class="ab ab-admin">Admin</span></div>
+  </div>
+  <div class="section-body">
+    <p>3-tier model routing (Edge/RAG/watsonx), health checks, user API key management with rate limits and budgets, adding new models, pulling Ollama models, spend monitoring.</p>
+    <table><thead><tr><th>Tier</th><th>Models</th><th>Backend</th><th>KEDA Scale</th></tr></thead><tbody>
+      <tr><td>3 — Edge</td><td>granite-nano, distilbert-intent</td><td>Ollama CPU</td><td>1–6 replicas</td></tr>
+      <tr><td>2 — RAG</td><td>mistral-nemo, deepseek-coder</td><td>Ollama CPU</td><td>1–4 replicas</td></tr>
+      <tr><td>1 — Heavy</td><td>granite-heavy, granite-vision</td><td>watsonx.ai</td><td>External</td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">📊</span>
+    <span class="section-title">§14 — Langfuse LLM Observability</span>
+    <div class="audience-badges"><span class="ab ab-admin">Admin</span></div>
+  </div>
+  <div class="section-body">
+    <p>Viewing LLM traces by user/model/date, monitoring P95 latency and error rates, token spend, RAGAS evaluations for the Admissions Agent.</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">🔒</span>
+    <span class="section-title">§15 — OpenBao Secrets Vault</span>
+    <div class="audience-badges"><span class="ab ab-admin">Admin</span></div>
+  </div>
+  <div class="section-body">
+    <p>Vault status checks, unsealing after pod restart, reading/writing secrets, rotating secrets + restarting affected deployments. Full secret path reference table (9 paths).</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">🗄️</span>
+    <span class="section-title">§16–18 — Data Layer (PostgreSQL, Kafka, SeaweedFS)</span>
+    <div class="audience-badges"><span class="ab ab-admin">Admin</span></div>
+  </div>
+  <div class="section-body">
+    <p><strong>PostgreSQL:</strong> Patroni topology checks, pgBackRest backup/restore, PITR, EvalOS schema migration.</p>
+    <p><strong>Kafka:</strong> Broker health, consumer group lag, topic creation, debug message consumer.</p>
+    <p><strong>SeaweedFS:</strong> Cluster health, DR sync to IBM COS, rclone secret setup, full restore from COS.</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">📈</span>
+    <span class="section-title">§19 — Prometheus &amp; Grafana</span>
+    <div class="audience-badges"><span class="ab ab-admin">Admin</span></div>
+  </div>
+  <div class="section-body">
+    <p>Scrape targets (LiteLLM, EvalOS, Admissions, Langfuse, Kafka, pods), useful PromQL queries, dashboard import, retention management.</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">🔄</span>
+    <span class="section-title">§20 — Argo CD GitOps</span>
+    <div class="audience-badges"><span class="ab ab-admin">Admin</span></div>
+  </div>
+  <div class="section-body">
+    <p>Sync status checks, force-sync and rollback, App-of-Apps wave structure (6 workstreams), safety rules (never auto-prune, solution-01..08 excluded).</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">⚡</span>
+    <span class="section-title">§21 — KEDA Autoscaling</span>
+    <div class="audience-badges"><span class="ab ab-admin">Admin</span></div>
+  </div>
+  <div class="section-body">
+    <p>ScaledObject status, manual scale override (pause/resume), GPU burst pool activation (<code>make gpu-up</code> / <code>make gpu-down</code>) for cost control.</p>
+  </div>
+</div>
+
+
+<h2>§22 — Day-2 Operations Quick Reference</h2>
+<table><thead><tr><th>Task</th><th>Command</th></tr></thead><tbody>
+  <tr><td>Full health check</td><td><code>make post-deploy-check</code></td></tr>
+  <tr><td>Cluster verification</td><td><code>make verify-cluster</code></td></tr>
+  <tr><td>Backup (DB + object storage)</td><td><code>make dr-backup</code></td></tr>
+  <tr><td>Load test (EvalOS)</td><td><code>make test-load-evalos</code></td></tr>
+  <tr><td>Load test (AI Lab)</td><td><code>make test-load-ailab</code></td></tr>
+  <tr><td>Red-team scan</td><td><code>make test-redteam</code></td></tr>
+  <tr><td>Build &amp; push images</td><td><code>make build-images</code></td></tr>
+  <tr><td>Unseal OpenBao</td><td><code>.\platform\scripts\unseal-openbao.ps1</code></td></tr>
+  <tr><td>Deactivate GPU (cost save)</td><td><code>make gpu-down</code></td></tr>
+  <tr><td>Budget (GPU off)</td><td>~$765 / month</td></tr>
+</tbody></table>
+
+<footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>

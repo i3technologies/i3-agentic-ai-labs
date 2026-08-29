@@ -1,0 +1,653 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>i3 Onboarding Agent — Run Guide &amp; Explainer</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.65;color:#1f2328;background:#fff}
+.page{max-width:840px;margin:0 auto;padding:40px 32px 64px}
+h1{font-size:26px;font-weight:700;margin-bottom:4px}
+h2{font-size:17px;font-weight:700;margin:40px 0 12px;padding-bottom:8px;border-bottom:2px solid #e5e7eb}
+h3{font-size:14px;font-weight:700;margin:24px 0 8px;color:#1f2328}
+h4{font-size:13px;font-weight:600;margin:16px 0 6px;color:#3b82d4}
+p{margin-bottom:10px}
+ul,ol{margin:8px 0 10px 20px}
+li{margin:4px 0}
+code{font-family:"SFMono-Regular",Consolas,monospace;font-size:12px;background:#f7f8fa;border:1px solid #e5e7eb;border-radius:3px;padding:1px 5px}
+pre{background:#1e1e2e;color:#cdd6f4;border-radius:8px;padding:16px 18px;overflow-x:auto;margin:12px 0;font-size:12.5px;line-height:1.6}
+pre .c{color:#6c7086}
+pre .s{color:#a6e3a1}
+pre .k{color:#89b4fa}
+pre .v{color:#fab387}
+pre .n{color:#cba6f7}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:#f7f8fa;font-weight:600;text-align:left;padding:8px 10px;border:1px solid #e5e7eb}
+td{padding:7px 10px;border:1px solid #e5e7eb;vertical-align:top}
+tr:nth-child(even) td{background:#fafafa}
+.note{background:#eff6ff;border-left:3px solid #3b82d4;padding:10px 14px;border-radius:0 4px 4px 0;margin:12px 0;font-size:13px}
+.warn{background:#fffbeb;border-left:3px solid #f59e0b;padding:10px 14px;border-radius:0 4px 4px 0;margin:12px 0;font-size:13px}
+.danger{background:#fef2f2;border-left:3px solid #ef4444;padding:10px 14px;border-radius:0 4px 4px 0;margin:12px 0;font-size:13px}
+.success{background:#f0fdf4;border-left:3px solid #22c55e;padding:10px 14px;border-radius:0 4px 4px 0;margin:12px 0;font-size:13px}
+.step-box{border:1px solid #e5e7eb;border-radius:8px;padding:16px 20px;margin:16px 0;background:#fafafa}
+.step-num{display:inline-block;background:#3b82d4;color:#fff;font-size:12px;font-weight:700;border-radius:50%;width:24px;height:24px;line-height:24px;text-align:center;margin-right:10px;flex-shrink:0}
+.step-header{display:flex;align-items:center;margin-bottom:10px}
+.step-title{font-weight:700;font-size:15px}
+.tab-label{display:inline-block;background:#7c5cd8;color:#fff;font-size:11px;font-weight:700;border-radius:4px;padding:2px 8px;margin-right:6px}
+.tab-1{background:#7c5cd8}
+.tab-2{background:#059669}
+.tab-3{background:#dc2626}
+.tab-4{background:#d97706}
+.badge{display:inline-block;font-size:11px;font-weight:600;border-radius:3px;padding:2px 8px;margin:0 2px}
+.auto{background:#d1fae5;color:#065f46}
+.click{background:#fef9c3;color:#92400e}
+.admin{background:#fee2e2;color:#b91c1c}
+.method{display:inline-block;font-family:monospace;font-size:11px;font-weight:700;padding:2px 7px;border-radius:3px;min-width:50px;text-align:center;margin-right:6px}
+.get{background:#dcfce7;color:#166534}
+.post{background:#dbeafe;color:#1d4ed8}
+.del{background:#fee2e2;color:#b91c1c}
+.flow-row{display:flex;gap:0;margin:8px 0}
+.flow-box{flex:1;background:#f7f8fa;border:1px solid #e5e7eb;padding:10px 12px;font-size:12px;position:relative}
+.flow-box:not(:last-child)::after{content:"→";position:absolute;right:-12px;top:50%;transform:translateY(-50%);font-size:16px;color:#3b82d4;font-weight:700;z-index:1;background:#fff;padding:0 2px}
+.flow-title{font-weight:700;font-size:11px;color:#3b82d4;margin-bottom:4px}
+.flow-detail{color:#57606a;font-size:11px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0}
+.box{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:14px 16px}
+.box h4{margin-top:0;color:#1f2328}
+.subtitle{color:#57606a;font-size:13px;margin-bottom:24px}
+.toc a{color:#3b82d4;text-decoration:none;font-size:13px}
+.toc a:hover{text-decoration:underline}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:16px 20px;margin:16px 0 32px}
+.section-num{color:#57606a;font-size:11px;margin-right:4px}
+.file-chip{font-family:monospace;font-size:11px;background:#f5f3ff;color:#7c5cd8;border:1px solid #e9d5ff;border-radius:3px;padding:1px 5px}
+footer{margin-top:52px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:center;font-size:12px;color:#57606a}
+hr{border:none;border-top:1px solid #e5e7eb;margin:32px 0}
+</style>
+</head>
+<body>
+<div class="page">
+
+
+<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#57606a;margin-bottom:6px">IBM TechXchange Hackathon 2026 · Project 1</div>
+<h1>i3 Onboarding Agent</h1>
+<p class="subtitle">Complete Run Instructions &amp; Application Explainer — Local Laptop Edition</p>
+
+
+<div class="toc-grid">
+  <div><span class="section-num">1.</span><a class="toc" href="#what">What Is This Application?</a></div>
+  <div><span class="section-num">2.</span><a class="toc" href="#how">How It Works — The Big Picture</a></div>
+  <div><span class="section-num">3.</span><a class="toc" href="#lifecycle">Request Lifecycle (Step-by-Step)</a></div>
+  <div><span class="section-num">4.</span><a class="toc" href="#modules">Every Module Explained</a></div>
+  <div><span class="section-num">5.</span><a class="toc" href="#prereqs">Prerequisites</a></div>
+  <div><span class="section-num">6.</span><a class="toc" href="#firsttime">First-Time Setup (One-Off)</a></div>
+  <div><span class="section-num">7.</span><a class="toc" href="#run">Running the Application</a></div>
+  <div><span class="section-num">8.</span><a class="toc" href="#use">Using the Application</a></div>
+  <div><span class="section-num">9.</span><a class="toc" href="#api">Full API Reference</a></div>
+  <div><span class="section-num">10.</span><a class="toc" href="#output">Understanding the Output</a></div>
+  <div><span class="section-num">11.</span><a class="toc" href="#roles">The 5 Onboarding Roles</a></div>
+  <div><span class="section-num">12.</span><a class="toc" href="#troubleshoot">Troubleshooting</a></div>
+</div>
+
+
+<h2 id="what">1. What Is This Application?</h2>
+
+<p>The <strong>i3 Onboarding Agent</strong> is an AI-powered REST API that reads your real codebase and automatically generates a <strong>personalised, verified, 5-day ramp-up plan</strong> for any new team member joining your project.</p>
+
+<p>You tell it the new hire's role (e.g. <em>Platform Engineer</em>). It reads the actual files in your repository, fires three AI subagents in parallel to analyse different parts of the codebase, checks that every file path it references actually exists, and produces a structured JSON plan with a Markdown document and Gantt chart — all in one API call.</p>
+
+<div class="two-col">
+  <div class="box">
+    <h4>🎯 The Problem It Solves</h4>
+    <p style="margin:0;font-size:13px">New hires waste their first week asking "where do I even start?" This agent reads the real codebase and answers that question automatically — with specific file paths, day-by-day tasks, and warnings when documentation is out of date.</p>
+  </div>
+  <div class="box">
+    <h4>🏆 The Hackathon Demo Moment</h4>
+    <p style="margin:0;font-size:13px">The platform docs say "RHOAI AI Lab available from Month 3" — but the namespace doesn't exist yet. The agent detects this live, flags the task as <code>verified: false</code>, and prefixes it with "Needs verification:" automatically.</p>
+  </div>
+</div>
+
+<p>Think of it as: <strong>a senior engineer who has read every file in your codebase, and can write a personalised onboarding guide for any new hire in under 30 seconds.</strong></p>
+
+
+<h2 id="how">2. How It Works — The Big Picture</h2>
+
+<p>The application has <strong>four layers</strong> that work together:</p>
+
+<table>
+  <tr><th>Layer</th><th>What It Does</th><th>Key Files</th></tr>
+  <tr>
+    <td><strong>1. Security</strong></td>
+    <td>Every request passes through two gates before anything else happens: the Lobster Trap firewall (blocks prompt injection attacks) and Keycloak JWT validation (confirms who you are). On your laptop, auth is bypassed via <code>DEV_BYPASS_AUTH=true</code>.</td>
+    <td><span class="file-chip">security/lobster-trap.ts</span><br /><span class="file-chip">security/keycloak-auth.ts</span></td>
+  </tr>
+  <tr>
+    <td><strong>2. Context Store</strong></td>
+    <td>The platform repository files are chunked and stored in ChromaDB (a vector database). When a request comes in, relevant chunks are retrieved using semantic similarity search — this is the RAG (Retrieval-Augmented Generation) layer.</td>
+    <td><span class="file-chip">context-store/chroma-client.ts</span><br /><span class="file-chip">context-store/chunker.ts</span><br /><span class="file-chip">context-store/retriever.ts</span></td>
+  </tr>
+  <tr>
+    <td><strong>3. Orchestrator</strong></td>
+    <td>Three AI subagents run in parallel. Each fetches its own context from ChromaDB and calls the LiteLLM gateway to analyse a different part of the codebase. Their findings are verified against the real file system. The planner then calls a more powerful model to synthesise everything into a 5-day plan.</td>
+    <td><span class="file-chip">orchestrator/skills-assessor.ts</span><br /><span class="file-chip">orchestrator/verify.ts</span><br /><span class="file-chip">orchestrator/planner.ts</span><br /><span class="file-chip">orchestrator/subagents/</span></td>
+  </tr>
+  <tr>
+    <td><strong>4. Render</strong></td>
+    <td>The plan is stored in memory and rendered on demand as JSON, Markdown, or a Mermaid Gantt chart. Tasks can optionally be synced to the Directus CRM with a two-step confirmation gate.</td>
+    <td><span class="file-chip">render/markdownPlan.ts</span><br /><span class="file-chip">render/graph.ts</span><br /><span class="file-chip">render/taskSync.ts</span></td>
+  </tr>
+</table>
+
+
+<h2 id="lifecycle">3. Request Lifecycle — Step by Step</h2>
+
+<p>Here is exactly what happens when you call <code>POST /api/onboarding/plan</code> with <code>{"role": "platform_engineer"}</code>:</p>
+
+<div class="step-box">
+  <div class="step-header"><span class="step-num">1</span><span class="step-title">Lobster Trap Firewall</span></div>
+  <p style="margin:0;font-size:13px">The request body fields (<code>role</code>, <code>note</code>) are scanned against 12 regex patterns for prompt injection. If any match — e.g. "ignore all previous instructions" — the request is rejected immediately with HTTP 400. The LLM is never called.</p>
+</div>
+
+<div class="step-box">
+  <div class="step-header"><span class="step-num">2</span><span class="step-title">Authentication Check</span></div>
+  <p style="margin:0;font-size:13px">In production: the Bearer JWT is validated against Keycloak's JWKS endpoint using RS256. On your laptop with <code>DEV_BYPASS_AUTH=true</code>, a fake user (<code>dev@localhost</code> with <code>i3-admin</code> role) is injected automatically — no token needed.</p>
+</div>
+
+<div class="step-box">
+  <div class="step-header"><span class="step-num">3</span><span class="step-title">Skills Assessor — 3 Subagents Fire in Parallel</span></div>
+  <p style="font-size:13px">The role is looked up in the scan-plan table. For <code>platform_engineer</code>, three subagents are selected: <code>infra-scan</code>, <code>ailab-scan</code>, and <code>backend-scan</code>. All three run simultaneously using <code>Promise.all()</code>.</p>
+  <p style="font-size:13px;margin-bottom:0">Each subagent independently:</p>
+  <ol style="font-size:13px;margin:6px 0 0 20px">
+    <li>Queries ChromaDB for relevant chunks (e.g. infra-scan asks for "ArgoCD Tekton ROKS namespaces")</li>
+    <li>Builds a prompt combining the retrieved context + its focus areas</li>
+    <li>Calls the LiteLLM gateway using the <code>mistral-nemo</code> (Tier 2) model</li>
+    <li>Parses the JSON response with Zod validation to get a list of findings</li>
+  </ol>
+</div>
+
+<div class="step-box">
+  <div class="step-header"><span class="step-num">4</span><span class="step-title">Verification Pass</span></div>
+  <p style="font-size:13px;margin-bottom:0">Every file path in every finding is checked with <code>existsSync()</code> against the real <code>platform/</code> directory. Two special checks also run:</p>
+  <ul style="font-size:13px;margin-top:6px">
+    <li><strong>RHOAI namespace check</strong>: If a finding mentions <code>i3-ai-lab</code> or <code>RHOAI</code>, the agent calls the live Kubernetes API to confirm whether that namespace exists. On your laptop (no cluster credentials), it conservatively assumes it does not — matching reality.</li>
+    <li>Any finding with missing paths → <code>verified: false</code>, title prefixed with <code>"Needs verification: [title] (referenced path not found — likely stale doc)"</code></li>
+  </ul>
+</div>
+
+<div class="step-box">
+  <div class="step-header"><span class="step-num">5</span><span class="step-title">Plan Synthesis — granite-heavy (Tier 1)</span></div>
+  <p style="font-size:13px">All verified findings are formatted into a summary and sent to <code>granite-heavy</code> (the most powerful model, Tier 1). The model produces 12–15 structured tasks spanning Days 1–5. A <strong>confidence gate of 0.65</strong> filters out any task the model is less than 65% confident about. A deterministic fallback runs if the LLM fails.</p>
+</div>
+
+<div class="step-box">
+  <div class="step-header"><span class="step-num">6</span><span class="step-title">Store &amp; Respond</span></div>
+  <p style="font-size:13px;margin-bottom:0">The plan is stored in-memory with a <code>planId</code> like <code>platform_engineer-1748500000000</code>. The Markdown and Gantt chart are pre-rendered and cached. The API response includes the full plan JSON plus summary counts.</p>
+</div>
+
+
+<h2 id="modules">4. Every Module Explained</h2>
+
+<h3>Security Layer</h3>
+<table>
+  <tr><th>File</th><th>What It Does</th><th>When It Runs</th></tr>
+  <tr><td><span class="file-chip">security/lobster-trap.ts</span></td><td>12 regex patterns that block prompt injection. Examples: "ignore all previous instructions", "you are now DAN mode", "DROP TABLE", "SELECT * FROM". Returns the matched pattern string, or null if clean.</td><td>Before every protected endpoint, on the request body fields.</td></tr>
+  <tr><td><span class="file-chip">security/keycloak-auth.ts</span></td><td>Validates Bearer JWTs using the Keycloak JWKS endpoint (RS256). Attaches <code>req.user = {sub, email, roles[]}</code> on success. Has a <code>DEV_BYPASS_AUTH=true</code> escape hatch for local development.</td><td>After Lobster Trap, on every protected endpoint.</td></tr>
+</table>
+
+<h3>Ingestion Layer</h3>
+<table>
+  <tr><th>File</th><th>What It Does</th></tr>
+  <tr><td><span class="file-chip">ingestion/types.ts</span></td><td>Defines <code>RawArtifact</code> — the common shape every ingestion connector produces. Has <code>source</code>, <code>sourceType</code>, <code>path</code>, <code>filePath</code>, <code>content</code>, <code>title</code>, <code>updatedAt</code>. The <code>makeArtifact()</code> helper ensures both path aliases are always in sync.</td></tr>
+  <tr><td><span class="file-chip">ingestion/platform.ts</span></td><td>Walks the entire <code>platform/</code> directory, reads every <code>.md .yaml .py .ts .tf .sql .json</code> file under 256KB, skips <code>solution-01..08</code> dirs, classifies each file as <code>platform-doc</code> or <code>platform-code</code>, and returns a list of <code>RawArtifact</code>s.</td></tr>
+  <tr><td><span class="file-chip">ingestion/github.ts</span></td><td>Uses the GitHub API (Octokit) to pull README files, Architecture Decision Records, and closed issues from any repo. Closed issues are valuable as "historical bug" references for onboarding tasks.</td></tr>
+  <tr><td><span class="file-chip">ingestion/curriculum.ts</span></td><td>Fetches the <code>programme_guides</code> collection from Directus CMS. Gracefully skips if Directus is unreachable (returns empty array). Used by the bootcamp_student role.</td></tr>
+  <tr><td><span class="file-chip">ingestion/evalos.ts</span></td><td>Fetches exam domain weights from the EvalOS API. If EvalOS is unreachable, falls back to hardcoded C1000-207 IBM certification exam domains (Agent Integration = 23 questions = 38% of exam).</td></tr>
+</table>
+
+<h3>Context Store Layer</h3>
+<table>
+  <tr><th>File</th><th>What It Does</th></tr>
+  <tr><td><span class="file-chip">context-store/chroma-client.ts</span></td><td>Thin wrapper around ChromaDB. Creates/reuses a collection called <code>onboarding-corpus</code>. The embedding function routes through LiteLLM (granite-nano) so you never call OpenAI directly.</td></tr>
+  <tr><td><span class="file-chip">context-store/chunker.ts</span></td><td>Converts <code>RawArtifact</code>s into small chunks suitable for vector search. Markdown files are split on headings; code files on 60-line blocks; SQL on semicolons; YAML on key blocks. Each chunk gets a deterministic ID and a <code>role_tags</code> metadata field based on keywords.</td></tr>
+  <tr><td><span class="file-chip">context-store/index.ts</span></td><td>Batch-upserts chunks into ChromaDB in groups of 200. Idempotent — safe to run multiple times. The <code>/api/onboarding/ingest</code> endpoint calls this.</td></tr>
+  <tr><td><span class="file-chip">context-store/retriever.ts</span></td><td>Runs HNSW cosine similarity search against ChromaDB. Accepts a query string + optional role tag filter. Returns the top-K most relevant chunks. Used by every subagent to get its context before calling the LLM.</td></tr>
+</table>
+
+<h3>Orchestrator Layer</h3>
+<table>
+  <tr><th>File</th><th>What It Does</th></tr>
+  <tr><td><span class="file-chip">orchestrator/subagents/types.ts</span></td><td>Shared TypeScript types: <code>OnboardingRole</code>, <code>SubagentFinding</code> (the findings each subagent returns), <code>SubagentInput</code> (what each subagent receives).</td></tr>
+  <tr><td><span class="file-chip">orchestrator/subagents/base-scan.ts</span></td><td>Abstract class all subagents extend. Handles the LiteLLM call (mistral-nemo), strips markdown fences from the response, validates JSON with Zod, and retries up to 2 times.</td></tr>
+  <tr><td><span class="file-chip">orchestrator/subagents/evalos-scan.ts</span></td><td>Specialises in EvalOS: database schema, Bloom taxonomy, C1000-207 exam domains, anti-cheat recording, n8n enrolment. Used for <code>bootcamp_student</code>.</td></tr>
+  <tr><td><span class="file-chip">orchestrator/subagents/ailab-scan.ts</span></td><td>Specialises in LLM infrastructure: LiteLLM tiers, ChromaDB, Lobster Trap, MCP connectors. Has a special instruction: if context mentions RHOAI without confirmed namespace, emit a <code>historicalIssueRef: "stale-doc"</code> finding at high priority.</td></tr>
+  <tr><td><span class="file-chip">orchestrator/subagents/infra-scan.ts</span></td><td>Specialises in cluster operations: ArgoCD waves, Tekton pipeline, OpenBao secrets, forbidden namespaces. Finding #1 is always the solution-01..08 forbidden rule.</td></tr>
+  <tr><td><span class="file-chip">orchestrator/subagents/backend-scan.ts</span></td><td>Specialises in API patterns: FastAPI structure, EvalOS schema, JWT authentication, OpenBao env-var conventions.</td></tr>
+  <tr><td><span class="file-chip">orchestrator/subagents/model-scan.ts</span></td><td>Specialises in LLM evaluation: RAGAS framework, promptfoo red-team, confidence gate tuning, Locust load tests.</td></tr>
+  <tr><td><span class="file-chip">orchestrator/skills-assessor.ts</span></td><td>Maps each role to exactly 3 subagents. Fires all 3 in parallel using <code>Promise.all()</code>. Each subagent fetches its own RAG context first, then runs its scan. Returns all findings combined.</td></tr>
+  <tr><td><span class="file-chip">orchestrator/verify.ts</span></td><td>Loops through every finding. Calls <code>existsSync()</code> on each referenced file path. Also calls the Kubernetes API to check if the <code>i3-ai-lab</code> namespace is live. Anything that fails gets <code>verified: false</code> and the stale-doc prefix on its title.</td></tr>
+  <tr><td><span class="file-chip">orchestrator/planner.ts</span></td><td>Takes all verified findings and calls granite-heavy (Tier 1) to synthesise a 12–15 task, 5-day plan. Validates output with Zod. Drops tasks below the 0.65 confidence gate. Falls back to a deterministic plan builder if the LLM fails.</td></tr>
+</table>
+
+<h3>Render Layer</h3>
+<table>
+  <tr><th>File</th><th>What It Does</th></tr>
+  <tr><td><span class="file-chip">render/markdownPlan.ts</span></td><td>Converts a <code>RampUpPlan</code> into a readable Markdown document. Includes: header with timestamp, stale-doc warnings block, architectural summary table, 5 day-themed sections, per-task priority badges, historical issue callouts, and confidence percentages.</td></tr>
+  <tr><td><span class="file-chip">render/graph.ts</span></td><td>Two outputs: (1) a Mermaid Gantt chart with days as sections and tasks sized by estimated hours; (2) a static service topology diagram showing all 11 i3 platform services and how they connect.</td></tr>
+  <tr><td><span class="file-chip">render/taskSync.ts</span></td><td>Implements the 2-stage CRM sync gate. Stage 1 generates a UUID token and previews the first 5 tasks. Stage 2 (after the user clicks Confirm) writes each task to Directus and fires the n8n webhook. Token expires after 5 minutes.</td></tr>
+</table>
+
+<h3>Entry Point</h3>
+<table>
+  <tr><th>File</th><th>What It Does</th></tr>
+  <tr><td><span class="file-chip">server.ts</span></td><td>The Express application. Sets up the middleware chain (JSON parsing → request logging → Lobster Trap → Keycloak auth). Registers all 10 routes. Holds the in-memory plan store (Map). Starts listening on port 3000.</td></tr>
+</table>
+
+
+<h2 id="prereqs">5. Prerequisites</h2>
+
+<table>
+  <tr><th>Tool</th><th>Version</th><th>You Have?</th><th>Install</th></tr>
+  <tr><td>Node.js</td><td>≥ 20</td><td>✅ v24.18.0</td><td>Already installed</td></tr>
+  <tr><td>npm</td><td>≥ 9</td><td>✅ v11.16.0</td><td>Already installed</td></tr>
+  <tr><td>Python</td><td>≥ 3.10</td><td>✅ v3.14</td><td>Already installed</td></tr>
+  <tr><td>Git</td><td>any</td><td>✅ v2.55</td><td>Already installed</td></tr>
+  <tr><td>Docker</td><td>optional</td><td>❌ not installed</td><td>Not needed — ChromaDB runs via npx</td></tr>
+  <tr><td>Keycloak token</td><td>—</td><td>optional</td><td>Not needed locally — DEV_BYPASS_AUTH=true</td></tr>
+</table>
+
+<div class="success">✅ Your machine has everything required. No additional installs needed before running.</div>
+
+
+<h2 id="firsttime">6. First-Time Setup <small style="font-weight:400;color:#57606a">(one-off, already done)</small></h2>
+
+<p>These steps were already completed. Listed here for reference if you clone to a new machine:</p>
+
+<div class="step-box">
+  <div class="step-header"><span class="step-num">1</span><span class="step-title">Install dependencies</span></div>
+<pre>cd onboarding-agent
+npm install</pre>
+</div>
+
+<div class="step-box">
+  <div class="step-header"><span class="step-num">2</span><span class="step-title">Create the local .env file</span></div>
+<pre>copy .env.local .env</pre>
+  <p style="font-size:13px;margin-top:8px">This sets <code>DEV_BYPASS_AUTH=true</code>, points LiteLLM at the mock server on port 4000, and points ChromaDB at localhost:8000. No real secrets needed.</p>
+</div>
+
+<div class="step-box">
+  <div class="step-header"><span class="step-num">3</span><span class="step-title">Compile TypeScript</span></div>
+<pre>npm run build</pre>
+  <p style="font-size:13px;margin-top:8px">Produces the <code>dist/</code> folder with 25 compiled <code>.js</code> files. Already done — should be zero errors.</p>
+</div>
+
+
+<h2 id="run">7. Running the Application</h2>
+
+<p>You need <strong>three terminal windows open simultaneously</strong>. Open them now, then follow each tab's instruction.</p>
+
+<div class="step-box">
+  <div class="step-header"><span class="step-num" style="background:#7c5cd8">1</span><span class="step-title"><span class="tab-label tab-1">TAB 1</span> Start the Mock LiteLLM Server</span></div>
+  <p style="font-size:13px"><em>This replaces the real AI gateway. It returns realistic canned responses so the full pipeline works without cluster access.</em></p>
+<pre>cd onboarding-agent
+node scripts/mock-litellm.mjs</pre>
+  <p style="font-size:13px;margin-top:8px"><strong>Expected output:</strong></p>
+<pre>[mock-litellm] listening on http://localhost:4000
+[mock-litellm] models: granite-nano (Tier3), mistral-nemo (Tier2), granite-heavy (Tier1)
+[mock-litellm] POST /v1/chat/completions → canned findings/plan responses</pre>
+  <div class="note" style="margin-top:8px">Leave this terminal running. It must stay alive for the agent to generate plans.</div>
+</div>
+
+<div class="step-box">
+  <div class="step-header"><span class="step-num" style="background:#059669">2</span><span class="step-title"><span class="tab-label tab-2">TAB 2</span> Start ChromaDB (Vector Database)</span></div>
+  <p style="font-size:13px"><em>This is the memory store that holds the platform repo chunks for semantic search.</em></p>
+<pre>cd onboarding-agent
+npx --yes chromadb@latest</pre>
+  <p style="font-size:13px;margin-top:8px"><strong>Expected output (after ~30 seconds first run):</strong></p>
+<pre>Running Chroma
+...
+Application startup complete.
+Uvicorn running on http://0.0.0.0:8000</pre>
+  <div class="note" style="margin-top:8px">First run downloads ChromaDB (~200MB). Subsequent starts are instant. Leave this running.</div>
+</div>
+
+<div class="step-box">
+  <div class="step-header"><span class="step-num" style="background:#dc2626">3</span><span class="step-title"><span class="tab-label tab-3">TAB 3</span> Start the Onboarding Agent</span></div>
+  <p style="font-size:13px"><em>This is the main application — the Express server that serves all API endpoints.</em></p>
+<pre>cd onboarding-agent
+npm run dev</pre>
+  <p style="font-size:13px;margin-top:8px"><strong>Expected output:</strong></p>
+<pre>[server] i3 Onboarding Agent listening on :3000
+[server] LiteLLM → http://localhost:4000/v1
+[server] ChromaDB → localhost:8000
+[server] Keycloak → https://sso.i3technologies.co.ke/realms/i3</pre>
+  <div class="success" style="margin-top:8px">✅ The application is now running at <strong>http://localhost:3000</strong>. No authentication token needed because <code>DEV_BYPASS_AUTH=true</code> is in your <code>.env</code>.</div>
+</div>
+
+<div class="step-box">
+  <div class="step-header"><span class="step-num" style="background:#d97706">4</span><span class="step-title"><span class="tab-label tab-4">TAB 4</span> Ingest the Platform Corpus (First Time)</span></div>
+  <p style="font-size:13px"><em>This reads all the files in the <code>platform/</code> folder and stores them in ChromaDB so the subagents can search them.</em></p>
+<pre>cd onboarding-agent
+npm run ingest</pre>
+  <p style="font-size:13px;margin-top:8px"><strong>Expected output:</strong></p>
+<pre>[platform-ingest] Scanning: C:\...\platform
+[platform-ingest] Artifact counts by source:
+  platform-doc: 14
+  platform-code: 48
+  adr: 2
+[context-store] upserted batch 1 (200/312 chunks)
+[context-store] upserted batch 2 (312/312 chunks)</pre>
+  <div class="note" style="margin-top:8px">Only needs to run once, or whenever the platform/ files change. After this Tab 4 can be closed.</div>
+</div>
+
+
+<h2 id="use">8. Using the Application</h2>
+
+<h3>Option A — PowerShell (recommended, already on your machine)</h3>
+
+<p>Open a new PowerShell window (Tab 4 can be reused after ingest is done) and run these commands:</p>
+
+<h4>Check the server is alive</h4>
+<pre>Invoke-RestMethod http://localhost:3000/health
+<span class="c"># Expected: { status: "ok", service: "i3-onboarding-agent" }</span></pre>
+
+<h4>Check ChromaDB is connected and has data</h4>
+<pre>Invoke-RestMethod http://localhost:3000/ready
+<span class="c"># Expected: { status: "ready", chromadb: true }
+# If chromadb: false — Tab 2 (ChromaDB) isn't running</span></pre>
+
+<h4>Generate your first onboarding plan</h4>
+<pre>$result = Invoke-RestMethod http://localhost:3000/api/onboarding/plan `
+  -Method POST `
+  -ContentType <span class="s">"application/json"</span> `
+  -Body <span class="s">'{"role":"platform_engineer"}'</span>
+
+<span class="c"># See the summary</span>
+Write-Host <span class="s">"Plan ID: $($result.planId)"</span>
+Write-Host <span class="s">"Total tasks: $($result.plan.tasks.Count)"</span>
+Write-Host <span class="s">"Verified: $($result.totalVerified)"</span>
+Write-Host <span class="s">"Needs verification: $($result.totalUnverified)"</span>
+
+<span class="c"># Show all tasks as a table</span>
+$result.plan.tasks | Format-Table day, priority, verified, title -Wrap</pre>
+
+<h4>Read the Markdown plan (the pretty version)</h4>
+<pre>$planId = $result.planId
+$md = Invoke-RestMethod <span class="s">"http://localhost:3000/api/onboarding/plan/$planId/markdown"</span>
+
+<span class="c"># Print it directly</span>
+$md
+
+<span class="c"># OR save to file and open in VS Code</span>
+$md | Out-File <span class="s">"my-onboarding-plan.md"</span>
+code my-onboarding-plan.md</pre>
+
+<h4>View the Mermaid Gantt chart</h4>
+<pre>$gantt = Invoke-RestMethod <span class="s">"http://localhost:3000/api/onboarding/plan/$planId/gantt"</span>
+$gantt
+<span class="c"># Copy the output and paste into https://mermaid.live to see a visual chart</span></pre>
+
+<h4>Test all 5 roles</h4>
+<pre>$roles = @(<span class="s">"platform_engineer"</span>,<span class="s">"ai_ml_engineer"</span>,<span class="s">"bootcamp_student"</span>,<span class="s">"backend_engineer"</span>,<span class="s">"security_engineer"</span>)
+
+foreach ($role in $roles) {
+  $r = Invoke-RestMethod http://localhost:3000/api/onboarding/plan `
+    -Method POST -ContentType <span class="s">"application/json"</span> `
+    -Body <span class="s">"{`"role`":`"$role`"}"</span>
+  Write-Host <span class="s">"$role → $($r.plan.tasks.Count) tasks, $($r.totalUnverified) unverified"</span>
+}</pre>
+
+<h4>See the stale-doc detection in action</h4>
+<pre><span class="c"># Find any tasks flagged as needing verification</span>
+$r = Invoke-RestMethod http://localhost:3000/api/onboarding/plan `
+  -Method POST -ContentType <span class="s">"application/json"</span> `
+  -Body <span class="s">'{"role":"ai_ml_engineer"}'</span>
+
+$r.plan.tasks | Where-Object { -not $_.verified } | Format-List title, verificationNote
+<span class="c"># Expected: RHOAI/i3-ai-lab task flagged with:
+# "RHOAI/i3-ai-lab namespace not live — platform-documentation.md states 'available from Month 3'"</span></pre>
+
+<h4>Run the full automated test suite</h4>
+<pre>cd onboarding-agent
+npm run test:local
+<span class="c"># Runs 35 tests across 7 blocks. Expected: 35/35 passed ✅</span></pre>
+
+<hr />
+
+<h3>Option B — Browser (for health probes only)</h3>
+<p>Open your browser and visit:</p>
+<ul>
+  <li><strong>http://localhost:3000/health</strong> → <code>{"status":"ok","service":"i3-onboarding-agent"}</code></li>
+  <li><strong>http://localhost:3000/ready</strong> → <code>{"status":"ready","chromadb":true}</code></li>
+</ul>
+<p>All other endpoints require a POST body or Bearer token, so they need PowerShell or a REST client like Postman.</p>
+
+<hr />
+
+<h3>Option C — Postman or Insomnia</h3>
+<p>Create a collection with base URL <code>http://localhost:3000</code>. No Authorization header needed (DEV_BYPASS_AUTH skips it). Set <code>Content-Type: application/json</code> on POST requests.</p>
+
+
+<h2 id="api">9. Full API Reference</h2>
+
+<p>Base URL: <code>http://localhost:3000</code>  ·  All <code>/api/</code> routes pass through Lobster Trap + auth middleware (bypassed locally)</p>
+
+<table>
+  <tr><th style="width:50px">Method</th><th>Endpoint</th><th>Gate</th><th>Description</th></tr>
+  <tr>
+    <td><span class="method get">GET</span></td>
+    <td><code>/health</code></td>
+    <td>—</td>
+    <td>Liveness probe. No auth. Always returns <code>{status:"ok"}</code></td>
+  </tr>
+  <tr>
+    <td><span class="method get">GET</span></td>
+    <td><code>/ready</code></td>
+    <td>—</td>
+    <td>Readiness probe. No auth. Returns 200 if ChromaDB is reachable, 503 otherwise.</td>
+  </tr>
+  <tr>
+    <td><span class="method post">POST</span></td>
+    <td><code>/api/onboarding/plan</code></td>
+    <td><span class="badge auto">🟢 AUTO</span></td>
+    <td>Generate a ramp-up plan. Body: <code>{"role":"platform_engineer"}</code>. Valid roles: platform_engineer, ai_ml_engineer, bootcamp_student, backend_engineer, security_engineer. Optional: <code>"note":"any context"</code>.</td>
+  </tr>
+  <tr>
+    <td><span class="method get">GET</span></td>
+    <td><code>/api/onboarding/plan/:planId</code></td>
+    <td><span class="badge auto">🟢 AUTO</span></td>
+    <td>Retrieve a stored plan as JSON. Returns 404 if planId not found.</td>
+  </tr>
+  <tr>
+    <td><span class="method get">GET</span></td>
+    <td><code>/api/onboarding/plan/:planId/markdown</code></td>
+    <td><span class="badge auto">🟢 AUTO</span></td>
+    <td>Retrieve the plan as a formatted Markdown document. Content-Type: text/markdown.</td>
+  </tr>
+  <tr>
+    <td><span class="method get">GET</span></td>
+    <td><code>/api/onboarding/plan/:planId/gantt</code></td>
+    <td><span class="badge auto">🟢 AUTO</span></td>
+    <td>Mermaid Gantt chart string. Paste into mermaid.live to visualise.</td>
+  </tr>
+  <tr>
+    <td><span class="method get">GET</span></td>
+    <td><code>/api/onboarding/graph</code></td>
+    <td><span class="badge auto">🟢 AUTO</span></td>
+    <td>Static Mermaid flowchart of the entire i3 platform service topology (11 services).</td>
+  </tr>
+  <tr>
+    <td><span class="method post">POST</span></td>
+    <td><code>/api/onboarding/sync/prepare</code></td>
+    <td><span class="badge click">🟡 ONE-CLICK</span></td>
+    <td>Stage 1 of CRM sync. Body: <code>{"planId":"..."}</code>. Returns a <code>pendingId</code> token valid for 5 minutes and a preview of the first 5 tasks.</td>
+  </tr>
+  <tr>
+    <td><span class="method post">POST</span></td>
+    <td><code>/api/onboarding/sync/confirm/:pendingId</code></td>
+    <td><span class="badge click">🟡 ONE-CLICK</span></td>
+    <td>Stage 2: user confirms. Writes tasks to Directus CRM and fires n8n webhook. Returns <code>{success, syncedCount, skippedCount, directusIds[]}</code>.</td>
+  </tr>
+  <tr>
+    <td><span class="method del">DEL</span></td>
+    <td><code>/api/onboarding/sync/:pendingId</code></td>
+    <td><span class="badge auto">🟢 AUTO</span></td>
+    <td>Cancel a pending sync (user clicked Dismiss). Returns <code>{cancelled:true}</code>.</td>
+  </tr>
+  <tr>
+    <td><span class="method post">POST</span></td>
+    <td><code>/api/onboarding/ingest</code></td>
+    <td><span class="badge admin">🔴 ADMIN</span></td>
+    <td>Re-index the platform corpus into ChromaDB. Requires Keycloak role <code>i3-admin</code> (auto-granted by DEV_BYPASS_AUTH). Returns IndexResult stats.</td>
+  </tr>
+  <tr>
+    <td><span class="method get">GET</span></td>
+    <td><code>/api/onboarding/status</code></td>
+    <td><span class="badge auto">🟢 AUTO</span></td>
+    <td>System status: ChromaDB health + chunk count, number of cached plans, pending sync count, active model aliases.</td>
+  </tr>
+</table>
+
+
+<h2 id="output">10. Understanding the Output</h2>
+
+<h3>The Plan JSON — Key Fields</h3>
+<table>
+  <tr><th>Field</th><th>Meaning</th><th>Example</th></tr>
+  <tr><td><code>planId</code></td><td>ID to retrieve plan later</td><td><code>platform_engineer-1748500000</code></td></tr>
+  <tr><td><code>totalVerified</code></td><td>Tasks whose file paths were confirmed present in repo</td><td><code>7</code></td></tr>
+  <tr><td><code>totalUnverified</code></td><td>Tasks where a file was missing or the RHOAI namespace check failed</td><td><code>2</code></td></tr>
+  <tr><td><code>staleDocWarnings</code></td><td>List of paths that caused verification failures</td><td><code>["docs/platform-documentation.md"]</code></td></tr>
+  <tr><td><code>plan.tasks[n].verified</code></td><td><code>true</code> = file confirmed; <code>false</code> = stale doc</td><td><code>false</code></td></tr>
+  <tr><td><code>plan.tasks[n].confidence</code></td><td>LLM confidence 0–1. Never below 0.65 (gate filters lower).</td><td><code>0.91</code></td></tr>
+  <tr><td><code>plan.tasks[n].historicalIssueRef</code></td><td>Reference to a real bug or stale-doc for learning</td><td><code>"closed-issue #42: accidental solution-03 modification"</code></td></tr>
+</table>
+
+<h3>The Stale-Doc Detection — What to Look For</h3>
+<p>This is the primary demo moment. Look for tasks where:</p>
+<ul>
+  <li><code>verified: false</code></li>
+  <li>Title starts with: <strong>"Needs verification: … (referenced path not found — likely stale doc)"</strong></li>
+  <li><code>verificationNote</code> says: <em>"RHOAI/i3-ai-lab namespace not live — platform-documentation.md states 'available from Month 3'"</em></li>
+</ul>
+<p>This proves the agent is doing live verification, not just copying documentation blindly.</p>
+
+<h3>Day Themes</h3>
+<table>
+  <tr><th>Day</th><th>Theme</th><th>Typical Tasks</th></tr>
+  <tr><td>Day 1</td><td>Orientation &amp; Tooling</td><td>Install tools, read RUNBOOK.md, review forbidden namespaces</td></tr>
+  <tr><td>Day 2</td><td>Core Architecture Deep-Dive</td><td>ArgoCD waves, Tekton pipeline, authentication patterns</td></tr>
+  <tr><td>Day 3</td><td>Hands-On Integration</td><td>Run the admissions agent locally, first LiteLLM call, ChromaDB queries</td></tr>
+  <tr><td>Day 4</td><td>Domain Mastery</td><td>EvalOS schema, RAGAS evaluation, MCP connectors</td></tr>
+  <tr><td>Day 5</td><td>Independent Contribution</td><td>First PR, Tekton build, contribute to the onboarding corpus</td></tr>
+</table>
+
+
+<h2 id="roles">11. The 5 Onboarding Roles</h2>
+
+<table>
+  <tr><th>Role Value</th><th>Who It's For</th><th>3 Subagents Used</th><th>Day 1 Focus</th></tr>
+  <tr>
+    <td><code>platform_engineer</code></td>
+    <td>DevOps / SRE / Cloud engineers joining the ROKS cluster team</td>
+    <td>infra-scan, ailab-scan, backend-scan</td>
+    <td>RUNBOOK.md, forbidden namespaces, ArgoCD waves, Makefile</td>
+  </tr>
+  <tr>
+    <td><code>ai_ml_engineer</code></td>
+    <td>AI/ML engineers working on LLM pipelines and agents</td>
+    <td>ailab-scan, model-scan, backend-scan</td>
+    <td>LiteLLM tiers, admissions_agent.py, confidence gate, credit budget</td>
+  </tr>
+  <tr>
+    <td><code>bootcamp_student</code></td>
+    <td>Students joining the AI bootcamp programme</td>
+    <td>evalos-scan, ailab-scan, infra-scan</td>
+    <td>EvalOS login, quiz structure, Bloom taxonomy, C1000-207 domains</td>
+  </tr>
+  <tr>
+    <td><code>backend_engineer</code></td>
+    <td>Backend developers working on APIs and data models</td>
+    <td>backend-scan, evalos-scan, infra-scan</td>
+    <td>FastAPI patterns, EvalOS schema, Keycloak JWT middleware</td>
+  </tr>
+  <tr>
+    <td><code>security_engineer</code></td>
+    <td>Security engineers working on auth, secrets, and compliance</td>
+    <td>infra-scan, ailab-scan, backend-scan</td>
+    <td>OpenBao KV v2, Keycloak RBAC, cert-manager, Trivy scanning</td>
+  </tr>
+</table>
+
+
+<h2 id="troubleshoot">12. Troubleshooting</h2>
+
+<table>
+  <tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+  <tr>
+    <td><code>EADDRINUSE :3000</code></td>
+    <td>Another process is using port 3000</td>
+    <td>Add <code>PORT=3001</code> to your <code>.env</code> and restart the agent</td>
+  </tr>
+  <tr>
+    <td><code>/ready</code> returns <code>chromadb: false</code></td>
+    <td>Tab 2 (ChromaDB) is not running</td>
+    <td>Start <code>npx --yes chromadb@latest</code> in a new tab, wait for "Application startup complete"</td>
+  </tr>
+  <tr>
+    <td><code>totalTasks: 0</code> in plan</td>
+    <td>Tab 1 (mock LiteLLM) is not running</td>
+    <td>Start <code>node scripts/mock-litellm.mjs</code> in Tab 1</td>
+  </tr>
+  <tr>
+    <td>HTTP 401 on API calls</td>
+    <td><code>DEV_BYPASS_AUTH=true</code> not in <code>.env</code></td>
+    <td>Run <code>copy .env.local .env</code> to restore the dev config</td>
+  </tr>
+  <tr>
+    <td>HTTP 400 "Request blocked by security policy"</td>
+    <td>Your test input matched a Lobster Trap pattern</td>
+    <td>This is correct behaviour — the injection was blocked. Use a clean input.</td>
+  </tr>
+  <tr>
+    <td><code>npm run dev</code> fails with TypeScript error</td>
+    <td>A code change introduced a type error</td>
+    <td>Run <code>npm run typecheck</code> to see the exact error, fix it, then retry.</td>
+  </tr>
+  <tr>
+    <td>ChromaDB takes a long time to start</td>
+    <td>First-time download of the chromadb package (~200MB)</td>
+    <td>Wait for "Application startup complete" — subsequent starts are instant.</td>
+  </tr>
+  <tr>
+    <td><code>totalUnverified: 0</code> — no stale docs detected</td>
+    <td>Mock LiteLLM isn't returning the RHOAI finding</td>
+    <td>Check that Tab 1 is running; the mock always includes the RHOAI stale-doc task in its response.</td>
+  </tr>
+  <tr>
+    <td>Ingest produces 0 artifacts</td>
+    <td><code>PLATFORM_REPO_PATH</code> points to wrong directory</td>
+    <td>Confirm <code>PLATFORM_REPO_PATH=../platform</code> in <code>.env</code> and that the <code>platform/</code> folder exists one level up from <code>onboarding-agent/</code>.</td>
+  </tr>
+</table>
+
+<hr />
+
+<div style="background:#f7f8fa;border:1px solid #e5e7eb;border-radius:8px;padding:20px 24px;margin-top:24px">
+  <h3 style="margin-top:0;margin-bottom:12px">Quick Reference — All Commands</h3>
+  <table style="margin:0">
+    <tr><th>Command</th><th>What it does</th></tr>
+    <tr><td><code>node scripts/mock-litellm.mjs</code></td><td>Start mock AI gateway (Tab 1)</td></tr>
+    <tr><td><code>npx --yes chromadb@latest</code></td><td>Start vector database (Tab 2)</td></tr>
+    <tr><td><code>npm run dev</code></td><td>Start the onboarding agent (Tab 3)</td></tr>
+    <tr><td><code>npm run ingest</code></td><td>Index platform/ files into ChromaDB (once)</td></tr>
+    <tr><td><code>npm run typecheck</code></td><td>Check TypeScript types (zero errors = clean)</td></tr>
+    <tr><td><code>npm run build</code></td><td>Compile TypeScript → dist/</td></tr>
+    <tr><td><code>npm run test:local</code></td><td>Run 35-test automated suite</td></tr>
+    <tr><td><code>npm start</code></td><td>Run compiled version (after npm run build)</td></tr>
+  </table>
+</div>
+
+<footer>Made with IBM Bob  ·  i3 Agentic AI Labs  ·  IBM TechXchange Hackathon 2026  ·  Project 1: Codebase Onboarding Agent</footer>
+</div>
+</body>
+</html>

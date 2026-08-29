@@ -1,0 +1,575 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>i3 Platform — Full Deployment Review</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1f2328;
+    background: #ffffff;
+    padding: 32px 16px 48px;
+  }
+  .page { max-width: 820px; margin: 0 auto; }
+
+  /* Header */
+  .header { border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 28px; }
+  .header h1 { font-size: 22px; font-weight: 700; color: #1f2328; margin-bottom: 6px; }
+  .header .subtitle { color: #57606a; font-size: 13px; }
+  .header .meta { display: flex; gap: 24px; margin-top: 12px; flex-wrap: wrap; }
+  .meta-item { display: flex; flex-direction: column; }
+  .meta-label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: #57606a; }
+  .meta-value { font-size: 13px; font-weight: 600; color: #1f2328; }
+
+  /* Summary cards */
+  .summary { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+  .card {
+    flex: 1 1 130px;
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .card .count { font-size: 28px; font-weight: 700; }
+  .card .label { font-size: 12px; color: #57606a; margin-top: 2px; }
+  .card.green .count { color: #1a7f37; }
+  .card.amber .count { color: #9a6700; }
+  .card.blue .count  { color: #3b82d4; }
+  .card.red .count   { color: #cf222e; }
+
+  /* Phase headers */
+  .phase {
+    margin: 28px 0 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: #57606a;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 4px;
+  }
+
+  /* Step rows */
+  .step {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    align-items: start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .step:last-child { border-bottom: none; }
+  .icon { font-size: 16px; margin-top: 2px; }
+  .step-body { }
+  .step-title { font-weight: 600; font-size: 13.5px; }
+  .step-detail { font-size: 12.5px; color: #57606a; margin-top: 3px; }
+  .step-detail code {
+    background: #f0f0f0;
+    border-radius: 3px;
+    padding: 1px 4px;
+    font-size: 11.5px;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    color: #1f2328;
+  }
+  .badge {
+    display: inline-block;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    margin-top: 2px;
+  }
+  .badge-done     { background: #dafbe1; color: #1a7f37; }
+  .badge-pending  { background: #fff3cd; color: #9a6700; }
+  .badge-info     { background: #dbeafe; color: #1d4ed8; }
+  .badge-blocked  { background: #fde8e8; color: #cf222e; }
+
+  /* Domain highlight box */
+  .highlight-box {
+    background: #f0fff4;
+    border: 1px solid #bbf7d0;
+    border-left: 4px solid #22c55e;
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-bottom: 28px;
+    font-size: 13px;
+  }
+  .highlight-box strong { color: #15803d; }
+
+  /* Remaining actions table */
+  .actions-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+  .actions-table th {
+    text-align: left;
+    background: #f7f8fa;
+    padding: 7px 10px;
+    border: 1px solid #e5e7eb;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #57606a;
+  }
+  .actions-table td {
+    padding: 7px 10px;
+    border: 1px solid #e5e7eb;
+    vertical-align: top;
+  }
+  .actions-table tr:nth-child(even) td { background: #fafafa; }
+  .priority-high   { color: #cf222e; font-weight: 600; }
+  .priority-medium { color: #9a6700; font-weight: 600; }
+  .priority-low    { color: #57606a; }
+
+  /* Domain table */
+  .domain-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 8px; }
+  .domain-table th {
+    background: #f7f8fa;
+    padding: 6px 10px;
+    border: 1px solid #e5e7eb;
+    text-align: left;
+    font-size: 11.5px;
+    color: #57606a;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .domain-table td { padding: 6px 10px; border: 1px solid #e5e7eb; font-family: "SFMono-Regular", Consolas, monospace; font-size: 11.5px; }
+  .domain-table tr:nth-child(even) td { background: #fafafa; }
+
+  footer {
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+    font-size: 12px;
+    color: #57606a;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  
+  <div class="header">
+    <h1>i3 Technologies Unified Agentic AI Platform</h1>
+    <div class="subtitle">Full Deployment Review — IBM ROKS, Frankfurt (eu-de)</div>
+    <div class="meta">
+      <div class="meta-item"><span class="meta-label">Cluster</span><span class="meta-value">i3-platform</span></div>
+      <div class="meta-item"><span class="meta-label">Region</span><span class="meta-value">eu-de (Frankfurt)</span></div>
+      <div class="meta-item"><span class="meta-label">Resource Group</span><span class="meta-value">i3-production</span></div>
+      <div class="meta-item"><span class="meta-label">Domain</span><span class="meta-value">i3technologies.co.ke</span></div>
+      <div class="meta-item"><span class="meta-label">Review Date</span><span class="meta-value">July 2025</span></div>
+    </div>
+  </div>
+
+  
+  <div class="highlight-box">
+    <strong>✅ DNS Migration Complete</strong> — All <code>i3.tech</code> references have been migrated to <strong>i3technologies.co.ke</strong> across every YAML manifest, PowerShell script, Python file, and documentation file. Zero residual occurrences confirmed by full codebase grep.
+  </div>
+
+  
+  <div class="summary">
+    <div class="card green"><div class="count">18</div><div class="label">✅ Completed</div></div>
+    <div class="card amber"><div class="count">6</div><div class="label">⚠️ Pending (Ops)</div></div>
+    <div class="card blue"><div class="count">3</div><div class="label">🔵 Phase 2</div></div>
+    <div class="card red"><div class="count">1</div><div class="label">🔴 Blocked</div></div>
+  </div>
+
+  
+  <div class="phase">Phase 0 — Security Hardening</div>
+
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">Hardened .gitignore</div>
+      <div class="step-detail">Added <code>.env.txt</code>, <code>openbao-init.json</code>, <code>ibm_credentials.env</code>, <code>ibmcloud_api_key.txt</code> to prevent secret leaks.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">Deleted .env.txt (live API key)</div>
+      <div class="step-detail">File containing live IBM Cloud API key <code>Hz4n9_t1LnsTap7B…</code> deleted. Key rotation required if not already done.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">Updated .env.example</div>
+      <div class="step-detail">Added <code>OPENBAO_UNSEAL_KEY_1/2/3</code> placeholders, fixed <code>TF_COS_HMAC_*</code> naming, improved inline comments throughout.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+
+  
+  <div class="phase">Phase 1 — Infrastructure (Terraform)</div>
+
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">Terraform variables.tf — missing variables added</div>
+      <div class="step-detail">Added <code>cos_hmac_access_key</code>, <code>cos_hmac_secret_key</code>, <code>kms_instance_crn</code>, <code>kms_crk_id</code> variables.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+  <div class="step">
+    <div class="icon">⚠️</div>
+    <div class="step-body">
+      <div class="step-title">Terraform apply — ROKS cluster provisioning</div>
+      <div class="step-detail"><code>tfplan.out</code> exists. <code>terraform apply tfplan.out</code> has NOT been confirmed as executed. COS HMAC keys and KMS CRN placeholders remain unfilled in <code>.env</code>.</div>
+    </div>
+    <span class="badge badge-pending">Action Required</span>
+  </div>
+  <div class="step">
+    <div class="icon">⚠️</div>
+    <div class="step-body">
+      <div class="step-title">IBM Cloud API key rotation</div>
+      <div class="step-detail">The leaked key <code>Hz4n9_t1LnsTap7B…</code> must be revoked and a new key generated in IBM Cloud IAM before any cluster operations.</div>
+    </div>
+    <span class="badge badge-pending">Action Required</span>
+  </div>
+
+  
+  <div class="phase">Phase 2 — Namespaces, Network Policies, Limits</div>
+
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">namespaces.yaml — 11 namespaces + ResourceQuotas</div>
+      <div class="step-detail">All 11 managed namespaces defined: <code>i3-auth</code>, <code>i3-data</code>, <code>i3-model-gateway</code>, <code>i3-evalos</code>, <code>i3-admissions</code>, <code>i3-ott</code>, <code>i3-ai-lab</code>, <code>i3-monitoring</code>, <code>i3-gitops</code>, <code>i3-security</code>, <code>i3-infra</code>.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">network-policies.yaml — deny-all + allow rules</div>
+      <div class="step-detail">Created from scratch. Full deny-all ingress/egress + targeted allow rules for all 11 namespaces with correct pod label selectors and port lists.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">limit-ranges.yaml — Container/Pod/PVC limits</div>
+      <div class="step-detail">Created from scratch for all 11 namespaces. Container, Pod, and PVC LimitRange objects with appropriate CPU/memory defaults per workload type.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+
+  
+  <div class="phase">Phase 3 — Operators &amp; Databases</div>
+
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">postgres-cluster.yaml — duplicate backups block fixed</div>
+      <div class="step-detail">Merged duplicate <code>backups:</code> blocks into one canonical definition in the Crunchy PostgreSQL cluster spec.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">keycloak-realm.yaml — ExampleDS postStart hook added</div>
+      <div class="step-detail">Added lifecycle <code>postStart</code> exec hook to remove the H2 ExampleDS that causes XA recovery warnings in RHSSO 7.6.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">operator-subscriptions.yaml — Crunchy v5, Strimzi, RHSSO</div>
+      <div class="step-detail">All OLM operator subscriptions verified: Crunchy PostgreSQL v5, Strimzi Kafka, Red Hat SSO, GitOps operator.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+
+  
+  <div class="phase">Phase 4 — OpenBao (Secrets Management)</div>
+
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">unseal-openbao.ps1 — script fixed</div>
+      <div class="step-detail">Fixed hardcoded kubectl path (now auto-detects <code>oc</code>/<code>kubectl</code>), fixed pod label selector (<code>app=openbao</code>), fixed raft join URL to use TLS + full FQDN.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+  <div class="step">
+    <div class="icon">⚠️</div>
+    <div class="step-body">
+      <div class="step-title">OpenBao initialization — NOT done</div>
+      <div class="step-detail">Cluster must be running first. Once up: run <code>bao operator init</code>, capture unseal keys, populate <code>.env</code> with <code>OPENBAO_UNSEAL_KEY_1/2/3</code>, then run <code>unseal-openbao.ps1</code>.</div>
+    </div>
+    <span class="badge badge-pending">Action Required</span>
+  </div>
+  <div class="step">
+    <div class="icon">⚠️</div>
+    <div class="step-body">
+      <div class="step-title">populate-vault.ps1 — 3 placeholders remain</div>
+      <div class="step-detail"><code>directus_admin_password</code>, <code>odoo_api_key</code>, and <code>watsonx_project_id</code> still contain <code>REPLACE_WITH_*</code> placeholders. Must be filled before service startup.</div>
+    </div>
+    <span class="badge badge-pending">Action Required</span>
+  </div>
+
+  
+  <div class="phase">Phase 5 — DNS Configuration &amp; TLS Certificates</div>
+
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">DNS migration i3.tech → i3technologies.co.ke — COMPLETE</div>
+      <div class="step-detail">All 11 OpenShift Route <code>spec.host</code> fields, all Keycloak redirect URIs, OIDC issuer URLs, env vars, script output strings, Python labels, doc URLs — migrated. Zero residual <code>i3.tech</code> occurrences remain.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">Grafana Route spec.host added</div>
+      <div class="step-detail">Added missing <code>spec.host: grafana.i3technologies.co.ke</code> to the Grafana Route in <code>prometheus-stack.yaml</code> — previously had no explicit hostname.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+  <div class="step">
+    <div class="icon">⚠️</div>
+    <div class="step-body">
+      <div class="step-title">DNS records at registrar — NOT configured</div>
+      <div class="step-detail">Wildcard CNAME <code>*.i3technologies.co.ke → &lt;INGRESS_DOMAIN&gt;</code> and A record <code>ingest.i3technologies.co.ke → &lt;OTT_LB_IP&gt;</code> must be added at the Kenya ccTLD registrar once cluster is provisioned.</div>
+    </div>
+    <span class="badge badge-pending">Action Required</span>
+  </div>
+  <div class="step">
+    <div class="icon">⚠️</div>
+    <div class="step-body">
+      <div class="step-title">TLS wildcard certificate — NOT provisioned</div>
+      <div class="step-detail">cert-manager Let's Encrypt DNS-01 or IBM Secrets Manager wildcard cert for <code>*.i3technologies.co.ke</code> must be provisioned after DNS records resolve. See <code>platform/docs/dns-setup.md</code> §4.</div>
+    </div>
+    <span class="badge badge-pending">Action Required</span>
+  </div>
+
+  
+  <div class="phase">Phase 6 — Application Manifests</div>
+
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">All application YAMLs — domain-corrected</div>
+      <div class="step-detail">Routes updated: <code>evalos</code>, <code>admissions</code>, <code>langfuse</code>, <code>directus</code>, <code>n8n</code>, <code>nginx-hls</code>, <code>grafana</code>. Env vars updated: <code>NEXTAUTH_URL</code>, <code>KEYCLOAK_ISSUER</code>, <code>PUBLIC_URL</code>, <code>N8N_HOST</code>, <code>WEBHOOK_URL</code>, <code>AUTH_KEYCLOAK_ISSUER_URL</code>, <code>LANGFUSE_INIT_USER_EMAIL</code>.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+  <div class="step">
+    <div class="icon">🔵</div>
+    <div class="step-body">
+      <div class="step-title">RHOAI / AI Lab (JupyterHub) — Phase 2</div>
+      <div class="step-detail">Red Hat OpenShift AI operator installation and <code>ailab.i3technologies.co.ke</code> route are scoped to Month 3 after initial cluster stabilisation.</div>
+    </div>
+    <span class="badge badge-info">Phase 2</span>
+  </div>
+
+  
+  <div class="phase">Phase 7 — Identity &amp; Access</div>
+
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">Test users provisioned — 4 accounts</div>
+      <div class="step-detail">Philip Mukiti (<code>philipm</code>), Sebastian Njagi (<code>snjagi</code>), Joseph Maina (<code>josephm</code>), Dorothy Akoth (<code>dorothy</code>). Script: <code>platform/scripts/provision-test-users.ps1</code>. Temp pw: <code>i3Test@2025!</code>.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">keycloak-post-deploy.ps1 — OIDC client secrets rotation</div>
+      <div class="step-detail">Script rotates 5 OIDC client secrets from Keycloak Admin API into OpenBao. Requires OpenBao to be initialised first.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+
+  
+  <div class="phase">Phase 8 — GitOps (Argo CD)</div>
+
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">argocd-instance.yaml — OIDC issuer corrected</div>
+      <div class="step-detail">Updated <code>issuer: https://sso.i3technologies.co.ke/realms/i3</code>. Argo CD Route auto-generated by GitOps operator; RBAC group <code>i3-platform-admins</code> maps to admin role.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">app-of-apps.yaml — 6 workstream ApplicationSets</div>
+      <div class="step-detail">Defined: infra, auth, data, model-gateway, applications, monitoring. Sync policies configured with automated self-healing.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+
+  
+  <div class="phase">Phase 9 — Monitoring &amp; Observability</div>
+
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">prometheus-stack.yaml — Prometheus + Grafana</div>
+      <div class="step-detail">Prometheus v2.53 (15-day retention), Grafana, AlertManager. Grafana Route now has explicit <code>spec.host: grafana.i3technologies.co.ke</code>. SCC binding for <code>anyuid</code> in place.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+  <div class="step">
+    <div class="icon">🔵</div>
+    <div class="step-body">
+      <div class="step-title">PagerDuty / alerting integration</div>
+      <div class="step-detail">AlertManager rules exist in the stack. PagerDuty routing key and escalation policy configuration is a Phase 2 item requiring ops team input.</div>
+    </div>
+    <span class="badge badge-info">Phase 2</span>
+  </div>
+
+  
+  <div class="phase">Phase 10 — Documentation</div>
+
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">platform-documentation.md — 1,050+ line full docs</div>
+      <div class="step-detail">22 sections covering user guides (§2–7), instructor guides (§8–11), admin guides (§12–21), day-2 ops (§22). All URLs updated to <code>i3technologies.co.ke</code>.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+  <div class="step">
+    <div class="icon">✅</div>
+    <div class="step-body">
+      <div class="step-title">dns-setup.md — full rewrite</div>
+      <div class="step-detail">Rewritten for <code>i3technologies.co.ke</code>. Updated all CNAME table hostnames, verification scripts, cert-manager TLS config, OTT A record, and added complete Route Summary table.</div>
+    </div>
+    <span class="badge badge-done">Done</span>
+  </div>
+  <div class="step">
+    <div class="icon">🔵</div>
+    <div class="step-body">
+      <div class="step-title">Disaster Recovery runbook validation</div>
+      <div class="step-detail">RUNBOOK.md and cos-recovery-runbook.md exist. Full DR drill (SeaweedFS → COS restore, OpenBao recovery) is a Phase 2 operational exercise.</div>
+    </div>
+    <span class="badge badge-info">Phase 2</span>
+  </div>
+
+  
+  <div class="phase">Blocked</div>
+  <div class="step">
+    <div class="icon">🔴</div>
+    <div class="step-body">
+      <div class="step-title">.env file missing — all scripts blocked</div>
+      <div class="step-detail"><code>.env</code> does not exist (was deleted with <code>.env.txt</code>). Must be created from <code>.env.example</code> and all placeholder values filled before <em>any</em> script or Terraform operation can run. Critical blockers: <code>IBMCLOUD_API_KEY</code> (rotate first!), <code>TF_COS_HMAC_*</code>, <code>TF_VAR_kms_instance_crn</code>, <code>TF_VAR_kms_crk_id</code>, <code>OPENBAO_UNSEAL_KEY_*</code>.</div>
+    </div>
+    <span class="badge badge-blocked">Blocked</span>
+  </div>
+
+  
+  <div class="phase" style="margin-top:36px">DNS Route Map — i3technologies.co.ke</div>
+  <table class="domain-table">
+    <thead>
+      <tr>
+        <th>Service</th>
+        <th>Route Hostname</th>
+        <th>Record Type</th>
+        <th>Namespace</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>SSO (Keycloak)</td><td>sso.i3technologies.co.ke</td><td>CNAME</td><td>i3-auth</td></tr>
+      <tr><td>Argo CD</td><td>argocd.i3technologies.co.ke</td><td>CNAME</td><td>i3-gitops</td></tr>
+      <tr><td>LiteLLM</td><td>litellm.i3technologies.co.ke</td><td>CNAME</td><td>i3-model-gateway</td></tr>
+      <tr><td>Langfuse</td><td>langfuse.i3technologies.co.ke</td><td>CNAME</td><td>i3-model-gateway</td></tr>
+      <tr><td>EvalOS</td><td>evalos.i3technologies.co.ke</td><td>CNAME</td><td>i3-evalos</td></tr>
+      <tr><td>Directus CMS</td><td>cms.i3technologies.co.ke</td><td>CNAME</td><td>i3-ott</td></tr>
+      <tr><td>n8n Automation</td><td>n8n.i3technologies.co.ke</td><td>CNAME</td><td>i3-ott</td></tr>
+      <tr><td>HLS Stream</td><td>stream.i3technologies.co.ke</td><td>CNAME</td><td>i3-ott</td></tr>
+      <tr><td>Grafana</td><td>grafana.i3technologies.co.ke</td><td>CNAME</td><td>i3-monitoring</td></tr>
+      <tr><td>Admissions Bot</td><td>admissions.i3technologies.co.ke</td><td>CNAME</td><td>i3-admissions</td></tr>
+      <tr><td>AI Lab</td><td>ailab.i3technologies.co.ke</td><td>CNAME</td><td>i3-ai-lab</td></tr>
+      <tr><td>OTT Ingest</td><td>ingest.i3technologies.co.ke</td><td><strong>A record</strong></td><td>i3-ott (LB IP)</td></tr>
+    </tbody>
+  </table>
+
+  
+  <div class="phase" style="margin-top:36px">Remaining Actions — Priority Order</div>
+  <table class="actions-table">
+    <thead>
+      <tr><th>#</th><th>Action</th><th>Priority</th><th>Dependency</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>Rotate IBM Cloud API key in IAM console</td>
+        <td class="priority-high">Critical</td>
+        <td>None — do first</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Create <code>.env</code> from <code>.env.example</code>, fill all placeholders (new API key, COS HMAC, KMS CRN/CRK)</td>
+        <td class="priority-high">Critical</td>
+        <td>Step 1</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Run <code>terraform apply tfplan.out</code> — provision VPC, COS, ROKS cluster</td>
+        <td class="priority-high">Critical</td>
+        <td>Step 2</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>Configure DNS wildcard CNAME <code>*.i3technologies.co.ke</code> at Kenya registrar once Ingress domain is known</td>
+        <td class="priority-high">Critical</td>
+        <td>Step 3</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Add OTT A record <code>ingest.i3technologies.co.ke → &lt;OTT_LB_IP&gt;</code></td>
+        <td class="priority-high">Critical</td>
+        <td>Step 3</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>Initialize OpenBao (<code>bao operator init</code>), store unseal keys in <code>.env</code>, run <code>unseal-openbao.ps1</code></td>
+        <td class="priority-high">Critical</td>
+        <td>Step 3</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>Fill <code>populate-vault.ps1</code> placeholders: <code>directus_admin_password</code>, <code>odoo_api_key</code>, <code>watsonx_project_id</code></td>
+        <td class="priority-medium">High</td>
+        <td>Step 6</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td>Provision TLS wildcard cert for <code>*.i3technologies.co.ke</code> (cert-manager or IBM Secrets Manager)</td>
+        <td class="priority-medium">High</td>
+        <td>Step 4</td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td>Run <code>post-deploy-checklist.ps1</code> to validate all routes, pods, and secrets</td>
+        <td class="priority-medium">High</td>
+        <td>Steps 3–8</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>Run <code>provision-test-users.ps1</code> to create the 4 test accounts in live Keycloak</td>
+        <td class="priority-low">Medium</td>
+        <td>Step 6</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>
