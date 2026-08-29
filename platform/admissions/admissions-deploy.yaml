@@ -1,0 +1,295 @@
+# ============================================================
+# Admissions AI Stack — i3-admissions namespace
+# Components: Admissions Agent (FastAPI) + ChromaDB + MCP Connectors
+# ============================================================
+
+# ── ChromaDB — Vector Store ──────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chromadb
+  namespace: i3-admissions
+  labels:
+    app: chromadb
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chromadb
+  template:
+    metadata:
+      labels:
+        app: chromadb
+    spec:
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: chromadb
+          image: chromadb/chroma:0.5.7
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: IS_PERSISTENT
+              value: "TRUE"
+            - name: PERSIST_DIRECTORY
+              value: /chroma/chroma
+            - name: ANONYMIZED_TELEMETRY
+              value: "FALSE"
+            - name: ALLOW_RESET
+              value: "FALSE"
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          volumeMounts:
+            - name: chroma-data
+              mountPath: /chroma/chroma
+          livenessProbe:
+            httpGet:
+              path: /api/v1/heartbeat
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/v1/heartbeat
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: chroma-data
+          persistentVolumeClaim:
+            claimName: chromadb-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: chromadb-data
+  namespace: i3-admissions
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ibmc-vpc-block-retain-10iops-tier
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chromadb
+  namespace: i3-admissions
+  labels:
+    app: chromadb
+spec:
+  selector:
+    app: chromadb
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP
+
+---
+# ── Admissions Agent — FastAPI ────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admissions-agent
+  namespace: i3-admissions
+  labels:
+    app: admissions-agent
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: admissions-agent
+  template:
+    metadata:
+      labels:
+        app: admissions-agent
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: admissions-agent
+      securityContext:
+        runAsUser: 1000
+        runAsNonRoot: true
+      containers:
+        - name: admissions-agent
+          image: de.icr.io/i3-platform/admissions-agent:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: LITELLM_URL
+              value: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000"
+            - name: CHROMA_HOST
+              value: "chromadb.i3-admissions.svc.cluster.local"
+            - name: CHROMA_PORT
+              value: "8000"
+            - name: DEFAULT_MODEL
+              value: "mistral-nemo"
+            - name: LITELLM_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: admissions-secrets
+                  key: LITELLM_MASTER_KEY
+          envFrom:
+            - secretRef:
+                name: admissions-secrets
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admissions-agent
+  namespace: i3-admissions
+  annotations:
+    openbao.org/agent-inject: "true"
+    openbao.org/role: "admissions"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admissions-agent
+  namespace: i3-admissions
+  labels:
+    app: admissions-agent
+spec:
+  selector:
+    app: admissions-agent
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: admissions-agent
+  namespace: i3-admissions
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  host: admissions.i3technologies.co.ke
+  to:
+    kind: Service
+    name: admissions-agent
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+---
+# ── Admissions Secrets (placeholder — real values from OpenBao) ──
+apiVersion: v1
+kind: Secret
+metadata:
+  name: admissions-secrets
+  namespace: i3-admissions
+  annotations:
+    openbao.org/agent-inject: "true"
+    openbao.org/role: "admissions"
+type: Opaque
+stringData:
+  LITELLM_MASTER_KEY: "REPLACE_FROM_VAULT"
+  ODOO_URL: "REPLACE_FROM_VAULT"
+  ODOO_DB: "REPLACE_FROM_VAULT"
+  ODOO_USERNAME: "REPLACE_FROM_VAULT"
+  ODOO_PASSWORD: "REPLACE_FROM_VAULT"
+  GOOGLE_CALENDAR_CREDENTIALS: "REPLACE_FROM_VAULT"
+  N8N_WEBHOOK_URL: "REPLACE_FROM_VAULT"
+
+---
+# ── MCP Connectors ────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-connectors
+  namespace: i3-admissions
+  labels:
+    app: mcp-connectors
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-connectors
+  template:
+    metadata:
+      labels:
+        app: mcp-connectors
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsNonRoot: true
+      containers:
+        - name: mcp-connectors
+          image: de.icr.io/i3-platform/mcp-connectors:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 9000
+          envFrom:
+            - secretRef:
+                name: admissions-secrets
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-connectors
+  namespace: i3-admissions
+  labels:
+    app: mcp-connectors
+spec:
+  selector:
+    app: mcp-connectors
+  ports:
+    - name: http
+      port: 9000
+      targetPort: 9000
+  type: ClusterIP

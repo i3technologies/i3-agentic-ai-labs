@@ -1,0 +1,223 @@
+---
+# OpenBao Secrets Vault — i3 Platform
+# Namespace: i3-security
+# Bootstrap process: deploy → manual unseal (3-of-5 Shamir) → Ansible configures
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-security
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    security.i3technologies.co.ke/tier: vault
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: openbao
+  namespace: i3-security
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: openbao-auth-delegator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: openbao
+    namespace: i3-security
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openbao-config
+  namespace: i3-security
+data:
+  config.hcl: |
+    ui = true
+    log_level = "info"
+
+    listener "tcp" {
+      address       = "0.0.0.0:8200"
+      tls_cert_file = "/vault/tls/tls.crt"
+      tls_key_file  = "/vault/tls/tls.key"
+    }
+
+    storage "raft" {
+      path    = "/vault/data"
+      node_id = "NODE_ID_PLACEHOLDER"
+
+      retry_join {
+        leader_api_addr = "https://openbao-0.openbao-internal.i3-security.svc.cluster.local:8200"
+      }
+      retry_join {
+        leader_api_addr = "https://openbao-1.openbao-internal.i3-security.svc.cluster.local:8200"
+      }
+      retry_join {
+        leader_api_addr = "https://openbao-2.openbao-internal.i3-security.svc.cluster.local:8200"
+      }
+    }
+
+    # Telemetry — expose to Prometheus
+    telemetry {
+      prometheus_retention_time = "30s"
+      disable_hostname          = true
+    }
+
+    seal "awskms" {}   # Replaced by IBM Key Protect at init time via env override
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: openbao
+  namespace: i3-security
+spec:
+  serviceName: openbao-internal
+  replicas: 3
+  selector:
+    matchLabels:
+      app: openbao
+  template:
+    metadata:
+      labels:
+        app: openbao
+    spec:
+      serviceAccountName: openbao
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: openbao
+          image: quay.io/openbao/openbao:2.0.2
+          ports:
+            - containerPort: 8200
+              name: https
+            - containerPort: 8201
+              name: cluster
+          env:
+            - name: BAO_K8S_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: BAO_K8S_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: BAO_ADDR
+              value: "https://127.0.0.1:8200"
+            - name: BAO_CLUSTER_ADDR
+              value: "https://$(BAO_K8S_POD_NAME).openbao-internal.$(BAO_K8S_NAMESPACE).svc.cluster.local:8201"
+            - name: BAO_RAFT_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - name: data
+              mountPath: /vault/data
+            - name: config
+              mountPath: /vault/config
+            - name: tls
+              mountPath: /vault/tls
+          readinessProbe:
+            httpGet:
+              path: /v1/sys/health
+              port: 8200
+              scheme: HTTPS
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /v1/sys/health?standbyok=true
+              port: 8200
+              scheme: HTTPS
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+      volumes:
+        - name: config
+          configMap:
+            name: openbao-config
+        - name: tls
+          secret:
+            secretName: openbao-tls
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: ibmc-vpc-block-retain-10iops-tier
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openbao
+  namespace: i3-security
+spec:
+  selector:
+    app: openbao
+  ports:
+    - name: https
+      port: 8200
+      targetPort: 8200
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openbao-internal
+  namespace: i3-security
+spec:
+  clusterIP: None   # Headless for StatefulSet DNS
+  selector:
+    app: openbao
+  ports:
+    - name: https
+      port: 8200
+    - name: cluster
+      port: 8201
+---
+# ── Ansible Bootstrap Job (manual gate) ──────────────────────────────────────
+# Run AFTER manual unseal: kubectl apply -f openbao-bootstrap-job.yaml
+# This Job is deliberately separate — do not include in auto-sync Argo CD path.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: openbao-bootstrap
+  namespace: i3-security
+  annotations:
+    argocd.argoproj.io/sync-options: "Prune=false"   # Never auto-deleted
+spec:
+  template:
+    spec:
+      serviceAccountName: openbao
+      restartPolicy: OnFailure
+      containers:
+        - name: bootstrap
+          image: quay.io/openbao/openbao:2.0.2
+          command: ["/bin/sh", "/scripts/bootstrap.sh"]
+          env:
+            - name: BAO_ADDR
+              value: "https://openbao.i3-security.svc.cluster.local:8200"
+            - name: BAO_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: openbao-root-token
+                  key: token
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+      volumes:
+        - name: scripts
+          configMap:
+            name: openbao-bootstrap-scripts

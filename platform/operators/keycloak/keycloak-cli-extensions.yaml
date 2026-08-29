@@ -1,0 +1,20 @@
+# ============================================================
+# Keycloak CLI Extensions — Remove ExampleDS on RHSSO startup
+# Namespace: i3-auth
+# Applied by: RHSSO operator keycloakDeploymentSpec.experimental.volumes
+# ============================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-cli-extensions
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+data:
+  remove-exampleds.cli: |
+    # WildFly CLI script to remove the ExampleDS datasource
+    # Prevents boot warnings about H2 in-memory database
+    embed-server --server-config=standalone.xml --std-out=echo
+    /subsystem=datasources/data-source=ExampleDS:remove()
+    quit

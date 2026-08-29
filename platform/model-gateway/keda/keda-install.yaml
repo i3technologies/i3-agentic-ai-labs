@@ -1,0 +1,33 @@
+# ============================================================
+# KEDA Operator — Kubernetes-based Event Driven Autoscaling
+# Namespace: keda (cluster-scoped operator)
+# Install method: OLM Subscription (OperatorHub community)
+# ============================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: keda
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: keda-og
+  namespace: keda
+spec:
+  targetNamespaces: []   # All namespaces (KEDA is cluster-scoped)
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: keda
+  namespace: keda
+spec:
+  channel: stable
+  installPlanApproval: Automatic
+  name: keda
+  source: community-operators
+  sourceNamespace: openshift-marketplace
+  startingCSV: keda.v2.14.0

@@ -1,0 +1,81 @@
+# ============================================================
+# Operator Subscriptions — i3 Platform Operators
+# Applied by: kubectl apply -f platform/operators/subscriptions/
+# Pre-requisites: OperatorGroups must be applied first
+# ============================================================
+
+# ─── i3-data: OperatorGroup + Crunchy PostgreSQL ────────────
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: i3-data-og
+  namespace: i3-data
+spec:
+  targetNamespaces:
+    - i3-data
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: crunchy-postgres-operator
+  namespace: i3-data
+spec:
+  channel: v5
+  installPlanApproval: Automatic
+  name: crunchy-postgres-operator
+  source: certified-operators
+  sourceNamespace: openshift-marketplace
+---
+# ─── i3-messaging: OperatorGroup + Strimzi Kafka ────────────
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: i3-messaging-og
+  namespace: i3-messaging
+spec:
+  targetNamespaces:
+    - i3-messaging
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: strimzi-kafka-operator
+  namespace: i3-messaging
+spec:
+  channel: stable
+  installPlanApproval: Automatic
+  name: strimzi-kafka-operator
+  source: community-operators
+  sourceNamespace: openshift-marketplace
+---
+# ─── i3-security: OperatorGroup (OpenBao via Helm) ──────────
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: i3-security-og
+  namespace: i3-security
+spec:
+  targetNamespaces:
+    - i3-security
+---
+# ─── i3-auth: OperatorGroup + RHSSO (Keycloak) ──────────────
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: i3-auth-og
+  namespace: i3-auth
+spec:
+  targetNamespaces:
+    - i3-auth
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: rhsso-operator
+  namespace: i3-auth
+spec:
+  channel: stable
+  installPlanApproval: Automatic
+  name: rhsso-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace

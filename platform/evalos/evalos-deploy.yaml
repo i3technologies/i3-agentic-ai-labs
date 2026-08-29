@@ -1,0 +1,268 @@
+# ============================================================
+# EvalOS — Assessment Engine Deployment
+# Namespace: i3-evalos
+# Components: Sandbox Daemon (FastAPI/Firecracker) + Next.js Exam Engine
+# ============================================================
+
+# ── EvalOS Sandbox Daemon ────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: evalos-sandbox
+  namespace: i3-evalos
+  labels:
+    app: evalos-sandbox
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: evalos-sandbox
+  template:
+    metadata:
+      labels:
+        app: evalos-sandbox
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: evalos-sandbox
+      # Firecracker requires KVM — needs privileged or specific seccomp
+      securityContext:
+        runAsUser: 0    # Firecracker needs /dev/kvm access
+      containers:
+        - name: sandbox
+          image: de.icr.io/i3-platform/evalos-sandbox:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: FIRECRACKER_BIN
+              value: /usr/bin/firecracker
+            - name: KERNEL_IMAGE
+              value: /var/lib/evalos/kernels/vmlinux-5.10.bin
+            - name: ROOTFS_DIR
+              value: /var/lib/evalos/rootfs
+            - name: SOCKET_DIR
+              value: /tmp/evalos-sockets
+            - name: MAX_EXEC_SECONDS
+              value: "30"
+            - name: CPU_VCPUS
+              value: "2"
+            - name: MEM_MB
+              value: "512"
+          securityContext:
+            privileged: true    # Required for KVM device access in Firecracker
+          resources:
+            requests:
+              cpu: "2"
+              memory: 2Gi
+            limits:
+              cpu: "8"
+              memory: 8Gi
+          volumeMounts:
+            - name: kernels
+              mountPath: /var/lib/evalos/kernels
+            - name: rootfs
+              mountPath: /var/lib/evalos/rootfs
+            - name: dev-kvm
+              mountPath: /dev/kvm
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: kernels
+          persistentVolumeClaim:
+            claimName: evalos-kernels
+        - name: rootfs
+          persistentVolumeClaim:
+            claimName: evalos-rootfs
+        - name: dev-kvm
+          hostPath:
+            path: /dev/kvm
+            type: CharDevice
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: evalos-sandbox
+  namespace: i3-evalos
+  annotations:
+    openbao.org/agent-inject: "true"
+    openbao.org/role: "evalos"
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: evalos-kernels
+  namespace: i3-evalos
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: ibmc-vpc-block-retain-10iops-tier
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: evalos-rootfs
+  namespace: i3-evalos
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: ibmc-vpc-block-retain-10iops-tier
+  resources:
+    requests:
+      storage: 40Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: evalos-sandbox
+  namespace: i3-evalos
+  labels:
+    app: evalos-sandbox
+spec:
+  selector:
+    app: evalos-sandbox
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+
+---
+# ── Next.js Exam Engine ──────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: evalos-web
+  namespace: i3-evalos
+  labels:
+    app: evalos-web
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: evalos-web
+  template:
+    metadata:
+      labels:
+        app: evalos-web
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsNonRoot: true
+      containers:
+        - name: evalos-web
+          image: de.icr.io/i3-platform/evalos-web:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 3000
+          env:
+            - name: NEXTAUTH_URL
+              value: "https://evalos.i3technologies.co.ke"
+            - name: KEYCLOAK_ISSUER
+              value: "https://sso.i3technologies.co.ke/realms/i3"
+            - name: KEYCLOAK_CLIENT_ID
+              value: "evalos-spa"
+            - name: SANDBOX_API_URL
+              value: "http://evalos-sandbox.i3-evalos.svc.cluster.local:8080"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: evalos-secrets
+                  key: DATABASE_URL
+            - name: NEXTAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: evalos-secrets
+                  key: NEXTAUTH_SECRET
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: evalos-web
+  namespace: i3-evalos
+  labels:
+    app: evalos-web
+spec:
+  selector:
+    app: evalos-web
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: evalos-web
+  namespace: i3-evalos
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  host: evalos.i3technologies.co.ke
+  to:
+    kind: Service
+    name: evalos-web
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+---
+# ── EvalOS Secrets (placeholder — real values from OpenBao) ──
+apiVersion: v1
+kind: Secret
+metadata:
+  name: evalos-secrets
+  namespace: i3-evalos
+  annotations:
+    openbao.org/agent-inject: "true"
+    openbao.org/role: "evalos"
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql://evalos:REPLACE@i3-postgres-pgbouncer.i3-data.svc:5432/evalos_db"
+  NEXTAUTH_SECRET: "REPLACE_FROM_VAULT"
+  MOSS_USER_ID: "REPLACE_FROM_VAULT"

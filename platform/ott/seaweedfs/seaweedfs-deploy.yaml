@@ -1,0 +1,320 @@
+# ============================================================
+# SeaweedFS — S3-Compatible Object Storage
+# Namespace: i3-ott
+# Topology: 1 Master + 3 Volume + 1 Filer
+# S3 API port: 8333 (replaces MinIO)
+# COS DR: rclone CronJob syncs i3-vod → IBM COS daily
+# ============================================================
+
+# ── Master StatefulSet ───────────────────────────────────────
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: seaweedfs-master
+  namespace: i3-ott
+  labels:
+    app: seaweedfs-master
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  serviceName: seaweedfs-master
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seaweedfs-master
+  template:
+    metadata:
+      labels:
+        app: seaweedfs-master
+    spec:
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: master
+          image: chrislusf/seaweedfs:3.70
+          args:
+            - master
+            - -port=9333
+            - -mdir=/data
+            - -defaultReplication=000
+            - -metricsPort=9327
+          ports:
+            - name: http
+              containerPort: 9333
+            - name: grpc
+              containerPort: 19333
+            - name: metrics
+              containerPort: 9327
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /cluster/status
+              port: 9333
+            initialDelaySeconds: 10
+            periodSeconds: 15
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ReadWriteOnce]
+        storageClassName: ibmc-vpc-block-retain-10iops-tier
+        resources:
+          requests:
+            storage: 5Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: seaweedfs-master
+  namespace: i3-ott
+  labels:
+    app: seaweedfs-master
+spec:
+  clusterIP: None
+  selector:
+    app: seaweedfs-master
+  ports:
+    - name: http
+      port: 9333
+      targetPort: 9333
+    - name: grpc
+      port: 19333
+      targetPort: 19333
+
+---
+# ── Volume StatefulSet (3 replicas, 500Gi each) ──────────────
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: seaweedfs-volume
+  namespace: i3-ott
+  labels:
+    app: seaweedfs-volume
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  serviceName: seaweedfs-volume
+  replicas: 3
+  selector:
+    matchLabels:
+      app: seaweedfs-volume
+  template:
+    metadata:
+      labels:
+        app: seaweedfs-volume
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9327"
+    spec:
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: volume
+          image: chrislusf/seaweedfs:3.70
+          args:
+            - volume
+            - -port=8080
+            - -dir=/data
+            - -mserver=seaweedfs-master.i3-ott.svc.cluster.local:9333
+            - -replication=000
+            - -metricsPort=9327
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: grpc
+              containerPort: 18080
+            - name: metrics
+              containerPort: 9327
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 15
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ReadWriteOnce]
+        storageClassName: ibmc-vpc-block-retain-10iops-tier
+        resources:
+          requests:
+            storage: 500Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: seaweedfs-volume
+  namespace: i3-ott
+  labels:
+    app: seaweedfs-volume
+spec:
+  clusterIP: None
+  selector:
+    app: seaweedfs-volume
+  ports:
+    - name: http
+      port: 8080
+    - name: grpc
+      port: 18080
+
+---
+# ── Filer + S3 API ───────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seaweedfs-filer
+  namespace: i3-ott
+  labels:
+    app: seaweedfs-filer
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seaweedfs-filer
+  template:
+    metadata:
+      labels:
+        app: seaweedfs-filer
+    spec:
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: filer
+          image: chrislusf/seaweedfs:3.70
+          args:
+            - filer
+            - -port=8888
+            - -master=seaweedfs-master.i3-ott.svc.cluster.local:9333
+            - -s3
+            - -s3.port=8333
+            - -s3.domainName=seaweedfs-s3.i3-ott.svc.cluster.local
+            - -metricsPort=9327
+          ports:
+            - name: http
+              containerPort: 8888
+            - name: grpc
+              containerPort: 18888
+            - name: s3
+              containerPort: 8333
+            - name: metrics
+              containerPort: 9327
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          volumeMounts:
+            - name: filer-data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8888
+            initialDelaySeconds: 20
+            periodSeconds: 15
+      volumes:
+        - name: filer-data
+          persistentVolumeClaim:
+            claimName: seaweedfs-filer-data
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: seaweedfs-filer-data
+  namespace: i3-ott
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: ibmc-vpc-block-retain-10iops-tier
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: seaweedfs-s3
+  namespace: i3-ott
+  labels:
+    app: seaweedfs-filer
+spec:
+  selector:
+    app: seaweedfs-filer
+  ports:
+    - name: s3
+      port: 8333
+      targetPort: 8333
+    - name: filer
+      port: 8888
+      targetPort: 8888
+  type: ClusterIP
+
+---
+# ── rclone CronJob: SeaweedFS → IBM COS DR ──────────────────
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: seaweedfs-cos-dr-sync
+  namespace: i3-ott
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  schedule: "0 2 * * *"    # Daily at 02:00 UTC
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: rclone
+              image: rclone/rclone:1.67
+              envFrom:
+                - secretRef:
+                    name: rclone-secrets
+              command:
+                - rclone
+                - sync
+                - seaweedfs:i3-vod
+                - cos:i3-seaweedfs-dr-eu-de/vod
+                - --transfers=16
+                - --checkers=8
+                - --progress
+                - --log-level=INFO
+                - --stats=30s
+              resources:
+                requests:
+                  cpu: 250m
+                  memory: 256Mi
+                limits:
+                  cpu: "1"
+                  memory: 512Mi

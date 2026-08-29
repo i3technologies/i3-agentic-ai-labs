@@ -1,0 +1,314 @@
+# ============================================================
+# i3 Unified Platform — LimitRanges
+# Applied by: kubectl apply -f platform/namespaces/limit-ranges.yaml
+# Purpose:
+#   - Prevent unbounded containers from starving the cluster
+#   - Set safe defaults so pods without resource specs still get limits
+#   - Applied to all 11 managed namespaces
+# ============================================================
+
+# ─── i3-data: PostgreSQL workloads (high memory tolerance) ───
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: i3-data-limits
+  namespace: i3-data
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "1"
+        memory: 1Gi
+      defaultRequest:
+        cpu: 250m
+        memory: 256Mi
+      max:
+        cpu: "4"
+        memory: 8Gi
+      min:
+        cpu: 50m
+        memory: 64Mi
+    - type: Pod
+      max:
+        cpu: "8"
+        memory: 16Gi
+    - type: PersistentVolumeClaim
+      max:
+        storage: 100Gi
+      min:
+        storage: 1Gi
+
+---
+# ─── i3-messaging: Kafka (CPU + memory intensive) ─────────────
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: i3-messaging-limits
+  namespace: i3-messaging
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "1"
+        memory: 2Gi
+      defaultRequest:
+        cpu: 500m
+        memory: 1Gi
+      max:
+        cpu: "2"
+        memory: 4Gi
+      min:
+        cpu: 100m
+        memory: 128Mi
+    - type: Pod
+      max:
+        cpu: "4"
+        memory: 8Gi
+    - type: PersistentVolumeClaim
+      max:
+        storage: 50Gi
+      min:
+        storage: 1Gi
+
+---
+# ─── i3-security: OpenBao (lightweight) ──────────────────────
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: i3-security-limits
+  namespace: i3-security
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: 500m
+        memory: 512Mi
+      defaultRequest:
+        cpu: 250m
+        memory: 256Mi
+      max:
+        cpu: "1"
+        memory: 1Gi
+      min:
+        cpu: 50m
+        memory: 64Mi
+    - type: Pod
+      max:
+        cpu: "2"
+        memory: 2Gi
+
+---
+# ─── i3-auth: Keycloak ───────────────────────────────────────
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: i3-auth-limits
+  namespace: i3-auth
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "1"
+        memory: 1Gi
+      defaultRequest:
+        cpu: 500m
+        memory: 512Mi
+      max:
+        cpu: "2"
+        memory: 2Gi
+      min:
+        cpu: 50m
+        memory: 128Mi
+    - type: Pod
+      max:
+        cpu: "4"
+        memory: 4Gi
+
+---
+# ─── i3-gitops: Argo CD + Tekton ──────────────────────────────
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: i3-gitops-limits
+  namespace: i3-gitops
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: 500m
+        memory: 512Mi
+      defaultRequest:
+        cpu: 250m
+        memory: 256Mi
+      max:
+        cpu: "2"
+        memory: 2Gi
+      min:
+        cpu: 50m
+        memory: 64Mi
+    - type: Pod
+      max:
+        cpu: "4"
+        memory: 4Gi
+
+---
+# ─── i3-model-gateway: LiteLLM + vLLM + Langfuse (heaviest) ──
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: i3-model-gateway-limits
+  namespace: i3-model-gateway
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "2"
+        memory: 4Gi
+      defaultRequest:
+        cpu: 500m
+        memory: 1Gi
+      max:
+        cpu: "8"
+        memory: 24Gi
+      min:
+        cpu: 100m
+        memory: 128Mi
+    - type: Pod
+      max:
+        cpu: "16"
+        memory: 64Gi   # vLLM GPU pod allowance
+
+---
+# ─── i3-ai-lab: RHOAI workbenches ────────────────────────────
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: i3-ai-lab-limits
+  namespace: i3-ai-lab
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "1"
+        memory: 2Gi
+      defaultRequest:
+        cpu: 250m
+        memory: 512Mi
+      max:
+        cpu: "4"
+        memory: 16Gi
+      min:
+        cpu: 50m
+        memory: 128Mi
+    - type: Pod
+      max:
+        cpu: "8"
+        memory: 32Gi
+
+---
+# ─── i3-evalos: sandbox daemon + exam engine ─────────────────
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: i3-evalos-limits
+  namespace: i3-evalos
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: 500m
+        memory: 512Mi
+      defaultRequest:
+        cpu: 250m
+        memory: 256Mi
+      max:
+        cpu: "4"
+        memory: 8Gi
+      min:
+        cpu: 50m
+        memory: 64Mi
+    - type: Pod
+      max:
+        cpu: "8"
+        memory: 16Gi
+
+---
+# ─── i3-ott: OvenMediaEngine + SeaweedFS + Nginx (I/O heavy) ──
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: i3-ott-limits
+  namespace: i3-ott
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "1"
+        memory: 1Gi
+      defaultRequest:
+        cpu: 250m
+        memory: 256Mi
+      max:
+        cpu: "8"
+        memory: 16Gi
+      min:
+        cpu: 50m
+        memory: 64Mi
+    - type: Pod
+      max:
+        cpu: "16"
+        memory: 32Gi
+
+---
+# ─── i3-admissions: FastAPI + ChromaDB + MCP connectors ───────
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: i3-admissions-limits
+  namespace: i3-admissions
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: 500m
+        memory: 512Mi
+      defaultRequest:
+        cpu: 250m
+        memory: 256Mi
+      max:
+        cpu: "4"
+        memory: 8Gi
+      min:
+        cpu: 50m
+        memory: 64Mi
+    - type: Pod
+      max:
+        cpu: "8"
+        memory: 16Gi
+
+---
+# ─── i3-monitoring: Prometheus + Grafana ─────────────────────
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: i3-monitoring-limits
+  namespace: i3-monitoring
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: 500m
+        memory: 512Mi
+      defaultRequest:
+        cpu: 250m
+        memory: 256Mi
+      max:
+        cpu: "2"
+        memory: 4Gi
+      min:
+        cpu: 50m
+        memory: 64Mi
+    - type: Pod
+      max:
+        cpu: "4"
+        memory: 8Gi

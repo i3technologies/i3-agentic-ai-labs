@@ -1,0 +1,391 @@
+# ============================================================
+# i3 Unified Platform — Network Policies
+# Applied by: kubectl apply -f platform/namespaces/network-policies.yaml
+# Strategy:
+#   - Default deny-all ingress for each managed namespace
+#   - Explicit allow rules for required cross-namespace traffic
+#   - solution-01..08 namespaces are NEVER touched by these policies
+# ============================================================
+
+# ─── i3-data: only i3-model-gateway, i3-evalos, i3-ott, i3-admissions may reach Postgres ───
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-ingress
+  namespace: i3-data
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-postgres-clients
+  namespace: i3-data
+spec:
+  podSelector:
+    matchLabels:
+      postgres-operator.crunchydata.com/cluster: i3-postgres
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - i3-model-gateway
+                  - i3-evalos
+                  - i3-ott
+                  - i3-admissions
+                  - i3-auth
+                  - i3-monitoring
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 5433   # pgBouncer
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-postgres-internal
+  namespace: i3-data
+spec:
+  podSelector:
+    matchLabels:
+      postgres-operator.crunchydata.com/cluster: i3-postgres
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              postgres-operator.crunchydata.com/cluster: i3-postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 8008   # Patroni REST API
+
+# ─── i3-messaging: only internal Kafka traffic + authorised consumers ───────
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-ingress
+  namespace: i3-messaging
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-kafka-clients
+  namespace: i3-messaging
+spec:
+  podSelector:
+    matchLabels:
+      strimzi.io/kind: Kafka
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - i3-model-gateway
+                  - i3-evalos
+                  - i3-ott
+                  - i3-admissions
+                  - i3-monitoring
+      ports:
+        - protocol: TCP
+          port: 9092   # SCRAM-SHA-512
+        - protocol: TCP
+          port: 9093   # TLS
+    - from:
+        - podSelector:
+            matchLabels:
+              strimzi.io/kind: Kafka
+      ports:
+        - protocol: TCP
+          port: 9090   # Kafka inter-broker
+        - protocol: TCP
+          port: 9091
+        - protocol: TCP
+          port: 9092
+        - protocol: TCP
+          port: 9093
+
+# ─── i3-security: only OpenBao API port from authorised namespaces ────────────
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-ingress
+  namespace: i3-security
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-openbao-clients
+  namespace: i3-security
+spec:
+  podSelector:
+    matchLabels:
+      app: openbao
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector: {}   # All managed namespaces may call OpenBao
+      ports:
+        - protocol: TCP
+          port: 8200   # HTTPS API
+    - from:
+        - podSelector:
+            matchLabels:
+              app: openbao
+      ports:
+        - protocol: TCP
+          port: 8200
+        - protocol: TCP
+          port: 8201   # Raft cluster port
+
+# ─── i3-auth: only Keycloak from authorised namespaces + ingress ─────────────
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-ingress
+  namespace: i3-auth
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-keycloak-clients
+  namespace: i3-auth
+spec:
+  podSelector:
+    matchLabels:
+      app: keycloak
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8080   # HTTP (cluster internal)
+        - protocol: TCP
+          port: 8443   # HTTPS
+
+# ─── i3-gitops: Argo CD reachable from cluster-internal only ─────────────────
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-ingress
+  namespace: i3-gitops
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-argocd-internal
+  namespace: i3-gitops
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8443
+
+# ─── i3-model-gateway: LiteLLM/Langfuse reachable from app namespaces ────────
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-ingress
+  namespace: i3-model-gateway
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-gateway-clients
+  namespace: i3-model-gateway
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - i3-evalos
+                  - i3-admissions
+                  - i3-ott
+                  - i3-ai-lab
+                  - i3-monitoring
+      ports:
+        - protocol: TCP
+          port: 4000   # LiteLLM proxy
+        - protocol: TCP
+          port: 3000   # Langfuse
+
+# ─── i3-evalos: exam engine reachable from ingress only ──────────────────────
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-ingress
+  namespace: i3-evalos
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-evalos-ingress
+  namespace: i3-evalos
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: openshift-ingress
+      ports:
+        - protocol: TCP
+          port: 3000
+        - protocol: TCP
+          port: 8080
+
+# ─── i3-ott: media stack reachable from ingress + internal ───────────────────
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-ingress
+  namespace: i3-ott
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ott-internal
+  namespace: i3-ott
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector: {}   # allow all pods within i3-ott to talk to each other
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: openshift-ingress
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8443
+
+# ─── i3-admissions: FastAPI reachable from ingress only ──────────────────────
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-ingress
+  namespace: i3-admissions
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-admissions-ingress
+  namespace: i3-admissions
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: openshift-ingress
+      ports:
+        - protocol: TCP
+          port: 8000   # FastAPI
+
+# ─── i3-monitoring: Prometheus scrape from all managed namespaces ─────────────
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-ingress
+  namespace: i3-monitoring
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-monitoring-internal
+  namespace: i3-monitoring
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 9090   # Prometheus
+        - protocol: TCP
+          port: 3000   # Grafana

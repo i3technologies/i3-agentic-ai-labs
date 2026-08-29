@@ -1,0 +1,159 @@
+---
+# Argo CD App-of-Apps — i3 Platform GitOps Root
+# Namespace: i3-gitops
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: i3-platform-root
+  namespace: i3-gitops
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: i3-platform
+  source:
+    repoURL: https://github.com/i3-technologies/platform-gitops
+    targetRevision: main
+    path: argocd/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: i3-gitops
+  syncPolicy:
+    automated:
+      prune: false       # Never auto-prune — safety gate for production
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ApplyOutOfSyncOnly=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+---
+# ── Argo CD Project ─────────────────────────────────────────────────────────
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: i3-platform
+  namespace: i3-gitops
+spec:
+  description: "i3 Technologies Unified Platform — all managed namespaces"
+  sourceRepos:
+    - "https://github.com/i3-technologies/platform-gitops"
+    - "https://github.com/i3-technologies/app-manifests"
+  destinations:
+    # Managed namespaces — solution-01 through solution-08 explicitly EXCLUDED
+    - server: https://kubernetes.default.svc
+      namespace: i3-data
+    - server: https://kubernetes.default.svc
+      namespace: i3-messaging
+    - server: https://kubernetes.default.svc
+      namespace: i3-security
+    - server: https://kubernetes.default.svc
+      namespace: i3-auth
+    - server: https://kubernetes.default.svc
+      namespace: i3-gitops
+    - server: https://kubernetes.default.svc
+      namespace: i3-model-gateway
+    - server: https://kubernetes.default.svc
+      namespace: i3-ai-lab
+    - server: https://kubernetes.default.svc
+      namespace: i3-evalos
+    - server: https://kubernetes.default.svc
+      namespace: i3-ott
+    - server: https://kubernetes.default.svc
+      namespace: i3-admissions
+    - server: https://kubernetes.default.svc
+      namespace: i3-monitoring
+    # Wave 7 — Onboarding Agent (added for IBM TechXchange Hackathon 2026)
+    - server: https://kubernetes.default.svc
+      namespace: i3-onboarding
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+    - group: "rbac.authorization.k8s.io"
+      kind: ClusterRole
+    - group: "rbac.authorization.k8s.io"
+      kind: ClusterRoleBinding
+    - group: "apiextensions.k8s.io"
+      kind: CustomResourceDefinition
+  namespaceResourceBlacklist:
+    - group: ""
+      kind: ResourceQuota   # ResourceQuotas managed separately per cohort
+  roles:
+    - name: platform-admin
+      policies:
+        - "p, proj:i3-platform:platform-admin, applications, *, i3-platform/*, allow"
+      groups:
+        - i3-platform-admins
+    - name: readonly
+      policies:
+        - "p, proj:i3-platform:readonly, applications, get, i3-platform/*, allow"
+      groups:
+        - i3-platform-viewers
+---
+# ── ApplicationSet — per-workstream auto-deployment ─────────────────────────
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: i3-workstreams
+  namespace: i3-gitops
+spec:
+  generators:
+    - list:
+        elements:
+          - workstream: core-operators
+            namespace: i3-data
+            path: operators
+            wave: "1"
+          - workstream: model-gateway
+            namespace: i3-model-gateway
+            path: model-gateway
+            wave: "2"
+          - workstream: ai-lab
+            namespace: i3-ai-lab
+            path: ai-lab
+            wave: "3"
+          - workstream: evalos
+            namespace: i3-evalos
+            path: evalos
+            wave: "4"
+          - workstream: ott
+            namespace: i3-ott
+            path: ott
+            wave: "5"
+          - workstream: admissions
+            namespace: i3-admissions
+            path: admissions
+            wave: "6"
+          # Wave 7 — Onboarding Agent
+          - workstream: onboarding
+            namespace: i3-onboarding
+            path: onboarding-agent/openshift
+            wave: "7"
+  template:
+    metadata:
+      name: "i3-{{workstream}}"
+      namespace: i3-gitops
+      annotations:
+        argocd.argoproj.io/sync-wave: "{{wave}}"
+    spec:
+      project: i3-platform
+      source:
+        repoURL: https://github.com/i3-technologies/platform-gitops
+        targetRevision: main
+        path: "{{path}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{namespace}}"
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ApplyOutOfSyncOnly=true

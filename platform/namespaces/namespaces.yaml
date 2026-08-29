@@ -1,0 +1,276 @@
+# ============================================================
+# i3 Unified Platform — 17-Namespace Topology
+# Applied by: kubectl apply -f platform/namespaces/
+# CRITICAL: solution-01..08 are listed as read-only references.
+#           They must NEVER be applied/modified by this pipeline.
+# ============================================================
+
+# ─── Tier 0: Foundational Data & Messaging ──────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-data
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "0-data"
+    i3.io/managed-by: argocd
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-messaging
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "0-messaging"
+    i3.io/managed-by: argocd
+---
+# ─── Tier 1: Security & Identity ───────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-security
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "1-security"
+    i3.io/managed-by: argocd
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "1-auth"
+    i3.io/managed-by: argocd
+---
+# ─── Tier 2: GitOps & CI/CD ─────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-gitops
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "2-gitops"
+    i3.io/managed-by: argocd
+---
+# ─── Tier 3: AI / Model Gateway ─────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-model-gateway
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "3-ai"
+    i3.io/managed-by: argocd
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-ai-lab
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "3-ai"
+    i3.io/managed-by: argocd
+---
+# ─── Tier 4: Application Workstreams ────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-evalos
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "4-apps"
+    i3.io/managed-by: argocd
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-ott
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "4-apps"
+    i3.io/managed-by: argocd
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-admissions
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "4-apps"
+    i3.io/managed-by: argocd
+---
+# ─── Tier 5: Observability ──────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-monitoring
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "5-monitoring"
+    i3.io/managed-by: argocd
+---
+# ============================================================
+# ResourceQuotas — enforce budget caps per namespace
+# ============================================================
+
+# i3-data: PostgreSQL + pgBouncer only (no burst)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: i3-data-quota
+  namespace: i3-data
+spec:
+  hard:
+    requests.cpu: "8"
+    requests.memory: 24Gi
+    limits.cpu: "12"
+    limits.memory: 32Gi
+    persistentvolumeclaims: "20"
+    count/pods: "30"
+---
+# i3-messaging: Kafka KRaft (3 brokers x 2 vCPU/4 GB each)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: i3-messaging-quota
+  namespace: i3-messaging
+spec:
+  hard:
+    requests.cpu: "6"
+    requests.memory: 12Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    persistentvolumeclaims: "10"
+    count/pods: "20"
+---
+# i3-security: OpenBao vault (lightweight)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: i3-security-quota
+  namespace: i3-security
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    limits.cpu: "4"
+    limits.memory: 8Gi
+    count/pods: "10"
+---
+# i3-auth: Keycloak (2 replicas)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: i3-auth-quota
+  namespace: i3-auth
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    limits.cpu: "4"
+    limits.memory: 8Gi
+    count/pods: "10"
+---
+# i3-gitops: Argo CD + Tekton
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: i3-gitops-quota
+  namespace: i3-gitops
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    count/pods: "40"
+---
+# i3-model-gateway: LiteLLM + vLLM + Langfuse (heaviest namespace)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: i3-model-gateway-quota
+  namespace: i3-model-gateway
+spec:
+  hard:
+    requests.cpu: "16"
+    requests.memory: 48Gi
+    limits.cpu: "24"
+    limits.memory: 64Gi
+    persistentvolumeclaims: "10"
+    count/pods: "30"
+---
+# i3-ai-lab: RHOAI workbenches (student sandboxes provisioned dynamically)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: i3-ai-lab-quota
+  namespace: i3-ai-lab
+spec:
+  hard:
+    requests.cpu: "8"
+    requests.memory: 24Gi
+    limits.cpu: "16"
+    limits.memory: 48Gi
+    count/pods: "50"
+---
+# i3-evalos: EvalOS sandbox daemon + Next.js exam engine
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: i3-evalos-quota
+  namespace: i3-evalos
+spec:
+  hard:
+    requests.cpu: "8"
+    requests.memory: 16Gi
+    limits.cpu: "16"
+    limits.memory: 32Gi
+    persistentvolumeclaims: "5"
+    count/pods: "40"
+---
+# i3-ott: OvenMediaEngine + SeaweedFS + Nginx HLS (I/O heavy)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: i3-ott-quota
+  namespace: i3-ott
+spec:
+  hard:
+    requests.cpu: "16"
+    requests.memory: 32Gi
+    limits.cpu: "48"    # OME (2x8) + nginx (2x1) + seaweedfs (3x2) + n8n (2) + directus (2) headroom
+    limits.memory: 64Gi
+    persistentvolumeclaims: "15"
+    count/pods: "30"
+---
+# i3-admissions: FastAPI agent + ChromaDB + MCP connectors
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: i3-admissions-quota
+  namespace: i3-admissions
+spec:
+  hard:
+    requests.cpu: "8"
+    requests.memory: 16Gi
+    limits.cpu: "16"
+    limits.memory: 32Gi
+    persistentvolumeclaims: "5"
+    count/pods: "20"
+---
+# i3-monitoring: Prometheus + Grafana + Langfuse telemetry
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: i3-monitoring-quota
+  namespace: i3-monitoring
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    persistentvolumeclaims: "10"
+    count/pods: "20"

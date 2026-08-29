@@ -1,0 +1,96 @@
+# ============================================================
+# OpenBao Bootstrap Scripts ConfigMap
+# Applied manually AFTER unseal: kubectl apply -f openbao-bootstrap-scripts.yaml
+# DO NOT include in ArgoCD auto-sync path.
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openbao-bootstrap-scripts
+  namespace: i3-security
+  annotations:
+    argocd.argoproj.io/sync-options: "Prune=false"
+data:
+  bootstrap.sh: |
+    #!/bin/sh
+    set -eu
+
+    BAO="${BAO_ADDR:-https://openbao.i3-security.svc.cluster.local:8200}"
+    export BAO_ADDR="$BAO"
+    export BAO_SKIP_VERIFY=true   # internal TLS; cert verified by network policy
+
+    echo "==> Waiting for OpenBao to become active..."
+    until bao status 2>&1 | grep -q "HA Mode.*active\|Active Node\|Initialized.*true"; do
+      sleep 3
+    done
+
+    echo "==> Enabling KV v2 secrets engine..."
+    bao secrets enable -path=secret kv-v2 || true
+
+    echo "==> Creating platform secret paths..."
+    bao kv put secret/i3-platform/placeholder _placeholder=true
+
+    echo "==> Enabling Kubernetes auth method..."
+    bao auth enable kubernetes || true
+
+    bao write auth/kubernetes/config \
+      kubernetes_host="https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}" \
+      kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
+      token_reviewer_jwt=@/var/run/secrets/kubernetes.io/serviceaccount/token
+
+    echo "==> Creating namespace-scoped policies..."
+
+    # model-gateway policy
+    bao policy write model-gateway - <<'EOF'
+path "secret/data/i3-platform/model-gateway/*" { capabilities = ["read"] }
+path "secret/data/i3-platform/shared/*"         { capabilities = ["read"] }
+EOF
+
+    # evalos policy
+    bao policy write evalos - <<'EOF'
+path "secret/data/i3-platform/evalos/*"  { capabilities = ["read"] }
+path "secret/data/i3-platform/shared/*"  { capabilities = ["read"] }
+EOF
+
+    # admissions policy
+    bao policy write admissions - <<'EOF'
+path "secret/data/i3-platform/admissions/*" { capabilities = ["read"] }
+path "secret/data/i3-platform/shared/*"     { capabilities = ["read"] }
+EOF
+
+    # ott policy
+    bao policy write ott - <<'EOF'
+path "secret/data/i3-platform/ott/*"    { capabilities = ["read"] }
+path "secret/data/i3-platform/shared/*" { capabilities = ["read"] }
+EOF
+
+    # ai-lab policy
+    bao policy write ai-lab - <<'EOF'
+path "secret/data/i3-platform/ai-lab/*" { capabilities = ["read"] }
+path "secret/data/i3-platform/shared/*" { capabilities = ["read"] }
+EOF
+
+    echo "==> Binding Kubernetes service accounts to policies..."
+
+    for ns_policy in \
+      "i3-model-gateway:model-gateway:model-gateway" \
+      "i3-evalos:evalos-sandbox:evalos" \
+      "i3-admissions:admissions-agent:admissions" \
+      "i3-ott:default:ott" \
+      "i3-ai-lab:default:ai-lab"; do
+      ns=$(echo $ns_policy | cut -d: -f1)
+      sa=$(echo $ns_policy | cut -d: -f2)
+      pol=$(echo $ns_policy | cut -d: -f3)
+      role_name=$(echo $ns_policy | cut -d: -f3)
+      bao write "auth/kubernetes/role/${role_name}" \
+        bound_service_account_names="$sa" \
+        bound_service_account_namespaces="$ns" \
+        policies="$pol,default" \
+        ttl=1h
+      echo "   Bound $ns/$sa -> policy $pol"
+    done
+
+    echo "==> Enabling Prometheus telemetry endpoint..."
+    # Already configured in openbao-config.hcl telemetry block
+
+    echo "==> Bootstrap complete. Revoke root token manually per RUNBOOK.md step 7."

@@ -1,0 +1,141 @@
+# ============================================================
+# Crunchy PostgreSQL Operator — i3-postgres HA Cluster
+# Namespace: i3-data
+# Operator: crunchy-postgres-operator v5 (from certified-operators)
+# Databases: langfuse_db, evalos_db, admissions_db, directus_db, keycloak_db
+# HA: 1 primary + 2 replicas (Patroni)
+# Backup: pgBackRest → IBM COS (nightly full, continuous WAL)
+# ============================================================
+
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: i3-postgres
+  namespace: i3-data
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-15.6-0
+  postgresVersion: 15
+
+  instances:
+    - name: primary
+      replicas: 3
+      resources:
+        requests:
+          cpu: "1"
+          memory: 2Gi
+        limits:
+          cpu: "4"
+          memory: 8Gi
+      dataVolumeClaimSpec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: ibmc-vpc-block-retain-10iops-tier
+        resources:
+          requests:
+            storage: 50Gi
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    postgres-operator.crunchydata.com/cluster: i3-postgres
+                topologyKey: kubernetes.io/hostname
+
+  # pgBouncer connection pooler
+  proxy:
+    pgBouncer:
+      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbouncer:ubi8-1.21-3
+      replicas: 2
+      config:
+        global:
+          pool_mode: transaction
+          max_client_conn: "1000"
+          default_pool_size: "50"
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi
+
+  # Databases provisioned on first boot
+  databasesConfig:
+    databases:
+      - name: langfuse_db
+      - name: evalos_db
+      - name: admissions_db
+      - name: directus_db
+      - name: keycloak_db
+      - name: n8n_db
+
+  # pgBackRest backups → IBM COS
+  # COS HMAC credentials are stored in the pgbackrest-cos-secret K8s Secret
+  backups:
+    pgbackrest:
+      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.49-0
+      configuration:
+        - secret:
+            name: pgbackrest-cos-secret   # created by populate-vault.ps1 / Vault agent
+      repos:
+        - name: repo1
+          schedules:
+            full: "0 3 * * *"         # nightly full at 03:00 UTC
+            differential: "0 */6 * * *"  # differential every 6 hours
+          s3:
+            bucket: i3-postgres-backup-eu-de
+            endpoint: s3.eu-de.cloud-object-storage.appdomain.cloud
+            region: eu-de
+      global:
+        repo1-retention-full: "7"
+        repo1-retention-full-type: count
+        repo1-s3-uri-style: path
+        repo1-storage-verify-tls: "y"
+      manual:
+        repoName: repo1
+        options:
+          - --type=full
+      jobs:
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: "1"
+            memory: 1Gi
+
+  # Monitoring: enable pgExporter sidecar
+  monitoring:
+    pgmonitor:
+      exporter:
+        image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres-exporter:ubi8-0.15.0-3
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+
+  # User accounts (passwords auto-generated and stored as Secrets)
+  users:
+    - name: langfuse
+      databases:
+        - langfuse_db
+      options: "CREATEDB"
+    - name: evalos
+      databases:
+        - evalos_db
+    - name: admissions
+      databases:
+        - admissions_db
+    - name: directus
+      databases:
+        - directus_db
+    - name: keycloak
+      databases:
+        - keycloak_db
+    - name: n8n
+      databases:
+        - n8n_db

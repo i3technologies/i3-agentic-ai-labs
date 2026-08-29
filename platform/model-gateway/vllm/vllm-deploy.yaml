@@ -1,0 +1,125 @@
+# ============================================================
+# Ollama — local LLM serving for Tier 2/3 models
+# Serves: Granite 3.1 2B, Mistral NeMo 12B, DeepSeek-Coder 16B
+# CPU-only in eu-de (no GPU). gx2 GPU not available in Frankfurt.
+# For production GPU inference: use watsonx.ai tier-1 endpoints.
+# ============================================================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ollama
+  namespace: i3-model-gateway
+  labels:
+    app: ollama
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  serviceName: ollama
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+    spec:
+      # Ollama writes to $OLLAMA_HOME (/.ollama by default); run as root
+      # so the container can create files regardless of SCC constraints.
+      securityContext:
+        runAsUser: 0
+      initContainers:
+        # Pre-pull models on first boot
+        - name: pull-models
+          image: ollama/ollama:latest
+          securityContext:
+            runAsUser: 0
+          env:
+            - name: HOME
+              value: /root
+            - name: OLLAMA_HOME
+              value: /root/.ollama
+          command:
+            - sh
+            - -c
+            - |
+              ollama serve &
+              OLLAMA_PID=$!
+              sleep 5
+              ollama pull granite3.1-dense:2b
+              echo "Granite 3.1 2B pulled"
+              # Mistral NeMo 12B and DeepSeek 16B are large — pull on demand
+              # ollama pull mistral-nemo:12b
+              # ollama pull deepseek-coder-v2:16b
+              kill $OLLAMA_PID 2>/dev/null || true
+              exit 0
+          resources:
+            requests:
+              cpu: "2"
+              memory: 8Gi
+            limits:
+              cpu: "4"
+              memory: 16Gi
+          volumeMounts:
+            - name: ollama-data
+              mountPath: /root/.ollama
+      containers:
+        - name: ollama
+          image: ollama/ollama:latest
+          securityContext:
+            runAsUser: 0
+          env:
+            - name: HOME
+              value: /root
+            - name: OLLAMA_HOME
+              value: /root/.ollama
+          ports:
+            - name: http
+              containerPort: 11434
+          resources:
+            requests:
+              cpu: "2"
+              memory: 8Gi
+            limits:
+              cpu: "4"
+              memory: 16Gi
+          volumeMounts:
+            - name: ollama-data
+              mountPath: /root/.ollama
+          livenessProbe:
+            httpGet:
+              path: /api/tags
+              port: 11434
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /api/tags
+              port: 11434
+            initialDelaySeconds: 60
+            periodSeconds: 15
+  volumeClaimTemplates:
+    - metadata:
+        name: ollama-data
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 50Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama-service
+  namespace: i3-model-gateway
+  labels:
+    app: ollama
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  selector:
+    app: ollama
+  ports:
+    - name: http
+      port: 11434
+      targetPort: 11434
+  clusterIP: None

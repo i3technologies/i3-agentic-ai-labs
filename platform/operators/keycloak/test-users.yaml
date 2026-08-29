@@ -1,0 +1,173 @@
+# ============================================================
+# Keycloak Test Users — i3 Platform
+# Realm: i3
+# Applied by: oc apply -f platform/operators/keycloak/test-users.yaml
+#
+# Users:
+#   Philip Mukiti    philipm@i3technologies.co.ke   admin, instructor, student
+#   Sebastian Njagi  snjagi@i3technologies.co.ke    admin, instructor, student
+#   Joseph Maina     josephm@i3technologies.co.ke   admin, instructor, student
+#   Dorothy Akoth    dorothy@i3technologies.co.ke   instructor
+#
+# NOTE: Passwords are set to a temporary value.
+#   Each user MUST change their password on first login.
+#   The passwordPolicy enforces: length(12) upperCase lowerCase digits specialChars
+#
+# For runtime provisioning (cluster already live) use:
+#   .\platform\scripts\provision-test-users.ps1
+# ============================================================
+
+# ── Philip Mukiti — Admin + Instructor + Student ─────────────
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-philip-mukiti
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: test
+spec:
+  user:
+    username: philipm
+    email: philipm@i3technologies.co.ke
+    firstName: Philip
+    lastName: Mukiti
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "i3Test@2025!"      # Temporary — user must change on first login
+        temporary: true
+    realmRoles:
+      - admin
+      - instructor
+      - student
+    clientRoles:
+      evalos-spa:
+        - uma_protection
+      ai-lab-workbench:
+        - uma_protection
+    attributes:
+      organisation:
+        - "i3 Technologies"
+      userType:
+        - test
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+# ── Sebastian Njagi — Admin + Instructor + Student ───────────
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-sebastian-njagi
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: test
+spec:
+  user:
+    username: snjagi
+    email: snjagi@i3technologies.co.ke
+    firstName: Sebastian
+    lastName: Njagi
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "i3Test@2025!"      # Temporary — user must change on first login
+        temporary: true
+    realmRoles:
+      - admin
+      - instructor
+      - student
+    clientRoles:
+      evalos-spa:
+        - uma_protection
+      ai-lab-workbench:
+        - uma_protection
+    attributes:
+      organisation:
+        - "i3 Technologies"
+      userType:
+        - test
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+# ── Joseph Maina — Admin + Instructor + Student ──────────────
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-joseph-maina
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: test
+spec:
+  user:
+    username: josephm
+    email: josephm@i3technologies.co.ke
+    firstName: Joseph
+    lastName: Maina
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "i3Test@2025!"      # Temporary — user must change on first login
+        temporary: true
+    realmRoles:
+      - admin
+      - instructor
+      - student
+    clientRoles:
+      evalos-spa:
+        - uma_protection
+      ai-lab-workbench:
+        - uma_protection
+    attributes:
+      organisation:
+        - "i3 Technologies"
+      userType:
+        - test
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+# ── Dorothy Akoth — Instructor only ─────────────────────────
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-dorothy-akoth
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: test
+spec:
+  user:
+    username: dorothy
+    email: dorothy@i3technologies.co.ke
+    firstName: Dorothy
+    lastName: Akoth
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "i3Test@2025!"      # Temporary — user must change on first login
+        temporary: true
+    realmRoles:
+      - instructor
+    clientRoles:
+      evalos-spa:
+        - uma_protection
+    attributes:
+      organisation:
+        - "i3 Technologies"
+      userType:
+        - test
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform

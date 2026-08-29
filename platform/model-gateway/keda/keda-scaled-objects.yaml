@@ -1,0 +1,92 @@
+---
+# ============================================================
+# KEDA ScaledObjects — Model Gateway Autoscaling
+# Scales LiteLLM and Ollama based on HTTP request queue depth
+# ============================================================
+
+# ── LiteLLM Proxy: scale 1→6 on queue depth via Prometheus ──────────────────
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: litellm-proxy-scaler
+  namespace: i3-model-gateway
+spec:
+  scaleTargetRef:
+    name: litellm-proxy
+  pollingInterval: 15
+  cooldownPeriod: 120
+  minReplicaCount: 1
+  maxReplicaCount: 6
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: "http://prometheus-operated.i3-monitoring.svc.cluster.local:9090"
+        metricName: litellm_requests_pending
+        threshold: "20"
+        query: >
+          sum(rate(litellm_proxy_total_requests[1m]))
+---
+# ── Ollama (Granite 3.1 2B): scale 1→4 on CPU saturation ────────────────────
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: ollama-scaler
+  namespace: i3-model-gateway
+spec:
+  scaleTargetRef:
+    name: ollama
+  pollingInterval: 30
+  cooldownPeriod: 180
+  minReplicaCount: 1
+  maxReplicaCount: 4
+  triggers:
+    - type: cpu
+      metricType: Utilization
+      metadata:
+        value: "80"
+---
+# ── EvalOS Sandbox: scale 1→10 on CPU (Prometheus trigger added when metrics live) ─
+# Using cpu trigger as primary since EvalOS Prometheus metrics not yet scraped.
+# minReplicaCount=1 (PVCs are RWO — cannot attach to 2 pods simultaneously).
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: evalos-sandbox-scaler
+  namespace: i3-evalos
+spec:
+  scaleTargetRef:
+    name: evalos-sandbox
+  pollingInterval: 30
+  cooldownPeriod: 120
+  minReplicaCount: 1
+  maxReplicaCount: 4
+  fallback:
+    failureThreshold: 3
+    replicas: 1
+  triggers:
+    - type: cpu
+      metricType: Utilization
+      metadata:
+        value: "75"
+---
+# ── Admissions Agent: scale 1→4 on HTTP concurrency ─────────────────────────
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: admissions-agent-scaler
+  namespace: i3-admissions
+spec:
+  scaleTargetRef:
+    name: admissions-agent
+  pollingInterval: 20
+  cooldownPeriod: 120
+  minReplicaCount: 1
+  maxReplicaCount: 4
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: "http://prometheus-operated.i3-monitoring.svc.cluster.local:9090"
+        metricName: admissions_http_requests_active
+        threshold: "10"
+        query: >
+          sum(rate(http_requests_total{namespace="i3-admissions"}[1m]))

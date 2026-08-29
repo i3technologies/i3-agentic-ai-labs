@@ -1,0 +1,164 @@
+# ============================================================
+# n8n — Workflow Automation Engine
+# Namespace: i3-ott
+# Database: n8n_db on i3-postgres Crunchy cluster
+# Workflows: OTT post-class pipeline, AI Lab auto-enrolment
+# ============================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n
+  namespace: i3-ott
+  labels:
+    app: n8n
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: n8n
+  template:
+    metadata:
+      labels:
+        app: n8n
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsNonRoot: true
+      containers:
+        - name: n8n
+          image: n8nio/n8n:1.52.2
+          ports:
+            - name: http
+              containerPort: 5678
+          env:
+            - name: N8N_HOST
+              value: "n8n.i3technologies.co.ke"
+            - name: N8N_PORT
+              value: "5678"
+            - name: N8N_PROTOCOL
+              value: "https"
+            - name: WEBHOOK_URL
+              value: "https://n8n.i3technologies.co.ke/"
+            - name: DB_TYPE
+              value: postgresdb
+            - name: DB_POSTGRESDB_HOST
+              value: i3-postgres-pgbouncer.i3-data.svc.cluster.local
+            - name: DB_POSTGRESDB_PORT
+              value: "5432"
+            - name: DB_POSTGRESDB_DATABASE
+              value: n8n_db
+            - name: DB_POSTGRESDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-secrets
+                  key: DB_USER
+            - name: DB_POSTGRESDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-secrets
+                  key: DB_PASSWORD
+            - name: N8N_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-secrets
+                  key: ENCRYPTION_KEY
+            - name: N8N_BASIC_AUTH_ACTIVE
+              value: "false"       # SSO via reverse proxy
+            - name: EXECUTIONS_PROCESS
+              value: main
+            - name: N8N_LOG_LEVEL
+              value: info
+            - name: N8N_METRICS
+              value: "true"
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          volumeMounts:
+            - name: n8n-data
+              mountPath: /home/node/.n8n
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 5678
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 5678
+            initialDelaySeconds: 20
+            periodSeconds: 15
+      volumes:
+        - name: n8n-data
+          persistentVolumeClaim:
+            claimName: n8n-data
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: n8n-data
+  namespace: i3-ott
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: ibmc-vpc-block-retain-10iops-tier
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: n8n-secrets
+  namespace: i3-ott
+  annotations:
+    openbao.org/agent-inject: "true"
+    openbao.org/role: "ott"
+type: Opaque
+stringData:
+  DB_USER: "REPLACE_FROM_VAULT"
+  DB_PASSWORD: "REPLACE_FROM_VAULT"
+  ENCRYPTION_KEY: "REPLACE_FROM_VAULT"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: n8n
+  namespace: i3-ott
+  labels:
+    app: n8n
+spec:
+  selector:
+    app: n8n
+  ports:
+    - name: http
+      port: 5678
+      targetPort: 5678
+  type: ClusterIP
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: n8n
+  namespace: i3-ott
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  host: n8n.i3technologies.co.ke
+  to:
+    kind: Service
+    name: n8n
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

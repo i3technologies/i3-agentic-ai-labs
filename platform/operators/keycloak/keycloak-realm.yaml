@@ -1,0 +1,189 @@
+# ============================================================
+# Keycloak SSO — RHSSO Operator (Red Hat)
+# Namespace: i3-auth
+# Realm: i3 (students, instructors, admins, service accounts)
+# Clients: evalos-spa, admissions-widget, ai-lab-workbench
+# Federation: OIDC provider for AI Lab, EvalOS, Admissions
+# ============================================================
+
+# ── Keycloak instance (RHSSO CR) ────────────────────────────
+apiVersion: keycloak.org/v1alpha1
+kind: Keycloak
+metadata:
+  name: i3-keycloak
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  instances: 2
+  externalAccess:
+    enabled: true
+    host: sso.i3technologies.co.ke
+  tlsSecret: keycloak-tls
+  postgresDeploymentSpec:
+    # Use Crunchy PostgreSQL — do NOT use embedded database
+    disabled: true
+  keycloakDeploymentSpec:
+    experimental:
+      env:
+        - name: KC_DB
+          value: postgres
+        - name: KC_DB_URL
+          value: "jdbc:postgresql://i3-postgres-pgbouncer.i3-data.svc.cluster.local:5432/keycloak_db"
+        - name: KC_DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: i3-postgres-pguser-keycloak
+              key: user
+        - name: KC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: i3-postgres-pguser-keycloak
+              key: password
+        - name: KC_HOSTNAME
+          value: sso.i3technologies.co.ke
+        - name: KC_PROXY
+          value: edge
+        - name: KC_LOG_LEVEL
+          value: INFO
+        - name: KEYCLOAK_ADMIN
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-admin-secret
+              key: username
+        - name: KEYCLOAK_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-admin-secret
+              key: password
+    # Removes the H2 ExampleDS that causes XA recovery warnings in RHSSO 7.6
+    # Script: platform/operators/keycloak/keycloak-remove-exampleds.sh
+    # Python alternative: platform/operators/keycloak/remove_exampleds.py
+    podTemplate:
+      spec:
+        containers:
+          - name: keycloak
+            lifecycle:
+              postStart:
+                exec:
+                  command:
+                    - /bin/bash
+                    - /opt/scripts/keycloak-remove-exampleds.sh
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "2"
+        memory: 2Gi
+
+---
+# ── Realm: i3 ───────────────────────────────────────────────
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakRealm
+metadata:
+  name: i3-realm
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  realm:
+    id: i3
+    realm: i3
+    displayName: "i3 Technologies Academy"
+    enabled: true
+    sslRequired: external
+    registrationAllowed: false
+    loginWithEmailAllowed: true
+    duplicateEmailsAllowed: false
+    resetPasswordAllowed: true
+    editUsernameAllowed: false
+    bruteForceProtected: true
+    failureFactor: 5
+    accessTokenLifespan: 3600       # 1 hour
+    ssoSessionMaxLifespan: 36000    # 10 hours
+    offlineSessionMaxLifespan: 2592000  # 30 days
+    roles:
+      realm:
+        - name: student
+          description: "AI Lab / EvalOS student"
+        - name: instructor
+          description: "Course instructor"
+        - name: admin
+          description: "Platform administrator"
+        - name: admissions-agent
+          description: "Admissions AI service account"
+    clients:
+      # EvalOS Next.js SPA
+      - clientId: evalos-spa
+        name: "EvalOS Assessment Platform"
+        enabled: true
+        publicClient: true
+        standardFlowEnabled: true
+        redirectUris:
+          - "https://evalos.i3technologies.co.ke/*"
+          - "http://localhost:3000/*"
+        webOrigins:
+          - "https://evalos.i3technologies.co.ke"
+        defaultClientScopes:
+          - openid
+          - profile
+          - email
+          - roles
+
+      # Admissions Widget
+      - clientId: admissions-widget
+        name: "Admissions Assistant Widget"
+        enabled: true
+        publicClient: false
+        serviceAccountsEnabled: true
+        standardFlowEnabled: false
+        secret: "REPLACE_FROM_KEYCLOAK_ADMIN_CONSOLE"
+        redirectUris:
+          - "https://i3technologies.co.ke/admissions/*"
+        defaultClientScopes:
+          - openid
+          - profile
+          - email
+
+      # AI Lab Workbench (RHOAI JupyterHub)
+      - clientId: ai-lab-workbench
+        name: "AI Lab JupyterHub"
+        enabled: true
+        publicClient: false
+        standardFlowEnabled: true
+        secret: "REPLACE_FROM_KEYCLOAK_ADMIN_CONSOLE"
+        redirectUris:
+          - "https://jupyterhub.i3-ai-lab.svc/*"
+          - "https://ailab.i3technologies.co.ke/*"
+        defaultClientScopes:
+          - openid
+          - profile
+          - email
+          - roles
+
+      # LiteLLM service account
+      - clientId: litellm-service
+        name: "LiteLLM Model Gateway"
+        enabled: true
+        publicClient: false
+        serviceAccountsEnabled: true
+        standardFlowEnabled: false
+        secret: "REPLACE_FROM_KEYCLOAK_ADMIN_CONSOLE"
+
+      # Directus CMS
+      - clientId: directus-cms
+        name: "Directus CMS"
+        enabled: true
+        publicClient: false
+        standardFlowEnabled: true
+        secret: "REPLACE_FROM_KEYCLOAK_ADMIN_CONSOLE"
+        redirectUris:
+          - "https://cms.i3technologies.co.ke/*"
+
+    # Password policy
+    passwordPolicy: "length(12) and upperCase(1) and lowerCase(1) and digits(1) and specialChars(1)"
+
+  instanceSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform

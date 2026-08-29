@@ -1,0 +1,127 @@
+# ============================================================
+# AI Lab Cohort Auto-Provisioner — Kubernetes Job
+# Triggered by: EvalOS enrolment webhook via n8n
+# Namespace: i3-ai-lab
+# Provisions: per-cohort namespace with RBAC + quotas + NetworkPolicy
+# ============================================================
+
+# ── ServiceAccount for provisioner ───────────────────────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cohort-provisioner
+  namespace: i3-ai-lab
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+---
+# ClusterRole: create namespaces + RBAC + quotas
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cohort-provisioner
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces", "resourcequotas", "limitranges"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["roles", "rolebindings"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["networkpolicies"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cohort-provisioner
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cohort-provisioner
+subjects:
+  - kind: ServiceAccount
+    name: cohort-provisioner
+    namespace: i3-ai-lab
+
+---
+# ── CronJob: Poll enrolment queue and provision cohorts ─────
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cohort-provisioner
+  namespace: i3-ai-lab
+  labels:
+    app: cohort-provisioner
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  schedule: "*/5 * * * *"    # Every 5 minutes
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 5
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: cohort-provisioner
+          restartPolicy: OnFailure
+          containers:
+            - name: provisioner
+              image: de.icr.io/i3-platform/cohort-provisioner:latest
+              imagePullPolicy: Always
+              command:
+                - python
+                - /app/provision_cohort.py
+                - --mode=queue
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: ai-lab-secrets
+                      key: DATABASE_URL
+                - name: DEFAULT_GPU_QUOTA
+                  value: "0"   # No GPU by default; instructor enables via make provision-cohort GPU_QUOTA=1
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+
+---
+# ── Manual provisioning Job template (triggered by Makefile) ─
+# Usage: make provision-cohort COHORT=1 STUDENTS=alice,bob,carol
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: provision-cohort-manual
+  namespace: i3-ai-lab
+  labels:
+    app: cohort-provisioner
+spec:
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      serviceAccountName: cohort-provisioner
+      restartPolicy: OnFailure
+      containers:
+        - name: provisioner
+          image: de.icr.io/i3-platform/cohort-provisioner:latest
+          imagePullPolicy: Always
+          command:
+            - python
+            - /app/provision_cohort.py
+          env:
+            - name: COHORT
+              value: "1"
+            - name: STUDENTS
+              value: ""
+            - name: GPU_QUOTA
+              value: "0"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi

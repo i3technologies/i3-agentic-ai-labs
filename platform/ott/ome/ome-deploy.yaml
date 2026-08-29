@@ -1,0 +1,262 @@
+# ============================================================
+# OvenMediaEngine (OME) — Live Streaming Origin
+# Namespace: i3-ott
+# Ingest: RTMP (1935) + SRT (9999) from OBS Studio
+# Output: LL-HLS (/hls), WebRTC (ICE: UDP 10000-10004)
+# ============================================================
+
+# ── OME ConfigMap ────────────────────────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ome-config
+  namespace: i3-ott
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+data:
+  Server.xml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Server version="8">
+      <Name>i3-ome-origin</Name>
+      <Type>origin</Type>
+      <Bind>
+        <Providers>
+          <RTMP>
+            <Port>1935</Port>
+          </RTMP>
+          <SRT>
+            <Port>9999</Port>
+          </SRT>
+        </Providers>
+        <Publishers>
+          <WebRTC>
+            <Timeout>30000</Timeout>
+            <ICECandidates>
+              <IceServerList/>
+            </ICECandidates>
+          </WebRTC>
+          <LLHLS>
+            <Port>8080</Port>
+          </LLHLS>
+        </Publishers>
+      </Bind>
+
+      <VirtualHosts>
+        <VirtualHost include="VHost.xml"/>
+      </VirtualHosts>
+    </Server>
+
+  VHost.xml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <VirtualHost>
+      <Name>i3-live</Name>
+      <Host>
+        <Names>
+          <Name>*</Name>
+        </Names>
+      </Host>
+
+      <Applications>
+        <Application>
+          <Name>live</Name>
+          <Type>live</Type>
+
+          <OutputProfiles>
+            <OutputProfile>
+              <Name>abr_ladder</Name>
+              <OutputStreamName>${OriginStreamName}</OutputStreamName>
+              <Encodes>
+                <Video>
+                  <Codec>h264</Codec><Width>1920</Width><Height>1080</Height>
+                  <Bitrate>4000000</Bitrate><Framerate>30</Framerate>
+                </Video>
+                <Video>
+                  <Codec>h264</Codec><Width>1280</Width><Height>720</Height>
+                  <Bitrate>2000000</Bitrate><Framerate>30</Framerate>
+                </Video>
+                <Video>
+                  <Codec>h264</Codec><Width>854</Width><Height>480</Height>
+                  <Bitrate>800000</Bitrate><Framerate>25</Framerate>
+                </Video>
+                <Video>
+                  <Codec>h264</Codec><Width>426</Width><Height>240</Height>
+                  <Bitrate>300000</Bitrate><Framerate>15</Framerate>
+                </Video>
+                <Audio>
+                  <Codec>aac</Codec><Bitrate>128000</Bitrate><Samplerate>44100</Samplerate>
+                </Audio>
+              </Encodes>
+            </OutputProfile>
+          </OutputProfiles>
+
+          <Publishers>
+            <WebRTC>
+              <Timeout>30000</Timeout>
+            </WebRTC>
+            <LLHLS>
+              <ChunkDuration>0.5</ChunkDuration>
+              <SegmentDuration>6</SegmentDuration>
+              <SegmentCount>10</SegmentCount>
+              <CrossDomains>
+                <Url>*</Url>
+              </CrossDomains>
+            </LLHLS>
+          </Publishers>
+        </Application>
+      </Applications>
+    </VirtualHost>
+
+---
+# ── OME Deployment ───────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ome-origin
+  namespace: i3-ott
+  labels:
+    app: ome-origin
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ome-origin
+  template:
+    metadata:
+      labels:
+        app: ome-origin
+    spec:
+      containers:
+        - name: ome
+          image: airensoft/ovenmediaengine:0.16.2
+          ports:
+            - name: rtmp
+              containerPort: 1935
+              protocol: TCP
+            - name: srt
+              containerPort: 9999
+              protocol: UDP
+            - name: hls
+              containerPort: 8080
+              protocol: TCP
+            - name: webrtc-0
+              containerPort: 10000
+              protocol: UDP
+            - name: webrtc-1
+              containerPort: 10001
+              protocol: UDP
+            - name: webrtc-2
+              containerPort: 10002
+              protocol: UDP
+            - name: webrtc-3
+              containerPort: 10003
+              protocol: UDP
+            - name: webrtc-4
+              containerPort: 10004
+              protocol: UDP
+          volumeMounts:
+            - name: ome-config
+              mountPath: /opt/ovenmediaengine/bin/origin_conf
+            - name: recordings
+              mountPath: /recordings
+          resources:
+            requests:
+              cpu: "2"
+              memory: 2Gi
+            limits:
+              cpu: "8"
+              memory: 8Gi
+          livenessProbe:
+            httpGet:
+              path: /v1/stats/current
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 30
+      volumes:
+        - name: ome-config
+          configMap:
+            name: ome-config
+        - name: recordings
+          persistentVolumeClaim:
+            claimName: ome-recordings
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ome-recordings
+  namespace: i3-ott
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: ibmc-vpc-block-retain-10iops-tier
+  resources:
+    requests:
+      storage: 50Gi
+
+---
+# ── OME Services ─────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: ome-origin
+  namespace: i3-ott
+  labels:
+    app: ome-origin
+spec:
+  selector:
+    app: ome-origin
+  ports:
+    - name: rtmp
+      port: 1935
+      targetPort: 1935
+      protocol: TCP
+    - name: hls
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  type: ClusterIP
+
+---
+# RTMP/SRT require LoadBalancer (UDP)
+apiVersion: v1
+kind: Service
+metadata:
+  name: ome-ingest
+  namespace: i3-ott
+  labels:
+    app: ome-origin
+spec:
+  selector:
+    app: ome-origin
+  ports:
+    - name: rtmp
+      port: 1935
+      targetPort: 1935
+      protocol: TCP
+    - name: srt
+      port: 9999
+      targetPort: 9999
+      protocol: UDP
+    - name: webrtc-0
+      port: 10000
+      targetPort: 10000
+      protocol: UDP
+    - name: webrtc-1
+      port: 10001
+      targetPort: 10001
+      protocol: UDP
+    - name: webrtc-2
+      port: 10002
+      targetPort: 10002
+      protocol: UDP
+    - name: webrtc-3
+      port: 10003
+      targetPort: 10003
+      protocol: UDP
+    - name: webrtc-4
+      port: 10004
+      targetPort: 10004
+      protocol: UDP
+  type: LoadBalancer
+  loadBalancerSourceRanges:
+    - 0.0.0.0/0

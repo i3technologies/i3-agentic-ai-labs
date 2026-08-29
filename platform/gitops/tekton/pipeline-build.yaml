@@ -1,0 +1,257 @@
+---
+# Tekton Pipeline — Container Build & Zero-Downtime Rolling Deploy
+# Namespace: i3-gitops
+# Tasks: git-clone → buildah-build → trivy-scan → push → rolling-update
+
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: buildah-build-push
+  namespace: i3-gitops
+spec:
+  params:
+    - name: IMAGE
+      description: "Fully qualified image name (registry/org/name:tag)"
+    - name: CONTEXT
+      description: "Path to build context within workspace"
+      default: "."
+    - name: DOCKERFILE
+      description: "Path to Dockerfile"
+      default: "./Dockerfile"
+    - name: STORAGE_DRIVER
+      default: "vfs"
+  workspaces:
+    - name: source
+    - name: dockerconfig
+      description: "OCI registry credentials (Secret)"
+  steps:
+    - name: build
+      image: quay.io/buildah/stable:v1.35
+      securityContext:
+        privileged: false
+        capabilities:
+          add: ["SETUID", "SETGID"]
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+        buildah --storage-driver=$(params.STORAGE_DRIVER) bud \
+          --format=oci \
+          --tls-verify=true \
+          --no-cache \
+          -f $(params.DOCKERFILE) \
+          -t $(params.IMAGE) \
+          $(params.CONTEXT)
+    - name: trivy-scan
+      image: aquasec/trivy:0.51.1
+      script: |
+        #!/usr/bin/env sh
+        set -e
+        trivy image \
+          --exit-code 1 \
+          --severity HIGH,CRITICAL \
+          --no-progress \
+          $(params.IMAGE)
+    - name: push
+      image: quay.io/buildah/stable:v1.35
+      securityContext:
+        privileged: false
+        capabilities:
+          add: ["SETUID", "SETGID"]
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+        buildah --storage-driver=$(params.STORAGE_DRIVER) push \
+          --tls-verify=true \
+          --digestfile /workspace/source/image-digest \
+          $(params.IMAGE) \
+          docker://$(params.IMAGE)
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: rolling-update
+  namespace: i3-gitops
+spec:
+  params:
+    - name: DEPLOYMENT
+      description: "Deployment name to update"
+    - name: NAMESPACE
+      description: "Target namespace"
+    - name: IMAGE
+      description: "New image reference"
+    - name: CONTAINER
+      description: "Container name within the Deployment"
+      default: "app"
+    - name: TIMEOUT
+      description: "Rollout timeout"
+      default: "5m"
+  steps:
+    - name: patch-and-wait
+      image: quay.io/openshift/origin-cli:4.15
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+        echo "Updating $(params.DEPLOYMENT) in $(params.NAMESPACE) to $(params.IMAGE)"
+        oc set image deployment/$(params.DEPLOYMENT) \
+          $(params.CONTAINER)=$(params.IMAGE) \
+          -n $(params.NAMESPACE)
+        oc rollout status deployment/$(params.DEPLOYMENT) \
+          -n $(params.NAMESPACE) \
+          --timeout=$(params.TIMEOUT)
+        echo "Rollout complete."
+---
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: i3-build-deploy
+  namespace: i3-gitops
+spec:
+  params:
+    - name: GIT_URL
+      type: string
+    - name: GIT_REVISION
+      type: string
+      default: main
+    - name: IMAGE
+      type: string
+    - name: DEPLOYMENT
+      type: string
+    - name: NAMESPACE
+      type: string
+    - name: CONTAINER
+      type: string
+      default: app
+  workspaces:
+    - name: shared-workspace
+    - name: dockerconfig
+  tasks:
+    - name: git-clone
+      taskRef:
+        resolver: cluster
+        params:
+          - name: kind
+            value: Task
+          - name: name
+            value: git-clone
+          - name: namespace
+            value: tekton-catalog
+      params:
+        - name: url
+          value: $(params.GIT_URL)
+        - name: revision
+          value: $(params.GIT_REVISION)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+
+    - name: build-push
+      runAfter: [git-clone]
+      taskRef:
+        kind: Task
+        name: buildah-build-push
+      params:
+        - name: IMAGE
+          value: $(params.IMAGE)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: dockerconfig
+          workspace: dockerconfig
+
+    - name: deploy
+      runAfter: [build-push]
+      taskRef:
+        kind: Task
+        name: rolling-update
+      params:
+        - name: DEPLOYMENT
+          value: $(params.DEPLOYMENT)
+        - name: NAMESPACE
+          value: $(params.NAMESPACE)
+        - name: IMAGE
+          value: $(params.IMAGE)
+        - name: CONTAINER
+          value: $(params.CONTAINER)
+---
+# ── EventListener for GitHub webhook triggers ────────────────────────────────
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: i3-github-listener
+  namespace: i3-gitops
+spec:
+  serviceAccountName: tekton-triggers-sa
+  triggers:
+    - name: push-to-main
+      interceptors:
+        - ref:
+            name: github
+          params:
+            - name: secretRef
+              value:
+                secretName: github-webhook-secret
+                secretKey: secret
+            - name: eventTypes
+              value: ["push"]
+        - ref:
+            name: cel
+          params:
+            - name: filter
+              value: "body.ref == 'refs/heads/main'"
+      bindings:
+        - ref: i3-push-binding
+      template:
+        ref: i3-pipeline-template
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: i3-push-binding
+  namespace: i3-gitops
+spec:
+  params:
+    - name: git-url
+      value: $(body.repository.clone_url)
+    - name: git-revision
+      value: $(body.after)
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: i3-pipeline-template
+  namespace: i3-gitops
+spec:
+  params:
+    - name: git-url
+    - name: git-revision
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: i3-build-deploy-
+        namespace: i3-gitops
+      spec:
+        pipelineRef:
+          name: i3-build-deploy
+        params:
+          - name: GIT_URL
+            value: $(tt.params.git-url)
+          - name: GIT_REVISION
+            value: $(tt.params.git-revision)
+          - name: IMAGE
+            value: "de.icr.io/i3-platform/app:$(tt.params.git-revision)"
+          - name: DEPLOYMENT
+            value: i3-app
+          - name: NAMESPACE
+            value: i3-platform
+        workspaces:
+          - name: shared-workspace
+            volumeClaimTemplate:
+              spec:
+                accessModes: [ReadWriteOnce]
+                resources:
+                  requests:
+                    storage: 1Gi
+          - name: dockerconfig
+            secret:
+              secretName: icr-dockerconfig

@@ -1,0 +1,27 @@
+﻿# === SECRETS - NEVER COMMIT ===
+.env
+.env.*
+.env.txt
+*.tfvars
+*.tfvars.json
+platform/terraform/*.tfstate
+platform/terraform/*.tfstate.backup
+platform/terraform/.terraform/
+platform/terraform/tfplan.out
+/tmp/openbao-init.json
+openbao-init.json
+ibm_credentials.env
+ibmcloud_api_key.txt
+# Protect any stray copies of env files
+.env.local
+.env.prod
+.env.staging
+.env.production
+
+# Tool artifacts
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+node_modules/
+platform/testing/reports/

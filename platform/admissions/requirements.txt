@@ -1,0 +1,23 @@
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+httpx==0.27.0
+pydantic==2.7.4
+
+# RAG
+llama-index-core==0.10.52
+llama-index-vector-stores-chroma==0.1.10
+chromadb==0.5.7
+
+# LlamaIndex LLM integration
+llama-index-llms-openai-like==0.1.4
+
+# Embeddings — BGE-Large
+sentence-transformers==3.1.0
+llama-index-embeddings-huggingface==0.3.1
+
+# IBM Docling for layout-aware document parsing
+docling==2.5.0
+
+# Evaluation
+ragas==0.1.14
+datasets==2.20.0

@@ -1,0 +1,48 @@
+---
+# argocd-app.yaml
+# ArgoCD Application for the i3 Onboarding Agent.
+# This is wave 7 in the i3-workstreams ApplicationSet.
+# Added to platform/gitops/argocd/app-of-apps.yaml as part of Step 10.
+#
+# Sync policy: automated with pruning — matches the pattern of waves 1–6.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: i3-onboarding-agent
+  namespace: i3-gitops
+  labels:
+    i3.tech/wave: "7"
+    i3.tech/workstream: onboarding
+  # Ensure this app is synced AFTER wave 6 (platform-security)
+  annotations:
+    argocd.argoproj.io/sync-wave: "7"
+spec:
+  project: i3-platform
+  source:
+    repoURL: https://github.com/i3-agentic-ai-labs/i3-platform
+    targetRevision: HEAD
+    path: onboarding-agent/openshift
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: i3-onboarding
+  syncPolicy:
+    automated:
+      prune:    true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 3
+      backoff:
+        duration:    5s
+        factor:      2
+        maxDuration: 3m
+  ignoreDifferences:
+    # ArgoCD should not complain about the empty Secret values
+    # (OpenBao fills them at runtime)
+    - group: ""
+      kind: Secret
+      name: onboarding-agent-secrets
+      jsonPointers:
+        - /data

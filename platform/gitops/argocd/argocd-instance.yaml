@@ -1,0 +1,125 @@
+# ============================================================
+# Argo CD Instance — i3-gitops namespace
+# Deployed via GitOps Operator (Red Hat)
+# ============================================================
+
+apiVersion: argoproj.io/v1alpha1
+kind: ArgoCD
+metadata:
+  name: argocd
+  namespace: i3-gitops
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  server:
+    autoscale:
+      enabled: false
+    grpc:
+      ingress:
+        enabled: false
+    ingress:
+      enabled: false
+    route:
+      enabled: true
+      tls:
+        termination: reencrypt
+    insecure: false
+
+  applicationInstanceLabelKey: argocd.argoproj.io/app-name
+
+  # RBAC: SSO via Keycloak OIDC
+  oidcConfig: |
+    name: Keycloak
+    issuer: https://sso.i3technologies.co.ke/realms/i3
+    clientID: argocd
+    clientSecret: $argocd-oidc-secret:oidc.keycloak.clientSecret
+    requestedScopes: ["openid", "profile", "email", "groups"]
+    requestedIDTokenClaims: {"groups": {"essential": true}}
+
+  rbac:
+    defaultPolicy: role:readonly
+    policy: |
+      p, role:admin, applications, *, */*, allow
+      p, role:admin, clusters, *, *, allow
+      p, role:admin, repositories, *, *, allow
+      p, role:admin, logs, *, *, allow
+      p, role:admin, exec, *, */*, allow
+      g, i3-platform-admins, role:admin
+    scopes: '[groups]'
+
+  repo:
+    volumes:
+      - emptyDir: {}
+        name: custom-tools
+    initContainers:
+      - name: download-tools
+        image: alpine:3.20
+        command: [sh, -c]
+        args:
+          - |
+            # Install helm
+            apk add --no-cache curl
+            curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | sh
+            cp /usr/local/bin/helm /custom-tools/
+        volumeMounts:
+          - mountPath: /custom-tools
+            name: custom-tools
+    volumeMounts:
+      - mountPath: /usr/local/bin/helm
+        name: custom-tools
+        subPath: helm
+
+  resourceCustomizations: |
+    argoproj.io/Application:
+      health.lua: |
+        hs = {}
+        hs.status = "Progressing"
+        hs.message = ""
+        if obj.status ~= nil then
+          if obj.status.health ~= nil then
+            hs.status = obj.status.health.status
+            if obj.status.health.message ~= nil then
+              hs.message = obj.status.health.message
+            end
+          end
+        end
+        return hs
+
+  notifications:
+    enabled: false
+
+  redis:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 250m
+        memory: 128Mi
+
+  server:
+    resources:
+      limits:
+        cpu: "1"
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+
+  repoServer:
+    resources:
+      limits:
+        cpu: "1"
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+
+  applicationSet:
+    resources:
+      limits:
+        cpu: "1"
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 256Mi

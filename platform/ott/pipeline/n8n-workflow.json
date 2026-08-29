@@ -1,0 +1,178 @@
+{
+  "name": "OTT Post-Class Pipeline",
+  "nodes": [
+    {
+      "id": "trigger-webhook",
+      "name": "Stream End Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "stream-end",
+        "responseMode": "lastNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "extract-stream-info",
+      "name": "Extract Stream Info",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "streamName",
+              "value": "={{$json.stream.name}}"
+            },
+            {
+              "name": "recordingPath",
+              "value": "={{$json.output_path}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "trigger-pipeline",
+      "name": "Call OTT Pipeline API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [650, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "http://ott-pipeline.i3-ott.svc.cluster.local:8090/webhook/stream-end",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "stream",
+              "value": "={\"name\": \"{{$json.streamName}}\"}"
+            },
+            {
+              "name": "output_path",
+              "value": "={{$json.recordingPath}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      }
+    },
+    {
+      "id": "wait-for-pipeline",
+      "name": "Wait 5 Minutes",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [850, 300],
+      "parameters": {
+        "unit": "minutes",
+        "amount": 5
+      }
+    },
+    {
+      "id": "update-directus",
+      "name": "Update Directus Class Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1050, 300],
+      "parameters": {
+        "method": "PATCH",
+        "url": "=http://directus.i3-ott.svc.cluster.local:8055/items/live_sessions/{{$json.session_id}}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "archived"
+            },
+            {
+              "name": "recording_available",
+              "value": "true"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "notify-cohort",
+      "name": "Notify Cohort via Kafka",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1250, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.LITELLM_MASTER_KEY}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "granite-nano"
+            },
+            {
+              "name": "messages",
+              "value": "=[{\"role\": \"user\", \"content\": \"Generate a 2-sentence recap of today's AI class session titled {{$json.streamName}}\"}]"
+            },
+            {
+              "name": "max_tokens",
+              "value": "100"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1450, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\": \"pipeline_complete\", \"stream\": \"{{$node['Extract Stream Info'].json.streamName}}\"}"
+      }
+    }
+  ],
+  "connections": {
+    "Stream End Webhook": {
+      "main": [[{"node": "Extract Stream Info", "type": "main", "index": 0}]]
+    },
+    "Extract Stream Info": {
+      "main": [[{"node": "Call OTT Pipeline API", "type": "main", "index": 0}]]
+    },
+    "Call OTT Pipeline API": {
+      "main": [[{"node": "Wait 5 Minutes", "type": "main", "index": 0}]]
+    },
+    "Wait 5 Minutes": {
+      "main": [[{"node": "Update Directus Class Status", "type": "main", "index": 0}]]
+    },
+    "Update Directus Class Status": {
+      "main": [[{"node": "Notify Cohort via Kafka", "type": "main", "index": 0}]]
+    },
+    "Notify Cohort via Kafka": {
+      "main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionOrder": "v1"
+  },
+  "tags": ["ott", "pipeline", "automation"],
+  "pinData": {}
+}

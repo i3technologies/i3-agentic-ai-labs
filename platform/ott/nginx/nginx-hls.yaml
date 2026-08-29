@@ -1,0 +1,204 @@
+# ============================================================
+# Nginx HLS Segment Cache — i3-ott
+# Caches .ts/.m4s HLS segments from OvenMediaEngine
+# Acts as CDN edge for learners — reduces OME CPU load
+# ============================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-hls-config
+  namespace: i3-ott
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+data:
+  nginx.conf: |
+    worker_processes auto;
+    worker_rlimit_nofile 65536;
+
+    events {
+        worker_connections 4096;
+        use epoll;
+    }
+
+    http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+        sendfile      on;
+        tcp_nopush    on;
+        tcp_nodelay   on;
+
+        # HLS segment cache (4GB RAM disk)
+        proxy_cache_path /var/cache/nginx/hls
+            levels=1:2
+            keys_zone=hls_cache:32m
+            max_size=4g
+            inactive=30m
+            use_temp_path=off;
+
+        log_format main '$remote_addr - $remote_user [$time_local] '
+                        '"$request" $status $body_bytes_sent '
+                        '"$http_referer" "$http_user_agent" '
+                        'cache=$upstream_cache_status';
+
+        access_log /dev/stdout main;
+        error_log  /dev/stderr warn;
+
+        server {
+            listen 80;
+            server_name _;
+
+            # CORS for video players
+            add_header Access-Control-Allow-Origin "*" always;
+            add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "Range" always;
+
+            # HLS from OME
+            location /hls/ {
+                proxy_pass http://ome-origin.i3-ott.svc.cluster.local:8080/;
+                proxy_cache hls_cache;
+                proxy_cache_key "$scheme$request_uri";
+
+                # Cache TS segments for 30 minutes
+                proxy_cache_valid 200 30m;
+                # Don't cache m3u8 playlists (they update live)
+                proxy_cache_valid 0 0;
+                add_header X-Cache-Status $upstream_cache_status;
+
+                # HLS-specific headers
+                proxy_set_header Host $host;
+                proxy_buffering on;
+                proxy_buffer_size 128k;
+                proxy_buffers 4 256k;
+                proxy_busy_buffers_size 256k;
+
+                # Don't cache m3u8
+                location ~* \.m3u8$ {
+                    proxy_pass http://ome-origin.i3-ott.svc.cluster.local:8080/;
+                    proxy_no_cache 1;
+                    proxy_cache_bypass 1;
+                    add_header Cache-Control "no-cache, no-store";
+                }
+            }
+
+            # VOD from SeaweedFS S3
+            location /vod/ {
+                proxy_pass http://seaweedfs-s3.i3-ott.svc.cluster.local:8333/i3-vod/vod/;
+                proxy_cache hls_cache;
+                proxy_cache_key "$scheme$request_uri";
+                proxy_cache_valid 200 2h;
+                add_header X-Cache-Status $upstream_cache_status;
+                add_header Cache-Control "public, max-age=7200";
+                proxy_hide_header x-amz-id-2;
+                proxy_hide_header x-amz-request-id;
+            }
+
+            # Health check
+            location /health {
+                return 200 "OK\n";
+                add_header Content-Type text/plain;
+            }
+
+            # Metrics
+            location /nginx_status {
+                stub_status on;
+                allow 10.0.0.0/8;
+                deny all;
+            }
+        }
+    }
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-hls
+  namespace: i3-ott
+  labels:
+    app: nginx-hls
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-hls
+  template:
+    metadata:
+      labels:
+        app: nginx-hls
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - name: http
+              containerPort: 80
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+            - name: cache
+              mountPath: /var/cache/nginx/hls
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "2"
+              memory: 4Gi    # 4GB cache allocation
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx-hls-config
+        - name: cache
+          emptyDir:
+            medium: Memory
+            sizeLimit: 4Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-hls
+  namespace: i3-ott
+  labels:
+    app: nginx-hls
+spec:
+  selector:
+    app: nginx-hls
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: nginx-hls
+  namespace: i3-ott
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  host: stream.i3technologies.co.ke
+  to:
+    kind: Service
+    name: nginx-hls
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

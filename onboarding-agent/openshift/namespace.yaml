@@ -1,0 +1,14 @@
+---
+# namespace.yaml
+# Creates the i3-onboarding namespace with the same label conventions
+# used by all i3 managed namespaces on the ROKS cluster.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-onboarding
+  labels:
+    app.kubernetes.io/managed-by: argocd
+    i3.tech/workstream: onboarding
+    i3.tech/wave: "7"
+    # IMPORTANT: this namespace is NOT in the solution-01..08 group
+    # solution namespaces are forbidden — do not add labels that match them

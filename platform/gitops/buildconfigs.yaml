@@ -1,0 +1,99 @@
+# ============================================================
+# OpenShift BuildConfigs — Container Image Builds
+# Namespace: i3-gitops
+# Replaced by Tekton pipeline-build.yaml in CI/CD flow.
+# These BuildConfigs are for manual/one-time image builds.
+# ============================================================
+
+# ── EvalOS Sandbox BuildConfig ───────────────────────────────
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: evalos-sandbox
+  namespace: i3-gitops
+  labels:
+    app: evalos-sandbox
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/i3-technologies/platform-gitops
+      ref: main
+    contextDir: platform/evalos
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+      noCache: false
+  output:
+    to:
+      kind: DockerImage
+      name: de.icr.io/i3-platform/evalos-sandbox:latest
+    pushSecret:
+      name: icr-dockerconfig
+  triggers:
+    - type: ConfigChange
+    - type: GitHub
+      github:
+        secret: github-webhook-secret
+
+---
+# ── Admissions Agent BuildConfig ─────────────────────────────
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: admissions-agent
+  namespace: i3-gitops
+  labels:
+    app: admissions-agent
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/i3-technologies/platform-gitops
+      ref: main
+    contextDir: platform/admissions
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  output:
+    to:
+      kind: DockerImage
+      name: de.icr.io/i3-platform/admissions-agent:latest
+    pushSecret:
+      name: icr-dockerconfig
+  triggers:
+    - type: ConfigChange
+
+---
+# ── MCP Connectors BuildConfig ───────────────────────────────
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: mcp-connectors
+  namespace: i3-gitops
+  labels:
+    app: mcp-connectors
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/i3-technologies/platform-gitops
+      ref: main
+    contextDir: platform/admissions/mcp
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  output:
+    to:
+      kind: DockerImage
+      name: de.icr.io/i3-platform/mcp-connectors:latest
+    pushSecret:
+      name: icr-dockerconfig
+  triggers:
+    - type: ConfigChange

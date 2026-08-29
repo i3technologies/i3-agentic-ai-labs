@@ -1,0 +1,244 @@
+---
+# deploy.yaml
+# Onboarding Agent — Deployment, Service, HPA, and Secret template.
+# Secrets are injected by OpenBao vault agent sidecar at runtime;
+# the Secret manifest below is a placeholder showing the expected keys only.
+# Actual values live at OpenBao path: i3/onboarding-agent/
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Secret (values injected by OpenBao — do NOT store real values here)
+# ──────────────────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: onboarding-agent-secrets
+  namespace: i3-onboarding
+  annotations:
+    vault.hashicorp.com/agent-inject: "true"
+    vault.hashicorp.com/role: "i3-onboarding"
+    vault.hashicorp.com/agent-inject-secret-env: "i3/onboarding-agent/env"
+type: Opaque
+stringData:
+  # Populated by OpenBao at i3/onboarding-agent/
+  LITELLM_KEY:       ""
+  CHROMA_TOKEN:      ""
+  DIRECTUS_TOKEN:    ""
+  EVALOS_API_KEY:    ""
+  GITHUB_TOKEN:      ""
+  KEYCLOAK_SECRET:   ""
+
+---
+# ──────────────────────────────────────────────────────────────────────────────
+# Deployment
+# ──────────────────────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: onboarding-agent
+  namespace: i3-onboarding
+  labels:
+    app: onboarding-agent
+    app.kubernetes.io/name: onboarding-agent
+    app.kubernetes.io/part-of: i3-platform
+    i3.tech/wave: "7"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: onboarding-agent
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: onboarding-agent
+    spec:
+      serviceAccountName: onboarding-agent-sa
+      containers:
+        - name: onboarding-agent
+          image: image-registry.openshift-image-registry.svc:5000/i3-onboarding/onboarding-agent:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          env:
+            # Non-secret config
+            - name: PORT
+              value: "3000"
+            - name: NODE_ENV
+              value: production
+            - name: PLATFORM_REPO_PATH
+              value: /platform
+            - name: LITELLM_URL
+              value: "http://litellm-proxy.i3-litellm.svc.cluster.local:4000/v1"
+            - name: LITELLM_MODEL_FAST
+              value: granite-nano
+            - name: LITELLM_MODEL_SCAN
+              value: mistral-nemo
+            - name: LITELLM_MODEL_SYNTH
+              value: granite-heavy
+            - name: CHROMA_HOST
+              value: chromadb.i3-admissions.svc.cluster.local
+            - name: CHROMA_PORT
+              value: "8000"
+            - name: CHROMA_COLLECTION
+              value: onboarding-corpus
+            - name: KEYCLOAK_ISSUER
+              value: "https://sso.i3technologies.co.ke/realms/i3"
+            - name: KEYCLOAK_CLIENT_ID
+              value: onboarding-agent
+            - name: KEYCLOAK_JWKS_URI
+              value: "https://sso.i3technologies.co.ke/realms/i3/protocol/openid-connect/certs"
+            - name: EVALOS_API_URL
+              value: "http://evalos-api.i3-evalos.svc.cluster.local:8080"
+            - name: DIRECTUS_URL
+              value: "https://cms.i3technologies.co.ke"
+            - name: MCP_CONNECTORS_URL
+              value: "http://admissions-agent.i3-admissions.svc.cluster.local:8000"
+            - name: N8N_ONBOARDING_WEBHOOK_URL
+              value: "https://n8n.i3technologies.co.ke/webhook/onboarding"
+            # Secrets from OpenBao
+            - name: LITELLM_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: onboarding-agent-secrets
+                  key: LITELLM_KEY
+            - name: CHROMA_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: onboarding-agent-secrets
+                  key: CHROMA_TOKEN
+            - name: DIRECTUS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: onboarding-agent-secrets
+                  key: DIRECTUS_TOKEN
+            - name: EVALOS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: onboarding-agent-secrets
+                  key: EVALOS_API_KEY
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: onboarding-agent-secrets
+                  key: GITHUB_TOKEN
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu:    100m
+              memory: 256Mi
+            limits:
+              cpu:    500m
+              memory: 512Mi
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: platform-repo
+              mountPath: /platform
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: platform-repo
+          # Platform repo mounted from a ConfigMap or PVC seeded by Tekton
+          # For local dev: use hostPath or a mounted emptyDir with init container
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+
+---
+# ──────────────────────────────────────────────────────────────────────────────
+# ServiceAccount
+# ──────────────────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: onboarding-agent-sa
+  namespace: i3-onboarding
+  annotations:
+    # OpenBao Kubernetes auth role
+    vault.hashicorp.com/role: i3-onboarding
+
+---
+# ──────────────────────────────────────────────────────────────────────────────
+# Service
+# ──────────────────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: onboarding-agent
+  namespace: i3-onboarding
+  labels:
+    app: onboarding-agent
+spec:
+  selector:
+    app: onboarding-agent
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+      name: http
+
+---
+# ──────────────────────────────────────────────────────────────────────────────
+# Route (OpenShift edge-terminated TLS)
+# ──────────────────────────────────────────────────────────────────────────────
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: onboarding-agent
+  namespace: i3-onboarding
+spec:
+  host: onboarding.i3technologies.co.ke
+  to:
+    kind: Service
+    name: onboarding-agent
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+---
+# ──────────────────────────────────────────────────────────────────────────────
+# HorizontalPodAutoscaler
+# ──────────────────────────────────────────────────────────────────────────────
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: onboarding-agent-hpa
+  namespace: i3-onboarding
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: onboarding-agent
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
