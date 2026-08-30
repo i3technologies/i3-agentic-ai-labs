@@ -2,9 +2,10 @@
  * index.ts
  * Ingestion pipeline: takes RawArtifacts → chunks → upserts into ChromaDB.
  * Called by the /api/onboarding/ingest endpoint and the CLI ingestion scripts.
+ * When CHROMA_DISABLED=true the ingest is a no-op (local dev without ChromaDB).
  */
 
-import { getCollection } from './chroma-client.js';
+import { getCollection, chromaDisabled } from './chroma-client.js';
 import { chunkAll, Chunk } from './chunker.js';
 import { RawArtifact }     from '../ingestion/types.js';
 
@@ -27,7 +28,14 @@ export async function indexArtifacts(
   artifacts: RawArtifact[],
   options: { verbose?: boolean } = {},
 ): Promise<IndexResult> {
-  const t0         = Date.now();
+  const t0 = Date.now();
+
+  // No-op when ChromaDB is disabled (local dev without a running instance)
+  if (chromaDisabled) {
+    console.warn('[context-store] CHROMA_DISABLED=true — ingest skipped');
+    return { totalArtifacts: artifacts.length, totalChunks: 0, upsertedChunks: 0, skippedChunks: 0, durationMs: Date.now() - t0 };
+  }
+
   const collection = await getCollection();
   const chunks     = chunkAll(artifacts);
 

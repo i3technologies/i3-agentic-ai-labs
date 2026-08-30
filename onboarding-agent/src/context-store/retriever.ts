@@ -2,9 +2,12 @@
  * retriever.ts
  * RAG retrieval layer.  Wraps ChromaDB similarity search with role-aware
  * metadata filtering so each subagent only sees chunks relevant to it.
+ *
+ * When CHROMA_DISABLED=true the retrieve functions return empty results
+ * immediately — the mock LiteLLM server handles all responses locally.
  */
 
-import { getCollection } from './chroma-client.js';
+import { getCollection, chromaDisabled } from './chroma-client.js';
 
 export interface RetrievalOptions {
   /** Role tag to filter on (e.g. 'platform_engineer'). Empty = no filter. */
@@ -36,6 +39,9 @@ export async function retrieve(
   query:   string,
   options: RetrievalOptions = {},
 ): Promise<RetrievedChunk[]> {
+  // When ChromaDB is disabled return empty — mock LiteLLM handles responses.
+  if (chromaDisabled) return [];
+
   const {
     roleTag     = '',
     topK        = 8,

@@ -4,36 +4,38 @@
  * `onboarding-corpus` collection.  Reuses the same cluster-internal
  * endpoint already used by the admissions agent:
  *   chromadb.i3-admissions.svc.cluster.local:8000
+ *
+ * CHROMA_DISABLED=true  — set this env var to skip ChromaDB entirely.
+ * The retriever will return empty context and the mock LiteLLM drives
+ * all responses locally.  Useful on Windows x64 where the chromadb
+ * npm CLI does not ship a pre-built binary.
  */
 
-import { ChromaClient, Collection, OpenAIEmbeddingFunction } from 'chromadb';
+// ── Graceful no-op stub used when CHROMA_DISABLED=true ───────────────────────
+
+const DISABLED = process.env.CHROMA_DISABLED === 'true';
+
+if (DISABLED) {
+  console.warn('[chroma-client] CHROMA_DISABLED=true — ChromaDB skipped. RAG context will be empty; mock LiteLLM provides canned responses.');
+}
+
+// Lazy-import ChromaDB so the process starts even if the package has no
+// native binary on the current platform (e.g. Windows x64 + Node 24).
+type ChromaClientType   = import('chromadb').ChromaClient;
+type CollectionType     = import('chromadb').Collection;
 
 const COLLECTION_NAME = process.env.CHROMA_COLLECTION ?? 'onboarding-corpus';
 const CHROMA_HOST     = process.env.CHROMA_HOST ?? 'chromadb.i3-admissions.svc.cluster.local';
 const CHROMA_PORT     = parseInt(process.env.CHROMA_PORT ?? '8000', 10);
 const CHROMA_TOKEN    = process.env.CHROMA_TOKEN;
 
-// Embedding function — routes through the LiteLLM gateway so we never hit
-// OpenAI directly; granite-nano handles embeddings cheaply (Tier 3).
-// chromadb v1.9 OpenAIEmbeddingFunction constructor takes { openai_api_key, openai_model_name }
-// and reads the base URL from OPENAI_API_BASE env var.
-process.env.OPENAI_API_BASE = process.env.LITELLM_URL ?? 'http://localhost:4000/v1';
-const embedder = new OpenAIEmbeddingFunction({
-  openai_api_key: process.env.LITELLM_KEY ?? 'no-key',
-  openai_model:   process.env.LITELLM_MODEL_FAST ?? 'granite-nano',
-});
+let _client:     ChromaClientType | null = null;
+let _collection: CollectionType   | null = null;
 
-let _client: ChromaClient | null     = null;
-let _collection: Collection | null   = null;
-
-export async function getChromaClient(): Promise<ChromaClient> {
+export async function getChromaClient(): Promise<ChromaClientType> {
   if (_client) return _client;
 
-  const authHeaders: Record<string, string> = {};
-  if (CHROMA_TOKEN) {
-    authHeaders['Authorization'] = `Bearer ${CHROMA_TOKEN}`;
-  }
-
+  const { ChromaClient } = await import('chromadb');
   _client = new ChromaClient({
     path: `http://${CHROMA_HOST}:${CHROMA_PORT}`,
     auth: CHROMA_TOKEN
@@ -44,8 +46,16 @@ export async function getChromaClient(): Promise<ChromaClient> {
   return _client;
 }
 
-export async function getCollection(): Promise<Collection> {
+export async function getCollection(): Promise<CollectionType> {
   if (_collection) return _collection;
+
+  const { OpenAIEmbeddingFunction } = await import('chromadb');
+
+  process.env.OPENAI_API_BASE = process.env.LITELLM_URL ?? 'http://localhost:4000/v1';
+  const embedder = new OpenAIEmbeddingFunction({
+    openai_api_key: process.env.LITELLM_KEY ?? 'no-key',
+    openai_model:   process.env.LITELLM_MODEL_FAST ?? 'granite-nano',
+  });
 
   const client = await getChromaClient();
   _collection  = await client.getOrCreateCollection({
@@ -63,6 +73,7 @@ export async function getCollection(): Promise<Collection> {
 
 /** Utility: wipe the collection (use only during re-ingestion, never in prod). */
 export async function resetCollection(): Promise<void> {
+  if (DISABLED) return;
   const client = await getChromaClient();
   try {
     await client.deleteCollection({ name: COLLECTION_NAME });
@@ -73,8 +84,9 @@ export async function resetCollection(): Promise<void> {
   await getCollection(); // re-create empty
 }
 
-/** Health check — resolves true if ChromaDB is reachable. */
+/** Health check — resolves true if ChromaDB is reachable (or disabled). */
 export async function chromaHealthy(): Promise<boolean> {
+  if (DISABLED) return true; // report healthy so /ready passes locally
   try {
     const client = await getChromaClient();
     await client.heartbeat();
@@ -83,3 +95,5 @@ export async function chromaHealthy(): Promise<boolean> {
     return false;
   }
 }
+
+export { DISABLED as chromaDisabled };
