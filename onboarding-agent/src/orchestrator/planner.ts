@@ -1,4 +1,4 @@
-/**
+﻿/**
  * planner.ts
  * Step 2 of the Task Execution Loop: Synthesis.
  *
@@ -14,8 +14,8 @@
 
 import OpenAI from 'openai';
 import { z }  from 'zod';
-import { VerifiedScanResult, VerifiedFinding } from './verify.js';
-import { OnboardingRole } from './subagents/types.js';
+import { VerifiedScanResult, VerifiedFinding } from './verify';
+import { OnboardingRole } from './subagents/types';
 
 const client = new OpenAI({
   baseURL:    process.env.LITELLM_URL   ?? 'http://localhost:4000/v1',

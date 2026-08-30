@@ -1,4 +1,4 @@
-/**
+﻿/**
  * chunker.ts
  * Converts RawArtifact objects into ChromaDB-ready chunks.
  *
@@ -10,7 +10,7 @@
  *  - Small files (<400 chars) → kept as a single chunk
  */
 
-import { RawArtifact } from '../ingestion/types.js';
+import { RawArtifact } from '../ingestion/types';
 
 export interface Chunk {
   id:        string;      // stable deterministic ID: sha1(source:offset)

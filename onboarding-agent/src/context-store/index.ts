@@ -1,13 +1,13 @@
-/**
+﻿/**
  * index.ts
  * Ingestion pipeline: takes RawArtifacts → chunks → upserts into ChromaDB.
  * Called by the /api/onboarding/ingest endpoint and the CLI ingestion scripts.
  * When CHROMA_DISABLED=true the ingest is a no-op (local dev without ChromaDB).
  */
 
-import { getCollection, chromaDisabled } from './chroma-client.js';
-import { chunkAll, Chunk } from './chunker.js';
-import { RawArtifact }     from '../ingestion/types.js';
+import { getCollection, chromaDisabled } from './chroma-client';
+import { chunkAll, Chunk } from './chunker';
+import { RawArtifact }     from '../ingestion/types';
 
 /** Batch size for ChromaDB upsert calls (stay within HTTP body limits). */
 const UPSERT_BATCH = 200;

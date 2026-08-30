@@ -1,4 +1,4 @@
-/**
+﻿/**
  * skills-assessor.ts
  * Maps the incoming role to the correct set of subagents, fires them in
  * parallel, and collects their SubagentScanResult[].
@@ -14,13 +14,13 @@
  *  (infra covers gitops/security; evalos covers curriculum context).
  */
 
-import { retrieveAsContext }    from '../context-store/retriever.js';
-import { evalosScan }           from './subagents/evalos-scan.js';
-import { ailabScan }            from './subagents/ailab-scan.js';
-import { infraScan }            from './subagents/infra-scan.js';
-import { backendScan }          from './subagents/backend-scan.js';
-import { modelScan }            from './subagents/model-scan.js';
-import { SubagentScanResult, OnboardingRole, SubagentInput } from './subagents/types.js';
+import { retrieveAsContext }    from '../context-store/retriever';
+import { evalosScan }           from './subagents/evalos-scan';
+import { ailabScan }            from './subagents/ailab-scan';
+import { infraScan }            from './subagents/infra-scan';
+import { backendScan }          from './subagents/backend-scan';
+import { modelScan }            from './subagents/model-scan';
+import { SubagentScanResult, OnboardingRole, SubagentInput } from './subagents/types';
 
 interface ScanPlan {
   subagentName: string;

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * backend-scan.ts
  * Subagent: scans Node.js/Express API structure, authentication middleware,
  * database models, and API route conventions.
@@ -10,8 +10,8 @@
  *   platform/docs/platform-documentation.md  (API URL directory)
  */
 
-import { BaseScan }      from './base-scan.js';
-import { SubagentInput } from './types.js';
+import { BaseScan }      from './base-scan';
+import { SubagentInput } from './types';
 
 export class BackendScan extends BaseScan {
   readonly subagentName = 'backend-scan';

@@ -1,11 +1,11 @@
-/**
+﻿/**
  * markdownPlan.ts
  * Renders a RampUpPlan into a human-readable Markdown document.
  * Returned as a string; served by the API at
  * GET /api/onboarding/plan/:planId/markdown
  */
 
-import { RampUpPlan, RampUpTask } from '../orchestrator/planner.js';
+import { RampUpPlan, RampUpTask } from '../orchestrator/planner';
 
 const PRIORITY_BADGE: Record<string, string> = {
   high:   '🔴 HIGH',

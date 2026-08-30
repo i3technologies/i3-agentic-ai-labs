@@ -1,4 +1,4 @@
-/**
+﻿/**
  * evalos-scan.ts
  * Subagent: scans EvalOS schema, exam engine, quiz logic, and curriculum
  * integration.  Primarily serves the Bootcamp Student onboarding role.
@@ -9,8 +9,8 @@
  *   platform/admissions/admissions_agent.py
  */
 
-import { BaseScan }     from './base-scan.js';
-import { SubagentInput } from './types.js';
+import { BaseScan }     from './base-scan';
+import { SubagentInput } from './types';
 
 export class EvolosScan extends BaseScan {
   readonly subagentName = 'evalos-scan';

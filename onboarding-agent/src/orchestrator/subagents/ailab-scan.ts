@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ailab-scan.ts
  * Subagent: scans the AI/ML lab components — LiteLLM gateway, ChromaDB RAG,
  * granite/mistral model tiers, and agent patterns.
@@ -10,8 +10,8 @@
  *   platform/docs/platform-documentation.md  (LiteLLM config, ChromaDB details)
  */
 
-import { BaseScan }      from './base-scan.js';
-import { SubagentInput } from './types.js';
+import { BaseScan }      from './base-scan';
+import { SubagentInput } from './types';
 
 export class AilabScan extends BaseScan {
   readonly subagentName = 'ailab-scan';

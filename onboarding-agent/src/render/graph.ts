@@ -1,4 +1,4 @@
-/**
+﻿/**
  * graph.ts
  * Generates a Mermaid Gantt chart representation of the 5-day ramp-up plan.
  * Returned as a string; suitable for embedding in Markdown, GitHub wikis,
@@ -8,7 +8,7 @@
  * for inclusion in the plan briefing.
  */
 
-import { RampUpPlan, RampUpTask } from '../orchestrator/planner.js';
+import { RampUpPlan, RampUpTask } from '../orchestrator/planner';
 
 const PRIORITY_CRIT: Record<string, string> = {
   high:   'crit',

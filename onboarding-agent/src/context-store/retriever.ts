@@ -1,4 +1,4 @@
-/**
+﻿/**
  * retriever.ts
  * RAG retrieval layer.  Wraps ChromaDB similarity search with role-aware
  * metadata filtering so each subagent only sees chunks relevant to it.
@@ -7,7 +7,7 @@
  * immediately — the mock LiteLLM server handles all responses locally.
  */
 
-import { getCollection, chromaDisabled } from './chroma-client.js';
+import { getCollection, chromaDisabled } from './chroma-client';
 
 export interface RetrievalOptions {
   /** Role tag to filter on (e.g. 'platform_engineer'). Empty = no filter. */

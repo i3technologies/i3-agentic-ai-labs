@@ -1,4 +1,4 @@
-/**
+﻿/**
  * taskSync.ts
  * 🟡 ONE-CLICK APPROVAL GATE — sync generated tasks to Directus CRM.
  *
@@ -14,7 +14,7 @@
  */
 
 import { randomUUID } from 'crypto';
-import { RampUpPlan, RampUpTask } from '../orchestrator/planner.js';
+import { RampUpPlan, RampUpTask } from '../orchestrator/planner';
 
 const DIRECTUS_URL   = process.env.DIRECTUS_URL   ?? '';
 const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN ?? '';

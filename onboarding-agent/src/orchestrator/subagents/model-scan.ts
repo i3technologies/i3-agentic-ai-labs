@@ -1,4 +1,4 @@
-/**
+﻿/**
  * model-scan.ts
  * Subagent: scans model configuration, prompt engineering patterns,
  * RAGAS evaluation, and red-team/safety testing.
@@ -10,8 +10,8 @@
  *   platform/docs/platform-documentation.md  (model tier config)
  */
 
-import { BaseScan }      from './base-scan.js';
-import { SubagentInput } from './types.js';
+import { BaseScan }      from './base-scan';
+import { SubagentInput } from './types';
 
 export class ModelScan extends BaseScan {
   readonly subagentName = 'model-scan';

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * infra-scan.ts
  * Subagent: scans CI/CD pipelines, ArgoCD GitOps, Docker/OpenShift configs,
  * and cluster namespace topology.
@@ -11,8 +11,8 @@
  *   platform/docs/platform-documentation.md  (namespace map, ROKS details)
  */
 
-import { BaseScan }      from './base-scan.js';
-import { SubagentInput } from './types.js';
+import { BaseScan }      from './base-scan';
+import { SubagentInput } from './types';
 
 export class InfraScan extends BaseScan {
   readonly subagentName = 'infra-scan';

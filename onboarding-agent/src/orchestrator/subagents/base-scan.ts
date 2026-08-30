@@ -1,4 +1,4 @@
-/**
+﻿/**
  * base-scan.ts
  * Abstract base class every subagent extends.
  * Handles: LiteLLM call via openai-compatible client, retry logic,
@@ -7,7 +7,7 @@
 
 import OpenAI from 'openai';
 import { z }  from 'zod';
-import { SubagentScanResult, SubagentInput, SubagentFinding } from './types.js';
+import { SubagentScanResult, SubagentInput, SubagentFinding } from './types';
 
 const client = new OpenAI({
   baseURL: process.env.LITELLM_URL    ?? 'http://localhost:4000/v1',

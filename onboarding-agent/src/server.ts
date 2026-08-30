@@ -1,4 +1,4 @@
-/**
+﻿/**
  * server.ts
  * Express entrypoint for the i3 Onboarding Agent.
  * Namespace: i3-onboarding · Port: 3000
@@ -27,23 +27,23 @@ import express, {
 } from 'express';
 import { z }              from 'zod';
 
-import { requireAuth, requireRole } from './security/keycloak-auth.js';
-import { lobsterTrap }              from './security/lobster-trap.js';
-import { assessRole }               from './orchestrator/skills-assessor.js';
-import { verifyAll }                from './orchestrator/verify.js';
-import { generatePlan, RampUpPlan } from './orchestrator/planner.js';
-import { renderMarkdown }           from './render/markdownPlan.js';
-import { renderGantt, renderServiceGraph } from './render/graph.js';
+import { requireAuth, requireRole } from './security/keycloak-auth';
+import { lobsterTrap }              from './security/lobster-trap';
+import { assessRole }               from './orchestrator/skills-assessor';
+import { verifyAll }                from './orchestrator/verify';
+import { generatePlan, RampUpPlan } from './orchestrator/planner';
+import { renderMarkdown }           from './render/markdownPlan';
+import { renderGantt, renderServiceGraph } from './render/graph';
 import {
   prepareSyncTasks,
   confirmSyncTasks,
   cancelSyncTasks,
   pendingSyncCount,
-}                                   from './render/taskSync.js';
-import { indexArtifacts, getIndexStats } from './context-store/index.js';
-import { ingestPlatform }           from './ingestion/platform.js';
-import { chromaHealthy }            from './context-store/chroma-client.js';
-import { OnboardingRole }           from './orchestrator/subagents/types.js';
+}                                   from './render/taskSync';
+import { indexArtifacts, getIndexStats } from './context-store/index';
+import { ingestPlatform }           from './ingestion/platform';
+import { chromaHealthy }            from './context-store/chroma-client';
+import { OnboardingRole }           from './orchestrator/subagents/types';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // In-memory plan store (keyed by planId).

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * verify.ts
  * Step 3 of the Task Execution Loop: verify that every file path referenced
  * in the subagent findings actually exists in the seed repo.
@@ -14,7 +14,7 @@
 
 import { existsSync }        from 'fs';
 import { resolve, join }     from 'path';
-import { SubagentScanResult, SubagentFinding } from './subagents/types.js';
+import { SubagentScanResult, SubagentFinding } from './subagents/types';
 
 const PLATFORM_REPO = resolve(
   process.env.PLATFORM_REPO_PATH ?? '../platform',
