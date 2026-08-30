@@ -1,0 +1,665 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>i3 Onboarding Agent — Technical Documentation</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.65;background:#fff;color:#1f2328}
+  .wrap{max-width:860px;margin:0 auto;padding:32px 24px}
+  h1{font-size:22px;font-weight:700;color:#1f2328;margin-bottom:6px}
+  h2{font-size:17px;font-weight:700;margin:36px 0 10px;padding-bottom:6px;border-bottom:2px solid #e5e7eb;color:#1f2328}
+  h3{font-size:14px;font-weight:700;margin:20px 0 6px;color:#1f2328}
+  h4{font-size:13px;font-weight:600;margin:14px 0 4px;color:#3b82d4}
+  p{margin-bottom:10px}
+  a{color:#3b82d4;text-decoration:none}
+  code{font-family:"SFMono-Regular",Consolas,monospace;font-size:12px;background:#f7f8fa;border:1px solid #e5e7eb;border-radius:3px;padding:1px 5px;color:#1f2328}
+  pre{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:14px 16px;overflow-x:auto;margin:10px 0 14px;font-size:12px;line-height:1.55}
+  pre code{background:none;border:none;padding:0}
+  table{width:100%;border-collapse:collapse;margin:10px 0 16px;font-size:13px}
+  th{background:#f7f8fa;text-align:left;padding:7px 10px;border:1px solid #e5e7eb;font-weight:600;color:#1f2328}
+  td{padding:6px 10px;border:1px solid #e5e7eb;vertical-align:top}
+  tr:nth-child(even) td{background:#fafafa}
+  .badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:10px;margin-right:4px}
+  .b-high{background:#fee2e2;color:#991b1b}
+  .b-med{background:#fef9c3;color:#854d0e}
+  .b-low{background:#dcfce7;color:#166534}
+  .b-auto{background:#dbeafe;color:#1e40af}
+  .b-gate{background:#fef9c3;color:#854d0e}
+  .b-admin{background:#fee2e2;color:#991b1b}
+  .b-sec{background:#ede9fe;color:#5b21b6}
+  .b-tier{background:#e0f2fe;color:#0369a1}
+  .alert{background:#fffbeb;border-left:4px solid #f59e0b;padding:10px 14px;border-radius:0 4px 4px 0;margin:12px 0;font-size:13px}
+  .alert-red{background:#fef2f2;border-left:4px solid #ef4444}
+  .toc{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:14px 18px;margin:16px 0 28px}
+  .toc h3{margin-top:0;font-size:13px;color:#57606a}
+  .toc ol{padding-left:18px}
+  .toc li{margin:3px 0;font-size:13px}
+  .toc a{color:#3b82d4}
+  .tag{font-size:11px;font-weight:600;color:#57606a;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;display:block}
+  .file-pill{display:inline-block;background:#f0f6ff;border:1px solid #c0d7f5;border-radius:4px;padding:1px 7px;font-size:11px;font-family:monospace;color:#1e40af;margin:2px 2px}
+  .divider{border:none;border-top:1px solid #e5e7eb;margin:30px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:10px 0}
+  .card{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:12px 14px}
+  .card h4{margin-top:0}
+  ul{padding-left:18px;margin-bottom:10px}
+  li{margin:3px 0}
+  footer{text-align:center;font-size:11px;color:#57606a;margin-top:40px;padding-top:16px;border-top:1px solid #e5e7eb}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+
+<h1>i3 Codebase Onboarding Agent</h1>
+<p style="color:#57606a;font-size:13px;margin-bottom:6px">
+  <strong>Project 1 — IBM TechXchange Hackathon 2026</strong> · i3 Agentic AI Labs · ROKS 4.15, Frankfurt (eu-de)
+</p>
+<p style="font-size:13px">
+  A production-grade AI service that reads a real codebase, fires three subagents in parallel, verifies every referenced file path against the live repository, automatically flags stale documentation, and returns a structured <strong>5-day role-specific ramp-up plan</strong> with Markdown, Gantt chart, and one-click CRM sync.
+</p>
+
+
+<div class="toc">
+  <h3>Contents</h3>
+  <ol>
+    <li><a href="#arch">Architecture &amp; Pipeline</a></li>
+    <li><a href="#structure">Project Structure</a></li>
+    <li><a href="#api">API Reference</a></li>
+    <li><a href="#security">Security Design</a></li>
+    <li><a href="#ingestion">Ingestion Layer</a></li>
+    <li><a href="#context-store">Context Store (ChromaDB)</a></li>
+    <li><a href="#orchestrator">Orchestrator &amp; Subagents</a></li>
+    <li><a href="#render">Render Layer</a></li>
+    <li><a href="#schema">RampUpPlan JSON Schema</a></li>
+    <li><a href="#env">Environment Variables</a></li>
+    <li><a href="#docker">Docker &amp; Deployment</a></li>
+    <li><a href="#local">Running Locally</a></li>
+    <li><a href="#testing">Testing</a></li>
+    <li><a href="#bugs">Historical Bugs Fixed</a></li>
+    <li><a href="#constraints">Hard Constraints</a></li>
+  </ol>
+</div>
+
+
+<h2 id="arch">1. Architecture &amp; Pipeline</h2>
+<p>Every request to <code>POST /api/onboarding/plan</code> passes through a strict 6-stage pipeline:</p>
+<pre>POST /api/onboarding/plan  { "role": "platform_engineer" }
+         │
+[1] Lobster Trap Firewall    ← 12 regex patterns block prompt injection on all user text
+         │
+[2] Keycloak JWT Auth        ← RS256 validation · sso.i3technologies.co.ke/realms/i3
+         │
+[3] Skills Assessor          ← maps role → 3 subagents (Promise.all — parallel)
+    ├── infra-scan    ──────────────────────────────────────────────────┐
+    ├── ailab-scan    ──────────────────────────────────────────────────┤
+    └── backend-scan  ──────────────────────────────────────────────────┘
+         │  each: ChromaDB RAG (topK=10) → mistral-nemo (Tier 2) → findings[]
+         │
+[4] Verify Pass              ← existsSync() on every filePath in findings
+    └── RHOAI check: live K8s API call to /api/v1/namespaces/i3-ai-lab
+         │  → verified: false + "Needs verification: ..." prefix on failure
+         │
+[5] Plan Synthesis           ← granite-heavy (Tier 1) · confidence gate 0.65
+         │  → buildFallbackTasks() if LLM unreachable
+         │
+[6] Response                 ← RampUpPlan JSON + planId stored in memory
+         │
+    GET /plan/:id/markdown   ← Markdown with priority badges + stale-doc warnings
+    GET /plan/:id/gantt      ← Mermaid Gantt chart (5 day sections)
+    POST /sync/prepare       ← 🟡 stage-1 CRM sync (returns pendingId)
+    POST /sync/confirm/:id   ← 🟡 stage-2 CRM sync → Directus onboarding_tasks</pre>
+
+<h3>LiteLLM Model Tiers</h3>
+<table>
+  <tr><th>Tier</th><th>Model alias</th><th>Backend</th><th>Used for</th><th>Cost</th></tr>
+  <tr><td><span class="badge b-tier">Tier 3</span></td><td><code>granite-nano</code></td><td>Ollama (local)</td><td>ChromaDB embeddings</td><td>Free</td></tr>
+  <tr><td><span class="badge b-tier">Tier 2</span></td><td><code>mistral-nemo</code></td><td>Ollama (local)</td><td>All subagent scans (×5 per plan)</td><td>Free</td></tr>
+  <tr><td><span class="badge b-tier">Tier 1</span></td><td><code>granite-heavy</code></td><td>watsonx.ai</td><td>Final plan synthesis only (×1 per plan)</td><td>IBM credits</td></tr>
+</table>
+<div class="alert">IBM Cloud credit budget: $14,047.27 expiring October 2026. Tier 2/3 use local Ollama (free). granite-heavy is called <strong>once per plan</strong> — do not add extra Tier 1 calls.</div>
+
+
+<h2 id="structure">2. Project Structure</h2>
+<pre>onboarding-agent/
+├── src/
+│   ├── server.ts                    ← Express entrypoint · 10 routes · middleware chain
+│   ├── security/
+│   │   ├── lobster-trap.ts          ← 12-pattern prompt injection regex firewall
+│   │   └── keycloak-auth.ts         ← JWT RS256 validation + DEV_BYPASS_AUTH
+│   ├── ingestion/
+│   │   ├── types.ts                 ← RawArtifact interface + makeArtifact() factory
+│   │   ├── platform.ts              ← filesystem walk of platform/ → RawArtifact[]
+│   │   ├── github.ts                ← Octokit: README, ADRs, closed issues
+│   │   ├── curriculum.ts            ← Directus CMS programme_guides
+│   │   └── evalos.ts                ← EvalOS domains + C1000-207 fallback
+│   ├── context-store/
+│   │   ├── chroma-client.ts         ← singleton ChromaDB HTTP client (onboarding-corpus)
+│   │   ├── chunker.ts               ← role-aware chunking (MD/code/SQL/YAML strategies)
+│   │   ├── index.ts                 ← batch upsert pipeline (200/batch, idempotent)
+│   │   └── retriever.ts             ← HNSW cosine search + roleTag/sourceType filters
+│   ├── orchestrator/
+│   │   ├── skills-assessor.ts       ← role → 3 subagents · Promise.all parallel
+│   │   ├── verify.ts                ← existsSync + live RHOAI K8s namespace check
+│   │   ├── planner.ts               ← granite-heavy synthesis · RampUpPlanSchema (Zod)
+│   │   └── subagents/
+│   │       ├── types.ts             ← OnboardingRole, SubagentFinding, SubagentInput
+│   │       ├── base-scan.ts         ← abstract BaseScan: LiteLLM + Zod + 2 retries
+│   │       ├── evalos-scan.ts       ← Bootcamp Student focus (schema, Bloom, anti-cheat)
+│   │       ├── ailab-scan.ts        ← AI/ML Engineer (RHOAI stale-doc flag)
+│   │       ├── infra-scan.ts        ← Platform Engineer (ArgoCD, Tekton, OpenBao)
+│   │       ├── backend-scan.ts      ← Backend Engineer (FastAPI, EvalOS schema, JWT)
+│   │       └── model-scan.ts        ← AI/ML model eval (RAGAS, promptfoo, LiteLLM)
+│   └── render/
+│       ├── markdownPlan.ts          ← Markdown with priority badges + day themes
+│       ├── graph.ts                 ← Mermaid Gantt + static service topology
+│       └── taskSync.ts              ← 2-stage CRM sync gate (5-min TTL pending map)
+├── openshift/
+│   ├── namespace.yaml               ← i3-onboarding namespace (wave 7 label)
+│   ├── deploy.yaml                  ← Deployment + HPA(1-3) + Service + Route
+│   └── argocd-app.yaml              ← ArgoCD Application (sync-wave: 7, prune+selfHeal)
+├── scripts/
+│   ├── mock-litellm.mjs             ← mock OpenAI server port 4000 (no cluster needed)
+│   └── test-local.ps1               ← 35-test automated suite (PowerShell)
+├── Dockerfile                       ← multi-stage UBI9 (builder → runtime, UID 1001)
+├── .env.example                     ← all 22 env vars documented (no real secrets)
+├── package.json                     ← 13 prod deps · 5 dev deps · 10 scripts
+└── tsconfig.json                    ← ES2022, strict, CommonJS, outDir: dist/</pre>
+
+<h3>Platform Files Modified by This Project</h3>
+<table>
+  <tr><th>File</th><th>Change</th></tr>
+  <tr><td><code>platform/gitops/argocd/app-of-apps.yaml</code></td><td>Wave 7 entry added to ApplicationSet + i3-onboarding destination in AppProject</td></tr>
+  <tr><td><code>platform/admissions/mcp/mcp_connectors.py</code></td><td><code>POST /tools/onboarding/sync-tasks</code> and <code>POST /tools/onboarding/confirm/{token}</code></td></tr>
+  <tr><td><code>platform/testing/testing.py</code></td><td>Section 5: <code>run_onboarding_ragas_evaluation()</code> — faithfulness ≥0.80, relevancy ≥0.75</td></tr>
+  <tr><td><code>Makefile</code></td><td>Section 11: <code>deploy-onboarding</code>, <code>build-onboarding</code>, <code>onboarding-ingest</code>, <code>onboarding-logs</code>, <code>test-onboarding</code></td></tr>
+  <tr><td><code>.env.example</code> (root)</td><td>20 onboarding env vars appended</td></tr>
+</table>
+
+
+<h2 id="api">3. API Reference</h2>
+<table>
+  <tr><th>Method</th><th>Endpoint</th><th>Gate</th><th>Auth</th><th>Description</th></tr>
+  <tr><td><code>GET</code></td><td><code>/health</code></td><td><span class="badge b-auto">none</span></td><td>—</td><td>Liveness probe. Always <code>200 {status:"ok"}</code></td></tr>
+  <tr><td><code>GET</code></td><td><code>/ready</code></td><td><span class="badge b-auto">none</span></td><td>—</td><td>Readiness — calls <code>chromaHealthy()</code>. Returns <code>503</code> if ChromaDB unreachable</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/onboarding/plan</code></td><td><span class="badge b-auto">🟢 auto</span></td><td>Bearer JWT</td><td>Generate plan. Body: <code>{"role":"platform_engineer"}</code>. Runs full 3-step pipeline.</td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/onboarding/plan/:planId</code></td><td><span class="badge b-auto">🟢 auto</span></td><td>Bearer JWT</td><td>Retrieve stored RampUpPlan JSON by planId</td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/onboarding/plan/:planId/markdown</code></td><td><span class="badge b-auto">🟢 auto</span></td><td>Bearer JWT</td><td>Markdown render with priority badges, stale-doc warnings, day themes</td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/onboarding/plan/:planId/gantt</code></td><td><span class="badge b-auto">🟢 auto</span></td><td>Bearer JWT</td><td>Mermaid Gantt chart string (5 day sections, crit/active modifiers)</td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/onboarding/graph</code></td><td><span class="badge b-auto">🟢 auto</span></td><td>Bearer JWT</td><td>Static Mermaid service topology diagram of i3 platform</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/onboarding/sync/prepare</code></td><td><span class="badge b-gate">🟡 one-click</span></td><td>Bearer JWT</td><td>Stage 1: stores tasks in 5-min TTL pending map, returns <code>pendingId</code> + preview</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/onboarding/sync/confirm/:pendingId</code></td><td><span class="badge b-gate">🟡 one-click</span></td><td>Bearer JWT</td><td>Stage 2: POSTs tasks to Directus <code>/items/onboarding_tasks</code> after user confirms</td></tr>
+  <tr><td><code>DELETE</code></td><td><code>/api/onboarding/sync/:pendingId</code></td><td><span class="badge b-auto">🟢 auto</span></td><td>Bearer JWT</td><td>Cancel a pending sync (user clicked Dismiss)</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/onboarding/ingest</code></td><td><span class="badge b-admin">🔴 admin</span></td><td>JWT + role <code>i3-admin</code></td><td>Re-index platform corpus. Calls <code>ingestPlatform()</code> → <code>indexArtifacts()</code></td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/onboarding/status</code></td><td><span class="badge b-auto">🟢 auto</span></td><td>Bearer JWT</td><td>ChromaDB stats, pending sync count, cached plans, model config, valid roles</td></tr>
+</table>
+
+<h3>Valid Roles</h3>
+<table>
+  <tr><th>Value</th><th>Target audience</th><th>Subagents fired</th></tr>
+  <tr><td><code>platform_engineer</code></td><td>DevOps / SRE / Cloud engineers</td><td>infra-scan, ailab-scan, backend-scan</td></tr>
+  <tr><td><code>ai_ml_engineer</code></td><td>LLM pipeline and agent engineers</td><td>ailab-scan, model-scan, backend-scan</td></tr>
+  <tr><td><code>bootcamp_student</code></td><td>AI bootcamp programme students</td><td>evalos-scan, ailab-scan, infra-scan</td></tr>
+  <tr><td><code>backend_engineer</code></td><td>Backend API and data model developers</td><td>backend-scan, evalos-scan, infra-scan</td></tr>
+  <tr><td><code>security_engineer</code></td><td>Auth, secrets, and compliance engineers</td><td>infra-scan, ailab-scan, backend-scan</td></tr>
+</table>
+
+
+<h2 id="security">4. Security Design</h2>
+
+<h3>4.1 Lobster Trap — Prompt Injection Firewall</h3>
+<p>Defined in <code>src/security/lobster-trap.ts</code>. Applied to <strong>every user-supplied text field</strong> (<code>role</code>, <code>context</code>, <code>query</code>, <code>note</code>) before any LLM call. Returns the matched pattern source string or <code>null</code>.</p>
+<table>
+  <tr><th>#</th><th>Pattern</th><th>Catches</th></tr>
+  <tr><td>1</td><td><code>ignore\s+(all\s+)?previous\s+instructions?</code></td><td>Classic prompt injection</td></tr>
+  <tr><td>2</td><td><code>you\s+are\s+now\s+(?!an?\s+(onboarding|platform|i3))</code></td><td>Persona hijack</td></tr>
+  <tr><td>3</td><td><code>act\s+as\s+(?!an?\s+(onboarding|platform|i3))</code></td><td>Role override</td></tr>
+  <tr><td>4</td><td><code>system\s*(prompt|message|instruction)</code></td><td>System prompt exfiltration</td></tr>
+  <tr><td>5</td><td><code>jailbreak</code></td><td>Jailbreak attempts</td></tr>
+  <tr><td>6</td><td><code>DAN\s+mode</code></td><td>DAN variant</td></tr>
+  <tr><td>7</td><td><code>&lt;\s*(script|img|iframe|svg)</code></td><td>HTML / XSS injection</td></tr>
+  <tr><td>8</td><td><code>(drop|delete|truncate)\s+table</code></td><td>SQL DDL attack</td></tr>
+  <tr><td>9</td><td><code>SELECT\s+.+FROM\s+</code></td><td>SQL data exfiltration</td></tr>
+  <tr><td>10</td><td><code>prompt\s+injection</code></td><td>Self-referential injection</td></tr>
+  <tr><td>11</td><td><code>disregard\s+(all\s+)?previous</code></td><td>Override variant</td></tr>
+  <tr><td>12</td><td><code>\bexfiltrate\b</code></td><td>Data exfil intent keyword</td></tr>
+</table>
+
+<h3>4.2 Keycloak JWT Authentication</h3>
+<p>Defined in <code>src/security/keycloak-auth.ts</code>. Uses <code>jwks-rsa</code> to fetch the public key from the Keycloak JWKS endpoint and validates RS256 tokens.</p>
+<ul>
+  <li><strong>JWKS URI:</strong> <code>https://sso.i3technologies.co.ke/realms/i3/protocol/openid-connect/certs</code></li>
+  <li><strong>Issuer:</strong> <code>https://sso.i3technologies.co.ke/realms/i3</code></li>
+  <li><strong>Algorithm:</strong> RS256</li>
+  <li><strong>Cache:</strong> 10 minutes (<code>cacheMaxAge: 600_000</code>)</li>
+  <li>On success: attaches <code>req.user = { sub, email, preferred_username, roles[] }</code></li>
+  <li><strong>DEV_BYPASS_AUTH=true</strong>: skips validation, injects local-dev-user with <code>i3-admin</code> role. <strong>Never enable in production.</strong></li>
+</ul>
+
+<h3>4.3 RBAC — requireRole()</h3>
+<p><code>requireRole(...allowed)</code> factory — place after <code>requireAuth</code>. Checks <code>req.user.roles</code> contains at least one of the allowed roles. The <code>/api/onboarding/ingest</code> endpoint requires role <code>i3-admin</code>.</p>
+
+<h3>4.4 Human Approval Gates</h3>
+<table>
+  <tr><th>Gate</th><th>Colour</th><th>Routes</th><th>Behaviour</th></tr>
+  <tr><td>Automatic</td><td>🟢</td><td>Plan generation, retrieval, render, status</td><td>No human step — fires immediately on valid request</td></tr>
+  <tr><td>One-click</td><td>🟡</td><td>CRM task sync (<code>/sync/prepare</code> → <code>/sync/confirm/:id</code>)</td><td>Stage 1 returns pendingId (5-min TTL). Stage 2 executes Directus POST after explicit confirm. User/pendingId must match.</td></tr>
+  <tr><td>Never auto</td><td>🔴</td><td>EvalOS tables, Keycloak realm/users</td><td>Blocked in architecture. No routes exist for these writes.</td></tr>
+</table>
+
+<h3>4.5 Secrets</h3>
+<p>All secrets injected at runtime from <strong>OpenBao KV v2</strong> at path <code>i3/onboarding-agent/</code> via vault-agent sidecar (see <code>onboarding-agent/openshift/deploy.yaml</code> ServiceAccount annotation). Never in code, never in git. Keys: <code>LITELLM_KEY</code>, <code>CHROMA_TOKEN</code>, <code>DIRECTUS_TOKEN</code>, <code>EVALOS_API_KEY</code>, <code>GITHUB_TOKEN</code>.</p>
+
+
+<h2 id="ingestion">5. Ingestion Layer</h2>
+<p>Transforms raw sources into <code>RawArtifact[]</code> objects ready for ChromaDB indexing. All connectors use <code>makeArtifact()</code> from <code>src/ingestion/types.ts</code> to ensure both field alias pairs (<code>source</code>/<code>sourceType</code>, <code>path</code>/<code>filePath</code>) are always in sync.</p>
+
+<h3>5.1 RawArtifact Interface</h3>
+<pre>interface RawArtifact {
+  source:     ArtifactSourceType;  // "platform-doc" | "platform-code" | "curriculum"
+  sourceType: ArtifactSourceType;  // alias → ChromaDB source_type metadata field
+  path:       string;              // relative file path (used by verify.ts)
+  filePath:   string;              // alias → chunker and retriever
+  content:    string;
+  updatedAt:  string;              // ISO timestamp
+  title?:     string;              // used in chunk metadata and Markdown render
+  metadata?:  Record&lt;string, string&gt;;
+}</pre>
+
+<h3>5.2 Source Types</h3>
+<table>
+  <tr><th>Type</th><th>Description</th></tr>
+  <tr><td><code>platform-doc</code></td><td><code>platform/docs/</code> markdown files, <code>RUNBOOK.md</code></td></tr>
+  <tr><td><code>platform-code</code></td><td><code>.py</code>, <code>.ts</code>, <code>.yaml</code>, <code>.tf</code>, <code>.json</code>, <code>.sql</code> source files</td></tr>
+  <tr><td><code>curriculum</code></td><td>Directus CMS <code>programme_guides</code> PDFs (Docling text extraction)</td></tr>
+  <tr><td><code>evalos-domain</code></td><td>EvalOS C1000-207 IBM exam domain weights</td></tr>
+  <tr><td><code>readme</code></td><td>GitHub repo README files</td></tr>
+  <tr><td><code>adr</code></td><td>Architecture Decision Records (markdown)</td></tr>
+  <tr><td><code>issue</code></td><td>GitHub closed issues (title + body)</td></tr>
+  <tr><td><code>wiki</code></td><td>Confluence / other wiki pages</td></tr>
+</table>
+
+<h3>5.3 Connectors</h3>
+<table>
+  <tr><th>File</th><th>Function</th><th>Source</th><th>Notes</th></tr>
+  <tr><td><code>platform.ts</code></td><td><code>ingestPlatform(platformPath)</code></td><td>Filesystem walk of <code>platform/</code></td><td>Ingests <code>.md .yaml .yml .py .ts .tf .json .sql</code>. Skips <code>solution-01..08</code>, <code>node_modules</code>, <code>dist</code>, <code>.terraform</code>. Max file size 256KB.</td></tr>
+  <tr><td><code>github.ts</code></td><td><code>ingestRepo(owner, repo)</code></td><td>GitHub API via Octokit</td><td>Pulls README, ADRs (<code>docs/</code>), and all closed issues. Requires <code>GITHUB_TOKEN</code>.</td></tr>
+  <tr><td><code>curriculum.ts</code></td><td><code>ingestCurriculum()</code></td><td>Directus CMS API</td><td>Fetches <code>programme_guides</code> with extracted text. Requires <code>DIRECTUS_URL</code> + <code>DIRECTUS_TOKEN</code>.</td></tr>
+  <tr><td><code>evalos.ts</code></td><td><code>ingestEvalosDomains()</code></td><td>EvalOS API</td><td>C1000-207 exam domain distribution. Gracefully falls back to <code>buildFallbackDomains()</code> if API unreachable.</td></tr>
+</table>
+
+
+<h2 id="context-store">6. Context Store (ChromaDB)</h2>
+
+<h3>6.1 Collection</h3>
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Name</td><td><code>onboarding-corpus</code> (env: <code>CHROMA_COLLECTION</code>)</td></tr>
+  <tr><td>Cluster endpoint</td><td><code>chromadb.i3-admissions.svc.cluster.local:8000</code></td></tr>
+  <tr><td>Local endpoint</td><td><code>localhost:8000</code></td></tr>
+  <tr><td>Vector space</td><td>HNSW cosine</td></tr>
+  <tr><td>Embedding model</td><td><code>granite-nano</code> via LiteLLM (Tier 3)</td></tr>
+  <tr><td>Auth</td><td>Bearer <code>CHROMA_TOKEN</code> (optional)</td></tr>
+</table>
+
+<h3>6.2 Chunking Strategy (<code>chunker.ts</code>)</h3>
+<table>
+  <tr><th>Content type</th><th>Strategy</th><th>Chunk size</th></tr>
+  <tr><td>Markdown / docs</td><td>Split on H2/H3 headings, then 800-token (3200 char) windows</td><td>≤3200 chars</td></tr>
+  <tr><td>Code files (<code>.py</code>, <code>.ts</code>)</td><td>60-line blocks</td><td>~60 lines</td></tr>
+  <tr><td>SQL files</td><td>Per-statement (semicolon-delimited)</td><td>1 statement</td></tr>
+  <tr><td>YAML / JSON</td><td>Top-level key blocks, then 3200 char windows</td><td>≤3200 chars</td></tr>
+  <tr><td>Small files (&lt;400 chars)</td><td>Single chunk</td><td>Entire file</td></tr>
+</table>
+<p><strong>Role tag inference</strong> — each chunk gets a <code>role_tags</code> metadata field (comma-separated) based on keyword matching of filename + content:</p>
+<ul>
+  <li><code>bootcamp_student</code> — keywords: evalos, quiz, exam, bloom, enrolment, curriculum</li>
+  <li><code>platform_engineer</code> — keywords: k8s, kubernetes, argocd, tekton, dockerfile, roks, .yaml</li>
+  <li><code>ai_ml_engineer</code> — keywords: litellm, chroma, rag, llm, granite, mistral, agent</li>
+  <li><code>backend_engineer</code> — keywords: express, route, controller, middleware, api, endpoint</li>
+  <li><code>security_engineer</code> — keywords: secret, vault, openbao, keycloak, rbac, lobster</li>
+</ul>
+
+<h3>6.3 Retriever (<code>retriever.ts</code>)</h3>
+<pre>retrieve(query, {
+  roleTag:     "platform_engineer",  // metadata $contains filter
+  topK:        10,                   // default 8; assessor uses 10
+  minScore:    0.30,                 // cosine similarity threshold (1 - distance)
+  sourceTypes: ["platform-doc"]      // optional $eq / $in filter
+}): Promise&lt;RetrievedChunk[]&gt;</pre>
+<p><code>retrieveAsContext(query, opts)</code> — formats retrieved chunks as a numbered markdown context string for LLM prompts. <code>retrieveBatch(queries, opts)</code> — parallel multi-query variant.</p>
+
+<h3>6.4 Index Pipeline (<code>index.ts</code>)</h3>
+<p><code>indexArtifacts(artifacts, {verbose})</code> — batches chunks in groups of 200 and calls <code>collection.upsert()</code>. Idempotent on chunk ID (deterministic hash of <code>filePath::chunkIndex</code>). Returns <code>IndexResult</code>: <code>{totalArtifacts, totalChunks, upsertedChunks, skippedChunks, durationMs}</code>.</p>
+
+
+<h2 id="orchestrator">7. Orchestrator &amp; Subagents</h2>
+
+<h3>7.1 Skills Assessor (<code>skills-assessor.ts</code>)</h3>
+<p>Maps an <code>OnboardingRole</code> to 3 scan plans, fires each in parallel with <code>Promise.all()</code>. Each plan specifies: subagent class, RAG query string, roleTag filter, and focus areas list. Returns <code>AssessmentResult { role, scanResults[], totalFindings, durationMs }</code>.</p>
+
+<h3>7.2 Base Scan (<code>subagents/base-scan.ts</code>)</h3>
+<p>Abstract class all scanners extend. Uses <code>mistral-nemo</code> (Tier 2), temperature 0.2, max_tokens 2000, 2 retries. Parses LLM JSON response with Zod <code>ScanResponseSchema</code> — invalid JSON falls back to empty findings array without crashing.</p>
+<pre>abstract class BaseScan {
+  abstract subagentName: string;
+  abstract systemPrompt:  string;
+  async run(input: SubagentInput): Promise&lt;SubagentScanResult&gt;
+}</pre>
+
+<h3>7.3 Subagent Roster</h3>
+<table>
+  <tr><th>Scanner</th><th>File</th><th>Roles</th><th>Key focus areas</th></tr>
+  <tr><td><code>evalos-scan</code></td><td><code>evalos-scan.ts</code></td><td>bootcamp_student, backend_engineer</td><td>PostgreSQL schema (questions, exams, quiz_attempts, enrolment_queue), Bloom taxonomy, C1000-207, anti-cheat counters, n8n enrolment trigger</td></tr>
+  <tr><td><code>ailab-scan</code></td><td><code>ailab-scan.ts</code></td><td>bootcamp_student, ai_ml_engineer, platform_engineer, security_engineer</td><td>LiteLLM tiers, ChromaDB RAG, Lobster Trap, RHOAI stale-doc (Month 3 caveat), MCP confirmation gate</td></tr>
+  <tr><td><code>infra-scan</code></td><td><code>infra-scan.ts</code></td><td>platform_engineer, backend_engineer, security_engineer</td><td>FORBIDDEN solution-01..08 namespaces, ArgoCD wave ordering, Tekton pipeline, OpenBao bootstrap, cert-manager, Makefile</td></tr>
+  <tr><td><code>backend-scan</code></td><td><code>backend-scan.ts</code></td><td>ai_ml_engineer, backend_engineer, security_engineer</td><td>FastAPI admissions_agent.py, EvalOS schema relationships, Keycloak JWT validation, OpenBao secret injection, n8n webhook integration</td></tr>
+  <tr><td><code>model-scan</code></td><td><code>model-scan.ts</code></td><td>ai_ml_engineer</td><td>RAGAS evaluation (testing.py), promptfoo red-team, LiteLLM model routing, confidence gate tuning, Locust load tests</td></tr>
+</table>
+
+<h3>7.4 Verification Pass (<code>verify.ts</code>)</h3>
+<p>Runs <code>existsSync(join(PLATFORM_REPO, filePath))</code> on every file path in every finding. Additionally checks whether the <code>i3-ai-lab</code> Kubernetes namespace is live via a real HTTP call to the cluster API.</p>
+<ul>
+  <li><strong>Missing path</strong> → <code>verified: false</code>, title prefixed: <code>"Needs verification: [title] (referenced path not found — likely stale doc)"</code></li>
+  <li><strong>RHOAI namespace absent</strong> → same flag. <code>platform/docs/platform-documentation.md</code> explicitly states: <em>"RHOAI (Month 3)"</em>. This is the <strong>key hackathon demo proof-point</strong>.</li>
+  <li>RHOAI check result memoized across all findings in a batch (one K8s API call per plan).</li>
+  <li>If <code>KUBE_API_URL</code> / <code>KUBE_SA_TOKEN</code> not set → assumes RHOAI absent (conservative default).</li>
+</ul>
+
+<h3>7.5 Planner (<code>planner.ts</code>)</h3>
+<ul>
+  <li>Model: <code>granite-heavy</code> (Tier 1), temperature 0.15, max_tokens 4000</li>
+  <li>Confidence gate: tasks with <code>confidence &lt; 0.65</code> are filtered out</li>
+  <li>Output validated against <code>RampUpPlanSchema</code> (Zod) — malformed tasks dropped with warning</li>
+  <li><code>buildFallbackTasks()</code> — deterministic fallback if LLM unavailable. Sorts findings by priority + day, caps at 15 tasks. Unverified tasks get confidence 0.40 (below gate, filtered unless verified).</li>
+  <li>Tasks sorted by <code>day</code> then <code>priority</code> (high→medium→low) before returning</li>
+</ul>
+
+
+<h2 id="render">8. Render Layer</h2>
+
+<h3>8.1 Markdown Plan (<code>markdownPlan.ts</code>)</h3>
+<p>Pure function — no I/O. Renders <code>RampUpPlan → string</code>.</p>
+<table>
+  <tr><th>Day</th><th>Theme</th></tr>
+  <tr><td>1</td><td>Orientation &amp; Tooling</td></tr>
+  <tr><td>2</td><td>Core Architecture Deep-Dive</td></tr>
+  <tr><td>3</td><td>Hands-On Integration</td></tr>
+  <tr><td>4</td><td>Domain Mastery</td></tr>
+  <tr><td>5</td><td>Independent Contribution</td></tr>
+</table>
+<p>Each task shows: <span class="badge b-high">🔴 HIGH</span><span class="badge b-med">🟡 MEDIUM</span><span class="badge b-low">🟢 LOW</span> badge, ✅/❌ verification status, estimated hours, file paths, historical issue reference, stale-doc warning, and confidence %.</p>
+
+<h3>8.2 Graph (<code>graph.ts</code>)</h3>
+<p><code>renderGantt(plan)</code> — Mermaid <code>gantt</code> block. Priority → modifier: <code>high=crit</code>, <code>medium=active</code>, <code>low</code>=none. Stale-doc tasks get ⚠ prefix. Tasks truncated to 45 chars.</p>
+<p><code>renderServiceGraph()</code> — static Mermaid <code>graph TD</code> showing all i3 platform service dependencies: Keycloak → Admissions Agent / Onboarding Agent / EvalOS → ChromaDB → LiteLLM → Ollama/watsonx.ai → MCP → Directus/n8n → PostgreSQL → OpenBao → ArgoCD/Tekton.</p>
+
+<h3>8.3 Task Sync (<code>taskSync.ts</code>)</h3>
+<p>Implements the 2-stage confirmation gate for Directus CRM sync.</p>
+<pre>// Stage 1 — call after plan generation
+prepareSyncTasks(plan, userId): SyncPreviewResult
+  → { pendingId, taskCount, expiresAt (5 min), previewTasks[0..4] }
+
+// Stage 2 — call after user clicks Confirm
+confirmSyncTasks(pendingId, userId): Promise&lt;SyncConfirmResult&gt;
+  → POSTs each task to Directus /items/onboarding_tasks
+  → { success, syncedCount, skippedCount, directusIds[] }
+
+cancelSyncTasks(pendingId): void   // user clicked Dismiss
+pendingSyncCount(): number          // active pending syncs (for /status)</pre>
+<div class="alert">The pending store is an in-memory <code>Map&lt;string, PendingSync&gt;</code> with 5-minute TTL. <strong>Replace with Redis</strong> for multi-replica production deployment.</div>
+
+
+<h2 id="schema">9. RampUpPlan JSON Schema</h2>
+<p>Defined via Zod in <code>src/orchestrator/planner.ts</code>. All fields validated at runtime.</p>
+<pre>{
+  "schemaVersion": "1.0",                      // literal
+  "generatedAt": "2026-08-29T10:00:00.000Z",   // ISO timestamp
+  "role": "platform_engineer",                 // OnboardingRole
+  "architecturalSummary": {
+    "clusterVersion": "ROKS 4.15",
+    "region": "eu-de (Frankfurt)",
+    "namespaceCount": 12,
+    "keyServices": ["admissions-agent (i3-admissions)", ...],
+    "forbiddenActions": ["Never modify solution-01..08 namespaces", ...],
+    "creditBudget": "$14,047.27 IBM Cloud credits expiring October 2026"
+  },
+  "tasks": [
+    {
+      "day": 1,                                // 1–5
+      "title": "Install developer toolchain",  // prefixed if unverified
+      "description": "Run `make help`...",
+      "filePaths": ["Makefile", "platform/RUNBOOK.md"],
+      "verified": true,                        // existsSync result
+      "verificationNote": "all referenced paths confirmed present",
+      "priority": "high",                      // "high" | "medium" | "low"
+      "estimatedHours": 2,                     // 0.5–8
+      "historicalIssueRef": "Bug: lobsterTrap() return type misuse",
+      "roles": ["platform_engineer"],
+      "confidence": 0.97                       // 0.0–1.0; &lt;0.65 filtered out
+    },
+    {
+      "day": 2,
+      "title": "Needs verification: Explore RHOAI AI Lab (referenced path not found — likely stale doc)",
+      "verified": false,
+      "verificationNote": "RHOAI/i3-ai-lab namespace not live — platform-documentation.md states 'available from Month 3'",
+      "confidence": 0.91
+    }
+  ],
+  "totalVerified": 11,
+  "totalUnverified": 2,
+  "staleDocWarnings": ["platform/docs/platform-documentation.md (RHOAI Month 3)"]
+}</pre>
+
+
+<h2 id="env">10. Environment Variables</h2>
+<table>
+  <tr><th>Variable</th><th>Default / Example</th><th>Description</th></tr>
+  <tr><td><code>PORT</code></td><td><code>3000</code></td><td>Express server port</td></tr>
+  <tr><td><code>NODE_ENV</code></td><td><code>development</code></td><td>Node environment</td></tr>
+  <tr><td><code>DEV_BYPASS_AUTH</code></td><td><code>true</code> (local only)</td><td><strong>⚠ Local dev only.</strong> Skips Keycloak JWT validation. NEVER in production.</td></tr>
+  <tr><td><code>LITELLM_URL</code></td><td><code>http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000</code></td><td>LiteLLM gateway URL. Use <code>http://localhost:4000/v1</code> locally.</td></tr>
+  <tr><td><code>LITELLM_KEY</code></td><td>OpenBao only</td><td>LiteLLM master key</td></tr>
+  <tr><td><code>LITELLM_MODEL_FAST</code></td><td><code>granite-nano</code></td><td>Tier 3 — embeddings</td></tr>
+  <tr><td><code>LITELLM_MODEL_SCAN</code></td><td><code>mistral-nemo</code></td><td>Tier 2 — subagent scans</td></tr>
+  <tr><td><code>LITELLM_MODEL_SYNTH</code></td><td><code>granite-heavy</code></td><td>Tier 1 — plan synthesis</td></tr>
+  <tr><td><code>CHROMA_HOST</code></td><td><code>chromadb.i3-admissions.svc.cluster.local</code></td><td>ChromaDB hostname</td></tr>
+  <tr><td><code>CHROMA_PORT</code></td><td><code>8000</code></td><td>ChromaDB port</td></tr>
+  <tr><td><code>CHROMA_TOKEN</code></td><td>OpenBao only</td><td>Optional ChromaDB bearer token</td></tr>
+  <tr><td><code>CHROMA_COLLECTION</code></td><td><code>onboarding-corpus</code></td><td>ChromaDB collection name</td></tr>
+  <tr><td><code>KEYCLOAK_ISSUER</code></td><td><code>https://sso.i3technologies.co.ke/realms/i3</code></td><td>Keycloak realm issuer URL</td></tr>
+  <tr><td><code>KEYCLOAK_CLIENT_ID</code></td><td><code>onboarding-agent</code></td><td>Keycloak client ID</td></tr>
+  <tr><td><code>KEYCLOAK_JWKS_URI</code></td><td><code>https://sso.i3technologies.co.ke/realms/i3/protocol/openid-connect/certs</code></td><td>JWKS endpoint for JWT verification</td></tr>
+  <tr><td><code>PLATFORM_REPO_PATH</code></td><td><code>../platform</code></td><td>Path to platform/ repo for corpus ingest</td></tr>
+  <tr><td><code>GITHUB_TOKEN</code></td><td>OpenBao only</td><td>GitHub PAT for Octokit ingestion</td></tr>
+  <tr><td><code>DIRECTUS_URL</code></td><td><code>https://cms.i3technologies.co.ke</code></td><td>Directus CMS endpoint</td></tr>
+  <tr><td><code>DIRECTUS_TOKEN</code></td><td>OpenBao only</td><td>Directus static token for CRM sync</td></tr>
+  <tr><td><code>EVALOS_API_URL</code></td><td><code>http://evalos-api.i3-evalos.svc.cluster.local:8080</code></td><td>EvalOS API for domain ingestion</td></tr>
+  <tr><td><code>EVALOS_API_KEY</code></td><td>OpenBao only</td><td>EvalOS service key</td></tr>
+  <tr><td><code>KUBE_API_URL</code></td><td>(cluster-internal)</td><td>Kubernetes API URL for RHOAI namespace check</td></tr>
+  <tr><td><code>KUBE_SA_TOKEN</code></td><td>(mounted serviceaccount)</td><td>K8s service account token for namespace check</td></tr>
+</table>
+
+
+<h2 id="docker">11. Docker &amp; Deployment</h2>
+
+<h3>11.1 Dockerfile</h3>
+<p>Multi-stage UBI9 build for ROKS FIPS compatibility:</p>
+<pre># Stage 1: Builder — registry.access.redhat.com/ubi9/nodejs-20:latest
+WORKDIR /app
+COPY package.json package-lock.json tsconfig.json ./
+RUN npm ci --prefer-offline          # installs devDependencies for build
+COPY src/ ./src/
+RUN npm run build                    # tsc → dist/
+
+# Stage 2: Runtime — registry.access.redhat.com/ubi9/nodejs-20-minimal:latest
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json /app/package-lock.json ./
+RUN npm ci --omit=dev --prefer-offline   # prod-only deps
+USER 1001                                # non-root (OpenShift requirement)
+HEALTHCHECK CMD node -e "require('http').get('http://localhost:3000/health',...)"
+EXPOSE 3000
+CMD ["node", "dist/server.js"]</pre>
+
+<h3>11.2 OpenShift Manifests</h3>
+<table>
+  <tr><th>File</th><th>Kind</th><th>Key config</th></tr>
+  <tr><td><code>openshift/namespace.yaml</code></td><td>Namespace</td><td><code>i3-onboarding</code> · labels: wave=7, workstream=onboarding</td></tr>
+  <tr><td><code>openshift/deploy.yaml</code></td><td>Deployment + HPA + Service + Route + Secret</td><td>Replicas: 1 (HPA: 1–3 at 70% CPU) · Resources: 100m–500m CPU, 256Mi–512Mi mem · Route: <code>onboarding.i3technologies.co.ke</code> (TLS edge) · Secret: 6 keys from OpenBao</td></tr>
+  <tr><td><code>openshift/argocd-app.yaml</code></td><td>ArgoCD Application</td><td>sync-wave: 7 · prune: true · selfHeal: true · project: i3-platform</td></tr>
+</table>
+
+<h3>11.3 CI/CD Pipeline</h3>
+<pre>git push
+  └─→ Tekton i3-build-deploy pipeline
+        ├── npm ci + tsc (typecheck)
+        ├── buildah bud -f Dockerfile (UBI9, non-root UID 1001)
+        ├── trivy image scan
+        └── oc rollout → i3-onboarding namespace
+              └─→ ArgoCD wave 7 (after waves 1–6 healthy)
+                    Route: https://onboarding.i3technologies.co.ke</pre>
+
+
+<h2 id="local">12. Running Locally</h2>
+<p><strong>Prerequisites:</strong> Node.js ≥20, npm ≥9, Python ≥3.10, PowerShell 7+</p>
+
+<h3>Step 1 — Install &amp; configure</h3>
+<pre>cd onboarding-agent
+npm install
+copy .env.example .env</pre>
+<p>Edit <code>.env</code> and set:</p>
+<pre>DEV_BYPASS_AUTH=true
+LITELLM_URL=http://localhost:4000/v1
+LITELLM_KEY=local-test-key
+CHROMA_HOST=localhost
+CHROMA_PORT=8000
+PLATFORM_REPO_PATH=../platform</pre>
+
+<h3>Step 2 — Open 4 terminals</h3>
+<pre># Terminal 1 — Mock AI Gateway (canned responses for mistral-nemo + granite-heavy)
+node scripts/mock-litellm.mjs
+# → listening on http://localhost:4000
+
+# Terminal 2 — Vector Database
+npx --yes chromadb@latest
+# → Application startup complete (port 8000)
+
+# Terminal 3 — The Agent
+npm run dev
+# → i3 Onboarding Agent listening on :3000
+
+# Terminal 4 — Index the codebase (run once)
+npm run ingest
+# → prints chunk counts per source type</pre>
+
+<h3>Step 3 — Generate a plan</h3>
+<pre># PowerShell
+$r = Invoke-RestMethod http://localhost:3000/api/onboarding/plan `
+  -Method POST -ContentType "application/json" `
+  -Body '{"role":"platform_engineer"}'
+
+# View tasks table
+$r.plan.tasks | Format-Table day, verified, priority, title -Wrap
+
+# View stale-doc detections (the demo moment)
+$r.plan.tasks | Where-Object { -not $_.verified } | Format-List title, verificationNote
+
+# Get Markdown plan
+Invoke-RestMethod "http://localhost:3000/api/onboarding/plan/$($r.planId)/markdown"</pre>
+
+
+<h2 id="testing">13. Testing</h2>
+<table>
+  <tr><th>Command</th><th>What it runs</th><th>Pass criteria</th></tr>
+  <tr><td><code>npm run typecheck</code></td><td><code>tsc --noEmit</code> — TypeScript type check</td><td>Zero errors</td></tr>
+  <tr><td><code>npm run build</code></td><td><code>tsc</code> — compile to <code>dist/</code></td><td>25 JS files emitted, zero errors</td></tr>
+  <tr><td><code>npm run test:local</code></td><td><code>scripts/test-local.ps1</code> — 35 automated HTTP tests against localhost:3000</td><td>35/35 pass</td></tr>
+  <tr><td><code>python platform/testing/testing.py --ragas-onboarding</code></td><td>RAGAS LLM-as-judge evaluation (requires live cluster)</td><td>Faithfulness ≥0.80, Answer Relevancy ≥0.75</td></tr>
+  <tr><td><code>make test-redteam</code></td><td>promptfoo red-team (50 adversarial tests)</td><td>All blocked by Lobster Trap</td></tr>
+</table>
+
+<h4>test-local.ps1 — 35 test blocks</h4>
+<table>
+  <tr><th>Block</th><th>Tests</th><th>Coverage</th></tr>
+  <tr><td>Block 1</td><td>2</td><td>Health + readiness probes (no auth)</td></tr>
+  <tr><td>Block 2</td><td>10</td><td>Lobster Trap — all 10 injection patterns blocked (HTTP 400)</td></tr>
+  <tr><td>Block 3</td><td>5</td><td>Plan generation for all 5 roles</td></tr>
+  <tr><td>Block 4</td><td>4</td><td>Plan content validation (stale-doc flag, confidence gate, tools task, historicalIssueRef)</td></tr>
+  <tr><td>Block 5</td><td>6</td><td>Render endpoints (markdown, gantt, graph, 404 handling)</td></tr>
+  <tr><td>Block 6</td><td>5</td><td>2-stage sync gate (prepare, confirm, cancel, user mismatch, expiry)</td></tr>
+  <tr><td>Block 7</td><td>3</td><td>Status endpoint (ChromaDB stats, valid roles, model config)</td></tr>
+</table>
+
+
+<h2 id="bugs">14. Historical Bugs Fixed</h2>
+<table>
+  <tr><th>Bug</th><th>File</th><th>Root cause</th><th>Fix</th></tr>
+  <tr><td><code>lobsterTrap()</code> return type misuse</td><td><code>src/server.ts</code></td><td>Function returns <code>string|null</code> (matched pattern). Code called <code>.result.blocked</code> (undefined).</td><td>Check <code>if (matched !== null)</code> directly</td></tr>
+  <tr><td><code>llama-index</code> npm package missing</td><td><code>package.json</code></td><td>Package name is <code>llamaindex</code> not <code>llama-index</code> on npm</td><td>Removed; replaced with <code>openai</code> client calling LiteLLM</td></tr>
+  <tr><td><code>RawArtifact</code> missing <code>filePath</code>, <code>sourceType</code>, <code>title</code></td><td><code>src/ingestion/types.ts</code></td><td>ChromaDB metadata fields mapped to nonexistent properties</td><td>Added alias fields + <code>makeArtifact()</code> factory function</td></tr>
+  <tr><td>ChromaDB embedding field name wrong</td><td><code>src/context-store/chroma-client.ts</code></td><td><code>openai_model_name</code> used; chromadb v1.9 requires <code>openai_model</code></td><td>Changed to <code>openai_model</code>; added <code>OPENAI_API_BASE</code> env var forwarding</td></tr>
+  <tr><td>Chunker invalid source type strings</td><td><code>src/context-store/chunker.ts</code></td><td>Hardcoded strings like <code>"documentation"</code> didn't match <code>ArtifactSourceType</code> enum</td><td>Updated to use exact enum values: <code>"platform-doc"</code>, <code>"platform-code"</code>, etc.</td></tr>
+  <tr><td><code>ingestPlatformRepo</code> export didn't exist</td><td><code>src/server.ts</code></td><td>Server imported wrong function name; correct export is <code>ingestPlatform</code></td><td>Fixed import in server.ts</td></tr>
+  <tr><td>All ingestion files missing <code>makeArtifact()</code></td><td><code>curriculum.ts</code>, <code>evalos.ts</code>, <code>github.ts</code></td><td>Raw objects constructed inline, missing alias fields required by indexer</td><td>All connectors now call <code>makeArtifact()</code></td></tr>
+</table>
+
+
+<h2 id="constraints">15. Hard Constraints</h2>
+<div class="alert alert-red">
+  <strong>These rules are enforced in code and must never be bypassed:</strong>
+  <ul style="margin-top:8px;margin-bottom:0">
+    <li>Never modify <code>solution-01</code> through <code>solution-08</code> namespaces — <code>platform/ingestion/platform.ts</code> skips them at ingest time; <code>platform/RUNBOOK.md</code> marks them DO NOT TOUCH</li>
+    <li>Never auto-write to EvalOS tables or Keycloak realm without 🔴 manual approval gate</li>
+    <li>Never hardcode secrets — <strong>OpenBao KV v2 only</strong> at path <code>i3/onboarding-agent/</code></li>
+    <li>Never skip the Lobster Trap firewall on any user-supplied input field</li>
+    <li>Never use <code>granite-heavy</code> (watsonx.ai) for anything except final plan synthesis — IBM credit conservation</li>
+    <li>Never enable <code>DEV_BYPASS_AUTH=true</code> in production or staging</li>
+    <li>Never commit <code>.env</code>, <code>LITELLM_KEY</code>, <code>KEYCLOAK_SECRET</code>, or any real tokens to git</li>
+  </ul>
+</div>
+
+<h3>Dependencies Reference</h3>
+<div class="grid2">
+  <div class="card">
+    <h4>Production (13 packages)</h4>
+    <ul>
+      <li><code>@octokit/rest ^20.1.1</code> — GitHub API</li>
+      <li><code>chromadb ^1.9.2</code> — Vector store client</li>
+      <li><code>cors ^2.8.5</code> — CORS middleware</li>
+      <li><code>dotenv ^16.4.5</code> — Env var loading</li>
+      <li><code>express ^4.19.2</code> — HTTP framework</li>
+      <li><code>helmet ^7.1.0</code> — Security headers</li>
+      <li><code>jsonwebtoken ^9.0.2</code> — JWT parsing</li>
+      <li><code>jwks-rsa ^3.1.0</code> — JWKS key fetching</li>
+      <li><code>node-fetch ^3.3.2</code> — HTTP client</li>
+      <li><code>openai ^4.52.0</code> — LiteLLM client</li>
+      <li><code>simple-git ^3.25.0</code> — Git repo analysis</li>
+      <li><code>uuid ^10.0.0</code> — pendingId generation</li>
+      <li><code>zod ^3.23.8</code> — Runtime schema validation</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>Development (5 packages)</h4>
+    <ul>
+      <li><code>typescript ^5.5.3</code></li>
+      <li><code>ts-node ^10.9.2</code> — dev server</li>
+      <li><code>ts-jest ^29.2.2</code></li>
+      <li><code>jest ^29.7.0</code></li>
+      <li><code>@types/*</code> — type definitions</li>
+    </ul>
+    <h4 style="margin-top:14px">npm Scripts</h4>
+    <ul>
+      <li><code>npm run build</code> — tsc compile</li>
+      <li><code>npm run dev</code> — ts-node live</li>
+      <li><code>npm run ingest</code> — platform ingest</li>
+      <li><code>npm run typecheck</code> — tsc --noEmit</li>
+      <li><code>npm run mock:litellm</code> — mock server</li>
+      <li><code>npm run test:local</code> — 35-test suite</li>
+    </ul>
+  </div>
+</div>
+
+<footer>Made with IBM Bob  ·  i3 Agentic AI Labs  ·  IBM TechXchange Hackathon 2026</footer>
+</div>
+</body>
+</html>

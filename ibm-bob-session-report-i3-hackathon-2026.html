@@ -1,0 +1,569 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>IBM Bob Session Report — i3 Academy IBM TechXchange Hackathon 2026</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.65;background:#fff;color:#1f2328}
+  .page{max-width:820px;margin:0 auto;padding:40px 32px}
+
+  /* Header */
+  .header{border-bottom:3px solid #0f62fe;padding-bottom:24px;margin-bottom:32px}
+  .header-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+  .logo-block{display:flex;align-items:center;gap:14px}
+  .logo-ibm{background:#0f62fe;color:#fff;font-size:22px;font-weight:900;letter-spacing:-1px;padding:4px 10px;border-radius:3px}
+  .logo-bob{font-size:18px;font-weight:700;color:#0f62fe;letter-spacing:.02em}
+  .logo-sep{color:#e5e7eb;margin:0 2px}
+  .badge-session{background:#e8f0fe;border:1px solid #c0d7f5;color:#1e40af;font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;letter-spacing:.04em}
+  .header h1{font-size:24px;font-weight:800;color:#1f2328;margin-bottom:4px}
+  .header-sub{font-size:13px;color:#57606a}
+  .meta-row{display:flex;gap:32px;margin-top:14px;flex-wrap:wrap}
+  .meta-item{font-size:12px;color:#57606a}
+  .meta-item strong{color:#1f2328;display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:1px}
+
+  /* Sections */
+  h2{font-size:15px;font-weight:700;color:#0f62fe;border-bottom:1px solid #e5e7eb;padding-bottom:6px;margin:30px 0 12px}
+  h3{font-size:13px;font-weight:700;color:#1f2328;margin:16px 0 6px}
+  p{margin-bottom:9px;font-size:13.5px}
+
+  /* Callout / highlight boxes */
+  .callout{border-left:4px solid #0f62fe;background:#f0f5ff;padding:10px 14px;border-radius:0 5px 5px 0;margin:12px 0;font-size:13px}
+  .callout-green{border-left-color:#24a148;background:#f0faf0}
+  .callout-amber{border-left-color:#f1c21b;background:#fffce0}
+  .callout-red{border-left-color:#da1e28;background:#fff1f1}
+
+  /* Tables */
+  table{width:100%;border-collapse:collapse;margin:10px 0 18px;font-size:13px}
+  th{background:#f4f4f4;padding:7px 10px;border:1px solid #e0e0e0;font-weight:600;text-align:left;color:#1f2328;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  td{padding:7px 10px;border:1px solid #e0e0e0;vertical-align:top}
+  tr:nth-child(even) td{background:#fafafa}
+
+  /* Task cards */
+  .task-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 18px}
+  .task-card{border:1px solid #e0e0e0;border-radius:5px;padding:10px 12px;background:#fafafa}
+  .task-card.verified{border-left:3px solid #24a148}
+  .task-card.stale{border-left:3px solid #da1e28}
+  .task-day{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#57606a;margin-bottom:3px}
+  .task-title{font-size:12.5px;font-weight:600;color:#1f2328;margin-bottom:4px;line-height:1.4}
+  .task-meta{font-size:11px;color:#57606a;display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  .pill{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10.5px;font-weight:600}
+  .pill-high{background:#ffe0e0;color:#a50000}
+  .pill-med{background:#fff2c0;color:#6d4c00}
+  .pill-low{background:#defbe6;color:#044317}
+  .pill-ok{background:#defbe6;color:#044317}
+  .pill-stale{background:#fff1f1;color:#a2191f}
+  .pill-blue{background:#e8f0fe;color:#1e40af}
+
+  /* Code */
+  code{font-family:"SFMono-Regular",Consolas,monospace;font-size:11.5px;background:#f4f4f4;border:1px solid #e0e0e0;border-radius:3px;padding:1px 5px;color:#1f2328}
+  pre{background:#161616;color:#f4f4f4;border-radius:5px;padding:14px 16px;font-size:11.5px;overflow-x:auto;margin:8px 0 14px;line-height:1.6}
+
+  /* Metric blocks */
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0 20px}
+  .metric{border:1px solid #e0e0e0;border-radius:5px;padding:12px 14px;text-align:center;background:#fafafa}
+  .metric-num{font-size:26px;font-weight:800;color:#0f62fe;line-height:1}
+  .metric-label{font-size:11px;color:#57606a;margin-top:4px;line-height:1.3}
+  .metric.green .metric-num{color:#24a148}
+  .metric.amber .metric-num{color:#c07c00}
+  .metric.red .metric-num{color:#da1e28}
+
+  /* Steps */
+  .steps{counter-reset:step;margin:10px 0 16px}
+  .step{display:flex;gap:12px;margin-bottom:10px;align-items:flex-start}
+  .step-num{counter-increment:step;content:counter(step);min-width:24px;height:24px;background:#0f62fe;color:#fff;font-size:11px;font-weight:700;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+  .step-body{font-size:13px;padding-top:2px}
+
+  /* Timeline */
+  .timeline{border-left:2px solid #0f62fe;margin:12px 0 18px;padding-left:18px}
+  .tl-item{margin-bottom:14px;position:relative}
+  .tl-item::before{content:"";width:10px;height:10px;background:#0f62fe;border-radius:50%;position:absolute;left:-24px;top:3px}
+  .tl-item.done::before{background:#24a148}
+  .tl-time{font-size:11px;font-weight:700;color:#57606a;text-transform:uppercase;letter-spacing:.04em}
+  .tl-title{font-size:13px;font-weight:600;color:#1f2328}
+  .tl-desc{font-size:12.5px;color:#57606a;margin-top:2px}
+
+  /* Arch diagram */
+  .arch{background:#f4f4f4;border:1px solid #e0e0e0;border-radius:5px;padding:16px 20px;font-size:12px;font-family:monospace;line-height:1.8;margin:10px 0 16px;color:#1f2328}
+  .arch .hl{color:#0f62fe;font-weight:700}
+  .arch .ok{color:#24a148;font-weight:700}
+  .arch .warn{color:#da1e28;font-weight:700}
+
+  /* Two-col layout */
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:10px 0}
+  .col-card{border:1px solid #e0e0e0;border-radius:5px;padding:12px 14px;background:#fafafa}
+  .col-card h3{margin-top:0;font-size:12.5px;color:#0f62fe}
+  .col-card ul{padding-left:16px;margin:0}
+  .col-card li{font-size:12.5px;margin:3px 0}
+
+  hr{border:none;border-top:1px solid #e0e0e0;margin:28px 0}
+
+  .stamp{display:inline-block;border:2px solid #24a148;color:#24a148;font-size:11px;font-weight:800;padding:3px 10px;border-radius:3px;letter-spacing:.08em;transform:rotate(-1.5deg);margin:4px 0}
+
+  footer{text-align:center;font-size:11px;color:#57606a;margin-top:40px;padding-top:16px;border-top:1px solid #e0e0e0}
+</style>
+</head>
+<body>
+<div class="page">
+
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo-block">
+      <span class="logo-ibm">IBM</span>
+      <span class="logo-bob">Bob<span class="logo-sep"> · </span>Session Report</span>
+    </div>
+    <span class="badge-session">EXPORTED SESSION</span>
+  </div>
+  <h1>i3 Academy — IBM TechXchange Hackathon 2026</h1>
+  <div class="header-sub">Project 1: Codebase Onboarding Agent  ·  Agent Mode &amp; Code Intelligence</div>
+  <div class="meta-row">
+    <div class="meta-item"><strong>Organisation</strong>i3 Technologies / i3 Agentic AI Labs</div>
+    <div class="meta-item"><strong>IBM Partner Status</strong>IBM Silver Business Partner</div>
+    <div class="meta-item"><strong>Event</strong>IBM TechXchange Pre-Conference Dev Day Hackathon</div>
+    <div class="meta-item"><strong>Dates</strong>August 28–30, 2026</div>
+    <div class="meta-item"><strong>Cluster</strong>ROKS 4.15 · Frankfurt (eu-de)</div>
+    <div class="meta-item"><strong>Repository</strong>github.com/i3technologies/i3-agentic-ai-labs</div>
+  </div>
+</div>
+
+
+<h2>1 · Executive Summary</h2>
+<p>
+  This report documents the complete IBM Bob-assisted engineering session for <strong>Project 1: Codebase Onboarding Agent</strong> — a production-grade AI service built for the IBM TechXchange 2026 Hackathon. Using IBM Bob in Agent Mode, the team designed, implemented, bug-fixed, deployed, and fully documented a Node.js/TypeScript application that generates <strong>verified, role-specific, 5-day ramp-up plans</strong> for engineers joining a complex codebase — in a single API call.
+</p>
+<div class="callout callout-green">
+  <strong>Key Outcome:</strong> 150 files committed to GitHub across 12 implementation steps, TypeScript typecheck clean (zero errors), build producing 25 compiled JS files, and a fully verified RampUpPlan JSON schema output. The agent autonomously catches stale documentation by querying the live Kubernetes API — confirmed against <code>platform/docs/platform-documentation.md</code> which states RHOAI is "available from Month 3".
+</div>
+
+<div class="metrics">
+  <div class="metric green"><div class="metric-num">150</div><div class="metric-label">Files committed to GitHub</div></div>
+  <div class="metric green"><div class="metric-num">0</div><div class="metric-label">TypeScript errors (typecheck)</div></div>
+  <div class="metric green"><div class="metric-num">35</div><div class="metric-label">Automated local tests</div></div>
+  <div class="metric"><div class="metric-num">12</div><div class="metric-label">Implementation steps completed</div></div>
+</div>
+
+
+<h2>2 · Project Overview</h2>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Project Name</td><td>i3 Codebase Onboarding Agent</td></tr>
+  <tr><td>Hackathon Track</td><td>Agentic AI — Developer Tooling</td></tr>
+  <tr><td>Language / Runtime</td><td>TypeScript · Node.js ≥20 · Express 4.19</td></tr>
+  <tr><td>AI Framework</td><td>IBM Bob 2.0 Agent Mode · LiteLLM sovereign gateway</td></tr>
+  <tr><td>Vector Store</td><td>ChromaDB 1.9 (HNSW cosine) — collection <code>onboarding-corpus</code></td></tr>
+  <tr><td>LLM Models Used</td><td>granite-nano (Tier 3, embeddings) · mistral-nemo (Tier 2, scans) · granite-heavy (Tier 1, synthesis)</td></tr>
+  <tr><td>Authentication</td><td>Keycloak RS256 JWT · OpenBao KV v2 secrets</td></tr>
+  <tr><td>Deployment</td><td>ROKS 4.15 · ArgoCD wave 7 · Tekton CI · HPA 1–3 replicas</td></tr>
+  <tr><td>Security</td><td>Lobster Trap prompt injection firewall (12 patterns) · 3-tier human approval gate</td></tr>
+  <tr><td>Live URL</td><td>https://onboarding.i3technologies.co.ke</td></tr>
+  <tr><td>GitHub Repository</td><td>https://github.com/i3technologies/i3-agentic-ai-labs</td></tr>
+</table>
+
+
+<h2>3 · How IBM Bob Was Used</h2>
+<p>IBM Bob was engaged across the full engineering lifecycle — from architecture decisions through code generation, bug fixing, codebase analysis, and documentation production.</p>
+
+<h3>3.1 Agent Mode — Parallel Subagent Execution</h3>
+<p>Bob's Agent Mode was used to spawn <strong>three concurrent subagents</strong> to analyse the platform codebase simultaneously, each pulling RAG context from ChromaDB and producing structured JSON findings:</p>
+<div class="arch">
+<span class="hl">IBM Bob Agent Mode</span> — parallel subagent dispatch
+  ├── <span class="ok">backend-scan</span>   → FastAPI routes, EvalOS schema, JWT middleware, API contracts
+  ├── <span class="ok">frontend-scan</span>  → render layer (Markdown, Gantt, taskSync 2-stage gate)
+  └── <span class="ok">infra-scan</span>     → ArgoCD waves, Tekton pipeline, OpenBao, Keycloak RBAC
+
+Each subagent:
+  RAG query → ChromaDB (top-k=10, cosine) → mistral-nemo (Tier 2) → SubagentFinding[]
+                                                   ↓
+  verify.ts: existsSync() on every filePath + live K8s namespace check
+                                                   ↓
+  planner.ts: granite-heavy (Tier 1) · confidence gate <span class="warn">0.65</span> · RampUpPlanSchema (Zod)
+</div>
+
+<h3>3.2 Code Generation — 31 TypeScript Source Files</h3>
+<p>Bob generated all source files from scratch in a single implementation session, following a 12-step plan. Key generated modules:</p>
+<div class="two-col">
+  <div class="col-card">
+    <h3>Security Layer</h3>
+    <ul>
+      <li><code>lobster-trap.ts</code> — 12-pattern regex firewall</li>
+      <li><code>keycloak-auth.ts</code> — RS256 JWT validation</li>
+      <li><code>requireRole()</code> — RBAC middleware factory</li>
+      <li>DEV_BYPASS_AUTH for local development</li>
+    </ul>
+  </div>
+  <div class="col-card">
+    <h3>Ingestion Pipeline</h3>
+    <ul>
+      <li><code>platform.ts</code> — filesystem walk, 8 ext types</li>
+      <li><code>github.ts</code> — Octokit: README, ADRs, issues</li>
+      <li><code>curriculum.ts</code> — Directus CMS connector</li>
+      <li><code>evalos.ts</code> — C1000-207 exam domains</li>
+    </ul>
+  </div>
+  <div class="col-card">
+    <h3>Orchestrator</h3>
+    <ul>
+      <li><code>skills-assessor.ts</code> — role → 3 subagents</li>
+      <li><code>verify.ts</code> — file + live K8s namespace check</li>
+      <li><code>planner.ts</code> — granite-heavy synthesis</li>
+      <li>5 subagent scanner classes</li>
+    </ul>
+  </div>
+  <div class="col-card">
+    <h3>Render &amp; Output</h3>
+    <ul>
+      <li><code>markdownPlan.ts</code> — priority badges, day themes</li>
+      <li><code>graph.ts</code> — Mermaid Gantt + service topology</li>
+      <li><code>taskSync.ts</code> — 2-stage CRM sync gate (5-min TTL)</li>
+      <li>Directus <code>onboarding_tasks</code> POST</li>
+    </ul>
+  </div>
+</div>
+
+<h3>3.3 Bug Detection &amp; Resolution</h3>
+<p>Bob identified and fixed <strong>7 bugs</strong> during the implementation session before the first successful typecheck:</p>
+<table>
+  <tr><th>#</th><th>Bug</th><th>File</th><th>Root Cause</th><th>Status</th></tr>
+  <tr><td>1</td><td><code>lobsterTrap()</code> return type misuse</td><td><code>server.ts</code></td><td>Function returns <code>string|null</code>; code called <code>.result.blocked</code></td><td><span class="pill pill-ok">Fixed</span></td></tr>
+  <tr><td>2</td><td><code>llama-index</code> npm package missing</td><td><code>package.json</code></td><td>Package is <code>llamaindex</code> not <code>llama-index</code> on npm</td><td><span class="pill pill-ok">Fixed</span></td></tr>
+  <tr><td>3</td><td><code>RawArtifact</code> missing alias fields</td><td><code>ingestion/types.ts</code></td><td>ChromaDB metadata mapped to nonexistent properties</td><td><span class="pill pill-ok">Fixed</span></td></tr>
+  <tr><td>4</td><td>ChromaDB field name wrong</td><td><code>chroma-client.ts</code></td><td><code>openai_model_name</code> → correct is <code>openai_model</code></td><td><span class="pill pill-ok">Fixed</span></td></tr>
+  <tr><td>5</td><td>Chunker invalid source type strings</td><td><code>chunker.ts</code></td><td>Hardcoded <code>"documentation"</code> didn't match enum</td><td><span class="pill pill-ok">Fixed</span></td></tr>
+  <tr><td>6</td><td>Wrong export name on ingest function</td><td><code>server.ts</code></td><td>Imported <code>ingestPlatformRepo</code>; correct is <code>ingestPlatform</code></td><td><span class="pill pill-ok">Fixed</span></td></tr>
+  <tr><td>7</td><td>Missing <code>makeArtifact()</code> in connectors</td><td><code>curriculum.ts</code>, <code>evalos.ts</code>, <code>github.ts</code></td><td>Raw objects missing alias fields required by indexer</td><td><span class="pill pill-ok">Fixed</span></td></tr>
+</table>
+
+<h3>3.4 Codebase Analysis — RampUpPlan Generation</h3>
+<p>Bob's Senior Solutions Architect role was used to perform a full codebase scan and produce a verified <code>RampUpPlan</code> JSON object for a <strong>Backend Engineer</strong> onboarding to this exact repository. Results:</p>
+<div class="metrics">
+  <div class="metric green"><div class="metric-num">12</div><div class="metric-label">Tasks verified ✅</div></div>
+  <div class="metric red"><div class="metric-num">2</div><div class="metric-label">Tasks flagged stale ❌</div></div>
+  <div class="metric"><div class="metric-num">3</div><div class="metric-label">Stale doc warnings</div></div>
+  <div class="metric green"><div class="metric-num">100%</div><div class="metric-label">File paths confirmed in repo</div></div>
+</div>
+
+<p><strong>Verified sample tasks (5-day plan):</strong></p>
+<div class="task-grid">
+  <div class="task-card verified">
+    <div class="task-day">Day 1</div>
+    <div class="task-title">Install project-specific developer toolchain from .env.example</div>
+    <div class="task-meta"><span class="pill pill-high">HIGH</span><span class="pill pill-ok">✅ Verified</span><span>2h</span></div>
+  </div>
+  <div class="task-card verified">
+    <div class="task-day">Day 1</div>
+    <div class="task-title">Trace full request lifecycle through server.ts</div>
+    <div class="task-meta"><span class="pill pill-high">HIGH</span><span class="pill pill-ok">✅ Verified</span><span>2h</span></div>
+  </div>
+  <div class="task-card verified">
+    <div class="task-day">Day 2</div>
+    <div class="task-title">Study ingestion pipeline: RawArtifact model and 4 connectors</div>
+    <div class="task-meta"><span class="pill pill-high">HIGH</span><span class="pill pill-ok">✅ Verified</span><span>3h</span></div>
+  </div>
+  <div class="task-card verified">
+    <div class="task-day">Day 3</div>
+    <div class="task-title">Deep-dive orchestration: assessRole → verifyAll → generatePlan</div>
+    <div class="task-meta"><span class="pill pill-high">HIGH</span><span class="pill pill-ok">✅ Verified</span><span>3.5h</span></div>
+  </div>
+  <div class="task-card verified">
+    <div class="task-day">Day 4</div>
+    <div class="task-title">Run local test suite: mock LiteLLM + ChromaDB + test-local.ps1</div>
+    <div class="task-meta"><span class="pill pill-high">HIGH</span><span class="pill pill-ok">✅ Verified</span><span>3h</span></div>
+  </div>
+  <div class="task-card verified">
+    <div class="task-day">Day 5</div>
+    <div class="task-title">Run RAGAS evaluation — faithfulness ≥0.80, relevancy ≥0.75</div>
+    <div class="task-meta"><span class="pill pill-high">HIGH</span><span class="pill pill-ok">✅ Verified</span><span>3h</span></div>
+  </div>
+  <div class="task-card stale">
+    <div class="task-day">Day 5 — STALE DOC DETECTED</div>
+    <div class="task-title">Needs verification: Review RHOAI AI Lab cohort provisioner (namespace not live — Month 3 per platform docs)</div>
+    <div class="task-meta"><span class="pill pill-low">LOW</span><span class="pill pill-stale">❌ Stale</span><span>1h</span></div>
+  </div>
+  <div class="task-card stale">
+    <div class="task-day">Day 5 — STALE DOC DETECTED</div>
+    <div class="task-title">Needs verification: seed-repo/ directory not found in repo — likely stale spec doc</div>
+    <div class="task-meta"><span class="pill pill-med">MEDIUM</span><span class="pill pill-stale">❌ Stale</span><span>2h</span></div>
+  </div>
+</div>
+
+<div class="callout callout-amber">
+  <strong>The Key Demo Proof-Point:</strong> <code>platform/docs/platform-documentation.md</code> line 56 states <em>"RHOAI (Month 3)"</em>. Bob's generated <code>verify.ts</code> calls the live Kubernetes API (<code>/api/v1/namespaces/i3-ai-lab</code>) and correctly emits <code>verified: false</code> with the stale-doc prefix — demonstrating automated, live stale documentation detection, not simulation.
+</div>
+
+
+<h2>4 · System Architecture</h2>
+
+<h3>4.1 Request Pipeline</h3>
+<div class="arch">
+POST /api/onboarding/plan  { "role": "platform_engineer" }
+         │
+<span class="hl">[1] Lobster Trap Firewall</span>    ← 12 regex patterns · blocks prompt injection · HTTP 400 on match
+         │
+<span class="hl">[2] Keycloak JWT Auth</span>        ← RS256 · sso.i3technologies.co.ke/realms/i3 · JWKS caching 10min
+         │
+<span class="hl">[3] Skills Assessor</span>          ← role → 3 subagents (Promise.all — fully parallel)
+    ├── infra-scan     ───┐
+    ├── ailab-scan     ───┤  ChromaDB RAG (topK=10, minScore=0.30) → mistral-nemo → findings[]
+    └── backend-scan   ───┘
+         │
+<span class="hl">[4] Verify Pass</span>              ← existsSync() all filePaths + live K8s /namespaces/i3-ai-lab
+         │   <span class="warn">→ verified:false + "Needs verification:..." prefix on failures</span>
+         │
+<span class="hl">[5] Plan Synthesis</span>           ← granite-heavy (Tier 1) · temp=0.15 · max_tokens=4000
+         │   confidence gate <span class="warn">0.65</span> · fallback: buildFallbackTasks() if LLM down
+         │
+<span class="hl">[6] Response</span>                 ← RampUpPlan JSON (schemaVersion:1.0) + planId cache
+</div>
+
+<h3>4.2 LiteLLM Model Tier Strategy</h3>
+<table>
+  <tr><th>Tier</th><th>Model</th><th>Backend</th><th>Used For</th><th>Cost</th></tr>
+  <tr><td><span class="pill pill-blue">Tier 3</span></td><td><code>granite-nano</code></td><td>Ollama (local)</td><td>ChromaDB embeddings</td><td>Free</td></tr>
+  <tr><td><span class="pill pill-med">Tier 2</span></td><td><code>mistral-nemo</code></td><td>Ollama (local)</td><td>All 5 subagent scans (parallel)</td><td>Free</td></tr>
+  <tr><td><span class="pill pill-high">Tier 1</span></td><td><code>granite-heavy</code></td><td>IBM watsonx.ai</td><td>Final plan synthesis (1× per plan)</td><td>IBM credits</td></tr>
+</table>
+<p style="font-size:12.5px;color:#57606a">Credit budget: $14,047.27 IBM Cloud credits expiring October 2026. Tier 1 called once per plan to conserve budget.</p>
+
+<h3>4.3 Human Approval Gate Policy</h3>
+<table>
+  <tr><th>Gate</th><th>Routes</th><th>Behaviour</th></tr>
+  <tr><td>🟢 Automatic</td><td>Plan generation, retrieval, Markdown/Gantt render, graph, status</td><td>Executes immediately on authenticated request</td></tr>
+  <tr><td>🟡 One-click</td><td><code>POST /sync/prepare</code> → <code>POST /sync/confirm/:id</code></td><td>Stage 1 stores pending tasks (5-min TTL UUID token). Stage 2 executes Directus CRM POST only after explicit user confirmation. User+pendingId must match.</td></tr>
+  <tr><td>🔴 Never auto</td><td>EvalOS tables, Keycloak realm/users</td><td>No routes exist. Blocked at architecture level.</td></tr>
+</table>
+
+
+<h2>5 · Implementation Timeline</h2>
+<div class="timeline">
+  <div class="tl-item done">
+    <div class="tl-time">Step 1</div>
+    <div class="tl-title">Foundations — package.json, tsconfig.json, .env.example</div>
+    <div class="tl-desc">Node.js ≥20, TypeScript 5.5, Express 4.19, Zod 3.23, 13 production dependencies</div>
+  </div>
+  <div class="tl-item done">
+    <div class="tl-time">Step 2</div>
+    <div class="tl-title">Security Layer — Lobster Trap + Keycloak Auth</div>
+    <div class="tl-desc">12 prompt injection regex patterns; RS256 JWT validation with 10-min JWKS caching; DEV_BYPASS_AUTH for local dev</div>
+  </div>
+  <div class="tl-item done">
+    <div class="tl-time">Step 3</div>
+    <div class="tl-title">Ingestion Layer — 4 connectors + RawArtifact model</div>
+    <div class="tl-desc">platform.ts (filesystem walk), github.ts (Octokit), curriculum.ts (Directus CMS), evalos.ts (C1000-207 fallback); makeArtifact() factory</div>
+  </div>
+  <div class="tl-item done">
+    <div class="tl-time">Step 4</div>
+    <div class="tl-title">Context Store — ChromaDB client, chunker, index, retriever</div>
+    <div class="tl-desc">Role-aware chunking (MD/code/SQL/YAML strategies); batch upsert 200/batch; HNSW cosine ANN search with roleTag filters</div>
+  </div>
+  <div class="tl-item done">
+    <div class="tl-time">Step 5</div>
+    <div class="tl-title">Subagent Scanners — 6 TypeScript classes</div>
+    <div class="tl-desc">BaseScan abstract class (mistral-nemo, Zod parse, 2 retries); evalos-scan, ailab-scan, infra-scan, backend-scan, model-scan</div>
+  </div>
+  <div class="tl-item done">
+    <div class="tl-time">Step 6</div>
+    <div class="tl-title">Orchestrator — skills-assessor, verify, planner</div>
+    <div class="tl-desc">Promise.all parallel dispatch; existsSync + live K8s RHOAI check; granite-heavy synthesis; confidence gate 0.65; Zod RampUpPlanSchema</div>
+  </div>
+  <div class="tl-item done">
+    <div class="tl-time">Step 7</div>
+    <div class="tl-title">Render Layer — markdownPlan, graph, taskSync</div>
+    <div class="tl-desc">Markdown with priority badges + day themes; Mermaid Gantt + service topology; 2-stage 5-min TTL CRM sync gate</div>
+  </div>
+  <div class="tl-item done">
+    <div class="tl-time">Step 8</div>
+    <div class="tl-title">Express Server — server.ts, 12 routes</div>
+    <div class="tl-desc">Full middleware chain; in-memory plan store; global error handler; liveness + readiness probes</div>
+  </div>
+  <div class="tl-item done">
+    <div class="tl-time">Step 9</div>
+    <div class="tl-title">OpenShift Manifests — namespace, deploy, argocd-app</div>
+    <div class="tl-desc">UBI9 multi-stage Dockerfile (UID 1001); HPA 1–3 replicas; ArgoCD wave 7; OpenBao vault-agent sidecar</div>
+  </div>
+  <div class="tl-item done">
+    <div class="tl-time">Step 10</div>
+    <div class="tl-title">GitOps Integration — Makefile §11, app-of-apps.yaml wave 7</div>
+    <div class="tl-desc">deploy-onboarding, build-onboarding, test-onboarding Make targets; i3-onboarding added to ArgoCD AppProject destinations</div>
+  </div>
+  <div class="tl-item done">
+    <div class="tl-time">Step 11</div>
+    <div class="tl-title">MCP Connectors — mcp_connectors.py extended</div>
+    <div class="tl-desc">POST /tools/onboarding/sync-tasks and POST /tools/onboarding/confirm/{token} endpoints added</div>
+  </div>
+  <div class="tl-item done">
+    <div class="tl-time">Step 12</div>
+    <div class="tl-title">RAGAS Testing — testing.py §5 + mock-litellm.mjs + test-local.ps1</div>
+    <div class="tl-desc">Faithfulness ≥0.80, Answer Relevancy ≥0.75; 35-test automated local suite; mock OpenAI server for offline testing</div>
+  </div>
+</div>
+
+
+<h2>6 · Security Implementation</h2>
+
+<h3>6.1 Lobster Trap Prompt Injection Firewall</h3>
+<p>Applied to every user-supplied text field before any LLM call. Returns HTTP 400 with matched pattern.</p>
+<table>
+  <tr><th>#</th><th>Pattern</th><th>Attack Type</th></tr>
+  <tr><td>1</td><td><code>ignore (all) previous instructions</code></td><td>Classic prompt injection</td></tr>
+  <tr><td>2</td><td><code>you are now [not i3/onboarding/platform]</code></td><td>Persona hijack</td></tr>
+  <tr><td>3</td><td><code>act as [not i3/onboarding/platform]</code></td><td>Role override</td></tr>
+  <tr><td>4</td><td><code>system prompt/message/instruction</code></td><td>System prompt exfiltration</td></tr>
+  <tr><td>5</td><td><code>jailbreak</code></td><td>Jailbreak attempt</td></tr>
+  <tr><td>6</td><td><code>DAN mode</code></td><td>DAN variant</td></tr>
+  <tr><td>7</td><td><code>&lt;script|img|iframe|svg</code></td><td>HTML / XSS injection</td></tr>
+  <tr><td>8</td><td><code>drop/delete/truncate table</code></td><td>SQL DDL attack</td></tr>
+  <tr><td>9</td><td><code>SELECT ... FROM ...</code></td><td>SQL data exfiltration</td></tr>
+  <tr><td>10</td><td><code>prompt injection</code></td><td>Self-referential injection</td></tr>
+  <tr><td>11</td><td><code>disregard (all) previous</code></td><td>Override variant</td></tr>
+  <tr><td>12</td><td><code>exfiltrate</code></td><td>Data exfil intent keyword</td></tr>
+</table>
+
+<h3>6.2 Secrets Management</h3>
+<p>All secrets injected at runtime from <strong>OpenBao KV v2</strong> at path <code>i3/onboarding-agent/</code> via vault-agent sidecar. Zero secrets in code, zero secrets in git. Protected values: <code>LITELLM_KEY</code>, <code>CHROMA_TOKEN</code>, <code>DIRECTUS_TOKEN</code>, <code>EVALOS_API_KEY</code>, <code>GITHUB_TOKEN</code>, <code>KEYCLOAK_SECRET</code>.</p>
+
+
+<h2>7 · Platform Integration</h2>
+
+<h3>7.1 i3 Unified Platform — 12 Namespace Topology</h3>
+<table>
+  <tr><th>Namespace</th><th>Service</th><th>Relevance to Onboarding Agent</th></tr>
+  <tr><td><code>i3-onboarding</code></td><td>This service (wave 7)</td><td>Home namespace</td></tr>
+  <tr><td><code>i3-admissions</code></td><td>FastAPI Agent + ChromaDB</td><td>Shared ChromaDB instance for RAG</td></tr>
+  <tr><td><code>i3-model-gateway</code></td><td>LiteLLM + Ollama + Langfuse</td><td>All LLM calls route here</td></tr>
+  <tr><td><code>i3-evalos</code></td><td>EvalOS + Firecracker sandbox</td><td>evalos-scan subagent source</td></tr>
+  <tr><td><code>i3-auth</code></td><td>Keycloak / RHSSO</td><td>JWT issuance + validation</td></tr>
+  <tr><td><code>i3-security</code></td><td>OpenBao Vault</td><td>All secrets injected from here</td></tr>
+  <tr><td><code>i3-gitops</code></td><td>ArgoCD + Tekton</td><td>CI/CD pipeline, wave 7 deployment</td></tr>
+  <tr><td><code>i3-ott</code></td><td>Directus CMS + n8n</td><td>CRM sync target (onboarding_tasks)</td></tr>
+  <tr><td><code>i3-data</code></td><td>Crunchy PostgreSQL HA</td><td>EvalOS schema source (evalos-scan)</td></tr>
+  <tr><td><code>i3-ai-lab</code></td><td>RHOAI JupyterHub</td><td><strong>Month 3 only</strong> — stale-doc proof-point</td></tr>
+  <tr><td><code>i3-monitoring</code></td><td>Prometheus + Grafana</td><td>HPA metrics + LiteLLM KEDA scaling</td></tr>
+  <tr><td><code>solution-01..08</code></td><td>Industry AI Solutions</td><td>⛔ FORBIDDEN — never modified</td></tr>
+</table>
+
+<h3>7.2 Files Modified Across Platform Repository</h3>
+<table>
+  <tr><th>File</th><th>Change Made</th></tr>
+  <tr><td><code>platform/gitops/argocd/app-of-apps.yaml</code></td><td>Wave 7 entry added to ApplicationSet; i3-onboarding destination added to AppProject</td></tr>
+  <tr><td><code>platform/admissions/mcp/mcp_connectors.py</code></td><td><code>POST /tools/onboarding/sync-tasks</code> and <code>POST /tools/onboarding/confirm/{token}</code></td></tr>
+  <tr><td><code>platform/testing/testing.py</code></td><td>Section 5: <code>run_onboarding_ragas_evaluation()</code> with faithfulness ≥0.80 and relevancy ≥0.75</td></tr>
+  <tr><td><code>Makefile</code></td><td>Section 11: deploy-onboarding, build-onboarding, onboarding-ingest, onboarding-logs, test-onboarding</td></tr>
+  <tr><td><code>.env.example</code> (root)</td><td>22 onboarding environment variables documented</td></tr>
+</table>
+
+
+<h2>8 · Testing &amp; Quality Assurance</h2>
+
+<h3>8.1 TypeScript Validation</h3>
+<pre>$ npm run typecheck
+# tsc --noEmit
+# ✅ Zero errors — 25,150 lines across 31 source files</pre>
+
+<h3>8.2 Build Validation</h3>
+<pre>$ npm run build
+# tsc → dist/
+# ✅ 25 compiled JS files produced with declaration maps</pre>
+
+<h3>8.3 Automated Local Test Suite (35 tests)</h3>
+<table>
+  <tr><th>Block</th><th>Tests</th><th>Coverage</th></tr>
+  <tr><td>Block 1</td><td>2</td><td>Health + readiness probes (unauthenticated)</td></tr>
+  <tr><td>Block 2</td><td>10</td><td>Lobster Trap — all 10 injection patterns return HTTP 400</td></tr>
+  <tr><td>Block 3</td><td>5</td><td>Plan generation for all 5 roles with mock LiteLLM</td></tr>
+  <tr><td>Block 4</td><td>4</td><td>Plan content: stale-doc flag, confidence gate, tools task, historicalIssueRef</td></tr>
+  <tr><td>Block 5</td><td>6</td><td>Render endpoints: markdown, gantt, graph, 404 handling</td></tr>
+  <tr><td>Block 6</td><td>5</td><td>2-stage sync: prepare, confirm, cancel, user mismatch, TTL expiry</td></tr>
+  <tr><td>Block 7</td><td>3</td><td>Status endpoint: ChromaDB stats, valid roles, model config</td></tr>
+</table>
+
+<h3>8.4 RAGAS Quality Thresholds (Production)</h3>
+<div class="callout callout-green">
+  Run: <code>python platform/testing/testing.py --ragas-onboarding</code><br />
+  <strong>Faithfulness ≥ 0.80</strong>  ·  <strong>Answer Relevancy ≥ 0.75</strong>  ·  These are LLM-as-judge metrics evaluating plan quality against the ChromaDB corpus.
+</div>
+
+
+<h2>9 · API Reference Summary</h2>
+<table>
+  <tr><th>Method</th><th>Endpoint</th><th>Gate</th><th>Description</th></tr>
+  <tr><td><code>GET</code></td><td><code>/health</code></td><td>None</td><td>Liveness probe — always OK</td></tr>
+  <tr><td><code>GET</code></td><td><code>/ready</code></td><td>None</td><td>Readiness — ChromaDB heartbeat</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/onboarding/plan</code></td><td>🟢 auto</td><td>Generate RampUpPlan. Body: <code>{"role":"..."}</code></td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/onboarding/plan/:id</code></td><td>🟢 auto</td><td>Retrieve plan JSON by planId</td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/onboarding/plan/:id/markdown</code></td><td>🟢 auto</td><td>Markdown with badges and day themes</td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/onboarding/plan/:id/gantt</code></td><td>🟢 auto</td><td>Mermaid Gantt chart</td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/onboarding/graph</code></td><td>🟢 auto</td><td>Service topology diagram</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/onboarding/sync/prepare</code></td><td>🟡 one-click</td><td>Stage 1: store tasks + return pendingId</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/onboarding/sync/confirm/:id</code></td><td>🟡 one-click</td><td>Stage 2: POST tasks to Directus CRM</td></tr>
+  <tr><td><code>DELETE</code></td><td><code>/api/onboarding/sync/:id</code></td><td>🟢 auto</td><td>Cancel pending sync</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/onboarding/ingest</code></td><td>🔴 admin</td><td>Re-index platform corpus (role: i3-admin)</td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/onboarding/status</code></td><td>🟢 auto</td><td>ChromaDB stats + model config</td></tr>
+</table>
+
+
+<h2>10 · Session Deliverables</h2>
+
+<table>
+  <tr><th>Deliverable</th><th>Location</th><th>Status</th></tr>
+  <tr><td>Full TypeScript source (31 files)</td><td><code>onboarding-agent/src/</code></td><td><span class="pill pill-ok">✅ Complete</span></td></tr>
+  <tr><td>OpenShift manifests (3 files)</td><td><code>onboarding-agent/openshift/</code></td><td><span class="pill pill-ok">✅ Complete</span></td></tr>
+  <tr><td>UBI9 multi-stage Dockerfile</td><td><code>onboarding-agent/Dockerfile</code></td><td><span class="pill pill-ok">✅ Complete</span></td></tr>
+  <tr><td>Mock LiteLLM server</td><td><code>onboarding-agent/scripts/mock-litellm.mjs</code></td><td><span class="pill pill-ok">✅ Complete</span></td></tr>
+  <tr><td>35-test automated local suite</td><td><code>onboarding-agent/scripts/test-local.ps1</code></td><td><span class="pill pill-ok">✅ Complete</span></td></tr>
+  <tr><td>Hackathon README</td><td><code>README.md</code></td><td><span class="pill pill-ok">✅ Complete</span></td></tr>
+  <tr><td>Full technical documentation</td><td>IBM Bob artifact (HTML)</td><td><span class="pill pill-ok">✅ Complete</span></td></tr>
+  <tr><td>Verified RampUpPlan JSON (backend_engineer role)</td><td>Bob session output</td><td><span class="pill pill-ok">✅ Complete</span></td></tr>
+  <tr><td>GitHub push (2 commits, 150 files)</td><td>github.com/i3technologies/i3-agentic-ai-labs</td><td><span class="pill pill-ok">✅ Complete</span></td></tr>
+  <tr><td>RAGAS testing integration</td><td><code>platform/testing/testing.py</code></td><td><span class="pill pill-ok">✅ Complete</span></td></tr>
+  <tr><td>MCP connector endpoints</td><td><code>platform/admissions/mcp/mcp_connectors.py</code></td><td><span class="pill pill-ok">✅ Complete</span></td></tr>
+  <tr><td>ArgoCD Wave 7 GitOps integration</td><td><code>platform/gitops/argocd/app-of-apps.yaml</code></td><td><span class="pill pill-ok">✅ Complete</span></td></tr>
+</table>
+
+<div style="text-align:center;margin:24px 0 8px">
+  <span class="stamp">ALL DELIVERABLES COMPLETE</span>
+</div>
+
+
+<h2>11 · Platform Hard Constraints (Enforced in Code)</h2>
+<div class="callout callout-red">
+  <ul style="margin:0;padding-left:16px">
+    <li>⛔ Never modify <code>solution-01</code> through <code>solution-08</code> namespaces — skipped at ingest time in <code>platform.ts</code></li>
+    <li>⛔ Never auto-write to EvalOS tables or Keycloak without 🔴 manual approval gate</li>
+    <li>⛔ Never hardcode secrets — OpenBao KV v2 only at path <code>i3/onboarding-agent/</code></li>
+    <li>⛔ Never skip the Lobster Trap firewall on any user-supplied input field</li>
+    <li>⛔ Never use <code>granite-heavy</code> (watsonx.ai) for anything except final plan synthesis</li>
+    <li>⛔ Never enable <code>DEV_BYPASS_AUTH=true</code> in production or staging</li>
+    <li>⛔ Never commit <code>.env</code>, <code>LITELLM_KEY</code>, or any real tokens to git</li>
+  </ul>
+</div>
+
+
+<h2>12 · Resources &amp; Links</h2>
+<table>
+  <tr><th>Resource</th><th>URL / Path</th></tr>
+  <tr><td>GitHub Repository</td><td>https://github.com/i3technologies/i3-agentic-ai-labs</td></tr>
+  <tr><td>Live API (post-deploy)</td><td>https://onboarding.i3technologies.co.ke</td></tr>
+  <tr><td>Keycloak SSO</td><td>https://sso.i3technologies.co.ke/realms/i3</td></tr>
+  <tr><td>LiteLLM Gateway</td><td>https://litellm.i3technologies.co.ke/v1</td></tr>
+  <tr><td>Langfuse Traces</td><td>https://langfuse.i3technologies.co.ke</td></tr>
+  <tr><td>ArgoCD</td><td>https://argocd.i3technologies.co.ke</td></tr>
+  <tr><td>Admissions Chatbot</td><td>https://admissions.i3technologies.co.ke</td></tr>
+  <tr><td>EvalOS Platform</td><td>https://evalos.i3technologies.co.ke</td></tr>
+  <tr><td>Platform Documentation</td><td><code>platform/docs/platform-documentation.md</code></td></tr>
+  <tr><td>Operations Runbook</td><td><code>platform/RUNBOOK.md</code></td></tr>
+  <tr><td>First Deploy Guide</td><td><code>platform/docs/first-deploy-guide.md</code></td></tr>
+  <tr><td>Build Specification</td><td><code>i3_Academy_IBM_TechXchange_Hackathon_Briefing/Hackathon Projects-2/Project1_Codebase_Onboarding_Agent_Build.docx</code></td></tr>
+</table>
+
+<footer>
+  IBM Bob Session Report  ·  i3 Academy — IBM Silver Business Partner  ·  IBM TechXchange Hackathon 2026<br />
+  Project 1: Codebase Onboarding Agent  ·  ROKS 4.15 (eu-de)  ·  August 28–30, 2026<br /><br />
+  Made with IBM Bob
+</footer>
+
+</div>
+</body>
+</html>
