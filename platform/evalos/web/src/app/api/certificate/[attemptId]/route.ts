@@ -23,7 +23,7 @@ export async function POST(
 
   const userId = session.user.userId || session.user.email || ''
 
-  // Verify the attempt is a passing submission on the final set
+  // Verify the attempt is a passing submission
   const { rows: attemptRows } = await pool.query(
     `SELECT qa.id, qa.pct_score, qa.passed, e.code AS exam_code, e.title AS exam_title
      FROM quiz_attempts qa
@@ -36,11 +36,6 @@ export async function POST(
     return NextResponse.json({ error: 'No passing attempt found' }, { status: 404 })
   }
   const attempt = attemptRows[0]
-
-  // Only issue certificate for SET6
-  if (!attempt.exam_code.endsWith('SET6')) {
-    return NextResponse.json({ error: 'Certificate only available after completing SET6' }, { status: 403 })
-  }
 
   // Check if cert already issued
   const { rows: existing } = await pool.query(

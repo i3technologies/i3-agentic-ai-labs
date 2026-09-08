@@ -291,8 +291,8 @@ export default async function ResultsPage({ params, searchParams }: ResultsPageP
 
       {/* Actions */}
       <div className="flex flex-wrap gap-3 justify-center">
-        {/* Certificate download — only for SET6 passes */}
-        {attempt.passed && attempt.exam_code.endsWith('SET6') && (
+        {/* Certificate download — available for any passing attempt */}
+        {attempt.passed && (
           <CertificateButton attemptId={attempt.id} />
         )}
         <Link
