@@ -20,8 +20,10 @@ data "ibm_resource_group" "rg" {
 }
 
 resource "ibm_is_vpc" "main" {
-  name           = "${var.cluster_name}-vpc"
-  resource_group = data.ibm_resource_group.rg.id
+  # Keep the existing VPC name — rename to i3-platform-vpc is blocked by IBM API
+  name                      = "i3-prod-vpc"
+  resource_group            = data.ibm_resource_group.rg.id
+  address_prefix_management = "manual"
 
   tags = [
     "platform:i3",
@@ -30,20 +32,26 @@ resource "ibm_is_vpc" "main" {
   ]
 }
 
-resource "ibm_is_subnet" "zone1" {
-  name                     = "${var.cluster_name}-subnet-1"
-  vpc                      = ibm_is_vpc.main.id
-  zone                     = "${var.region}-1"
-  resource_group           = data.ibm_resource_group.rg.id
-  total_ipv4_address_count = 256
+resource "ibm_is_vpc_address_prefix" "zone" {
+  for_each = {
+    "eu-de-1" = "10.240.0.0/18"
+    "eu-de-2" = "10.240.64.0/18"
+    "eu-de-3" = "10.240.128.0/18"
+  }
+  name = "${var.cluster_name}-prefix-${each.key}"
+  vpc  = ibm_is_vpc.main.id
+  zone = each.key
+  cidr = each.value
 }
 
-resource "ibm_is_subnet" "zone2" {
-  name                     = "${var.cluster_name}-subnet-2"
+resource "ibm_is_subnet" "worker" {
+  for_each                 = toset(["eu-de-1", "eu-de-2", "eu-de-3"])
+  name                     = "${var.cluster_name}-subnet-${each.key}"
   vpc                      = ibm_is_vpc.main.id
-  zone                     = "${var.region}-2"
+  zone                     = each.key
   resource_group           = data.ibm_resource_group.rg.id
-  total_ipv4_address_count = 256
+  total_ipv4_address_count = 4096
+  depends_on               = [ibm_is_vpc_address_prefix.zone]
 }
 
 # Security group: allow all internal + required external ports
@@ -56,7 +64,7 @@ resource "ibm_is_security_group" "cluster_sg" {
 resource "ibm_is_security_group_rule" "allow_inbound_all_vpc" {
   group     = ibm_is_security_group.cluster_sg.id
   direction = "inbound"
-  remote    = ibm_is_vpc.main.id
+  remote    = "10.240.0.0/14"
 }
 
 resource "ibm_is_security_group_rule" "allow_outbound_all" {
@@ -97,8 +105,20 @@ resource "ibm_is_security_group_rule" "webrtc_ice" {
   }
 }
 
+resource "ibm_is_public_gateway" "pgw" {
+  for_each       = toset(["eu-de-1", "eu-de-2", "eu-de-3"])
+  name           = "${var.cluster_name}-pgw-${each.key}"
+  vpc            = ibm_is_vpc.main.id
+  zone           = each.key
+  resource_group = data.ibm_resource_group.rg.id
+}
+
 output "vpc_id"    { value = ibm_is_vpc.main.id }
 output "subnet_ids" {
-  value = [ibm_is_subnet.zone1.id, ibm_is_subnet.zone2.id]
+  value = [
+    ibm_is_subnet.worker["eu-de-1"].id,
+    ibm_is_subnet.worker["eu-de-2"].id,
+    ibm_is_subnet.worker["eu-de-3"].id,
+  ]
 }
 output "security_group_id" { value = ibm_is_security_group.cluster_sg.id }

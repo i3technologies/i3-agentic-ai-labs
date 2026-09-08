@@ -209,17 +209,12 @@ spec:
             - filer
             - -port=8888
             - -master=seaweedfs-master.i3-ott.svc.cluster.local:9333
-            - -s3
-            - -s3.port=8333
-            - -s3.domainName=seaweedfs-s3.i3-ott.svc.cluster.local
             - -metricsPort=9327
           ports:
             - name: http
               containerPort: 8888
             - name: grpc
               containerPort: 18888
-            - name: s3
-              containerPort: 8333
             - name: metrics
               containerPort: 9327
           resources:
@@ -257,10 +252,11 @@ spec:
       storage: 10Gi
 
 ---
+# ── Filer service (internal) ─────────────────────────────────
 apiVersion: v1
 kind: Service
 metadata:
-  name: seaweedfs-s3
+  name: seaweedfs-filer
   namespace: i3-ott
   labels:
     app: seaweedfs-filer
@@ -268,12 +264,76 @@ spec:
   selector:
     app: seaweedfs-filer
   ports:
+    - name: http
+      port: 8888
+      targetPort: 8888
+    - name: grpc
+      port: 18888
+      targetPort: 18888
+  type: ClusterIP
+
+---
+# ── S3 Gateway Deployment ────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seaweedfs-s3-gw
+  namespace: i3-ott
+  labels:
+    app: seaweedfs-s3-gw
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: seaweedfs-s3-gw
+  template:
+    metadata:
+      labels:
+        app: seaweedfs-s3-gw
+    spec:
+      containers:
+        - name: s3
+          image: chrislusf/seaweedfs:3.70
+          args:
+            - s3
+            - -filer=seaweedfs-filer.i3-ott.svc.cluster.local:8888
+            - -port=8333
+            - -metricsPort=9327
+          ports:
+            - name: s3
+              containerPort: 8333
+            - name: metrics
+              containerPort: 9327
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          readinessProbe:
+            tcpSocket:
+              port: 8333
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+---
+# ── S3 Gateway Service ───────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: seaweedfs-s3
+  namespace: i3-ott
+  labels:
+    app: seaweedfs-s3-gw
+spec:
+  selector:
+    app: seaweedfs-s3-gw
+  ports:
     - name: s3
       port: 8333
       targetPort: 8333
-    - name: filer
-      port: 8888
-      targetPort: 8888
   type: ClusterIP
 
 ---

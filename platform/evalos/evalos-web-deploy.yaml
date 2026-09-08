@@ -1,0 +1,160 @@
+# ============================================================
+# EvalOS Web — Full OpenShift Deployment
+# Components: Secret, BuildConfig, ImageStream, Deployment, Service, Route
+# Namespace: i3-evalos
+# Image: de.icr.io/i3-platform/evalos-web:latest
+# Apply: oc apply -f platform/evalos/evalos-web-deploy.yaml
+# ============================================================
+
+---
+# ── NEXTAUTH secret ───────────────────────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: evalos-web-secrets
+  namespace: i3-evalos
+type: Opaque
+stringData:
+  NEXTAUTH_SECRET: "i3EvalOS-NextAuth-Secret-2026-xK9mPqRvTs"
+  DATABASE_URL: "postgresql://evalos:+UjoQo60gBAn%40RJ5GvlndqWc@i3-postgres-pgbouncer.i3-data.svc:5432/evalos_db"
+  NEXTAUTH_URL: "https://evalos.i3technologies.co.ke"
+  KEYCLOAK_ISSUER: "https://sso.i3technologies.co.ke/auth/realms/i3"
+  KEYCLOAK_CLIENT_ID: "evalos-spa"
+
+---
+# ── ImageStream ───────────────────────────────────────────────
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: evalos-web
+  namespace: i3-evalos
+  labels:
+    app: evalos-web
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  lookupPolicy:
+    local: false
+
+---
+# ── BuildConfig (Docker strategy, source from git) ───────────
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: evalos-web
+  namespace: i3-evalos
+  labels:
+    app: evalos-web
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/i3technologies/platform-gitops.git
+      ref: main
+    contextDir: platform/evalos/web
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  output:
+    to:
+      kind: DockerImage
+      name: de.icr.io/i3-platform/evalos-web:latest
+    pushSecret:
+      name: icr-pull-secret
+  triggers:
+    - type: ConfigChange
+  resources:
+    limits:
+      cpu: "2"
+      memory: 4Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+
+---
+# ── Deployment ────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: evalos-web
+  namespace: i3-evalos
+  labels:
+    app: evalos-web
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: evalos-web
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: evalos-web
+    spec:
+      imagePullSecrets:
+        - name: icr-pull-secret
+      securityContext:
+        runAsUser: 1001
+        runAsNonRoot: true
+      containers:
+        - name: evalos-web
+          image: de.icr.io/i3-platform/evalos-web:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: evalos-web-secrets
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop: [ALL]
+
+---
+# ── Service ───────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: evalos-web
+  namespace: i3-evalos
+  labels:
+    app: evalos-web
+spec:
+  selector:
+    app: evalos-web
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+  type: ClusterIP

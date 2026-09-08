@@ -18,41 +18,37 @@ data "ibm_resource_group" "rg" {
   name = var.resource_group
 }
 
-# Standard COS instance (used for ROKS etcd backup + IAM)
+# COS instance — keep on lite plan (free tier, matches existing provisioned instance)
 resource "ibm_resource_instance" "cos" {
   name              = var.cos_instance_name
   resource_group_id = data.ibm_resource_group.rg.id
   service           = "cloud-object-storage"
-  plan              = "standard"
+  plan              = "lite"
   location          = "global"
   tags              = ["platform:i3", "env:production"]
 }
 
-# Terraform state bucket
+# Terraform state bucket — versioning kept to protect state history
 resource "ibm_cos_bucket" "tfstate" {
   bucket_name          = var.cos_bucket_name
   resource_instance_id = ibm_resource_instance.cos.id
   region_location      = var.region
   storage_class        = "smart"
 
-  lifecycle_rule {
-    id      = "expire-old-state"
-    enable  = true
-    expiration {
-      days = 365
-    }
+  object_versioning {
+    enable = true
   }
 }
 
-# Platform data bucket (SeaweedFS DR + pgBackRest backup)
+# Platform data bucket — keep existing bucket name
 resource "ibm_cos_bucket" "platform" {
-  bucket_name          = "i3-platform-data-eu-de"
+  bucket_name          = "i3-platform-077d74db"
   resource_instance_id = ibm_resource_instance.cos.id
   region_location      = var.region
   storage_class        = "smart"
 }
 
-# pgBackRest backup bucket
+# pgBackRest backup bucket (new — does not exist yet)
 resource "ibm_cos_bucket" "pgbackrest" {
   bucket_name          = "i3-postgres-backup-eu-de"
   resource_instance_id = ibm_resource_instance.cos.id
@@ -60,12 +56,16 @@ resource "ibm_cos_bucket" "pgbackrest" {
   storage_class        = "smart"
 }
 
-# SeaweedFS DR bucket
+# SeaweedFS DR bucket — keep existing bucket name and versioning
 resource "ibm_cos_bucket" "seaweedfs_dr" {
-  bucket_name          = "i3-seaweedfs-dr-eu-de"
+  bucket_name          = "i3-seaweedfs-dr-077d74db"
   resource_instance_id = ibm_resource_instance.cos.id
   region_location      = var.region
   storage_class        = "smart"
+
+  object_versioning {
+    enable = true
+  }
 }
 
 output "instance_crn"          { value = ibm_resource_instance.cos.crn }

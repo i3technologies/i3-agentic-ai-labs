@@ -1,0 +1,951 @@
+#!/usr/bin/env pwsh
+# ============================================================
+# EvalOS / i3 Platform - All Users (KeycloakUser CRs)
+# Generated from: unique_users-Evalos.csv
+# Realm: i3
+# Login: email address
+# Password policy: length(8)
+#
+# REGULAR USERS (28 + Dorothy)  password: IBMbob@2026!wxz
+# ADMIN USERS   (3)             password: Uatik@2026!wxz
+#   - Sebastian Njagi  snjagi@i3technologies.co.ke
+#   - Philip Mukiti    philipm@i3technologies.co.ke
+#   - Joseph Maina     josephm@i3technologies.co.ke
+#
+# Apply: oc apply -f platform/operators/keycloak/evalos-users.yaml
+# ============================================================
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-antony-mbugua
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: antonym@i3technologies.co.ke
+    email: antonym@i3technologies.co.ke
+    firstName: ANTONY
+    lastName: MBUGUA GITHINJI
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-ali-mohamed
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: alimm@i3technologies.co.ke
+    email: alimm@i3technologies.co.ke
+    firstName: Ali
+    lastName: Mohamed
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-becky-gabriella
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: beckygabrielle@i3technologies.co.ke
+    email: beckygabrielle@i3technologies.co.ke
+    firstName: Becky
+    lastName: Gabriella
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-brian-muigai
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: briang@i3technologies.co.ke
+    email: briang@i3technologies.co.ke
+    firstName: Brian
+    lastName: Muigai
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-collins-curtis
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: collinso@i3technologies.co.ke
+    email: collinso@i3technologies.co.ke
+    firstName: Collins
+    lastName: Curtis
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-collins-muka
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: collinsm@i3technologies.co.ke
+    email: collinsm@i3technologies.co.ke
+    firstName: Collins
+    lastName: Muka
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-daniel-odhiambo
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: danielo@i3technologies.co.ke
+    email: danielo@i3technologies.co.ke
+    firstName: Daniel
+    lastName: Odhiambo
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-dorothy-akoth
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: dorothy@i3technologies.co.ke
+    email: dorothy@i3technologies.co.ke
+    firstName: Dorothy
+    lastName: Akoth
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-enock-rotich
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: enockrotich@i3technologies.co.ke
+    email: enockrotich@i3technologies.co.ke
+    firstName: ENOCK
+    lastName: ROTICH
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-gilbert-muhiri
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: gilbertm@i3technologies.co.ke
+    email: gilbertm@i3technologies.co.ke
+    firstName: Gilbert
+    lastName: Martin Muhiri
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-gloria-baker
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: glorian@i3technologies.co.ke
+    email: glorian@i3technologies.co.ke
+    firstName: Gloria
+    lastName: Nthenya Baker
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-ian-githengu
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: iankiromo@i3technologies.co.ke
+    email: iankiromo@i3technologies.co.ke
+    firstName: Ian
+    lastName: Githengu
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-kelvin-gitimu
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: kelvinm@i3technologies.co.ke
+    email: kelvinm@i3technologies.co.ke
+    firstName: Kelvin
+    lastName: Gitimu
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-larry-baraza
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: larrybaraza@i3technologies.co.ke
+    email: larrybaraza@i3technologies.co.ke
+    firstName: Larry
+    lastName: Baraza
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-mark-okoth
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: marko@i3technologies.co.ke
+    email: marko@i3technologies.co.ke
+    firstName: Mark
+    lastName: Okoth
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-nusura-abdallah
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: nusuraa@i3technologies.co.ke
+    email: nusuraa@i3technologies.co.ke
+    firstName: Nusura
+    lastName: Abdallah
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-patience-nduku
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: patiencekyalo@i3technologies.co.ke
+    email: patiencekyalo@i3technologies.co.ke
+    firstName: Patience
+    lastName: Nduku
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-paul-obado
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: paulo@i3technologies.co.ke
+    email: paulo@i3technologies.co.ke
+    firstName: Paul
+    lastName: Obado
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-petronella-mumbua
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: petronellamumbua@i3technologies.co.ke
+    email: petronellamumbua@i3technologies.co.ke
+    firstName: Petronella
+    lastName: Mumbua
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-romars-marigi
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: romarsn@i3technologies.co.ke
+    email: romarsn@i3technologies.co.ke
+    firstName: Romars
+    lastName: Marigi
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-stoneham-kiptoo
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: stonehamkiptoo@i3technologies.co.ke
+    email: stonehamkiptoo@i3technologies.co.ke
+    firstName: Stoneham
+    lastName: Kiptoo
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-tania-maina
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: taniaw@i3technologies.co.ke
+    email: taniaw@i3technologies.co.ke
+    firstName: Tania
+    lastName: Maina
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-tracey-tsurwa
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: traceyn@i3technologies.co.ke
+    email: traceyn@i3technologies.co.ke
+    firstName: Tracey
+    lastName: Tsurwa
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-wisdom-kinoti
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: wisdomk@i3technologies.co.ke
+    email: wisdomk@i3technologies.co.ke
+    firstName: Wisdom
+    lastName: Kinoti
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-zedd-onguso
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: zeddo@i3technologies.co.ke
+    email: zeddo@i3technologies.co.ke
+    firstName: Zedd
+    lastName: Onguso
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-anthony-mureithi
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: anthonymm@i3technologies.co.ke
+    email: anthonymm@i3technologies.co.ke
+    firstName: Anthony
+    lastName: Mureithi
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-charles-ndiritu
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: charlesndiritu@i3technologies.co.ke
+    email: charlesndiritu@i3technologies.co.ke
+    firstName: Charles
+    lastName: Ndiritu
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-felix-kimweli
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: student
+spec:
+  user:
+    username: felixkm@i3technologies.co.ke
+    email: felixkm@i3technologies.co.ke
+    firstName: Felix
+    lastName: Kimweli
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "IBMbob@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["user"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+# ── ADMIN USERS ──────────────────────────────────────────────────────────────
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-sebastian-njagi
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: admin
+spec:
+  user:
+    username: snjagi@i3technologies.co.ke
+    email: snjagi@i3technologies.co.ke
+    firstName: Sebastian
+    lastName: Njagi
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "Uatik@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+      - i3-admin
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["admin"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-philip-mukiti
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: admin
+spec:
+  user:
+    username: philipm@i3technologies.co.ke
+    email: philipm@i3technologies.co.ke
+    firstName: Philip
+    lastName: Mukiti
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "Uatik@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+      - i3-admin
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["admin"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform
+
+---
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: user-joseph-maina
+  namespace: i3-auth
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/user-type: admin
+spec:
+  user:
+    username: josephm@i3technologies.co.ke
+    email: josephm@i3technologies.co.ke
+    firstName: Joseph
+    lastName: Maina
+    enabled: true
+    emailVerified: true
+    credentials:
+      - type: password
+        value: "Uatik@2026!wxz"
+        temporary: false
+    realmRoles:
+      - i3-user
+      - i3-admin
+    attributes:
+      organisation: ["i3 Technologies"]
+      userType: ["admin"]
+  realmSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: i3-platform

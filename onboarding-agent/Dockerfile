@@ -9,14 +9,18 @@ FROM registry.access.redhat.com/ubi9/nodejs-20:latest AS builder
 
 WORKDIR /app
 
+# UBI9 nodejs-20 runs as uid 1001; ensure workdir is writable before npm ci
+RUN chown -R 1001:0 /app && chmod -R g=u /app
+USER 1001
+
 # Copy dependency manifests first for Docker layer caching
-COPY package.json package-lock.json tsconfig.json ./
+COPY --chown=1001:0 package.json package-lock.json tsconfig.json ./
 
 # Install all deps (including devDependencies for build)
 RUN npm ci --prefer-offline
 
 # Copy source
-COPY src/ ./src/
+COPY --chown=1001:0 src/ ./src/
 
 # Compile TypeScript → dist/
 RUN npm run build
@@ -28,9 +32,13 @@ FROM registry.access.redhat.com/ubi9/nodejs-20-minimal:latest AS runtime
 
 WORKDIR /app
 
+# UBI9 minimal runs as uid 1001; fix ownership before npm ci
+RUN chown -R 1001:0 /app && chmod -R g=u /app
+USER 1001
+
 # Copy compiled output and runtime package manifest
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json /app/package-lock.json ./
+COPY --from=builder --chown=1001:0 /app/dist ./dist
+COPY --from=builder --chown=1001:0 /app/package.json /app/package-lock.json ./
 
 # Install only production deps
 RUN npm ci --omit=dev --prefer-offline
