@@ -313,12 +313,12 @@ export default async function DashboardPage() {
                           >
                             View Results
                           </Link>
-                          {attempt.passed && attempt.exam_code.endsWith('SET6') && (
+                          {attempt.passed && (
                             <Link
                               href={`/exam/${attempt.exam_id}/results?attemptId=${attempt.id}`}
                               className="text-xs text-green-700 font-semibold hover:underline"
                             >
-                              🏅 Certificate
+                              🏅 Get Certificate
                             </Link>
                           )}
                         </div>
