@@ -31,12 +31,12 @@ data "ibm_container_cluster_versions" "versions" {
   resource_group_id = data.ibm_resource_group.rg.id
 }
 
-resource "ibm_container_vpc_cluster" "roks" {
+resource "ibm_container_vpc_cluster" "main" {
   name                = var.cluster_name
   vpc_id              = var.vpc_id
   flavor              = var.worker_flavor
   worker_count        = var.min_workers
-  kube_version        = "4.15_openshift"
+  # Do not pin kube_version — let IBM manage patch updates on the existing cluster
   resource_group_id   = data.ibm_resource_group.rg.id
   cos_instance_crn    = var.cos_instance_crn
 
@@ -53,8 +53,10 @@ resource "ibm_container_vpc_cluster" "roks" {
     name      = "${var.region}-2"
   }
 
-  # Cluster-level autoscaler
-  autoscale_enabled = true
+  zones {
+    subnet_id = var.subnet_ids[2]
+    name      = "${var.region}-3"
+  }
 
   tags = ["platform:i3", "env:production"]
 
@@ -65,35 +67,26 @@ resource "ibm_container_vpc_cluster" "roks" {
   }
 }
 
-# GPU burst worker pool (scale-to-zero)
-resource "ibm_container_vpc_worker_pool" "gpu_burst" {
-  cluster           = ibm_container_vpc_cluster.roks.id
-  worker_pool_name  = "gpu-burst"
-  flavor            = var.gpu_worker_flavor
-  vpc_id            = var.vpc_id
-  worker_count      = 0   # Start at zero — activated via make gpu-up
-  resource_group_id = data.ibm_resource_group.rg.id
-  entitlement       = "cloud_pak"
+# GPU burst worker pool — DEFERRED to Phase 2 (RHOAI month)
+# gx2.8x64 flavor is not available in eu-de; uncomment when GPU nodes become available
+# resource "ibm_container_vpc_worker_pool" "gpu_burst" {
+#   cluster           = ibm_container_vpc_cluster.main.id
+#   worker_pool_name  = "gpu-burst"
+#   flavor            = var.gpu_worker_flavor
+#   vpc_id            = var.vpc_id
+#   worker_count      = 0
+#   resource_group_id = data.ibm_resource_group.rg.id
+#   entitlement       = "cloud_pak"
+#   zones {
+#     subnet_id = var.subnet_ids[0]
+#     name      = "${var.region}-1"
+#   }
+#   labels = { "workload" = "gpu-burst", "accelerator" = "v100" }
+#   taints { key = "dedicated", value = "gpu", effect = "NoSchedule" }
+# }
 
-  zones {
-    subnet_id = var.subnet_ids[0]
-    name      = "${var.region}-1"
-  }
-
-  labels = {
-    "workload" = "gpu-burst"
-    "accelerator" = "v100"
-  }
-
-  taints {
-    key    = "dedicated"
-    value  = "gpu"
-    effect = "NoSchedule"
-  }
-}
-
-output "cluster_id"       { value = ibm_container_vpc_cluster.roks.id }
-output "cluster_name"     { value = ibm_container_vpc_cluster.roks.name }
-output "ingress_hostname" { value = ibm_container_vpc_cluster.roks.ingress_hostname }
+output "cluster_id"       { value = ibm_container_vpc_cluster.main.id }
+output "cluster_name"     { value = ibm_container_vpc_cluster.main.name }
+output "ingress_hostname" { value = ibm_container_vpc_cluster.main.ingress_hostname }
 output "cpu_pool_name"    { value = "default" }
-output "gpu_pool_name"    { value = ibm_container_vpc_worker_pool.gpu_burst.worker_pool_name }
+output "gpu_pool_name"    { value = "gpu-burst" }

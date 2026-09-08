@@ -60,16 +60,8 @@ resource "ibm_resource_key" "cos_hmac" {
   role                 = "Writer"
 
   parameters = {
-    HMAC = true
+    HMAC = "true"
   }
 }
 
-output "terraform_service_id"    { value = ibm_iam_service_id.terraform.id }
-output "cos_hmac_access_key_id"  {
-  value     = ibm_resource_key.cos_hmac.credentials["cos_hmac_access_key_id"]
-  sensitive = true
-}
-output "cos_hmac_secret_access_key" {
-  value     = ibm_resource_key.cos_hmac.credentials["cos_hmac_secret_access_key"]
-  sensitive = true
-}
+output "terraform_service_id" { value = ibm_iam_service_id.terraform.id }

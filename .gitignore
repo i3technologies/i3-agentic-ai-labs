@@ -18,10 +18,46 @@ ibmcloud_api_key.txt
 .env.staging
 .env.production
 
-# Tool artifacts
+# TLS certificates and private keys - never commit
+*.crt
+*.key
+*.pem
+ca.crt
+tls.crt
+tls.key
+route-tls.json
+
+# Terraform ephemeral run scripts (contain inline credentials)
+run-tf-apply.ps1
+run-tf-plan.ps1
+run-tf-diag.ps1
+clean-tf-state.ps1
+
+# Build artefacts
+onboarding-agent/dist/
+
+# Tool artefacts
 __pycache__/
 *.pyc
 *.pyo
 .pytest_cache/
 node_modules/
 platform/testing/reports/
+
+# Generated HTML reports (one-off session outputs)
+evalos-administrator-documentation.html
+evalos-administrator-documentation2.html
+evalos-enhancement-integration-roadmap.html
+evalos-i3-platform-user-credentials.html
+evalos-user-guide.html
+evalos-user-guide2.html
+i3-platform-administrator-reference-guide.html
+i3-platform-complete-configuration-reference.html
+i3-platform-deploy-access-review-report.html
+i3-platform-deployment-tasks-one-at-a-time.html
+i3-platform-dns-configuration-report.html
+i3-platform-dns-external-configuration-requirements.html
+
+# PDFs and CSVs with potentially sensitive data
+i3_Solutions_Brochure_2026.pdf
+unique_users-Evalos.csv

@@ -87,11 +87,12 @@ spec:
             - name: CHROMA_COLLECTION
               value: onboarding-corpus
             - name: KEYCLOAK_ISSUER
-              value: "https://sso.i3technologies.co.ke/realms/i3"
+              value: "https://sso.i3technologies.co.ke/auth/realms/i3"
             - name: KEYCLOAK_CLIENT_ID
               value: onboarding-agent
+            # Use internal HTTP endpoint to avoid self-signed TLS cert on in-cluster JWKS fetch
             - name: KEYCLOAK_JWKS_URI
-              value: "https://sso.i3technologies.co.ke/realms/i3/protocol/openid-connect/certs"
+              value: "http://keycloak-discovery.i3-auth.svc.cluster.local:8080/auth/realms/i3/protocol/openid-connect/certs"
             - name: EVALOS_API_URL
               value: "http://evalos-api.i3-evalos.svc.cluster.local:8080"
             - name: DIRECTUS_URL
@@ -132,9 +133,10 @@ spec:
               port: 3000
             initialDelaySeconds: 15
             periodSeconds: 20
+          # Use /health for readiness — /ready requires ChromaDB (checked post-ingest)
           readinessProbe:
             httpGet:
-              path: /ready
+              path: /health
               port: 3000
             initialDelaySeconds: 10
             periodSeconds: 10
