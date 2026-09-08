@@ -24,6 +24,7 @@ interface Exam {
 
 interface RecentAttempt {
   id: string
+  exam_id: string
   exam_title: string
   exam_code: string
   pct_score: number | null
@@ -96,6 +97,7 @@ async function getRecentAttempts(userId: string): Promise<RecentAttempt[]> {
     `
     SELECT
       qa.id,
+      qa.exam_id,
       e.title AS exam_title,
       e.code AS exam_code,
       qa.pct_score,
@@ -304,12 +306,22 @@ export default async function DashboardPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       {attempt.status === 'submitted' ? (
-                        <Link
-                          href={`/exam/${attempt.id}/results`}
-                          className="text-xs text-blue-600 hover:underline"
-                        >
-                          View Results
-                        </Link>
+                        <div className="flex flex-col items-end gap-1">
+                          <Link
+                            href={`/exam/${attempt.exam_id}/results?attemptId=${attempt.id}`}
+                            className="text-xs text-blue-600 hover:underline"
+                          >
+                            View Results
+                          </Link>
+                          {attempt.passed && attempt.exam_code.endsWith('SET6') && (
+                            <Link
+                              href={`/exam/${attempt.exam_id}/results?attemptId=${attempt.id}`}
+                              className="text-xs text-green-700 font-semibold hover:underline"
+                            >
+                              🏅 Certificate
+                            </Link>
+                          )}
+                        </div>
                       ) : (
                         <span className="text-xs text-slate-400">—</span>
                       )}
