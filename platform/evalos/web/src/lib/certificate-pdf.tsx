@@ -11,261 +11,272 @@ import {
   Path,
 } from '@react-pdf/renderer'
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-const W = 841.89  // A4 landscape width  (pt)
-const H = 595.28  // A4 landscape height (pt)
+// A4 landscape dimensions in points
+const PW = 841.89
+const PH = 595.28
+const SIDEBAR = 226
 
 const s = StyleSheet.create({
   page: {
-    width: W,
-    height: H,
+    width: PW,
+    height: PH,
     backgroundColor: '#ffffff',
     fontFamily: 'Helvetica',
-    flexDirection: 'column',
   },
 
-  // ── Left dark sidebar ──────────────────────────────────────────────────────
-  sidebar: {
+  // ── Sidebar (absolute, full height) ───────────────────────────────────────
+  sidebarBg: {
     position: 'absolute',
-    left: 0,
-    top: 0,
-    width: 220,
-    height: H,
+    left: 0, top: 0,
+    width: SIDEBAR, height: PH,
     backgroundColor: '#0f172a',
   },
-  sidebarAccent: {
+  sidebarStripe: {
     position: 'absolute',
-    left: 0,
-    top: 0,
-    width: 6,
-    height: H,
+    left: 0, top: 0,
+    width: 5, height: PH,
     backgroundColor: '#3b82f6',
   },
-
-  // ── Sidebar content ────────────────────────────────────────────────────────
-  sidebarContent: {
+  sidebarInner: {
     position: 'absolute',
-    left: 0,
-    top: 0,
-    width: 220,
-    height: H,
-    paddingLeft: 28,
-    paddingRight: 20,
-    paddingTop: 52,
-    paddingBottom: 36,
+    left: 0, top: 0,
+    width: SIDEBAR, height: PH,
+    paddingTop: 44,
+    paddingBottom: 32,
+    paddingLeft: 26,
+    paddingRight: 18,
     flexDirection: 'column',
     justifyContent: 'space-between',
   },
-  sidebarTop: {},
-  certOfLabel: {
-    fontSize: 8,
+
+  // Sidebar top block
+  sbTop: {},
+  sbCertLabel: {
+    fontSize: 7,
     color: '#3b82f6',
-    letterSpacing: 2.5,
+    letterSpacing: 2,
     textTransform: 'uppercase',
-    marginBottom: 10,
-    marginTop: 28,
+    marginTop: 22,
+    marginBottom: 6,
   },
-  certOfTitle: {
-    fontSize: 17,
+  sbCertTitle: {
+    fontSize: 15,
     fontFamily: 'Helvetica-Bold',
     color: '#ffffff',
-    lineHeight: 1.35,
+    lineHeight: 1.4,
   },
-  sidebarDivider: {
+  sbDivider: {
     height: 1,
     backgroundColor: '#1e3a5f',
-    marginTop: 28,
-    marginBottom: 28,
-    marginRight: 0,
+    marginTop: 22,
+    marginBottom: 22,
   },
 
-  // Score circle on sidebar
-  scoreSection: {
-    alignItems: 'flex-start',
-    marginBottom: 28,
+  // Score on sidebar — plain box, no SVG text
+  sbScoreBox: {
+    backgroundColor: '#052e16',
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    width: 110,
+    marginBottom: 4,
   },
-  scoreCircleWrap: {
-    width: 90,
-    height: 90,
-    marginBottom: 10,
-  },
-  scoreValueSide: {
-    fontSize: 30,
+  sbScoreNum: {
+    fontSize: 34,
     fontFamily: 'Helvetica-Bold',
     color: '#4ade80',
     textAlign: 'center',
   },
-  scoreLabelSide: {
-    fontSize: 8,
+  sbScoreLabel: {
+    fontSize: 7,
     color: '#22c55e',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     textAlign: 'center',
+    marginTop: 3,
+  },
+  sbPassBadge: {
+    marginTop: 10,
+    backgroundColor: '#14532d',
+    borderRadius: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    width: 110,
+  },
+  sbPassText: {
+    fontSize: 8,
+    fontFamily: 'Helvetica-Bold',
+    color: '#4ade80',
+    textAlign: 'center',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
 
   // Verify block at bottom of sidebar
-  verifySection: {},
-  verifyLabel: {
+  sbVerifyLabel: {
     fontSize: 7,
     color: '#475569',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 5,
   },
-  verifyCode: {
-    fontSize: 11,
+  sbVerifyCode: {
+    fontSize: 10,
     fontFamily: 'Helvetica-Bold',
     color: '#60a5fa',
-    letterSpacing: 1.8,
+    letterSpacing: 1.5,
+    marginBottom: 4,
   },
-  verifyUrl: {
+  sbVerifyUrl: {
     fontSize: 7,
     color: '#334155',
-    marginTop: 4,
   },
 
-  // ── Main content area ──────────────────────────────────────────────────────
+  // ── Main panel ─────────────────────────────────────────────────────────────
   main: {
     position: 'absolute',
-    left: 220,
+    left: SIDEBAR,
     top: 0,
-    width: W - 220,
-    height: H,
-    paddingLeft: 52,
-    paddingRight: 50,
-    paddingTop: 52,
-    paddingBottom: 36,
+    width: PW - SIDEBAR,
+    height: PH,
+    paddingLeft: 48,
+    paddingRight: 44,
+    paddingTop: 44,
+    paddingBottom: 30,
     flexDirection: 'column',
     justifyContent: 'space-between',
   },
 
-  // Logo row at top-right
-  logoRow: {
+  // Top row: logo right-aligned
+  topRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginBottom: 0,
   },
-  logoTagline: {
-    fontSize: 9,
+  topLogoTag: {
+    fontSize: 8,
     color: '#94a3b8',
     letterSpacing: 1.2,
     textTransform: 'uppercase',
-    marginLeft: 10,
-    marginTop: 6,
+    marginLeft: 8,
+    marginTop: 4,
   },
 
-  // Centre body
-  body: {
+  // Centre recipient block
+  recipient: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingTop: 10,
   },
-  presentedTo: {
-    fontSize: 9,
+  presLabel: {
+    fontSize: 8,
     color: '#94a3b8',
     letterSpacing: 2,
     textTransform: 'uppercase',
-    marginBottom: 12,
+    marginBottom: 10,
   },
-  studentName: {
-    fontSize: 40,
+  nameText: {
+    fontSize: 36,
     fontFamily: 'Helvetica-Bold',
     color: '#0f172a',
-    marginBottom: 6,
+    marginBottom: 5,
   },
-  studentEmail: {
-    fontSize: 12,
+  emailText: {
+    fontSize: 11,
     color: '#64748b',
-    marginBottom: 24,
+    marginBottom: 18,
   },
-  bodyText: {
-    fontSize: 11.5,
+  bodyLine1: {
+    fontSize: 11,
     color: '#334155',
-    lineHeight: 1.75,
-    maxWidth: 460,
+    lineHeight: 1.6,
+    marginBottom: 2,
+  },
+  bodyLine2: {
+    fontSize: 11,
+    fontFamily: 'Helvetica-Bold',
+    color: '#0f172a',
+    lineHeight: 1.6,
+    marginBottom: 2,
+  },
+  bodyLine3: {
+    fontSize: 11,
+    color: '#334155',
+    lineHeight: 1.6,
     marginBottom: 0,
   },
-  bodyBold: {
-    fontFamily: 'Helvetica-Bold',
-    color: '#0f172a',
-  },
 
-  // ── Meta panel (the landscape block) ──────────────────────────────────────
-  metaPanel: {
-    marginTop: 32,
+  // Meta cards row
+  metaRow: {
     flexDirection: 'row',
-    gap: 0,
+    marginTop: 24,
   },
   metaCard: {
     backgroundColor: '#f8fafc',
-    borderRadius: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 18,
+    borderRadius: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
     borderLeftWidth: 3,
     borderLeftColor: '#3b82f6',
-    marginRight: 12,
-    minWidth: 148,
+    marginRight: 10,
+    flex: 1,
   },
-  metaCardKey: {
-    fontSize: 7.5,
+  metaKey: {
+    fontSize: 7,
     color: '#94a3b8',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 5,
   },
-  metaCardValue: {
-    fontSize: 11,
+  metaVal: {
+    fontSize: 10,
     fontFamily: 'Helvetica-Bold',
     color: '#0f172a',
-    lineHeight: 1.3,
+    lineHeight: 1.35,
   },
 
-  // ── Bottom footer strip ────────────────────────────────────────────────────
-  footer: {
+  // Footer
+  footerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    paddingTop: 14,
+    alignItems: 'center',
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#e5e7eb',
   },
   footerLeft: {
-    fontSize: 8,
+    fontSize: 7.5,
     color: '#94a3b8',
+    flex: 1,
   },
-  footerRight: {
-    fontSize: 8,
-    color: '#94a3b8',
-    textAlign: 'right',
-  },
-  stamp: {
-    fontSize: 8,
-    color: '#22c55e',
+  footerStamp: {
+    fontSize: 7.5,
     fontFamily: 'Helvetica-Bold',
-    letterSpacing: 1,
+    color: '#16a34a',
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
     borderWidth: 1.5,
-    borderColor: '#22c55e',
+    borderColor: '#16a34a',
     borderRadius: 3,
     paddingVertical: 3,
     paddingHorizontal: 8,
+    marginHorizontal: 12,
+  },
+  footerRight: {
+    fontSize: 7.5,
+    color: '#94a3b8',
+    textAlign: 'right',
+    flex: 1,
   },
 })
 
-// ─── i3 Logo SVG component ─────────────────────────────────────────────────
-function I3Logo({ size = 52 }: { size?: number }) {
-  // Scale from viewBox 0 0 120 40
-  const scale = size / 40
-  const w = 120 * scale
-  const h = 40 * scale
+// ── i3 Logo rendered as SVG primitives ────────────────────────────────────────
+function I3Logo({ size }: { size: number }) {
+  const w = (120 / 40) * size
   return (
-    <Svg width={w} height={h} viewBox="0 0 120 40">
-      {/* i — dot */}
+    <Svg width={w} height={size} viewBox="0 0 120 40">
       <Circle cx="12" cy="8" r="4" fill="#60A5FA" />
-      {/* i — stem */}
       <Rect x="9" y="15" width="6" height="20" rx="3" fill="#60A5FA" />
-      {/* 3 — numeral */}
       <Path
         d="M32 12 Q48 12 48 20 Q48 28 36 28 Q48 28 48 34 Q48 40 32 40"
         stroke="#60A5FA"
@@ -277,19 +288,7 @@ function I3Logo({ size = 52 }: { size?: number }) {
   )
 }
 
-// ─── Score badge — solid green circle with score text inside ─────────────
-function ScoreBadge({ pct }: { pct: number }) {
-  return (
-    <Svg width={90} height={90} viewBox="0 0 90 90">
-      {/* Outer ring track */}
-      <Circle cx="45" cy="45" r="40" fill="#14532d" />
-      {/* Inner fill */}
-      <Circle cx="45" cy="45" r="34" fill="#052e16" />
-    </Svg>
-  )
-}
-
-// ─── Props ─────────────────────────────────────────────────────────────────
+// ── Props ─────────────────────────────────────────────────────────────────────
 interface CertProps {
   studentName: string
   studentEmail: string
@@ -300,7 +299,7 @@ interface CertProps {
   issuedAt: Date
 }
 
-// ─── Certificate ───────────────────────────────────────────────────────────
+// ── Certificate document ──────────────────────────────────────────────────────
 export function CertificatePDF({
   studentName,
   studentEmail,
@@ -315,12 +314,10 @@ export function CertificatePDF({
   })
   const score = Math.round(pctScore)
 
-  // Derive set label e.g. "Practice Set 1" from examCode "C1000-207-SET1"
+  // "C1000-207-SET1" → "C1000-207 Practice Set 1"
   const setMatch = examCode.match(/SET(\d+)$/i)
   const setNum = setMatch ? setMatch[1] : ''
-  const examDisplay = setNum
-    ? `C1000-207 Practice Set ${setNum}`
-    : examCode
+  const examDisplay = setNum ? `C1000-207 Practice Set ${setNum}` : examCode
 
   return (
     <Document
@@ -331,89 +328,89 @@ export function CertificatePDF({
     >
       <Page size="A4" orientation="landscape" style={s.page}>
 
-        {/* ── Dark sidebar ──────────────────────────────────────── */}
-        <View style={s.sidebar} />
-        <View style={s.sidebarAccent} />
+        {/* ── Sidebar background + blue accent stripe ── */}
+        <View style={s.sidebarBg} />
+        <View style={s.sidebarStripe} />
 
-        <View style={s.sidebarContent}>
-          {/* i3 logo full-size on sidebar */}
-          <View style={s.sidebarTop}>
-            <I3Logo size={72} />
+        {/* ── Sidebar content ── */}
+        <View style={s.sidebarInner}>
 
-            <Text style={s.certOfLabel}>Certificate of</Text>
-            <Text style={s.certOfTitle}>Examination{'\n'}Completion</Text>
+          {/* Top: logo + cert title */}
+          <View style={s.sbTop}>
+            <I3Logo size={60} />
+            <Text style={s.sbCertLabel}>Certificate of</Text>
+            <Text style={s.sbCertTitle}>{'Examination\nCompletion'}</Text>
+            <View style={s.sbDivider} />
 
-            <View style={s.sidebarDivider} />
-
-            {/* Score ring */}
-            <View style={s.scoreSection}>
-              <View style={s.scoreCircleWrap}>
-                <ScoreBadge pct={score} />
-              </View>
-              <Text style={s.scoreValueSide}>{score}%</Text>
-              <Text style={s.scoreLabelSide}>Final Score</Text>
+            {/* Score box */}
+            <View style={s.sbScoreBox}>
+              <Text style={s.sbScoreNum}>{score}%</Text>
+              <Text style={s.sbScoreLabel}>Final Score</Text>
+            </View>
+            <View style={s.sbPassBadge}>
+              <Text style={s.sbPassText}>PASS</Text>
             </View>
           </View>
 
-          {/* Verify code pinned to bottom */}
-          <View style={s.verifySection}>
-            <Text style={s.verifyLabel}>Verification Code</Text>
-            <Text style={s.verifyCode}>{verifyCode}</Text>
-            <Text style={s.verifyUrl}>evalos.i3technologies.co.ke/verify/{verifyCode}</Text>
+          {/* Bottom: verification */}
+          <View>
+            <Text style={s.sbVerifyLabel}>Verification Code</Text>
+            <Text style={s.sbVerifyCode}>{verifyCode}</Text>
+            <Text style={s.sbVerifyUrl}>evalos.i3technologies.co.ke{'\n'}/verify/{verifyCode}</Text>
           </View>
+
         </View>
 
-        {/* ── Main content ─────────────────────────────────────── */}
+        {/* ── Main content panel ── */}
         <View style={s.main}>
 
-          {/* Logo top-right */}
-          <View style={s.logoRow}>
-            <I3Logo size={44} />
-            <Text style={s.logoTagline}>Technologies · Nairobi</Text>
+          {/* Top-right logo */}
+          <View style={s.topRow}>
+            <I3Logo size={36} />
+            <Text style={s.topLogoTag}>Technologies · Nairobi</Text>
           </View>
 
-          {/* Recipient */}
-          <View style={s.body}>
-            <Text style={s.presentedTo}>This certifies that</Text>
-            <Text style={s.studentName}>{studentName}</Text>
-            <Text style={s.studentEmail}>{studentEmail}</Text>
+          {/* Recipient section */}
+          <View style={s.recipient}>
+            <Text style={s.presLabel}>This certifies that</Text>
+            <Text style={s.nameText}>{studentName}</Text>
+            <Text style={s.emailText}>{studentEmail}</Text>
 
-            <Text style={s.bodyText}>
-              has successfully completed the{' '}
-              <Text style={s.bodyBold}>{examDisplay}</Text>
-              {' '}practice examination of the{' '}
-              <Text style={s.bodyBold}>IBM watsonx Orchestrate v2 Administrator</Text>
-              {' '}(C1000-207) certification programme, achieving a passing score
-              and demonstrating proficiency across all examined knowledge domains.
+            {/* Body text split into plain lines — no nested bold spans */}
+            <Text style={s.bodyLine1}>has successfully completed the</Text>
+            <Text style={s.bodyLine2}>{examDisplay}</Text>
+            <Text style={s.bodyLine3}>
+              practice examination of the IBM watsonx Orchestrate v2 Administrator (C1000-207){'\n'}
+              certification programme, achieving a passing score across all examined knowledge domains.
             </Text>
 
-            {/* ── Meta cards row — the landscape detail block ── */}
-            <View style={s.metaPanel}>
+            {/* Meta cards */}
+            <View style={s.metaRow}>
               <View style={s.metaCard}>
-                <Text style={s.metaCardKey}>Examination</Text>
-                <Text style={s.metaCardValue}>{examDisplay}</Text>
+                <Text style={s.metaKey}>Examination</Text>
+                <Text style={s.metaVal}>{examDisplay}</Text>
               </View>
               <View style={s.metaCard}>
-                <Text style={s.metaCardKey}>Pass Threshold</Text>
-                <Text style={s.metaCardValue}>90%</Text>
+                <Text style={s.metaKey}>Pass Threshold</Text>
+                <Text style={s.metaVal}>90%</Text>
               </View>
               <View style={s.metaCard}>
-                <Text style={s.metaCardKey}>Date Issued</Text>
-                <Text style={s.metaCardValue}>{dateStr}</Text>
+                <Text style={s.metaKey}>Date Issued</Text>
+                <Text style={s.metaVal}>{dateStr}</Text>
               </View>
               <View style={s.metaCard}>
-                <Text style={s.metaCardKey}>Platform</Text>
-                <Text style={s.metaCardValue}>EvalOS · i3 Technologies</Text>
+                <Text style={s.metaKey}>Platform</Text>
+                <Text style={s.metaVal}>EvalOS · i3 Technologies</Text>
               </View>
             </View>
           </View>
 
           {/* Footer */}
-          <View style={s.footer}>
+          <View style={s.footerRow}>
             <Text style={s.footerLeft}>
               i3 Technologies Ltd · Nairobi, Kenya · evalos.i3technologies.co.ke
             </Text>
-            <Text style={s.stamp}>✓ Verified Pass</Text>
+            <Text style={s.footerStamp}>Verified Pass</Text>
             <Text style={s.footerRight}>
               IBM C1000-207 · watsonx Orchestrate v2 Administrator
             </Text>
