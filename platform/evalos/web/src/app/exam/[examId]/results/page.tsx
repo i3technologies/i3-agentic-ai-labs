@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { authOptions } from '@/lib/auth'
 import pool from '@/lib/db'
 import CertificateButton from './certificate-button'
+import StudyCoachPanel from './study-coach-panel'
 
 interface ResultsPageProps {
   params: { examId: string }
@@ -207,6 +208,13 @@ export default async function ResultsPage({ params, searchParams }: ResultsPageP
           </tbody>
         </table>
       </div>
+
+      {/* AI Study Coach */}
+      <StudyCoachPanel
+        attemptId={attempt.id}
+        passed={passed}
+        score={score}
+      />
 
       {/* Question review */}
       <div className="mb-8">
