@@ -112,3 +112,24 @@ spec:
       port: 11434
       targetPort: 11434
   type: ClusterIP
+---
+# NetworkPolicy: allow evalos-web (i3-evalos) to reach Ollama (i3-ott)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-evalos-to-ollama
+  namespace: i3-ott
+spec:
+  podSelector:
+    matchLabels:
+      app: ollama
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-evalos
+      ports:
+        - protocol: TCP
+          port: 11434
+  policyTypes:
+    - Ingress
