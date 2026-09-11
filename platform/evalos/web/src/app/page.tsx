@@ -54,11 +54,11 @@ export default async function HomePage() {
         {/* Feature bullets */}
         <ul className="mt-8 space-y-2.5">
           {[
-            ['360 practice questions across 7 domains', '📚'],
-            ['6 timed practice sets — 90 min, pass at 90%', '⏱'],
-            ['Sequential unlock: master each set to advance', '🔒'],
-            ['Instant grading with AI-powered domain insights', '🧠'],
-          ].map(([label, icon]) => (
+              ['360 practice questions across 7 IBM watsonx domains', '📚'],
+              ['6 timed practice sets — 90 min, pass at 90%', '⏱'],
+              ['AI Study Coach — personalised 3-day study plan', '🤖'],
+              ['AI Interview Round + Coding Labs', '💻'],
+            ].map(([label, icon]) => (
             <li key={label} className="flex items-center gap-3 text-sm text-slate-300">
               <span className="text-base leading-none">{icon}</span>
               {label}

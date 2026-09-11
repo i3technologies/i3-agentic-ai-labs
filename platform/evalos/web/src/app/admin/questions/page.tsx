@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { authOptions } from '@/lib/auth'
 import pool from '@/lib/db'
+import QuestionGeneratorPanel from '../question-generator-panel'
 
 interface Question {
   id: string
@@ -117,6 +118,9 @@ export default async function QuestionBankPage({
         </div>
       </div>
 
+      {/* AI Question Generator */}
+      <QuestionGeneratorPanel />
+
       {/* Filters */}
       <form method="GET" className="bg-white border border-slate-200 rounded-xl p-4 mb-6">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
@@ -204,7 +208,18 @@ export default async function QuestionBankPage({
                     {q.correct_answers.join(', ')}
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <span className={`inline-block w-2 h-2 rounded-full ${q.is_active ? 'bg-green-500' : 'bg-red-400'}`} />
+                    <a
+                      href={`/api/admin/questions?id=${q.id}&active=${!q.is_active}`}
+                      title={q.is_active ? 'Click to deactivate' : 'Click to activate'}
+                      className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full transition-colors ${
+                        q.is_active
+                          ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                          : 'bg-red-50 text-red-500 hover:bg-red-100'
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${q.is_active ? 'bg-green-500' : 'bg-red-400'}`} />
+                      {q.is_active ? 'On' : 'Off'}
+                    </a>
                   </td>
                 </tr>
               ))}
