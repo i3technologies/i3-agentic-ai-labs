@@ -122,13 +122,13 @@ export default async function DashboardPage() {
         ) : (
           <ul className="divide-y divide-gray-800 text-sm">
             {activity.map((a: Record<string, unknown>) => (
-              <li key={String(a.id)} className="py-2.5 flex items-start gap-3">
+              <li key={String(a.id ?? '')} className="py-2.5 flex items-start gap-3">
                 <span className="text-gray-600 text-xs w-32 flex-shrink-0">
-                  {new Date(String(a.created_at)).toLocaleString('en-KE', {
+                  {new Date(String(a.created_at ?? '')).toLocaleString('en-KE', {
                     day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
                   })}
                 </span>
-                <span className="text-gray-300">{String(a.description)}</span>
+                <span className="text-gray-300">{String(a.description ?? '')}</span>
               </li>
             ))}
           </ul>

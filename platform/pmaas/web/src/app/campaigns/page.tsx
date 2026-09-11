@@ -57,19 +57,19 @@ export default async function CampaignsPage() {
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="font-semibold text-white">{String(c.name)}</h2>
+                    <h2 className="font-semibold text-white">{String(c.name ?? '')}</h2>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[String(c.status)] ?? 'bg-gray-700 text-gray-300'}`}>
-                      {String(c.status)}
+                      {String(c.status ?? '')}
                     </span>
                   </div>
-                  {c.description && (
+                  {c.description != null && (
                     <p className="text-sm text-gray-400 mt-1 truncate">{String(c.description)}</p>
                   )}
                   <div className="flex flex-wrap gap-4 mt-2 text-xs text-gray-500">
-                    {c.start_date && <span>Starts {new Date(String(c.start_date)).toLocaleDateString('en-KE')}</span>}
-                    {c.end_date   && <span>Ends {new Date(String(c.end_date)).toLocaleDateString('en-KE')}</span>}
+                    {c.start_date != null && <span>Starts {new Date(String(c.start_date)).toLocaleDateString('en-KE')}</span>}
+                    {c.end_date != null   && <span>Ends {new Date(String(c.end_date)).toLocaleDateString('en-KE')}</span>}
                     <span>{Number(c.ward_count)} wards targeted</span>
-                    {c.budget_kes && <span>KES {Number(c.budget_kes).toLocaleString()}</span>}
+                    {c.budget_kes != null && <span>KES {Number(c.budget_kes).toLocaleString()}</span>}
                   </div>
                 </div>
                 <Link

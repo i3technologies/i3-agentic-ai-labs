@@ -338,51 +338,46 @@ spec:
     insecureEdgeTerminationPolicy: Redirect
 
 ---
-# ── NetworkPolicy: PMaaS egress ───────────────────────────────
+# ── NetworkPolicy: PMaaS ingress ──────────────────────────────
+# Ingress-only policies (no egress restriction — mirrors i3-evalos pattern)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: pmaas-egress
+  name: deny-all-ingress
   namespace: i3-pmaas
 spec:
   podSelector: {}
-  egress:
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: i3-model-gateway
-      ports:
-        - protocol: TCP
-          port: 4000
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: i3-ai-lab
-      ports:
-        - protocol: TCP
-          port: 8000
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: i3-voice
-      ports:
-        - protocol: TCP
-          port: 8000
-        - protocol: TCP
-          port: 8001
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: i3-data
-      ports:
-        - protocol: TCP
-          port: 5432
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: i3-messaging
-      ports:
-        - protocol: TCP
-          port: 9092
   policyTypes:
-    - Egress
+    - Ingress
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-router-ingress
+  namespace: i3-pmaas
+spec:
+  podSelector: {}
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              network.openshift.io/policy-group: ingress
+  policyTypes:
+    - Ingress
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-ingress
+  namespace: i3-pmaas
+spec:
+  podSelector: {}
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-monitoring
+  policyTypes:
+    - Ingress
