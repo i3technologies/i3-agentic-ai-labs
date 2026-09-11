@@ -1,0 +1,163 @@
+# ============================================================
+# ChromaDB — Vector Store for RAG Pipelines
+# Namespace: i3-ai-lab
+# Collections:
+#   - i3-exam-corpus       (EvalOS question + explanation bank)
+#   - onboarding-docs      (i3 platform docs, HR, EvalOS how-to)
+#   - pmaas-manifesto      (PMaaS candidate manifestos, per campaign)
+#   - afroerp-kb           (ERPNext docs, KRA guidelines, i3 SOPs)
+#   - engage-brand-kb      (per-tenant brand voice, product catalogue)
+# ============================================================
+
+# ── PVC: vector data persistent storage ──────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: chromadb-data
+  namespace: i3-ai-lab
+  labels:
+    app: chromadb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+# ── StatefulSet: ChromaDB ─────────────────────────────────────
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: chromadb
+  namespace: i3-ai-lab
+  labels:
+    app: chromadb
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  serviceName: chromadb
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chromadb
+  template:
+    metadata:
+      labels:
+        app: chromadb
+    spec:
+      containers:
+        - name: chromadb
+          image: chromadb/chroma:0.5.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: IS_PERSISTENT
+              value: "TRUE"
+            - name: PERSIST_DIRECTORY
+              value: "/chroma/chroma"
+            - name: ANONYMIZED_TELEMETRY
+              value: "False"
+            # Token auth (set matching CHROMA_TOKEN in consumers)
+            - name: CHROMA_SERVER_AUTHN_PROVIDER
+              value: "chromadb.auth.token_authn.TokenAuthenticationServerProvider"
+            - name: CHROMA_SERVER_AUTHN_CREDENTIALS
+              valueFrom:
+                secretKeyRef:
+                  name: chromadb-secrets
+                  key: CHROMA_TOKEN
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "4Gi"
+          volumeMounts:
+            - name: data
+              mountPath: /chroma/chroma
+          livenessProbe:
+            httpGet:
+              path: /api/v1/heartbeat
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /api/v1/heartbeat
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: chromadb-data
+
+---
+# ── Service: ClusterIP (internal only) ───────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: chromadb
+  namespace: i3-ai-lab
+  labels:
+    app: chromadb
+spec:
+  selector:
+    app: chromadb
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+  clusterIP: None  # headless for StatefulSet DNS
+
+---
+# ── Secret: ChromaDB auth token ──────────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: chromadb-secrets
+  namespace: i3-ai-lab
+  labels:
+    app: chromadb
+type: Opaque
+stringData:
+  # Generate: openssl rand -hex 32
+  CHROMA_TOKEN: "REPLACE_WITH_SECURE_CHROMA_TOKEN"
+
+---
+# ── NetworkPolicy: restrict ChromaDB access ──────────────────
+# Only allow: onboarding-agent, open-webui, embedding-job
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: chromadb-ingress
+  namespace: i3-ai-lab
+spec:
+  podSelector:
+    matchLabels:
+      app: chromadb
+  ingress:
+    - from:
+        # Open WebUI (Sage + all co-workers)
+        - podSelector:
+            matchLabels:
+              app: open-webui
+        # Embedding pipeline job
+        - podSelector:
+            matchLabels:
+              app: embedding-pipeline
+        # Onboarding agent (i3-admissions)
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-admissions
+        # EvalOS Study Coach
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-evalos
+      ports:
+        - protocol: TCP
+          port: 8000
+  policyTypes:
+    - Ingress

@@ -1,0 +1,293 @@
+# ============================================================
+# Voice Stack — i3-voice namespace
+# Services:
+#   - XTTS-v2 TTS   (POST /v1/tts, POST /v1/clone)
+#   - faster-whisper STT (POST /v1/transcribe)
+#
+# Used by: All products via internal API
+# PMaaS AI Caller: Asterisk SIP → Whisper STT → LLM → XTTS-v2 TTS
+# All co-workers: push-to-talk browser voice via WebRTC → STT → LLM → TTS
+# ============================================================
+
+# ── Namespace ────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-voice
+  labels:
+    kubernetes.io/metadata.name: i3-voice
+    app.kubernetes.io/part-of: i3-platform
+
+---
+# ── ResourceQuota ─────────────────────────────────────────────
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: voice-quota
+  namespace: i3-voice
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: "8Gi"
+    limits.cpu: "8"
+    limits.memory: "16Gi"
+
+---
+# ── PVC: voice model storage (XTTS-v2 ~1.8GB + Whisper ~1.5GB) ──
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: voice-models
+  namespace: i3-voice
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+# ── PVC: voice clone storage (voice_id WAV files) ─────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: voice-clones
+  namespace: i3-voice
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# ── Secret: voice service credentials ────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: voice-secrets
+  namespace: i3-voice
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+type: Opaque
+stringData:
+  # Internal API key — all callers must send: Authorization: Bearer <token>
+  VOICE_API_KEY: "REPLACE_WITH_SECURE_VOICE_API_KEY"
+
+---
+# ── Deployment: XTTS-v2 TTS + Voice Clone Service ─────────────
+# FastAPI wrapper around Coqui XTTS-v2
+# Endpoints:
+#   POST /v1/tts      { text, voice_id?, language }  → WAV audio bytes
+#   POST /v1/clone    { audio_file (WAV) }            → { voice_id }
+#   GET  /v1/health
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voice-tts
+  namespace: i3-voice
+  labels:
+    app: voice-tts
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voice-tts
+  template:
+    metadata:
+      labels:
+        app: voice-tts
+    spec:
+      containers:
+        - name: tts
+          # Build from platform/voice/tts/Dockerfile
+          image: image-registry.openshift-image-registry.svc:5000/i3-voice/voice-tts:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: MODELS_DIR
+              value: "/models"
+            - name: CLONES_DIR
+              value: "/clones"
+            - name: DEFAULT_LANGUAGE
+              value: "en"
+          envFrom:
+            - secretRef:
+                name: voice-secrets
+          resources:
+            requests:
+              cpu: "1"
+              memory: "3Gi"
+            limits:
+              cpu: "3"
+              memory: "6Gi"
+          volumeMounts:
+            - name: models
+              mountPath: /models
+            - name: clones
+              mountPath: /clones
+          livenessProbe:
+            httpGet:
+              path: /v1/health
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /v1/health
+              port: 8000
+            initialDelaySeconds: 45
+            periodSeconds: 15
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: voice-models
+        - name: clones
+          persistentVolumeClaim:
+            claimName: voice-clones
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: voice-tts
+  namespace: i3-voice
+  labels:
+    app: voice-tts
+spec:
+  selector:
+    app: voice-tts
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+
+---
+# ── Deployment: faster-whisper STT Service ────────────────────
+# FastAPI wrapper around faster-whisper large-v3
+# Endpoints:
+#   POST /v1/transcribe  { audio_file (WAV/MP3/WEBM) }
+#                         → { transcript, language, duration_s }
+#   POST /v1/transcribe/stream  (WebSocket, real-time)
+#   GET  /v1/health
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voice-stt
+  namespace: i3-voice
+  labels:
+    app: voice-stt
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voice-stt
+  template:
+    metadata:
+      labels:
+        app: voice-stt
+    spec:
+      containers:
+        - name: stt
+          # Build from platform/voice/stt/Dockerfile
+          image: image-registry.openshift-image-registry.svc:5000/i3-voice/voice-stt:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8001
+          env:
+            - name: MODELS_DIR
+              value: "/models"
+            - name: WHISPER_MODEL
+              value: "large-v3"
+            - name: COMPUTE_TYPE
+              value: "int8"       # CPU-optimised quantisation
+            - name: BEAM_SIZE
+              value: "5"
+            - name: VAD_FILTER
+              value: "true"       # Voice Activity Detection — skip silence
+          envFrom:
+            - secretRef:
+                name: voice-secrets
+          resources:
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+            limits:
+              cpu: "3"
+              memory: "5Gi"
+          volumeMounts:
+            - name: models
+              mountPath: /models
+          livenessProbe:
+            httpGet:
+              path: /v1/health
+              port: 8001
+            initialDelaySeconds: 45
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /v1/health
+              port: 8001
+            initialDelaySeconds: 30
+            periodSeconds: 15
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: voice-models
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: voice-stt
+  namespace: i3-voice
+  labels:
+    app: voice-stt
+spec:
+  selector:
+    app: voice-stt
+  ports:
+    - name: http
+      port: 8001
+      targetPort: 8001
+
+---
+# ── NetworkPolicy: restrict who can call voice services ───────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: voice-ingress
+  namespace: i3-voice
+spec:
+  podSelector: {}   # applies to all pods in i3-voice
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-ai-lab
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-evalos
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-pmaas
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-engage
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 8001
+  policyTypes:
+    - Ingress

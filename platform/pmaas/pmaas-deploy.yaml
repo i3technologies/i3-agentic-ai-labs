@@ -1,0 +1,388 @@
+# ============================================================
+# PMaaS 4.0 — Political Campaign Operating System
+# Namespace: i3-pmaas
+# Components:
+#   - PMaaS Web (Next.js) — campaign dashboard
+#   - Campaign Agent (LangGraph Python) — autonomous strategy agent
+#   - Dawa Co-worker (Open WebUI) — campaign AI chat
+#   - PostgreSQL DB (pmaas_db via pgbouncer)
+#   - ChromaDB collection: pmaas-manifesto (via i3-ai-lab)
+# ============================================================
+
+# ── Namespace ────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-pmaas
+  labels:
+    kubernetes.io/metadata.name: i3-pmaas
+    app.kubernetes.io/part-of: i3-platform
+
+---
+# ── ResourceQuota ─────────────────────────────────────────────
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: pmaas-quota
+  namespace: i3-pmaas
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: "8Gi"
+    limits.cpu: "8"
+    limits.memory: "24Gi"
+
+---
+# ── Secret: PMaaS credentials ────────────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pmaas-secrets
+  namespace: i3-pmaas
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql://pmaas:REPLACE@i3-postgres-pgbouncer.i3-data.svc:5432/pmaas_db?pgbouncer=true&connection_limit=10"
+  NEXTAUTH_SECRET: "REPLACE_WITH_RANDOM_32_CHAR"
+  NEXTAUTH_URL: "https://pmaas.i3technologies.co.ke"
+  KEYCLOAK_ISSUER: "https://auth.i3technologies.co.ke/realms/pmaas"
+  KEYCLOAK_CLIENT_ID: "pmaas-web"
+  KEYCLOAK_CLIENT_SECRET: "REPLACE_WITH_KEYCLOAK_SECRET"
+  # LiteLLM gateway for AI agents
+  LITELLM_URL: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1"
+  LITELLM_KEY: "REPLACE_WITH_LITELLM_MASTER_KEY"
+  # ChromaDB for manifesto RAG
+  CHROMA_HOST: "chromadb.i3-ai-lab.svc.cluster.local"
+  CHROMA_TOKEN: "REPLACE_WITH_CHROMA_TOKEN"
+  # Voice services for AI Caller
+  VOICE_TTS_URL: "http://voice-tts.i3-voice.svc.cluster.local:8000"
+  VOICE_STT_URL: "http://voice-stt.i3-voice.svc.cluster.local:8001"
+  VOICE_API_KEY: "REPLACE_WITH_VOICE_API_KEY"
+  # M-Pesa Daraja API
+  MPESA_CONSUMER_KEY: "REPLACE_WITH_MPESA_KEY"
+  MPESA_CONSUMER_SECRET: "REPLACE_WITH_MPESA_SECRET"
+  MPESA_SHORTCODE: "REPLACE_WITH_SHORTCODE"
+  MPESA_PASSKEY: "REPLACE_WITH_PASSKEY"
+  # WhatsApp Business Cloud API
+  WHATSAPP_TOKEN: "REPLACE_WITH_META_TOKEN"
+  WHATSAPP_PHONE_NUMBER_ID: "REPLACE_WITH_PHONE_ID"
+
+---
+# ── PVC: PMaaS static assets (campaign media, uploaded images) ─
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pmaas-media
+  namespace: i3-pmaas
+  labels:
+    app: pmaas-web
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+# ── Deployment: PMaaS Web (Next.js) ───────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pmaas-web
+  namespace: i3-pmaas
+  labels:
+    app: pmaas-web
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pmaas-web
+  template:
+    metadata:
+      labels:
+        app: pmaas-web
+    spec:
+      containers:
+        - name: pmaas-web
+          # Build from platform/pmaas/web/
+          image: image-registry.openshift-image-registry.svc:5000/i3-pmaas/pmaas-web:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 3000
+          envFrom:
+            - secretRef:
+                name: pmaas-secrets
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3000"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+          volumeMounts:
+            - name: media
+              mountPath: /app/public/uploads
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+      volumes:
+        - name: media
+          persistentVolumeClaim:
+            claimName: pmaas-media
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pmaas-web
+  namespace: i3-pmaas
+  labels:
+    app: pmaas-web
+spec:
+  selector:
+    app: pmaas-web
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: pmaas-web
+  namespace: i3-pmaas
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  host: pmaas.i3technologies.co.ke
+  to:
+    kind: Service
+    name: pmaas-web
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+---
+# ── Deployment: Campaign Agent (LangGraph Python) ─────────────
+# Autonomous agent: daily briefings, ward targeting, content gen,
+# sentiment monitoring, manifesto Q&A via RAG
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: campaign-agent
+  namespace: i3-pmaas
+  labels:
+    app: campaign-agent
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: campaign-agent
+  template:
+    metadata:
+      labels:
+        app: campaign-agent
+    spec:
+      containers:
+        - name: agent
+          # Build from platform/pmaas/agents/
+          image: image-registry.openshift-image-registry.svc:5000/i3-pmaas/campaign-agent:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080   # Agent API (used by PMaaS Web)
+          envFrom:
+            - secretRef:
+                name: pmaas-secrets
+          env:
+            - name: LITELLM_MODEL_HEAVY
+              value: "qwen-heavy"
+            - name: LITELLM_MODEL_FAST
+              value: "qwen-fast"
+            - name: CHROMA_COLLECTION
+              value: "pmaas-manifesto"
+            - name: KAFKA_BOOTSTRAP
+              value: "kafka-bootstrap.i3-messaging.svc.cluster.local:9092"
+            - name: KAFKA_TOPIC_VOTER_INTERACTIONS
+              value: "pmaas.voter-interactions"
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: campaign-agent
+  namespace: i3-pmaas
+  labels:
+    app: campaign-agent
+spec:
+  selector:
+    app: campaign-agent
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+
+---
+# ── Deployment: Dawa Co-worker (Open WebUI — PMaaS identity) ──
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dawa-coworker
+  namespace: i3-pmaas
+  labels:
+    app: dawa-coworker
+    instance: dawa
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dawa-coworker
+      instance: dawa
+  template:
+    metadata:
+      labels:
+        app: dawa-coworker
+        instance: dawa
+    spec:
+      containers:
+        - name: open-webui
+          image: ghcr.io/open-webui/open-webui:main
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: open-webui-dawa-config   # from co-worker-identities.yaml
+            - secretRef:
+                name: pmaas-open-webui-secrets
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+
+---
+# ── Secret: Dawa Open WebUI credentials ──────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pmaas-open-webui-secrets
+  namespace: i3-pmaas
+type: Opaque
+stringData:
+  OPENAI_API_KEY: "REPLACE_WITH_LITELLM_MASTER_KEY"
+  OAUTH_CLIENT_ID: "open-webui-dawa"
+  OAUTH_CLIENT_SECRET: "REPLACE_WITH_KEYCLOAK_CLIENT_SECRET"
+  WEBUI_SECRET_KEY: "REPLACE_WITH_RANDOM_32_CHAR"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dawa-coworker
+  namespace: i3-pmaas
+  labels:
+    app: dawa-coworker
+spec:
+  selector:
+    app: dawa-coworker
+    instance: dawa
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: dawa
+  namespace: i3-pmaas
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  host: dawa.i3technologies.co.ke
+  to:
+    kind: Service
+    name: dawa-coworker
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+---
+# ── NetworkPolicy: PMaaS egress ───────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pmaas-egress
+  namespace: i3-pmaas
+spec:
+  podSelector: {}
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-model-gateway
+      ports:
+        - protocol: TCP
+          port: 4000
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-ai-lab
+      ports:
+        - protocol: TCP
+          port: 8000
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-voice
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 8001
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-data
+      ports:
+        - protocol: TCP
+          port: 5432
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-messaging
+      ports:
+        - protocol: TCP
+          port: 9092
+  policyTypes:
+    - Egress

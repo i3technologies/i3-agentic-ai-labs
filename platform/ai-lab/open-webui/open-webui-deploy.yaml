@@ -1,0 +1,230 @@
+# ============================================================
+# Open WebUI — AI Co-worker Deployment (i3-ai-lab namespace)
+# White-labelled as "Sage" for AI Lab. Reuse same image for
+# other products (Zuri/EvalOS, Dawa/PMaaS, etc.) with different
+# ConfigMaps for each white-label identity.
+#
+# Request flow:
+#   Browser → Open WebUI → LiteLLM Proxy (i3-model-gateway)
+#             → Ollama (qwen-fast default, model-switcher in UI)
+# ============================================================
+
+# ── PVC: persistent Open WebUI data (user history, uploads) ──
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: open-webui-data
+  namespace: i3-ai-lab
+  labels:
+    app: open-webui
+    instance: sage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+# ── ConfigMap: Sage white-label config ───────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: open-webui-sage-config
+  namespace: i3-ai-lab
+  labels:
+    app: open-webui
+    instance: sage
+data:
+  # Sage is the AI Lab instructor identity
+  WEBUI_NAME: "Sage — AI Lab"
+  WEBUI_URL: "https://sage.i3technologies.co.ke"
+  DEFAULT_MODELS: "qwen-fast"
+  # Disable signup — auth via Keycloak OIDC
+  ENABLE_SIGNUP: "false"
+  ENABLE_LOGIN_FORM: "false"
+  # Keycloak OIDC SSO
+  ENABLE_OAUTH_SIGNUP: "true"
+  OAUTH_PROVIDER_NAME: "i3 SSO"
+  OPENID_PROVIDER_URL: "https://auth.i3technologies.co.ke/realms/i3/.well-known/openid-configuration"
+  OAUTH_SCOPES: "openid email profile"
+  # Route all LLM calls through LiteLLM gateway
+  OPENAI_API_BASE_URL: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1"
+  # Enable RAG with ChromaDB
+  VECTOR_DB: "chroma"
+  CHROMA_HTTP_HOST: "chromadb.i3-ai-lab.svc.cluster.local"
+  CHROMA_HTTP_PORT: "8000"
+  # Enable Whisper STT (voice input)
+  AUDIO_STT_ENGINE: "openai"
+  AUDIO_STT_OPENAI_API_BASE_URL: "http://voice-stt.i3-voice.svc.cluster.local:8001/v1"
+  AUDIO_STT_MODEL: "whisper-1"
+  # Enable TTS (voice output)
+  AUDIO_TTS_ENGINE: "openai"
+  AUDIO_TTS_OPENAI_API_BASE_URL: "http://voice-tts.i3-voice.svc.cluster.local:8000/v1"
+  AUDIO_TTS_VOICE: "default"
+  # System prompt for Sage identity
+  DEFAULT_SYSTEM_PROMPT: |
+    You are Sage, the AI Lab instructor at i3 Technologies. You are a highly knowledgeable,
+    patient, and encouraging technical mentor specialising in cloud computing, AI/ML engineering,
+    agentic AI development, and DevOps on OpenShift. You use the Socratic teaching method —
+    guide students to discover answers through questions rather than just giving them. When
+    reviewing code, provide specific, actionable feedback. Always reference the i3 platform
+    architecture when relevant. Be concise but thorough.
+
+---
+# ── Secret: Open WebUI credentials ──────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: open-webui-secrets
+  namespace: i3-ai-lab
+  labels:
+    app: open-webui
+type: Opaque
+stringData:
+  # Same key as LiteLLM master key
+  OPENAI_API_KEY: "REPLACE_WITH_LITELLM_MASTER_KEY"
+  # Keycloak OIDC client
+  OAUTH_CLIENT_ID: "open-webui-sage"
+  OAUTH_CLIENT_SECRET: "REPLACE_WITH_KEYCLOAK_CLIENT_SECRET"
+  # Open WebUI internal JWT secret
+  WEBUI_SECRET_KEY: "REPLACE_WITH_RANDOM_32_CHAR"
+
+---
+# ── Deployment: Open WebUI ────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-webui
+  namespace: i3-ai-lab
+  labels:
+    app: open-webui
+    instance: sage
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-webui
+      instance: sage
+  template:
+    metadata:
+      labels:
+        app: open-webui
+        instance: sage
+    spec:
+      containers:
+        - name: open-webui
+          image: ghcr.io/open-webui/open-webui:main
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: open-webui-sage-config
+            - secretRef:
+                name: open-webui-secrets
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+          volumeMounts:
+            - name: data
+              mountPath: /app/backend/data
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: open-webui-data
+
+---
+# ── Service ──────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: open-webui
+  namespace: i3-ai-lab
+  labels:
+    app: open-webui
+    instance: sage
+spec:
+  selector:
+    app: open-webui
+    instance: sage
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+
+---
+# ── Route: Sage external URL ──────────────────────────────────
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: sage
+  namespace: i3-ai-lab
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  host: sage.i3technologies.co.ke
+  to:
+    kind: Service
+    name: open-webui
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+---
+# ── NetworkPolicy: allow ai-lab to reach LiteLLM + ChromaDB ──
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ailab-egress
+  namespace: i3-ai-lab
+spec:
+  podSelector:
+    matchLabels:
+      app: open-webui
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-model-gateway
+      ports:
+        - protocol: TCP
+          port: 4000
+    - to:
+        - podSelector:
+            matchLabels:
+              app: chromadb
+      ports:
+        - protocol: TCP
+          port: 8000
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-voice
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 8001
+  policyTypes:
+    - Egress
