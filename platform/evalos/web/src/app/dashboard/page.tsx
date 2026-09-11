@@ -259,6 +259,85 @@ export default async function DashboardPage() {
         </div>
       </section>
 
+      {/* AI Features quick-launch */}
+      <section className="mt-12">
+        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">
+          AI-Powered Features
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+          {/* AI Study Coach */}
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-5 flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.384A5 5 0 0112 17.5a5 5 0 01-3.071-1.088l-.348-.383z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">AI Study Coach</p>
+                <p className="text-xs text-slate-500">Personalised after each exam</p>
+              </div>
+            </div>
+            <p className="text-xs text-slate-600 flex-1">
+              After submitting a practice set, get a domain-by-domain analysis and a 3-day study plan powered by on-cluster AI.
+            </p>
+            <p className="text-xs text-blue-600 font-medium">
+              Available on every results page →
+            </p>
+          </div>
+
+          {/* AI Interview */}
+          <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-5 flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-3 3v-3z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">AI Interview Round</p>
+                <p className="text-xs text-slate-500">5 questions · real-time scoring</p>
+              </div>
+            </div>
+            <p className="text-xs text-slate-600 flex-1">
+              3 technical questions + 2 coding challenges. Evaluated instantly by AI against IBM watsonx Orchestrate rubrics.
+            </p>
+            <Link
+              href="/interview"
+              className="mt-auto w-full flex items-center justify-center gap-2 bg-purple-700 hover:bg-purple-800 text-white text-xs font-medium rounded-lg py-2 transition-colors"
+            >
+              Start Interview →
+            </Link>
+          </div>
+
+          {/* Coding Labs */}
+          <div className="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-5 flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">Coding Labs</p>
+                <p className="text-xs text-slate-500">JS · Python · SQL · AI review</p>
+              </div>
+            </div>
+            <p className="text-xs text-slate-600 flex-1">
+              Hands-on IBM watsonx integration coding exercises with Monaco editor, live execution, and AI code review.
+            </p>
+            <Link
+              href="/lab"
+              className="mt-auto w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-lg py-2 transition-colors"
+            >
+              Open Labs →
+            </Link>
+          </div>
+
+        </div>
+      </section>
+
       {/* Recent attempts */}
       {recentAttempts.length > 0 && (
         <section className="mt-12">
