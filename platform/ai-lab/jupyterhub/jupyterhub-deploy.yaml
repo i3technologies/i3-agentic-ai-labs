@@ -1,0 +1,343 @@
+# ============================================================
+# JupyterHub — i3 AI Lab
+# Namespace: i3-ai-lab
+# Access: https://jupyter.i3technologies.co.ke
+# Auth: Keycloak OIDC (realm: i3-ai-lab)
+# Profile: single-user singleserver + LiteLLM env injection
+# ============================================================
+
+# ── ServiceAccount ────────────────────────────────────────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jupyterhub
+  namespace: i3-ai-lab
+
+---
+# ── Role for JupyterHub to manage user pods ───────────────────
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: jupyterhub-role
+  namespace: i3-ai-lab
+rules:
+  - apiGroups: [""]
+    resources: [pods, services, configmaps, endpoints, persistentvolumeclaims]
+    verbs:     [get, list, watch, create, update, patch, delete]
+  - apiGroups: [""]
+    resources: [events]
+    verbs:     [get, list, watch]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jupyterhub-rolebinding
+  namespace: i3-ai-lab
+subjects:
+  - kind: ServiceAccount
+    name: jupyterhub
+    namespace: i3-ai-lab
+roleRef:
+  kind: Role
+  name: jupyterhub-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# ── Secret: JupyterHub config ─────────────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jupyterhub-secrets
+  namespace: i3-ai-lab
+type: Opaque
+stringData:
+  JUPYTERHUB_CRYPT_KEY:        "REPLACE_WITH_64_HEX_CHARS"
+  KEYCLOAK_CLIENT_SECRET:      "REPLACE_WITH_KEYCLOAK_SECRET"
+  POSTGRES_PASSWORD:           "REPLACE_WITH_DB_PASSWORD"
+  # Injected into every user notebook environment
+  LITELLM_URL:                 "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1"
+  LITELLM_KEY:                 "REPLACE_WITH_LITELLM_MASTER_KEY"
+  CHROMA_HOST:                 "chromadb.i3-ai-lab.svc.cluster.local"
+  CHROMA_TOKEN:                "REPLACE_WITH_CHROMA_TOKEN"
+
+---
+# ── ConfigMap: jupyterhub_config.py ──────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jupyterhub-config
+  namespace: i3-ai-lab
+data:
+  jupyterhub_config.py: |
+    import os
+    from oauthenticator.generic import GenericOAuthenticator
+
+    # ── Auth: Keycloak OIDC ────────────────────────────────────
+    c.JupyterHub.authenticator_class = GenericOAuthenticator
+
+    c.GenericOAuthenticator.client_id     = "jupyterhub"
+    c.GenericOAuthenticator.client_secret = os.environ["KEYCLOAK_CLIENT_SECRET"]
+    c.GenericOAuthenticator.authorize_url = (
+        "https://auth.i3technologies.co.ke/realms/i3-ai-lab/protocol/openid-connect/auth"
+    )
+    c.GenericOAuthenticator.token_url     = (
+        "https://auth.i3technologies.co.ke/realms/i3-ai-lab/protocol/openid-connect/token"
+    )
+    c.GenericOAuthenticator.userdata_url  = (
+        "https://auth.i3technologies.co.ke/realms/i3-ai-lab/protocol/openid-connect/userinfo"
+    )
+    c.GenericOAuthenticator.username_key  = "preferred_username"
+    c.GenericOAuthenticator.scope         = ["openid", "profile", "email"]
+    c.GenericOAuthenticator.allow_all     = True
+
+    # ── Database ───────────────────────────────────────────────
+    c.JupyterHub.db_url = (
+        "postgresql+psycopg2://jupyterhub:{pw}@i3-postgres-pgbouncer.i3-data.svc:5432/jupyterhub_db"
+        .format(pw=os.environ.get("POSTGRES_PASSWORD", ""))
+    )
+
+    # ── Spawner: KubeSpawner ────────────────────────────────────
+    c.JupyterHub.spawner_class = "kubespawner.KubeSpawner"
+
+    c.KubeSpawner.namespace       = "i3-ai-lab"
+    c.KubeSpawner.start_timeout   = 120
+    c.KubeSpawner.http_timeout    = 60
+    c.KubeSpawner.image           = "quay.io/jupyter/scipy-notebook:latest"
+    c.KubeSpawner.cpu_limit       = 2
+    c.KubeSpawner.mem_limit       = "4G"
+    c.KubeSpawner.cpu_guarantee   = 0.25
+    c.KubeSpawner.mem_guarantee   = "512M"
+
+    # Per-user PVC
+    c.KubeSpawner.storage_pvc_ensure = True
+    c.KubeSpawner.pvc_name_template  = "jupyter-{username}"
+    c.KubeSpawner.storage_capacity   = "5Gi"
+    c.KubeSpawner.storage_access_modes = ["ReadWriteOnce"]
+
+    # Inject AI platform env into every user notebook
+    c.KubeSpawner.environment = {
+        "LITELLM_URL":   os.environ.get("LITELLM_URL",   ""),
+        "LITELLM_KEY":   os.environ.get("LITELLM_KEY",   ""),
+        "CHROMA_HOST":   os.environ.get("CHROMA_HOST",   ""),
+        "CHROMA_TOKEN":  os.environ.get("CHROMA_TOKEN",  ""),
+        "OLLAMA_URL":    "http://ollama.i3-model-gateway.svc.cluster.local:11434",
+        "OPENAI_API_KEY": os.environ.get("LITELLM_KEY",  ""),
+        "OPENAI_BASE_URL": os.environ.get("LITELLM_URL", ""),
+    }
+
+    # Pre-install AI packages in every notebook server
+    c.KubeSpawner.args = [
+        "--NotebookApp.allow_origin=*",
+        "--NotebookApp.token=",
+    ]
+
+    # ── Hub settings ────────────────────────────────────────────
+    c.JupyterHub.base_url       = "/"
+    c.JupyterHub.ip             = "0.0.0.0"
+    c.JupyterHub.hub_ip         = "0.0.0.0"
+    c.JupyterHub.port           = 8000
+
+    # Crypt key for cookies
+    c.CryptKeeper.keys = [bytes.fromhex(os.environ["JUPYTERHUB_CRYPT_KEY"])]
+
+---
+# ── PVC: JupyterHub shared data ───────────────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jupyterhub-shared
+  namespace: i3-ai-lab
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+# ── Deployment: JupyterHub ────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jupyterhub
+  namespace: i3-ai-lab
+  labels:
+    app: jupyterhub
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jupyterhub
+  template:
+    metadata:
+      labels:
+        app: jupyterhub
+    spec:
+      serviceAccountName: jupyterhub
+      containers:
+        - name: jupyterhub
+          image: quay.io/jupyterhub/k8s-hub:3.3.7
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: hub
+              containerPort: 8000
+            - name: api
+              containerPort: 8081
+          env:
+            - name: JUPYTERHUB_CRYPT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jupyterhub-secrets
+                  key: JUPYTERHUB_CRYPT_KEY
+            - name: KEYCLOAK_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jupyterhub-secrets
+                  key: KEYCLOAK_CLIENT_SECRET
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: jupyterhub-secrets
+                  key: POSTGRES_PASSWORD
+            - name: LITELLM_URL
+              valueFrom:
+                secretKeyRef:
+                  name: jupyterhub-secrets
+                  key: LITELLM_URL
+            - name: LITELLM_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jupyterhub-secrets
+                  key: LITELLM_KEY
+            - name: CHROMA_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: jupyterhub-secrets
+                  key: CHROMA_HOST
+            - name: CHROMA_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: jupyterhub-secrets
+                  key: CHROMA_TOKEN
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+          volumeMounts:
+            - name: config
+              mountPath: /etc/jupyterhub
+            - name: shared
+              mountPath: /srv/shared
+          livenessProbe:
+            httpGet:
+              path: /hub/health
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /hub/health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: config
+          configMap:
+            name: jupyterhub-config
+        - name: shared
+          persistentVolumeClaim:
+            claimName: jupyterhub-shared
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jupyterhub
+  namespace: i3-ai-lab
+  labels:
+    app: jupyterhub
+spec:
+  selector:
+    app: jupyterhub
+  ports:
+    - name: hub
+      port: 8000
+      targetPort: 8000
+    - name: api
+      port: 8081
+      targetPort: 8081
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: jupyterhub
+  namespace: i3-ai-lab
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  host: jupyter.i3technologies.co.ke
+  to:
+    kind: Service
+    name: jupyterhub
+  port:
+    targetPort: hub
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+---
+# ── NetworkPolicy ─────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jupyterhub-policy
+  namespace: i3-ai-lab
+spec:
+  podSelector:
+    matchLabels:
+      app: jupyterhub
+  ingress:
+    - ports:
+        - port: 8000
+        - port: 8081
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-model-gateway
+      ports:
+        - protocol: TCP
+          port: 4000
+        - protocol: TCP
+          port: 11434
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-ai-lab
+      ports:
+        - protocol: TCP
+          port: 8000
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-data
+      ports:
+        - protocol: TCP
+          port: 5432
+    - to:
+        - {}     # allow DNS and external (user notebook pip installs)
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 443
+  policyTypes:
+    - Ingress
+    - Egress

@@ -1,0 +1,200 @@
+# ============================================================
+# Zuri — EvalOS AI Study Co-worker
+# Namespace: i3-evalos
+# Identity: Study coach persona (Open WebUI + LiteLLM)
+# Route: https://zuri.i3technologies.co.ke
+# ============================================================
+
+# ── Secret: Zuri credentials ─────────────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: zuri-secrets
+  namespace: i3-evalos
+  labels:
+    app: zuri-coworker
+    app.kubernetes.io/part-of: i3-platform
+type: Opaque
+stringData:
+  OPENAI_API_KEY:     "REPLACE_WITH_LITELLM_MASTER_KEY"
+  OAUTH_CLIENT_ID:    "open-webui-zuri"
+  OAUTH_CLIENT_SECRET: "REPLACE_WITH_KEYCLOAK_CLIENT_SECRET"
+  WEBUI_SECRET_KEY:   "REPLACE_WITH_RANDOM_32_CHAR"
+
+---
+# ── ConfigMap: Zuri identity (Open WebUI env config) ─────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: open-webui-zuri-config
+  namespace: i3-evalos
+  labels:
+    app: zuri-coworker
+data:
+  # LiteLLM gateway as the OpenAI-compatible backend
+  OPENAI_API_BASE_URL:        "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1"
+  # Disable Ollama direct (use LiteLLM only)
+  ENABLE_OLLAMA_API:          "false"
+  ENABLE_OPENAI_API:          "true"
+  # Keycloak OIDC
+  ENABLE_OAUTH_SIGNUP:        "true"
+  OAUTH_PROVIDER_NAME:        "Keycloak"
+  OPENID_PROVIDER_URL:        "https://auth.i3technologies.co.ke/realms/i3-evalos/.well-known/openid-configuration"
+  OAUTH_SCOPES:               "openid profile email"
+  # Persona config
+  WEBUI_NAME:                 "Zuri"
+  WEBUI_URL:                  "https://zuri.i3technologies.co.ke"
+  DEFAULT_MODELS:             "qwen-fast,qwen-heavy"
+  DEFAULT_PROMPT_SUGGESTIONS:  |
+    [
+      {"title": "Explain Watson Orchestrate agents", "content": "Explain the concept of AI agents in IBM watsonx Orchestrate and when to use them vs flows."},
+      {"title": "Help me study Domain 2", "content": "I need help understanding IBM watsonx Orchestrate automation flows. Give me 5 practice questions."},
+      {"title": "Create study plan", "content": "I have 3 days to prepare for C1000-207. Create a study plan based on the 5 exam domains."}
+    ]
+  # Disable signup (Keycloak only)
+  ENABLE_SIGNUP:              "false"
+  # Langfuse tracing
+  ENABLE_LANGFUSE:            "true"
+  LANGFUSE_HOST:              "http://langfuse.i3-ott.svc.cluster.local:3000"
+  LANGFUSE_PUBLIC_KEY:        "pk-lf-i3evalos-8ed2998c3f68449b"
+
+---
+# ── PVC: Zuri data ────────────────────────────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zuri-data
+  namespace: i3-evalos
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# ── Deployment: Zuri ──────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zuri-coworker
+  namespace: i3-evalos
+  labels:
+    app: zuri-coworker
+    instance: zuri
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zuri-coworker
+      instance: zuri
+  template:
+    metadata:
+      labels:
+        app: zuri-coworker
+        instance: zuri
+    spec:
+      containers:
+        - name: open-webui
+          image: ghcr.io/open-webui/open-webui:main
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: open-webui-zuri-config
+            - secretRef:
+                name: zuri-secrets
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+          volumeMounts:
+            - name: data
+              mountPath: /app/backend/data
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: zuri-data
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zuri-coworker
+  namespace: i3-evalos
+  labels:
+    app: zuri-coworker
+spec:
+  selector:
+    app: zuri-coworker
+    instance: zuri
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: zuri
+  namespace: i3-evalos
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  host: zuri.i3technologies.co.ke
+  to:
+    kind: Service
+    name: zuri-coworker
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+---
+# ── NetworkPolicy ─────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zuri-egress
+  namespace: i3-evalos
+spec:
+  podSelector:
+    matchLabels:
+      app: zuri-coworker
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-model-gateway
+      ports:
+        - protocol: TCP
+          port: 4000
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-ott
+      ports:
+        - protocol: TCP
+          port: 3000   # Langfuse
+  policyTypes:
+    - Egress

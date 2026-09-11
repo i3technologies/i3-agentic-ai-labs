@@ -1,0 +1,35 @@
+[
+  {
+    "doctype": "Custom Field",
+    "name": "Sales Invoice-custom_etims_receipt_number",
+    "dt": "Sales Invoice",
+    "label": "eTIMS Receipt Number",
+    "fieldname": "custom_etims_receipt_number",
+    "fieldtype": "Data",
+    "insert_after": "status",
+    "read_only": 1,
+    "in_list_view": 0,
+    "print_hide": 0
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Sales Invoice-custom_mpesa_receipt",
+    "dt": "Sales Invoice",
+    "label": "M-Pesa Receipt",
+    "fieldname": "custom_mpesa_receipt",
+    "fieldtype": "Data",
+    "insert_after": "custom_etims_receipt_number",
+    "read_only": 1,
+    "in_list_view": 0
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "Customer-mobile_no",
+    "dt": "Customer",
+    "label": "Mobile Number",
+    "fieldname": "mobile_no",
+    "fieldtype": "Data",
+    "insert_after": "customer_name",
+    "options": "Phone"
+  }
+]
