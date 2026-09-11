@@ -44,6 +44,12 @@ export default function Header() {
               >
                 Dashboard
               </Link>
+              <Link
+                href="/leaderboard"
+                className="text-xs text-slate-300 hover:text-white transition-colors"
+              >
+                Leaderboard
+              </Link>
               <span className="text-slate-500 text-xs hidden sm:inline truncate max-w-[180px]">
                 {session.user.name || session.user.email}
               </span>

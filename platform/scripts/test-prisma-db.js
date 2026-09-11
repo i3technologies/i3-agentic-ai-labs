@@ -1,0 +1,7 @@
+const { PrismaClient } = require('/app/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/.prisma/client/index.js')
+const p = new PrismaClient()
+p.$connect()
+  .then(() => p.$queryRaw`SELECT current_user, current_database()`)
+  .then(r => { console.log('PRISMA OK', JSON.stringify(r)); })
+  .catch(e => { console.error('PRISMA FAIL', e.message.slice(0,400)); })
+  .finally(() => p.$disconnect())
