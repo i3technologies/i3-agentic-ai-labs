@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import pool from '@/lib/db'
+import { traceLangfuse, estimateTokens } from '@/lib/langfuse'
+import { randomUUID } from 'crypto'
 
 export const dynamic = 'force-dynamic'
 
@@ -200,8 +202,11 @@ export async function GET(
 
   const prompt = buildPrompt(studentName, examCode, score, passed, domainSummary, wrongAnswers)
 
-  // Call Ollama
+  // Call Ollama — with Langfuse tracing
   let coachReport = ''
+  const traceId = randomUUID()
+  const inferenceStart = new Date()
+
   try {
     const resp = await fetch(`${OLLAMA_URL}/api/generate`, {
       method: 'POST',
@@ -216,17 +221,58 @@ export async function GET(
           top_p: 0.9,
         },
       }),
-      signal: AbortSignal.timeout(90_000), // 90s timeout for CPU inference
+      signal: AbortSignal.timeout(90_000),
     })
+
+    const inferenceEnd = new Date()
 
     if (!resp.ok) {
       const err = await resp.text()
       console.error('[study-coach] Ollama error', resp.status, err)
+      // Trace the failure
+      traceLangfuse({
+        traceId,
+        name: 'study-coach',
+        userId,
+        metadata: { examCode, score, passed, attemptId },
+        input: prompt,
+        output: `ERROR ${resp.status}: ${err}`,
+        startTime: inferenceStart.toISOString(),
+        endTime: inferenceEnd.toISOString(),
+        modelName: OLLAMA_MODEL,
+        latencyMs: inferenceEnd.getTime() - inferenceStart.getTime(),
+        level: 'ERROR',
+      })
       return NextResponse.json({ error: 'LLM unavailable', detail: err }, { status: 502 })
     }
 
     const data = await resp.json()
     coachReport = data.response ?? ''
+    const latencyMs = inferenceEnd.getTime() - inferenceStart.getTime()
+
+    // Fire-and-forget Langfuse trace
+    traceLangfuse({
+      traceId,
+      name: 'study-coach',
+      userId,
+      metadata: {
+        examCode,
+        score,
+        passed,
+        attemptId,
+        wrongCount: wrongAnswers.length,
+        weakDomains: domainSummary.filter(d => d.pct < 90).map(d => d.domain),
+      },
+      input: prompt,
+      output: coachReport,
+      startTime: inferenceStart.toISOString(),
+      endTime: inferenceEnd.toISOString(),
+      modelName: OLLAMA_MODEL,
+      promptTokens: estimateTokens(prompt),
+      completionTokens: estimateTokens(coachReport),
+      latencyMs,
+      level: 'DEFAULT',
+    })
   } catch (err) {
     console.error('[study-coach] Fetch error:', err)
     return NextResponse.json(

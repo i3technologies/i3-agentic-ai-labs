@@ -1,0 +1,175 @@
+---
+# Redis — lightweight single-node for Langfuse queue/cache
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: i3-ott
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          command: ["redis-server", "--save", "", "--appendonly", "no"]
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: i3-ott
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+---
+# Langfuse v2 — LLM observability server
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: langfuse
+  namespace: i3-ott
+  labels:
+    app: langfuse
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: langfuse
+  template:
+    metadata:
+      labels:
+        app: langfuse
+    spec:
+      containers:
+        - name: langfuse
+          image: langfuse/langfuse:2
+          ports:
+            - containerPort: 3000
+              name: http
+          envFrom:
+            - secretRef:
+                name: langfuse-secrets
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://langfuse:LangfuseDB2026i3@i3-postgres-pgbouncer.i3-data.svc:5432/langfuse_db?pgbouncer=true&connection_limit=5"
+            - name: DIRECT_URL
+              value: "postgresql://langfuse:LangfuseDB2026i3@i3-postgres-primary.i3-data.svc:5432/langfuse_db"
+            - name: LANGFUSE_AUTO_POSTGRES_MIGRATION_DISABLED
+              value: "true"
+            - name: LANGFUSE_AUTO_CLICKHOUSE_MIGRATION_DISABLED
+              value: "true"
+            - name: REDIS_HOST
+              value: "redis.i3-ott.svc.cluster.local"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_AUTH
+              value: ""
+            - name: PORT
+              value: "3000"
+            - name: HOSTNAME
+              value: "0.0.0.0"
+            - name: NEXTAUTH_URL
+              value: "https://langfuse.i3technologies.co.ke"
+            - name: NEXT_PUBLIC_SIGN_UP_DISABLED
+              value: "false"
+            - name: LANGFUSE_DEFAULT_PROJECT_NAME
+              value: "EvalOS"
+            - name: LANGFUSE_DEFAULT_PROJECT_ROLE
+              value: "ADMIN"
+            - name: TELEMETRY_ENABLED
+              value: "false"
+            - name: LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES
+              value: "true"
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+          readinessProbe:
+            httpGet:
+              path: /api/public/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /api/public/health
+              port: 3000
+            initialDelaySeconds: 60
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: langfuse
+  namespace: i3-ott
+  labels:
+    app: langfuse
+spec:
+  selector:
+    app: langfuse
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: langfuse-public
+  namespace: i3-ott
+spec:
+  host: langfuse.i3technologies.co.ke
+  to:
+    kind: Service
+    name: langfuse
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+---
+# NetworkPolicy: allow evalos-web to reach Langfuse for trace ingestion
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-evalos-to-langfuse
+  namespace: i3-ott
+spec:
+  podSelector:
+    matchLabels:
+      app: langfuse
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-evalos
+      ports:
+        - protocol: TCP
+          port: 3000
+  policyTypes:
+    - Ingress
