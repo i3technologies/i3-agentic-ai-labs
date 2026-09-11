@@ -8,7 +8,14 @@ import { randomUUID } from 'crypto'
 export const dynamic = 'force-dynamic'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-const OLLAMA_URL = process.env.OLLAMA_URL ?? 'http://ollama.i3-ott.svc.cluster.local:11434'
+
+// LiteLLM gateway (preferred) — falls back to direct Ollama if not configured
+const LITELLM_URL   = process.env.LITELLM_URL   ?? ''
+const LITELLM_KEY   = process.env.LITELLM_KEY   ?? ''
+const LITELLM_MODEL = process.env.LITELLM_MODEL ?? 'qwen-fast'
+
+// Direct Ollama fallback (i3-ott, always available)
+const OLLAMA_URL   = process.env.OLLAMA_URL   ?? 'http://ollama.i3-ott.svc.cluster.local:11434'
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL ?? 'mistral:7b-instruct-q4_K_M'
 
 interface QuestionSnap {
@@ -55,8 +62,6 @@ function buildWrongAnswers(
     if (!isCorrect) {
       const studentLabels = Array.isArray(ans) ? ans : ans ? [ans] : ['(no answer)']
       const correctLabels = q.correct_answers
-
-      // Resolve labels to option text
       const labelToText = Object.fromEntries(q.options.map(o => [o.label, o.text]))
       const studentText = studentLabels.map(l => `${l}. ${labelToText[l] ?? l}`).join('; ')
       const correctText = correctLabels.map(l => `${l}. ${labelToText[l] ?? l}`).join('; ')
@@ -64,7 +69,7 @@ function buildWrongAnswers(
       wrong.push({
         domain: q.domain_name,
         topic: q.topic,
-        question: q.text.slice(0, 200), // truncate for token budget
+        question: q.text.slice(0, 200),
         studentAnswer: studentText,
         correctAnswer: correctText,
         explanation: q.explanation?.slice(0, 300) ?? '',
@@ -107,7 +112,7 @@ function buildDomainSummary(
       wrong: v.total - v.correct,
       total: v.total,
     }))
-    .sort((a, b) => a.pct - b.pct) // weakest first
+    .sort((a, b) => a.pct - b.pct)
 }
 
 function buildPrompt(
@@ -119,7 +124,7 @@ function buildPrompt(
   wrongAnswers: WrongQuestion[]
 ): string {
   const weakDomains = domainSummary.filter(d => d.pct < 90).slice(0, 3)
-  const wrongSample = wrongAnswers.slice(0, 8) // keep prompt compact
+  const wrongSample = wrongAnswers.slice(0, 8)
 
   const domainLines = weakDomains.map(d =>
     `- ${d.domain}: ${d.pct}% (${d.wrong}/${d.total} wrong)`
@@ -165,6 +170,57 @@ One final motivating sentence personalised to ${studentName}.
 Keep the tone warm, direct, and professional. Do not invent question content beyond what is shown. Total length: 350-500 words.`
 }
 
+/**
+ * Call LiteLLM OpenAI-compatible /chat/completions endpoint.
+ * Returns the assistant message content.
+ */
+async function callLiteLLM(prompt: string, signal: AbortSignal): Promise<string> {
+  const resp = await fetch(`${LITELLM_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${LITELLM_KEY}`,
+    },
+    body: JSON.stringify({
+      model: LITELLM_MODEL,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 700,
+      top_p: 0.9,
+    }),
+    signal,
+  })
+  if (!resp.ok) {
+    const err = await resp.text()
+    throw new Error(`LiteLLM ${resp.status}: ${err}`)
+  }
+  const data = await resp.json()
+  return data.choices?.[0]?.message?.content ?? ''
+}
+
+/**
+ * Call Ollama /api/generate endpoint directly (fallback path).
+ */
+async function callOllama(prompt: string, signal: AbortSignal): Promise<string> {
+  const resp = await fetch(`${OLLAMA_URL}/api/generate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: OLLAMA_MODEL,
+      prompt,
+      stream: false,
+      options: { temperature: 0.7, num_predict: 700, top_p: 0.9 },
+    }),
+    signal,
+  })
+  if (!resp.ok) {
+    const err = await resp.text()
+    throw new Error(`Ollama ${resp.status}: ${err}`)
+  }
+  const data = await resp.json()
+  return data.response ?? ''
+}
+
 export async function GET(
   _req: Request,
   { params }: { params: { attemptId: string } }
@@ -177,7 +233,6 @@ export async function GET(
 
   const userId = session.user.userId || session.user.email || ''
 
-  // Fetch attempt + exam code
   const { rows } = await pool.query(
     `SELECT qa.question_snapshot, qa.answers, qa.pct_score, qa.passed,
             e.code AS exam_code, e.title AS exam_title
@@ -199,82 +254,70 @@ export async function GET(
 
   const domainSummary = buildDomainSummary(snapshot, answers)
   const wrongAnswers = buildWrongAnswers(snapshot, answers)
-
   const prompt = buildPrompt(studentName, examCode, score, passed, domainSummary, wrongAnswers)
 
-  // Call Ollama — with Langfuse tracing
   let coachReport = ''
   const traceId = randomUUID()
   const inferenceStart = new Date()
+  let modelUsed = ''
 
   try {
-    const resp = await fetch(`${OLLAMA_URL}/api/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: OLLAMA_MODEL,
-        prompt,
-        stream: false,
-        options: {
-          temperature: 0.7,
-          num_predict: 700,
-          top_p: 0.9,
-        },
-      }),
-      signal: AbortSignal.timeout(90_000),
-    })
+    const signal = AbortSignal.timeout(90_000)
 
-    const inferenceEnd = new Date()
-
-    if (!resp.ok) {
-      const err = await resp.text()
-      console.error('[study-coach] Ollama error', resp.status, err)
-      // Trace the failure
-      traceLangfuse({
-        traceId,
-        name: 'study-coach',
-        userId,
-        metadata: { examCode, score, passed, attemptId },
-        input: prompt,
-        output: `ERROR ${resp.status}: ${err}`,
-        startTime: inferenceStart.toISOString(),
-        endTime: inferenceEnd.toISOString(),
-        modelName: OLLAMA_MODEL,
-        latencyMs: inferenceEnd.getTime() - inferenceStart.getTime(),
-        level: 'ERROR',
-      })
-      return NextResponse.json({ error: 'LLM unavailable', detail: err }, { status: 502 })
+    // Prefer LiteLLM if configured; fall back to direct Ollama
+    if (LITELLM_URL && LITELLM_KEY) {
+      try {
+        coachReport = await callLiteLLM(prompt, signal)
+        modelUsed = `litellm/${LITELLM_MODEL}`
+      } catch (litellmErr) {
+        console.warn('[study-coach] LiteLLM failed, falling back to Ollama:', litellmErr)
+        coachReport = await callOllama(prompt, signal)
+        modelUsed = `ollama/${OLLAMA_MODEL}`
+      }
+    } else {
+      coachReport = await callOllama(prompt, signal)
+      modelUsed = `ollama/${OLLAMA_MODEL}`
     }
 
-    const data = await resp.json()
-    coachReport = data.response ?? ''
+    const inferenceEnd = new Date()
     const latencyMs = inferenceEnd.getTime() - inferenceStart.getTime()
 
-    // Fire-and-forget Langfuse trace
     traceLangfuse({
       traceId,
       name: 'study-coach',
       userId,
       metadata: {
-        examCode,
-        score,
-        passed,
-        attemptId,
+        examCode, score, passed, attemptId,
         wrongCount: wrongAnswers.length,
         weakDomains: domainSummary.filter(d => d.pct < 90).map(d => d.domain),
+        modelUsed,
       },
       input: prompt,
       output: coachReport,
       startTime: inferenceStart.toISOString(),
       endTime: inferenceEnd.toISOString(),
-      modelName: OLLAMA_MODEL,
+      modelName: modelUsed,
       promptTokens: estimateTokens(prompt),
       completionTokens: estimateTokens(coachReport),
       latencyMs,
       level: 'DEFAULT',
     })
   } catch (err) {
-    console.error('[study-coach] Fetch error:', err)
+    const inferenceEnd = new Date()
+    console.error('[study-coach] Inference error:', err)
+    traceLangfuse({
+      traceId,
+      name: 'study-coach',
+      userId,
+      metadata: { examCode, score, passed, attemptId },
+      input: prompt,
+      output: `ERROR: ${String(err)}`,
+      startTime: inferenceStart.toISOString(),
+      endTime: inferenceEnd.toISOString(),
+      modelName: modelUsed || OLLAMA_MODEL,
+      latencyMs: inferenceEnd.getTime() - inferenceStart.getTime(),
+      level: 'ERROR',
+    })
     return NextResponse.json(
       { error: 'LLM request failed', detail: String(err) },
       { status: 502 }
@@ -287,6 +330,7 @@ export async function GET(
       score,
       passed,
       examCode,
+      modelUsed,
       weakDomains: domainSummary.filter(d => d.pct < 90).map(d => d.domain),
       wrongCount: wrongAnswers.length,
       totalQuestions: snapshot.length,

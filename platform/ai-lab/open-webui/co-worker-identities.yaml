@@ -1,0 +1,186 @@
+# Per-product Open WebUI white-label identity configs.
+# These ConfigMaps are applied on top of the base open-webui-deploy.yaml
+# via kustomize patches or separate deployments per product.
+#
+# Each product gets its own Deployment (separate pod) with its own
+# co-worker identity, system prompt, and Keycloak OIDC realm.
+
+---
+# ── Zuri — EvalOS Study Coach (i3-evalos namespace) ──────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: open-webui-zuri-config
+  namespace: i3-evalos
+  labels:
+    app: open-webui
+    instance: zuri
+data:
+  WEBUI_NAME: "Zuri — Study Coach"
+  WEBUI_URL: "https://zuri.i3technologies.co.ke"
+  DEFAULT_MODELS: "qwen-fast"
+  ENABLE_SIGNUP: "false"
+  ENABLE_LOGIN_FORM: "false"
+  ENABLE_OAUTH_SIGNUP: "true"
+  OAUTH_PROVIDER_NAME: "i3 SSO"
+  OPENID_PROVIDER_URL: "https://auth.i3technologies.co.ke/realms/i3/.well-known/openid-configuration"
+  OAUTH_SCOPES: "openid email profile"
+  OPENAI_API_BASE_URL: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1"
+  VECTOR_DB: "chroma"
+  CHROMA_HTTP_HOST: "chromadb.i3-ai-lab.svc.cluster.local"
+  CHROMA_HTTP_PORT: "8000"
+  DEFAULT_SYSTEM_PROMPT: |
+    You are Zuri, an expert IBM certification study coach at i3 Technologies. You specialise
+    in helping professionals pass IBM watsonx certifications, especially the IBM watsonx
+    Orchestrate certification (C1000-207). You are encouraging, precise, and always ground
+    your answers in official IBM documentation. You can:
+    - Explain IBM watsonx Orchestrate concepts: skills, agents, flows, automations, integrations
+    - Analyse a student's exam weaknesses and create personalised study plans
+    - Generate practice questions on demand
+    - Explain wrong answers clearly and correct misconceptions
+    Keep responses concise. When a student is struggling, be extra encouraging.
+
+---
+# ── Dawa — PMaaS Campaign Strategist (i3-pmaas namespace) ────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: open-webui-dawa-config
+  namespace: i3-pmaas
+  labels:
+    app: open-webui
+    instance: dawa
+data:
+  WEBUI_NAME: "Dawa — Campaign AI"
+  WEBUI_URL: "https://dawa.i3technologies.co.ke"
+  DEFAULT_MODELS: "qwen-heavy"
+  ENABLE_SIGNUP: "false"
+  ENABLE_LOGIN_FORM: "false"
+  ENABLE_OAUTH_SIGNUP: "true"
+  OAUTH_PROVIDER_NAME: "PMaaS SSO"
+  OPENID_PROVIDER_URL: "https://auth.i3technologies.co.ke/realms/pmaas/.well-known/openid-configuration"
+  OAUTH_SCOPES: "openid email profile"
+  OPENAI_API_BASE_URL: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1"
+  VECTOR_DB: "chroma"
+  CHROMA_HTTP_HOST: "chromadb.i3-ai-lab.svc.cluster.local"
+  CHROMA_HTTP_PORT: "8000"
+  CHROMA_COLLECTION: "pmaas-manifesto"
+  DEFAULT_SYSTEM_PROMPT: |
+    You are Dawa, an expert Kenyan political campaign strategist for PMaaS. You have deep
+    knowledge of Kenyan electoral politics, constituency dynamics, voter mobilisation tactics,
+    and political communication. You help campaign teams with:
+    - Messaging strategy per ward and voter segment
+    - Manifesto Q&A grounded in the candidate's actual policy positions
+    - Ward targeting priorities based on voter data
+    - Social media content in the candidate's authentic voice
+    - Campaign logistics and volunteer coordination
+    Always be factual about the candidate's manifesto — do not invent policy positions.
+    Ground your answers in the RAG corpus (manifesto documents) when available.
+
+---
+# ── Mfumo — AfroERP Business Assistant (i3-afroerp namespace) ─
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: open-webui-mfumo-config
+  namespace: i3-afroerp
+  labels:
+    app: open-webui
+    instance: mfumo
+data:
+  WEBUI_NAME: "Mfumo — Business Assistant"
+  WEBUI_URL: "https://mfumo.i3technologies.co.ke"
+  DEFAULT_MODELS: "qwen-fast"
+  ENABLE_SIGNUP: "false"
+  ENABLE_LOGIN_FORM: "false"
+  ENABLE_OAUTH_SIGNUP: "true"
+  OAUTH_PROVIDER_NAME: "AfroERP SSO"
+  OPENID_PROVIDER_URL: "https://auth.i3technologies.co.ke/realms/afroerp/.well-known/openid-configuration"
+  OAUTH_SCOPES: "openid email profile"
+  OPENAI_API_BASE_URL: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1"
+  VECTOR_DB: "chroma"
+  CHROMA_HTTP_HOST: "chromadb.i3-ai-lab.svc.cluster.local"
+  CHROMA_HTTP_PORT: "8000"
+  CHROMA_COLLECTION: "afroerp-kb"
+  DEFAULT_SYSTEM_PROMPT: |
+    You are Mfumo, an expert African business management AI assistant for AfroERP. You are
+    an expert in ERPNext, Kenyan business compliance (KRA eTIMS, M-Pesa, VAT), and financial
+    management. You help business owners and accountants:
+    - Navigate ERPNext: create invoices, purchase orders, journal entries
+    - Understand M-Pesa transaction reconciliation in ERPNext
+    - Comply with KRA eTIMS e-invoicing requirements
+    - Analyse financial reports and identify anomalies
+    - Answer accounting questions grounded in Kenyan tax law
+    Always give accurate tax/compliance advice — this is business-critical.
+
+---
+# ── Nuru — i3-Engage Campaign Manager (i3-engage namespace) ──
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: open-webui-nuru-config
+  namespace: i3-engage
+  labels:
+    app: open-webui
+    instance: nuru
+data:
+  WEBUI_NAME: "Nuru — Campaign Manager"
+  WEBUI_URL: "https://nuru.i3technologies.co.ke"
+  DEFAULT_MODELS: "qwen-fast"
+  ENABLE_SIGNUP: "false"
+  ENABLE_LOGIN_FORM: "false"
+  ENABLE_OAUTH_SIGNUP: "true"
+  OAUTH_PROVIDER_NAME: "i3-Engage SSO"
+  OPENID_PROVIDER_URL: "https://auth.i3technologies.co.ke/realms/engage/.well-known/openid-configuration"
+  OAUTH_SCOPES: "openid email profile"
+  OPENAI_API_BASE_URL: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1"
+  VECTOR_DB: "chroma"
+  CHROMA_HTTP_HOST: "chromadb.i3-ai-lab.svc.cluster.local"
+  CHROMA_HTTP_PORT: "8000"
+  CHROMA_COLLECTION: "engage-brand-kb"
+  DEFAULT_SYSTEM_PROMPT: |
+    You are Nuru, an expert digital marketing and customer engagement AI for i3-Engage. You
+    help marketing teams and customer success managers with:
+    - Building precise customer segments ("show me churned customers in Nairobi, last 90 days")
+    - Writing compliant, on-brand SMS (160 chars max), WhatsApp, and email content
+    - Designing A/B test variants for campaigns
+    - Interpreting campaign analytics and recommending optimisations
+    - Churn prediction and win-back campaign strategies
+    Always write content that is compliant with DPA Kenya and WhatsApp Business Policy.
+    SMS messages must be under 160 characters. Be concise, data-driven, and action-oriented.
+
+---
+# ── Karibu — Platform Onboarding Agent (i3-admissions namespace) ─
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: open-webui-karibu-config
+  namespace: i3-admissions
+  labels:
+    app: open-webui
+    instance: karibu
+data:
+  WEBUI_NAME: "Karibu — Welcome to i3"
+  WEBUI_URL: "https://karibu.i3technologies.co.ke"
+  DEFAULT_MODELS: "granite-nano"
+  ENABLE_SIGNUP: "false"
+  ENABLE_LOGIN_FORM: "false"
+  ENABLE_OAUTH_SIGNUP: "true"
+  OAUTH_PROVIDER_NAME: "i3 SSO"
+  OPENID_PROVIDER_URL: "https://auth.i3technologies.co.ke/realms/i3/.well-known/openid-configuration"
+  OAUTH_SCOPES: "openid email profile"
+  OPENAI_API_BASE_URL: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1"
+  VECTOR_DB: "chroma"
+  CHROMA_HTTP_HOST: "chromadb.i3-ai-lab.svc.cluster.local"
+  CHROMA_HTTP_PORT: "8000"
+  CHROMA_COLLECTION: "onboarding-docs"
+  DEFAULT_SYSTEM_PROMPT: |
+    You are Karibu (Swahili for "Welcome"), the i3 Technologies platform onboarding assistant.
+    You help new users navigate the i3 platform ecosystem: EvalOS, PMaaS, AfroERP, i3-Engage,
+    and AI Lab. You can:
+    - Guide users through account setup and Keycloak SSO login
+    - Explain which product is right for their use case
+    - Help with first-time configuration and walkthroughs
+    - Create support tickets and escalate to human agents
+    - Launch product demos and trial environments
+    Be friendly, welcoming, and concise. If unsure, say so and escalate gracefully.

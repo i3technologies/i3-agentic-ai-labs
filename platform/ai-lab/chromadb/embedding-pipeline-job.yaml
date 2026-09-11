@@ -1,0 +1,80 @@
+# ============================================================
+# Embedding Pipeline — Kubernetes Job
+# Namespace: i3-ai-lab
+# Runs on demand to build/refresh ChromaDB RAG collections.
+# Trigger manually: oc create job embed-run-$(date +%s) --from=cronjob/embedding-pipeline -n i3-ai-lab
+# Or apply this Job directly for a one-shot run.
+# ============================================================
+
+# ── Secret: pipeline credentials ─────────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: embedding-pipeline-secrets
+  namespace: i3-ai-lab
+  labels:
+    app: embedding-pipeline
+type: Opaque
+stringData:
+  CHROMA_TOKEN: "REPLACE_WITH_SECURE_CHROMA_TOKEN"   # same as chromadb-secrets
+  DB_URL: "postgresql://evalos:REPLACE@i3-postgres-pgbouncer.i3-data.svc:5432/evalos_db?pgbouncer=true&connection_limit=3"
+
+---
+# ── CronJob: refresh corpora nightly ─────────────────────────
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: embedding-pipeline
+  namespace: i3-ai-lab
+  labels:
+    app: embedding-pipeline
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  # Run at 02:00 UTC daily — low-traffic window
+  schedule: "0 2 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: embedding-pipeline
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: pipeline
+              image: image-registry.openshift-image-registry.svc:5000/i3-ai-lab/embedding-pipeline:latest
+              imagePullPolicy: Always
+              args: ["--collection", "all"]
+              env:
+                - name: CHROMA_HOST
+                  value: "chromadb.i3-ai-lab.svc.cluster.local"
+                - name: CHROMA_PORT
+                  value: "8000"
+                - name: OLLAMA_URL
+                  value: "http://ollama-service.i3-model-gateway.svc.cluster.local:11434"
+              envFrom:
+                - secretRef:
+                    name: embedding-pipeline-secrets
+              resources:
+                requests:
+                  cpu: "250m"
+                  memory: "512Mi"
+                limits:
+                  cpu: "1"
+                  memory: "1Gi"
+
+---
+# ── Dockerfile (build with: oc new-build --dockerfile ...) ────
+# NOTE: Store this as platform/ai-lab/chromadb/Dockerfile
+# and build: oc new-build --name=embedding-pipeline -n i3-ai-lab
+#            --binary --strategy=docker
+
+# Dockerfile content (for reference — create as separate file):
+# FROM python:3.11-slim
+# WORKDIR /app
+# COPY embedding_pipeline.py .
+# RUN pip install --no-cache-dir chromadb==0.5.0 requests psycopg2-binary
+# ENTRYPOINT ["python3", "embedding_pipeline.py"]

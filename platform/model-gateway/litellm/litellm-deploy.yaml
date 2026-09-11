@@ -1,143 +1,149 @@
 # ============================================================
-# LiteLLM Proxy — Tiered Model Gateway
-# Namespace: i3-model-gateway
-# Tier 3 (Edge):    DistilBERT intent + Granite 4.0 Nano 2B
-# Tier 2 (RAG):     Mistral NeMo 12B + DeepSeek-Coder-V2 Lite 16B
-# Tier 1 (Heavy):   watsonx.ai external endpoints
+# LiteLLM Proxy — OSS Tiered Model Gateway
+# Namespace:    i3-model-gateway
+# Tier 3 (Edge):   Granite 3.1 2B + Nomic Embed v1.5
+# Tier 2 (Chat):   Qwen2.5 7B + Qwen2.5-Coder 7B
+# Tier 1 (Heavy):  Qwen2.5 14B + LLaVA 13B
+# Updated:      10 September 2026 — removed watsonx SaaS deps,
+#               replaced with 100% on-cluster Ollama models.
 # ============================================================
 
-# ── ConfigMap: LiteLLM routing config ───────────────────────
+# ── ConfigMap: LiteLLM routing config (also in litellm-config-oss.yaml)
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: litellm-config
   namespace: i3-model-gateway
   labels:
+    app: litellm-proxy
     app.kubernetes.io/part-of: i3-platform
 data:
   config.yaml: |
     model_list:
-      # ── Tier 3: Edge / Intent Classification ──────────────
+
+      # ── Tier 3: Fast / Edge (sub-second to 5s, always warm) ──
       - model_name: granite-nano
         litellm_params:
           model: ollama/granite3.1-dense:2b
           api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
-          timeout: 15
+          timeout: 30
           max_tokens: 2048
         model_info:
           tier: 3
-          description: "IBM Granite 3.1 2B - fast edge inference"
+          description: "IBM Granite 3.1 2B — fast intent routing, classification, onboarding"
 
-      - model_name: distilbert-intent
+      - model_name: embed
         litellm_params:
-          model: huggingface/distilbert-base-uncased
-          api_base: http://distilbert-service.i3-model-gateway.svc.cluster.local:8080
-          timeout: 5
-          max_tokens: 512
+          model: ollama/nomic-embed-text:v1.5
+          api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
+          timeout: 15
         model_info:
           tier: 3
-          description: "DistilBERT 66M - sub-ms intent routing"
+          description: "Nomic Embed Text v1.5 — 768-dim embeddings for all RAG pipelines"
 
-      # ── Tier 2: RAG / Reasoning ───────────────────────────
-      - model_name: mistral-nemo
+      # ── Tier 2: RAG / Interactive Chat (10–45s on CPU) ───────
+      - model_name: qwen-fast
         litellm_params:
-          model: ollama/mistral-nemo:12b
-          api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
-          timeout: 60
-          max_tokens: 8192
-        model_info:
-          tier: 2
-          description: "Mistral NeMo 12B - RAG and reasoning"
-
-      - model_name: deepseek-coder
-        litellm_params:
-          model: ollama/deepseek-coder-v2:16b
+          model: ollama/qwen2.5:7b-instruct-q4_K_M
           api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
           timeout: 90
-          max_tokens: 8192
+          max_tokens: 4096
         model_info:
           tier: 2
-          description: "DeepSeek-Coder-V2 Lite 16B - code generation"
+          description: "Qwen2.5 7B — Study Coach (upgrade), RAG chat, Onboarding, i3-Engage, Zuri"
 
-      # ── Tier 1: Heavy / Production (watsonx.ai external) ──
-      - model_name: granite-heavy
+      - model_name: coder
         litellm_params:
-          model: watsonx/ibm/granite-3-8b-instruct
-          api_key: "os.environ/WATSONX_API_KEY"
-          watsonx_url: "https://eu-de.ml.cloud.ibm.com"
-          project_id: "os.environ/WATSONX_PROJECT_ID"
-          timeout: 120
-          max_tokens: 16384
+          model: ollama/qwen2.5-coder:7b-instruct-q4_K_M
+          api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
+          timeout: 90
+          max_tokens: 4096
+        model_info:
+          tier: 2
+          description: "Qwen2.5-Coder 7B — AI Interview code Qs, Coding Lab, code review, n8n gen"
+
+      # ── Tier 1: Heavy Reasoning (30–120s on CPU, async tasks) ─
+      - model_name: qwen-heavy
+        litellm_params:
+          model: ollama/qwen2.5:14b-instruct-q4_K_M
+          api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
+          timeout: 180
+          max_tokens: 8192
         model_info:
           tier: 1
-          description: "IBM Granite 3 8B via watsonx.ai"
+          description: "Qwen2.5 14B — AI interview eval, PMaaS war room, AfroERP finance agent, admin reports"
 
-      - model_name: granite-vision
+      - model_name: vision
         litellm_params:
-          model: watsonx/ibm/granite-vision-3-2-2b
-          api_key: "os.environ/WATSONX_API_KEY"
-          watsonx_url: "https://eu-de.ml.cloud.ibm.com"
-          project_id: "os.environ/WATSONX_PROJECT_ID"
-          timeout: 120
+          model: ollama/llava:13b-v1.6-mistral-q4
+          api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
+          timeout: 180
+          max_tokens: 2048
         model_info:
           tier: 1
-          description: "IBM Granite Vision 3.2 2B"
+          description: "LLaVA 13B — image+text, doc OCR, invoice parsing, certificate validation"
 
-    # ── Router settings ─────────────────────────────────────
+    # ── Router: fallback chain ──────────────────────────────────
     router_settings:
       routing_strategy: least-busy
       num_retries: 2
       retry_after: 1
       fallbacks:
-        - granite-nano:
-            - mistral-nemo
-        - distilbert-intent:
+        - qwen-heavy:
+            - qwen-fast
+        - qwen-fast:
             - granite-nano
+        - coder:
+            - qwen-fast
+        - vision:
+            - qwen-heavy
       allowed_fails: 3
       cooldown_time: 30
 
-    # ── General settings ────────────────────────────────────
+    # ── General settings ────────────────────────────────────────
     general_settings:
       master_key: "os.environ/LITELLM_MASTER_KEY"
       database_url: "os.environ/DATABASE_URL"
       store_model_in_db: true
 
+    # ── Observability ────────────────────────────────────────────
     litellm_settings:
       success_callback: ["langfuse"]
       failure_callback: ["langfuse"]
       service_callback: ["prometheus"]
       langfuse_public_key: "os.environ/LANGFUSE_PUBLIC_KEY"
       langfuse_secret_key: "os.environ/LANGFUSE_SECRET_KEY"
-      langfuse_host: "http://langfuse-web.i3-model-gateway.svc.cluster.local:3000"
+      langfuse_host: "http://langfuse.i3-ott.svc.cluster.local:3000"
       set_verbose: false
       json_logs: true
-      request_timeout: 120
+      request_timeout: 180
       drop_params: true
 
 ---
-# ── Secret: LiteLLM credentials (placeholder — real values from OpenBao) ──
+# ── Secret: LiteLLM credentials (real values from OpenBao/oc patch)
 apiVersion: v1
 kind: Secret
 metadata:
   name: litellm-secrets
   namespace: i3-model-gateway
   labels:
+    app: litellm-proxy
     app.kubernetes.io/part-of: i3-platform
   annotations:
-    # Real values injected via OpenBao agent sidecar or External Secrets Operator
     openbao.org/agent-inject: "true"
     openbao.org/role: "model-gateway"
 type: Opaque
 stringData:
-  LITELLM_MASTER_KEY: "REPLACE_WITH_SECURE_KEY_FROM_VAULT"
-  WATSONX_API_KEY: "REPLACE_WITH_WATSONX_KEY"
-  WATSONX_PROJECT_ID: "REPLACE_WITH_PROJECT_ID"
-  LANGFUSE_PUBLIC_KEY: "REPLACE_FROM_LANGFUSE"
-  LANGFUSE_SECRET_KEY: "REPLACE_FROM_LANGFUSE"
-  DATABASE_URL: "postgresql://langfuse:REPLACE@i3-postgres-pgbouncer.i3-data.svc:5432/langfuse_db"
+  # Generate: openssl rand -hex 24 | tr -a-z A-Z | sed 's/^/sk-litellm-i3-/'
+  LITELLM_MASTER_KEY: "REPLACE_WITH_SECURE_KEY"
+  # Langfuse keys from i3-ott Langfuse (EvalOS project)
+  LANGFUSE_PUBLIC_KEY: "pk-lf-i3evalos-8ed2998c3f68449b"
+  LANGFUSE_SECRET_KEY: "REPLACE_WITH_LANGFUSE_SECRET"
+  # pgbouncer URL (NOT direct primary — avoids connection saturation)
+  DATABASE_URL: "postgresql://langfuse:LangfuseDB2026i3@i3-postgres-pgbouncer.i3-data.svc:5432/langfuse_db?pgbouncer=true&connection_limit=5"
 
 ---
-# ── Deployment: LiteLLM Proxy ───────────────────────────────
+# ── Deployment: LiteLLM Proxy ────────────────────────────────
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -225,7 +231,7 @@ spec:
       targetPort: 4000
 
 ---
-# ── Route: external access via OCP ingress ───────────────────
+# ── Route: external HTTPS via OCP ingress ────────────────────
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
@@ -234,6 +240,7 @@ metadata:
   labels:
     app.kubernetes.io/part-of: i3-platform
 spec:
+  host: litellm.i3technologies.co.ke
   to:
     kind: Service
     name: litellm-proxy
@@ -244,7 +251,7 @@ spec:
     insecureEdgeTerminationPolicy: Redirect
 
 ---
-# ── KEDA ScaledObject: scale-to-zero when idle ───────────────
+# ── KEDA ScaledObject: scale 1→8 replicas on request load ────
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:

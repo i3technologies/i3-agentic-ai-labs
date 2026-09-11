@@ -1,0 +1,162 @@
+{
+  "__requires": [
+    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "10.0.0" },
+    { "type": "datasource", "id": "postgres", "name": "PostgreSQL", "version": "1.0.0" },
+    { "type": "datasource", "id": "prometheus", "name": "Prometheus", "version": "1.0.0" }
+  ],
+  "__inputs": [
+    {
+      "name": "DS_EVALOS_POSTGRES",
+      "label": "EvalOS PostgreSQL",
+      "description": "Connect to i3-postgres-pgbouncer.i3-data.svc:5432 evalos_db",
+      "type": "datasource",
+      "pluginId": "postgres"
+    },
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "i3-monitoring Prometheus",
+      "type": "datasource",
+      "pluginId": "prometheus"
+    }
+  ],
+  "title": "EvalOS Platform Dashboard",
+  "description": "Exam attempts, pass rates, domain analysis, AI Study Coach usage, leaderboard",
+  "tags": ["evalos", "i3", "certification"],
+  "timezone": "Africa/Nairobi",
+  "refresh": "5m",
+  "schemaVersion": 38,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Total Submitted Attempts",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 0, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "${DS_EVALOS_POSTGRES}" },
+      "targets": [
+        {
+          "rawSql": "SELECT COUNT(*) AS value FROM quiz_attempts WHERE status = 'submitted'",
+          "format": "table"
+        }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "blue", "value": 0 }] } } }
+    },
+    {
+      "id": 2,
+      "title": "Pass Rate (%)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 3, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "${DS_EVALOS_POSTGRES}" },
+      "targets": [
+        {
+          "rawSql": "SELECT ROUND(100.0 * COUNT(*) FILTER (WHERE passed) / NULLIF(COUNT(*) FILTER (WHERE status='submitted'),0), 1) AS value FROM quiz_attempts",
+          "format": "table"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percent", "thresholds": { "steps": [{ "color": "red", "value": 0 }, { "color": "yellow", "value": 60 }, { "color": "green", "value": 80 }] } } }
+    },
+    {
+      "id": 3,
+      "title": "Certificates Issued",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 6, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "${DS_EVALOS_POSTGRES}" },
+      "targets": [
+        {
+          "rawSql": "SELECT COUNT(*) AS value FROM certificates",
+          "format": "table"
+        }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "green" } } }
+    },
+    {
+      "id": 4,
+      "title": "Active Students",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 9, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "${DS_EVALOS_POSTGRES}" },
+      "targets": [
+        {
+          "rawSql": "SELECT COUNT(DISTINCT student_id) AS value FROM quiz_attempts WHERE status = 'submitted'",
+          "format": "table"
+        }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "blue" } } }
+    },
+    {
+      "id": 5,
+      "title": "Daily Attempts (Last 30 Days)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "datasource": { "type": "postgres", "uid": "${DS_EVALOS_POSTGRES}" },
+      "targets": [
+        {
+          "rawSql": "SELECT DATE_TRUNC('day', submitted_at) AS time, COUNT(*) AS attempts, COUNT(*) FILTER (WHERE passed) AS passed FROM quiz_attempts WHERE status = 'submitted' AND submitted_at > NOW() - INTERVAL '30 days' GROUP BY 1 ORDER BY 1",
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Domain Weakness Heatmap (All Attempts)",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "datasource": { "type": "postgres", "uid": "${DS_EVALOS_POSTGRES}" },
+      "targets": [
+        {
+          "rawSql": "SELECT q.domain_name, ROUND(AVG(CASE WHEN qa.answers::jsonb ? q.id::text THEN CASE WHEN qa.answers::jsonb->>q.id::text = q.correct_answers->>0 THEN 100.0 ELSE 0 END ELSE 0 END),1) AS avg_score FROM questions q CROSS JOIN quiz_attempts qa WHERE qa.status = 'submitted' GROUP BY q.domain_name ORDER BY avg_score",
+          "format": "table"
+        }
+      ],
+      "description": "Lower score = weaker domain = study priority"
+    },
+    {
+      "id": 7,
+      "title": "LiteLLM Study Coach — Requests/min",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "sum(rate(litellm_request_total{model=\"qwen-fast\"}[5m]))",
+          "legendFormat": "qwen-fast (Study Coach)"
+        },
+        {
+          "expr": "sum(rate(litellm_request_total{model=\"qwen-heavy\"}[5m]))",
+          "legendFormat": "qwen-heavy (AI Interview)"
+        },
+        {
+          "expr": "sum(rate(litellm_request_total{model=\"coder\"}[5m]))",
+          "legendFormat": "coder (Coding Lab)"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "LiteLLM P95 Latency by Model",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(litellm_request_duration_seconds_bucket[5m])) by (le, model))",
+          "legendFormat": "P95 {{model}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "id": 9,
+      "title": "Top 10 Students by Sets Passed",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "datasource": { "type": "postgres", "uid": "${DS_EVALOS_POSTGRES}" },
+      "targets": [
+        {
+          "rawSql": "SELECT student_id, COUNT(DISTINCT exam_id) FILTER (WHERE passed) AS sets_passed, ROUND(MAX(pct_score),1) AS best_score, COUNT(*) FILTER (WHERE status='submitted') AS attempts FROM quiz_attempts GROUP BY student_id ORDER BY sets_passed DESC, best_score DESC LIMIT 10",
+          "format": "table"
+        }
+      ]
+    }
+  ]
+}

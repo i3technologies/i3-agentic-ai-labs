@@ -50,6 +50,18 @@ export default function Header() {
               >
                 Leaderboard
               </Link>
+              <Link
+                href="/interview"
+                className="text-xs text-slate-300 hover:text-white transition-colors"
+              >
+                AI Interview
+              </Link>
+              <Link
+                href="/lab"
+                className="text-xs text-slate-300 hover:text-white transition-colors"
+              >
+                Coding Labs
+              </Link>
               <span className="text-slate-500 text-xs hidden sm:inline truncate max-w-[180px]">
                 {session.user.name || session.user.email}
               </span>

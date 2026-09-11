@@ -1,0 +1,493 @@
+# ============================================================
+# AfroERP — AI-Powered African Business OS
+# Namespace: i3-afroerp
+# Components:
+#   - ERPNext 15 (Frappe Framework)
+#   - MariaDB 10.6 StatefulSet (ERPNext requires MariaDB)
+#   - Redis (Frappe queue + cache)
+#   - AfroERP AI Agent (LangGraph + ERPNext REST API)
+#   - Mfumo Co-worker (Open WebUI)
+# Kenya Modules (deployed as Frappe apps):
+#   - M-Pesa Daraja integration (STK Push / B2C)
+#   - KRA eTIMS e-invoicing
+# ============================================================
+
+# ── Namespace ────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-afroerp
+  labels:
+    kubernetes.io/metadata.name: i3-afroerp
+    app.kubernetes.io/part-of: i3-platform
+
+---
+# ── ResourceQuota ─────────────────────────────────────────────
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: afroerp-quota
+  namespace: i3-afroerp
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: "8Gi"
+    limits.cpu: "8"
+    limits.memory: "32Gi"
+
+---
+# ── Secret: AfroERP credentials ───────────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: afroerp-secrets
+  namespace: i3-afroerp
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+type: Opaque
+stringData:
+  # MariaDB
+  MYSQL_ROOT_PASSWORD: "REPLACE_WITH_SECURE_ROOT_PW"
+  MYSQL_DATABASE: "afroerp"
+  MYSQL_USER: "frappe"
+  MYSQL_PASSWORD: "REPLACE_WITH_SECURE_DB_PW"
+  # Frappe/ERPNext
+  ADMIN_PASSWORD: "REPLACE_WITH_ERPNEXT_ADMIN_PW"
+  SECRET_KEY: "REPLACE_WITH_RANDOM_50_CHAR"
+  # LiteLLM for AI agents
+  LITELLM_URL: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1"
+  LITELLM_KEY: "REPLACE_WITH_LITELLM_MASTER_KEY"
+  # M-Pesa Daraja
+  MPESA_CONSUMER_KEY: "REPLACE"
+  MPESA_CONSUMER_SECRET: "REPLACE"
+  MPESA_SHORTCODE: "REPLACE"
+  MPESA_PASSKEY: "REPLACE"
+  # KRA eTIMS
+  KRA_PIN: "REPLACE"
+  KRA_API_URL: "https://etims-api.kra.go.ke"
+  KRA_CLIENT_ID: "REPLACE"
+  KRA_CLIENT_SECRET: "REPLACE"
+
+---
+# ── PVC: MariaDB data ─────────────────────────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-data
+  namespace: i3-afroerp
+  labels:
+    app: mariadb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+
+---
+# ── StatefulSet: MariaDB 10.6 ─────────────────────────────────
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb
+  namespace: i3-afroerp
+  labels:
+    app: mariadb
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  serviceName: mariadb
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+        - name: mariadb
+          image: mariadb:10.6
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: afroerp-secrets
+                  key: MYSQL_ROOT_PASSWORD
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: afroerp-secrets
+                  key: MYSQL_DATABASE
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: afroerp-secrets
+                  key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: afroerp-secrets
+                  key: MYSQL_PASSWORD
+          args:
+            - "--character-set-server=utf8mb4"
+            - "--collation-server=utf8mb4_unicode_ci"
+            - "--skip-character-set-client-handshake"
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+          livenessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "localhost"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: mariadb-data
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+  namespace: i3-afroerp
+  labels:
+    app: mariadb
+spec:
+  selector:
+    app: mariadb
+  ports:
+    - port: 3306
+      targetPort: 3306
+  clusterIP: None  # headless for StatefulSet
+
+---
+# ── PVC: ERPNext sites data ──────────────────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: erpnext-sites
+  namespace: i3-afroerp
+  labels:
+    app: erpnext
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+# ── Deployment: ERPNext (Frappe) ──────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: erpnext
+  namespace: i3-afroerp
+  labels:
+    app: erpnext
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: erpnext
+  template:
+    metadata:
+      labels:
+        app: erpnext
+    spec:
+      initContainers:
+        - name: wait-for-db
+          image: busybox
+          command: ['sh', '-c',
+            'until nc -z mariadb.i3-afroerp.svc.cluster.local 3306; do echo waiting for MariaDB; sleep 2; done']
+      containers:
+        - name: erpnext
+          image: frappe/erpnext:v15-latest
+          ports:
+            - containerPort: 8000
+              name: web
+            - containerPort: 9000
+              name: socketio
+          env:
+            - name: DB_HOST
+              value: "mariadb.i3-afroerp.svc.cluster.local"
+            - name: DB_PORT
+              value: "3306"
+            - name: REDIS_CACHE
+              value: "redis://redis.i3-afroerp.svc.cluster.local:6379/0"
+            - name: REDIS_QUEUE
+              value: "redis://redis.i3-afroerp.svc.cluster.local:6379/1"
+            - name: REDIS_SOCKETIO
+              value: "redis://redis.i3-afroerp.svc.cluster.local:6379/2"
+            - name: FRAPPE_SITE_NAME_HEADER
+              value: "afroerp.i3technologies.co.ke"
+          envFrom:
+            - secretRef:
+                name: afroerp-secrets
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "2Gi"
+            limits:
+              cpu: "2"
+              memory: "6Gi"
+          volumeMounts:
+            - name: sites
+              mountPath: /home/frappe/frappe-bench/sites
+      volumes:
+        - name: sites
+          persistentVolumeClaim:
+            claimName: erpnext-sites
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: erpnext
+  namespace: i3-afroerp
+  labels:
+    app: erpnext
+spec:
+  selector:
+    app: erpnext
+  ports:
+    - name: web
+      port: 8000
+      targetPort: 8000
+    - name: socketio
+      port: 9000
+      targetPort: 9000
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: afroerp
+  namespace: i3-afroerp
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  host: afroerp.i3technologies.co.ke
+  to:
+    kind: Service
+    name: erpnext
+  port:
+    targetPort: web
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+---
+# ── Deployment: Redis (Frappe queue + cache) ──────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: i3-afroerp
+  labels:
+    app: redis
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          command: ["redis-server", "--save", "", "--appendonly", "no"]
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: i3-afroerp
+  labels:
+    app: redis
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+
+---
+# ── Deployment: AfroERP AI Agent (LangGraph) ──────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: afroerp-agent
+  namespace: i3-afroerp
+  labels:
+    app: afroerp-agent
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: afroerp-agent
+  template:
+    metadata:
+      labels:
+        app: afroerp-agent
+    spec:
+      containers:
+        - name: agent
+          # Build from platform/afroerp/agents/
+          image: image-registry.openshift-image-registry.svc:5000/i3-afroerp/afroerp-agent:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: afroerp-secrets
+          env:
+            - name: ERPNEXT_URL
+              value: "http://erpnext.i3-afroerp.svc.cluster.local:8000"
+            - name: LITELLM_MODEL_HEAVY
+              value: "qwen-heavy"
+            - name: LITELLM_MODEL_FAST
+              value: "qwen-fast"
+            - name: CHROMA_HOST
+              value: "chromadb.i3-ai-lab.svc.cluster.local"
+            - name: CHROMA_COLLECTION
+              value: "afroerp-kb"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: afroerp-agent
+  namespace: i3-afroerp
+  labels:
+    app: afroerp-agent
+spec:
+  selector:
+    app: afroerp-agent
+  ports:
+    - port: 8080
+      targetPort: 8080
+
+---
+# ── Deployment: Mfumo Co-worker (Open WebUI) ──────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mfumo-coworker
+  namespace: i3-afroerp
+  labels:
+    app: mfumo-coworker
+    instance: mfumo
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mfumo-coworker
+      instance: mfumo
+  template:
+    metadata:
+      labels:
+        app: mfumo-coworker
+        instance: mfumo
+    spec:
+      containers:
+        - name: open-webui
+          image: ghcr.io/open-webui/open-webui:main
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: open-webui-mfumo-config   # from co-worker-identities.yaml
+            - secretRef:
+                name: mfumo-open-webui-secrets
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mfumo-open-webui-secrets
+  namespace: i3-afroerp
+type: Opaque
+stringData:
+  OPENAI_API_KEY: "REPLACE_WITH_LITELLM_MASTER_KEY"
+  OAUTH_CLIENT_ID: "open-webui-mfumo"
+  OAUTH_CLIENT_SECRET: "REPLACE_WITH_KEYCLOAK_CLIENT_SECRET"
+  WEBUI_SECRET_KEY: "REPLACE_WITH_RANDOM_32_CHAR"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mfumo-coworker
+  namespace: i3-afroerp
+  labels:
+    app: mfumo-coworker
+spec:
+  selector:
+    app: mfumo-coworker
+    instance: mfumo
+  ports:
+    - port: 8080
+      targetPort: 8080
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: mfumo
+  namespace: i3-afroerp
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  host: mfumo.i3technologies.co.ke
+  to:
+    kind: Service
+    name: mfumo-coworker
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
