@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM image-registry.openshift-image-registry.svc:5000/openshift/python:3.11-slim
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends librdkafka-dev gcc && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .

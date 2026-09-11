@@ -1,0 +1,86 @@
+# ── Comprehensive Cluster + Internal Services Egress for i3-pmaas ────────────
+# Replaces the piecemeal policies that were failing due to DNS/registry blocks.
+# Strategy: allow all egress to the cluster service CIDR (172.21.0.0/16) which
+# covers DNS (172.21.0.10:53), k8s API (172.21.0.1:443), and image registry
+# (172.21.59.183:5000), plus allow egress to all required internal namespaces.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pmaas-cluster-egress
+  namespace: i3-pmaas
+spec:
+  podSelector: {}
+  egress:
+    # Cluster service CIDR — covers DNS, k8s API, internal image registry
+    - to:
+        - ipBlock:
+            cidr: 172.21.0.0/16
+    # Node-local DNS (runs on each node at 169.254.169.254 or node IP)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 192.168.0.0/16
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # LiteLLM gateway (i3-model-gateway)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-model-gateway
+      ports:
+        - protocol: TCP
+          port: 4000
+    # ChromaDB (i3-ai-lab)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-ai-lab
+      ports:
+        - protocol: TCP
+          port: 8000
+    # Voice services (i3-voice)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-voice
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 8001
+    # PostgreSQL via pgbouncer (i3-data)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-data
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Kafka (i3-messaging)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-messaging
+      ports:
+        - protocol: TCP
+          port: 9092
+    # External HTTPS (WhatsApp API, M-Pesa, etc.)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 80
+  policyTypes:
+    - Egress

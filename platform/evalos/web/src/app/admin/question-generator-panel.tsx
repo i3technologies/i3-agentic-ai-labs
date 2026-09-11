@@ -39,6 +39,7 @@ export default function QuestionGeneratorPanel() {
     questionTypes: ['SC', 'MR'],
   })
   const [status, setStatus] = useState<'idle' | 'generating' | 'reviewing' | 'saving' | 'saved' | 'error'>('idle')
+  const isSaving = status === ('saving' as string)
   const [questions, setQuestions] = useState<GeneratedQuestion[]>([])
   const [rejected, setRejected] = useState<Set<number>>(new Set())
   const [errorMsg, setErrorMsg] = useState('')
@@ -324,10 +325,10 @@ export default function QuestionGeneratorPanel() {
                   </p>
                   <button
                     onClick={saveApproved}
-                    disabled={rejected.size === questions.length || status === 'saving'}
+                    disabled={rejected.size === questions.length || isSaving}
                     className="px-5 py-2 bg-green-700 hover:bg-green-800 disabled:opacity-40 text-white text-sm font-medium rounded-lg transition-colors"
                   >
-                    {status === 'saving' ? '⏳ Saving…' : `💾 Save ${questions.length - rejected.size} Questions`}
+                    {isSaving ? '⏳ Saving…' : `💾 Save ${questions.length - rejected.size} Questions`}
                   </button>
                 </div>
               </div>

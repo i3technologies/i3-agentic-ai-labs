@@ -1,0 +1,32 @@
+# Allow build pods to reach external registries (Docker Hub, quay.io, etc.)
+# and allow all product pods to reach DNS
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-build-egress
+  namespace: i3-pmaas
+spec:
+  podSelector:
+    matchLabels:
+      openshift.io/build.name: ""   # matches any build pod
+  egress:
+    - {}    # allow all egress from build pods
+  policyTypes:
+    - Egress
+---
+# Allow DNS from all pods (required for any cluster communication)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: i3-pmaas
+spec:
+  podSelector: {}
+  egress:
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+  policyTypes:
+    - Egress

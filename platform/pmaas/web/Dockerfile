@@ -1,13 +1,9 @@
-FROM node:20-alpine AS base
+FROM image-registry.openshift-image-registry.svc:5000/openshift/node:20-alpine AS base
 WORKDIR /app
 
-FROM base AS deps
-COPY package.json package-lock.json* ./
-RUN npm ci --only=production
-
 FROM base AS builder
-COPY package.json package-lock.json* ./
-RUN npm ci
+COPY package.json ./
+RUN npm install
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
