@@ -124,50 +124,35 @@ function buildPrompt(
   wrongAnswers: WrongQuestion[]
 ): string {
   const weakDomains = domainSummary.filter(d => d.pct < 90).slice(0, 3)
-  const wrongSample = wrongAnswers.slice(0, 8)
+  const wrongSample = wrongAnswers.slice(0, 5)
 
   const domainLines = weakDomains.map(d =>
     `- ${d.domain}: ${d.pct}% (${d.wrong}/${d.total} wrong)`
   ).join('\n')
 
   const wrongLines = wrongSample.map((w, i) =>
-    `Q${i + 1} [${w.domain} — ${w.topic}]\n` +
-    `  Question: ${w.question}\n` +
-    `  Student answered: ${w.studentAnswer}\n` +
-    `  Correct answer: ${w.correctAnswer}\n` +
-    (w.explanation ? `  Explanation: ${w.explanation}` : '')
-  ).join('\n\n')
+    `Q${i + 1} [${w.domain}] ${w.question.slice(0, 120)}\n` +
+    `  Student: ${w.studentAnswer.slice(0, 80)} | Correct: ${w.correctAnswer.slice(0, 80)}`
+  ).join('\n')
 
-  return `You are an expert IBM watsonx Orchestrate study coach helping a student prepare for the IBM C1000-207 certification exam.
+  return `You are an IBM watsonx Orchestrate study coach for exam ${examCode}.
 
-Student: ${studentName}
-Exam: ${examCode}
-Score: ${score}% — ${passed ? 'PASS' : 'FAIL'}
+Student: ${studentName} | Score: ${score}% (${passed ? 'PASS' : 'FAIL'})
 
-WEAK DOMAINS (below 90%):
-${domainLines || 'None — all domains above threshold'}
+WEAK DOMAINS:
+${domainLines || 'None'}
 
-SAMPLE WRONG ANSWERS (up to 8):
-${wrongLines || 'No wrong answers — perfect score!'}
+WRONG ANSWERS (sample):
+${wrongLines || 'None — perfect score!'}
 
-Write a personalised, encouraging study coaching report. Structure your response with exactly these sections:
+Write a coaching report with these sections:
+## Overall Assessment (2 sentences)
+## Domain Focus Areas (2 tips per weak domain, name specific IBM features)
+## Key Misconceptions (2-3 patterns from wrong answers)
+## 3-Day Study Plan (concrete daily tasks)
+## Encouragement (one sentence for ${studentName})
 
-## Overall Assessment
-2-3 sentences about the student's performance and general readiness.
-
-## Domain Focus Areas
-For each weak domain, give 2-3 specific, actionable study tips referencing real IBM watsonx Orchestrate concepts (skills, agents, flows, orchestration, governance, etc.). Be concrete — name specific features, menus, or docs.
-
-## Key Misconceptions
-Based on the wrong answers above, identify 2-3 patterns in the student's thinking and correct them clearly.
-
-## 3-Day Study Plan
-A concrete day-by-day plan to improve score by next attempt. Include specific IBM documentation sections or topics to review.
-
-## Encouragement
-One final motivating sentence personalised to ${studentName}.
-
-Keep the tone warm, direct, and professional. Do not invent question content beyond what is shown. Total length: 350-500 words.`
+Warm, direct tone. 300-400 words total.`
 }
 
 /**
