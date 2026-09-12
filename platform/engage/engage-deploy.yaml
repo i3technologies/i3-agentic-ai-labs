@@ -44,17 +44,17 @@ metadata:
 type: Opaque
 stringData:
   DATABASE_URL: "postgresql://engage:REPLACE@i3-postgres-pgbouncer.i3-data.svc:5432/engage_db?pgbouncer=true&connection_limit=10"
-  NEXTAUTH_SECRET: "REPLACE_WITH_RANDOM_32_CHAR"
+  NEXTAUTH_SECRET: "5/5acuPp23ZT9+FEP8gnyE2q1HVbD1VLnjIo0TiCHLE="
   NEXTAUTH_URL: "https://engage.i3technologies.co.ke"
-  KEYCLOAK_ISSUER: "https://auth.i3technologies.co.ke/realms/engage"
+  KEYCLOAK_ISSUER: "https://sso.i3technologies.co.ke/auth/realms/i3"
   KEYCLOAK_CLIENT_ID: "engage-web"
-  KEYCLOAK_CLIENT_SECRET: "REPLACE_WITH_KEYCLOAK_SECRET"
+  KEYCLOAK_CLIENT_SECRET: "bJiIyXsPpY0phWvUzbQCWCVCF4oDBZOI"
   # LiteLLM gateway for AI agents
   LITELLM_URL: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1"
-  LITELLM_KEY: "REPLACE_WITH_LITELLM_MASTER_KEY"
+  LITELLM_KEY: "sk-litellm-i3-f951c9377163a11275864cb92e90ad13"
   # ChromaDB for brand knowledge base
   CHROMA_HOST: "chromadb.i3-ai-lab.svc.cluster.local"
-  CHROMA_TOKEN: "REPLACE_WITH_CHROMA_TOKEN"
+  CHROMA_TOKEN: "fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c"
   # Kafka
   KAFKA_BOOTSTRAP: "kafka-bootstrap.i3-messaging.svc.cluster.local:9092"
   # Africa's Talking (SMS)
@@ -311,10 +311,10 @@ metadata:
   namespace: i3-engage
 type: Opaque
 stringData:
-  OPENAI_API_KEY: "REPLACE_WITH_LITELLM_MASTER_KEY"
+  OPENAI_API_KEY: "sk-litellm-i3-f951c9377163a11275864cb92e90ad13"
   OAUTH_CLIENT_ID: "open-webui-nuru"
-  OAUTH_CLIENT_SECRET: "REPLACE_WITH_KEYCLOAK_CLIENT_SECRET"
-  WEBUI_SECRET_KEY: "REPLACE_WITH_RANDOM_32_CHAR"
+  OAUTH_CLIENT_SECRET: "bJiIyXsPpY0phWvUzbQCWCVCF4oDBZOI"
+  WEBUI_SECRET_KEY: "5/5acuPp23ZT9+FEP8gnyE2q1HVbD1VLnjIo0TiCHLE="
 
 ---
 apiVersion: v1

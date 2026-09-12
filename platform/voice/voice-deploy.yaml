@@ -76,7 +76,7 @@ metadata:
 type: Opaque
 stringData:
   # Internal API key — all callers must send: Authorization: Bearer <token>
-  VOICE_API_KEY: "REPLACE_WITH_SECURE_VOICE_API_KEY"
+  VOICE_API_KEY: "996c39cfc16b10eb1952e76036e1dcb6213f2b56ba28fe96"
 
 ---
 # ── Deployment: XTTS-v2 TTS + Voice Clone Service ─────────────

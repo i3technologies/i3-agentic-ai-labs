@@ -44,24 +44,24 @@ metadata:
 type: Opaque
 stringData:
   DATABASE_URL: "postgresql://pmaas:REPLACE@i3-postgres-pgbouncer.i3-data.svc:5432/pmaas_db?pgbouncer=true&connection_limit=10"
-  NEXTAUTH_SECRET: "REPLACE_WITH_RANDOM_32_CHAR"
+  NEXTAUTH_SECRET: "5/5acuPp23ZT9+FEP8gnyE2q1HVbD1VLnjIo0TiCHLE="
   NEXTAUTH_URL: "https://pmaas.i3technologies.co.ke"
-  KEYCLOAK_ISSUER: "https://auth.i3technologies.co.ke/realms/pmaas"
+  KEYCLOAK_ISSUER: "https://sso.i3technologies.co.ke/auth/realms/i3"
   KEYCLOAK_CLIENT_ID: "pmaas-web"
-  KEYCLOAK_CLIENT_SECRET: "REPLACE_WITH_KEYCLOAK_SECRET"
+  KEYCLOAK_CLIENT_SECRET: "xxY9tyvdkYchKLdoFl4Vl6A9STvuDXui"
   # LiteLLM gateway for AI agents
   LITELLM_URL: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1"
-  LITELLM_KEY: "REPLACE_WITH_LITELLM_MASTER_KEY"
+  LITELLM_KEY: "sk-litellm-i3-f951c9377163a11275864cb92e90ad13"
   # ChromaDB for manifesto RAG
   CHROMA_HOST: "chromadb.i3-ai-lab.svc.cluster.local"
-  CHROMA_TOKEN: "REPLACE_WITH_CHROMA_TOKEN"
+  CHROMA_TOKEN: "fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c"
   # Voice services for AI Caller
   VOICE_TTS_URL: "http://voice-tts.i3-voice.svc.cluster.local:8000"
   VOICE_STT_URL: "http://voice-stt.i3-voice.svc.cluster.local:8001"
-  VOICE_API_KEY: "REPLACE_WITH_VOICE_API_KEY"
+  VOICE_API_KEY: "996c39cfc16b10eb1952e76036e1dcb6213f2b56ba28fe96"
   # M-Pesa Daraja API
-  MPESA_CONSUMER_KEY: "REPLACE_WITH_MPESA_KEY"
-  MPESA_CONSUMER_SECRET: "REPLACE_WITH_MPESA_SECRET"
+  MPESA_CONSUMER_KEY: "p9MtTHfq0np8OnXFvTjmF3ytgj9svH7Gexr90CgMGqrhoTpd"
+  MPESA_CONSUMER_SECRET: "BtG0mgEEhtUd408yAJDGltRTQSLAzlE3mi7q7rue1OxyH82cfIbt1d494soE1XFf"
   MPESA_SHORTCODE: "REPLACE_WITH_SHORTCODE"
   MPESA_PASSKEY: "REPLACE_WITH_PASSKEY"
   # WhatsApp Business Cloud API
@@ -296,10 +296,10 @@ metadata:
   namespace: i3-pmaas
 type: Opaque
 stringData:
-  OPENAI_API_KEY: "REPLACE_WITH_LITELLM_MASTER_KEY"
+  OPENAI_API_KEY: "sk-litellm-i3-f951c9377163a11275864cb92e90ad13"
   OAUTH_CLIENT_ID: "open-webui-dawa"
-  OAUTH_CLIENT_SECRET: "REPLACE_WITH_KEYCLOAK_CLIENT_SECRET"
-  WEBUI_SECRET_KEY: "REPLACE_WITH_RANDOM_32_CHAR"
+  OAUTH_CLIENT_SECRET: "xxY9tyvdkYchKLdoFl4Vl6A9STvuDXui"
+  WEBUI_SECRET_KEY: "5/5acuPp23ZT9+FEP8gnyE2q1HVbD1VLnjIo0TiCHLE="
 
 ---
 apiVersion: v1
