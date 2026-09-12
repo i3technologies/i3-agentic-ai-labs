@@ -52,14 +52,14 @@ metadata:
   namespace: i3-ai-lab
 type: Opaque
 stringData:
-  JUPYTERHUB_CRYPT_KEY:        "REPLACE_WITH_64_HEX_CHARS"
-  KEYCLOAK_CLIENT_SECRET:      "REPLACE_WITH_KEYCLOAK_SECRET"
-  POSTGRES_PASSWORD:           "REPLACE_WITH_DB_PASSWORD"
+  JUPYTERHUB_CRYPT_KEY:        "abce1027cbd09f23430e0afe76bc4bcf93d5ffb19a1fad9d8df93e3413af430e"
+  KEYCLOAK_CLIENT_SECRET:      "jupyterhub-keycloak-secret-pending-registration"
+  POSTGRES_PASSWORD:           "jh-2026-secure"
   # Injected into every user notebook environment
   LITELLM_URL:                 "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1"
-  LITELLM_KEY:                 "REPLACE_WITH_LITELLM_MASTER_KEY"
+  LITELLM_KEY:                 "sk-litellm-i3-f951c9377163a11275864cb92e90ad13"
   CHROMA_HOST:                 "chromadb.i3-ai-lab.svc.cluster.local"
-  CHROMA_TOKEN:                "REPLACE_WITH_CHROMA_TOKEN"
+  CHROMA_TOKEN:                "fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c"
 
 ---
 # ── ConfigMap: jupyterhub_config.py ──────────────────────────
@@ -90,12 +90,6 @@ data:
     c.GenericOAuthenticator.username_key  = "preferred_username"
     c.GenericOAuthenticator.scope         = ["openid", "profile", "email"]
     c.GenericOAuthenticator.allow_all     = True
-
-    # ── Database ───────────────────────────────────────────────
-    c.JupyterHub.db_url = (
-        "postgresql+psycopg2://jupyterhub:{pw}@i3-postgres-pgbouncer.i3-data.svc:5432/jupyterhub_db"
-        .format(pw=os.environ.get("POSTGRES_PASSWORD", ""))
-    )
 
     # ── Spawner: KubeSpawner ────────────────────────────────────
     c.JupyterHub.spawner_class = "kubespawner.KubeSpawner"
@@ -136,7 +130,19 @@ data:
     c.JupyterHub.base_url       = "/"
     c.JupyterHub.ip             = "0.0.0.0"
     c.JupyterHub.hub_ip         = "0.0.0.0"
-    c.JupyterHub.port           = 8000
+    c.JupyterHub.port           = 8081
+
+    # Writable data paths (PVC mounted at /srv/shared)
+    c.JupyterHub.cookie_secret_file = "/srv/shared/jupyterhub_cookie_secret"
+    c.JupyterHub.db_url = (
+        "postgresql+psycopg2://jupyterhub:{pw}@i3-postgres-pgbouncer.i3-data.svc:5432/jupyterhub_db"
+        .format(pw=os.environ.get("POSTGRES_PASSWORD", ""))
+    )
+
+    # Proxy runs as a sidecar — tell hub where to find the API
+    c.ConfigurableHTTPProxy.auth_token = os.environ["JUPYTERHUB_CRYPT_KEY"]
+    c.ConfigurableHTTPProxy.api_url    = "http://127.0.0.1:8001"
+    c.ConfigurableHTTPProxy.should_start = False
 
     # Crypt key for cookies
     c.CryptKeeper.keys = [bytes.fromhex(os.environ["JUPYTERHUB_CRYPT_KEY"])]
@@ -177,13 +183,41 @@ spec:
     spec:
       serviceAccountName: jupyterhub
       containers:
+        - name: proxy
+          image: jupyterhub/configurable-http-proxy:4
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: proxy-public
+              containerPort: 8000
+            - name: proxy-api
+              containerPort: 8001
+          env:
+            - name: CONFIGPROXY_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: jupyterhub-secrets
+                  key: JUPYTERHUB_CRYPT_KEY
+          command:
+            - configurable-http-proxy
+            - --ip=0.0.0.0
+            - --port=8000
+            - --api-ip=127.0.0.1
+            - --api-port=8001
+            - --default-target=http://127.0.0.1:8081
+            - --error-target=http://127.0.0.1:8081/hub/error
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
         - name: jupyterhub
           image: quay.io/jupyterhub/k8s-hub:3.3.7
           imagePullPolicy: IfNotPresent
+          command: ["jupyterhub", "-f", "/usr/local/etc/jupyterhub/jupyterhub_config.py"]
           ports:
             - name: hub
-              containerPort: 8000
-            - name: api
               containerPort: 8081
           env:
             - name: JUPYTERHUB_CRYPT_KEY
@@ -221,6 +255,10 @@ spec:
                 secretKeyRef:
                   name: jupyterhub-secrets
                   key: CHROMA_TOKEN
+            - name: JUPYTERHUB_DATA_DIR
+              value: "/srv/shared"
+            - name: JUPYTERHUB_COOKIE_SECRET_FILE
+              value: "/srv/shared/jupyterhub_cookie_secret"
           resources:
             requests:
               cpu: "250m"
@@ -230,7 +268,7 @@ spec:
               memory: "1Gi"
           volumeMounts:
             - name: config
-              mountPath: /etc/jupyterhub
+              mountPath: /usr/local/etc/jupyterhub
             - name: shared
               mountPath: /srv/shared
           livenessProbe:
@@ -303,11 +341,15 @@ spec:
   podSelector:
     matchLabels:
       app: jupyterhub
+  policyTypes:
+    - Ingress
+    - Egress
   ingress:
     - ports:
         - port: 8000
         - port: 8081
   egress:
+    # LiteLLM + Ollama (model gateway)
     - to:
         - namespaceSelector:
             matchLabels:
@@ -317,6 +359,7 @@ spec:
           port: 4000
         - protocol: TCP
           port: 11434
+    # Internal hub-to-proxy
     - to:
         - namespaceSelector:
             matchLabels:
@@ -324,6 +367,7 @@ spec:
       ports:
         - protocol: TCP
           port: 8000
+    # PostgreSQL via PgBouncer
     - to:
         - namespaceSelector:
             matchLabels:
@@ -331,11 +375,24 @@ spec:
       ports:
         - protocol: TCP
           port: 5432
-    - ports:
-        - protocol: UDP
-          port: 53
+    # Kubernetes API server (required by kubespawner)
+    - to:
+        - ipBlock:
+            cidr: 172.21.0.0/16
+      ports:
         - protocol: TCP
-          port: 53
+          port: 443
+    # Cluster DNS (openshift-dns node-local resolver on port 5353)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: openshift-dns
+      ports:
+        - protocol: UDP
+          port: 5353
+        - protocol: TCP
+          port: 5353
+    # External HTTPS (Keycloak OIDC)
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0
@@ -346,6 +403,3 @@ spec:
       ports:
         - protocol: TCP
           port: 443
-  policyTypes:
-    - Ingress
-    - Egress

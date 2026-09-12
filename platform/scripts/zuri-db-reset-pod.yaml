@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: zuri-db-reset
+  namespace: i3-evalos
+spec:
+  restartPolicy: Never
+  containers:
+    - name: reset
+      image: busybox
+      command: ["sh", "-c", "rm -f /data/webui.db && echo 'webui.db deleted'"]
+      volumeMounts:
+        - name: data
+          mountPath: /data
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: zuri-data

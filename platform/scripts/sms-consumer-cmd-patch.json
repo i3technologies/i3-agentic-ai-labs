@@ -1,0 +1,4 @@
+[
+  {"op":"replace","path":"/spec/template/spec/containers/0/command","value":["python","kafka_consumers.py"]},
+  {"op":"add","path":"/spec/template/spec/containers/0/env","value":[{"name":"CONSUMERS","value":"sms,email"}]}
+]

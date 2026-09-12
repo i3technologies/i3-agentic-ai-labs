@@ -25,6 +25,43 @@ spec:
       storage: 20Gi
 
 ---
+# ── ConfigMap: ChromaDB log config (stdout-only, no file handler) ─
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chromadb-log-config
+  namespace: i3-ai-lab
+data:
+  log_config.yml: |
+    version: 1
+    disable_existing_loggers: false
+    formatters:
+      default:
+        "()": uvicorn.logging.DefaultFormatter
+        fmt: "%(levelprefix)s %(message)s"
+        use_colors: null
+    handlers:
+      default:
+        formatter: default
+        class: logging.StreamHandler
+        stream: ext://sys.stderr
+    loggers:
+      uvicorn:
+        handlers: [default]
+        level: INFO
+        propagate: false
+      uvicorn.error:
+        level: INFO
+      uvicorn.access:
+        handlers: [default]
+        level: INFO
+        propagate: false
+      chromadb:
+        handlers: [default]
+        level: INFO
+        propagate: false
+
+---
 # ── StatefulSet: ChromaDB ─────────────────────────────────────
 apiVersion: apps/v1
 kind: StatefulSet
@@ -49,6 +86,14 @@ spec:
         - name: chromadb
           image: chromadb/chroma:0.5.0
           imagePullPolicy: IfNotPresent
+          command:
+            - uvicorn
+            - chromadb.app:app
+            - --workers=1
+            - --host=0.0.0.0
+            - --port=8000
+            - --proxy-headers
+            - --log-config=/etc/chromadb/log_config.yml
           ports:
             - name: http
               containerPort: 8000
@@ -59,6 +104,11 @@ spec:
               value: "/chroma/chroma"
             - name: ANONYMIZED_TELEMETRY
               value: "False"
+            # Override uvicorn log config to prevent file handler (OpenShift read-only fs)
+            - name: CHROMA_LOG_CONFIG_FILE
+              value: "/etc/chromadb/log_config.yml"
+            - name: LOG_CONFIG
+              value: "/etc/chromadb/log_config.yml"
             # Token auth (set matching CHROMA_TOKEN in consumers)
             - name: CHROMA_SERVER_AUTHN_PROVIDER
               value: "chromadb.auth.token_authn.TokenAuthenticationServerProvider"
@@ -77,6 +127,9 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /chroma/chroma
+            - name: log-config
+              mountPath: /etc/chromadb
+              readOnly: true
           livenessProbe:
             httpGet:
               path: /api/v1/heartbeat
@@ -93,6 +146,9 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: chromadb-data
+        - name: log-config
+          configMap:
+            name: chromadb-log-config
 
 ---
 # ── Service: ClusterIP (internal only) ───────────────────────
@@ -124,7 +180,7 @@ metadata:
 type: Opaque
 stringData:
   # Generate: openssl rand -hex 32
-  CHROMA_TOKEN: "REPLACE_WITH_SECURE_CHROMA_TOKEN"
+  CHROMA_TOKEN: "fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c"
 
 ---
 # ── NetworkPolicy: restrict ChromaDB access ──────────────────
