@@ -33,7 +33,7 @@ spec:
     limits.memory: "16Gi"
 
 ---
-# ── PVC: voice model storage (XTTS-v2 ~1.8GB + Whisper ~1.5GB) ──
+# ── PVC: TTS model storage (XTTS-v2 ~1.8GB) ─────────────────
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -47,6 +47,22 @@ spec:
   resources:
     requests:
       storage: 10Gi
+
+---
+# ── PVC: STT model storage (Whisper ~1.5GB) ──────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: voice-stt-models
+  namespace: i3-voice
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
 
 ---
 # ── PVC: voice clone storage (voice_id WAV files) ─────────────
@@ -149,7 +165,7 @@ spec:
       volumes:
         - name: models
           persistentVolumeClaim:
-            claimName: voice-models
+            claimName: voice-stt-models
         - name: clones
           persistentVolumeClaim:
             claimName: voice-clones
@@ -243,7 +259,7 @@ spec:
       volumes:
         - name: models
           persistentVolumeClaim:
-            claimName: voice-models
+            claimName: voice-stt-models
 
 ---
 apiVersion: v1
