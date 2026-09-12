@@ -1,0 +1,6 @@
+[
+  {"op":"add","path":"/spec/template/spec/containers/0/env","value":[
+    {"name":"JUPYTERHUB_DATA_DIR","value":"/srv/shared"},
+    {"name":"JUPYTERHUB_COOKIE_SECRET_FILE","value":"/srv/shared/jupyterhub_cookie_secret"}
+  ]}
+]

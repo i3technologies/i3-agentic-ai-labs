@@ -1,0 +1,4 @@
+[
+  {"op":"add","path":"/spec/template/spec/volumes","value":[{"name":"data","persistentVolumeClaim":{"claimName":"mfumo-data"}}]},
+  {"op":"add","path":"/spec/template/spec/containers/0/volumeMounts","value":[{"name":"data","mountPath":"/app/backend/data"}]}
+]

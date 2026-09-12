@@ -1,0 +1,42 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zuri-egress
+  namespace: i3-evalos
+spec:
+  podSelector:
+    matchLabels:
+      app: zuri-coworker
+  policyTypes:
+    - Egress
+  egress:
+    # LiteLLM proxy (chat completions + embeddings via openai engine)
+    - ports:
+        - port: 4000
+          protocol: TCP
+      to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-model-gateway
+    # Ollama (RAG embedding engine fallback)
+    - ports:
+        - port: 11434
+          protocol: TCP
+      to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-model-gateway
+    # Langfuse observability
+    - ports:
+        - port: 3000
+          protocol: TCP
+      to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-ott
+    # Cluster DNS
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP

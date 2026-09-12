@@ -4,7 +4,7 @@
 const http = require('http');
 
 const WF        = '319537be-cd59-4645-9b5e-f183acfecf7e';
-const BREVO_KEY = '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';
+const BREVO_KEY = 'BREVO_API_KEY_REDACTED_SEE_CLUSTER_SECRET';
 const FROM_EMAIL = 'noreply@i3technologies.co.ke';
 const FROM_NAME  = 'EvalOS - i3 Technologies';
 const ADMIN_EMAIL = 'snjagi@i3technologies.co.ke';

@@ -1,0 +1,1 @@
+{"data":{"RAG_EMBEDDING_ENGINE":"ollama","RAG_EMBEDDING_MODEL":"nomic-embed-text:latest","OLLAMA_BASE_URL":"http://ollama.i3-model-gateway.svc.cluster.local:11434"}}
