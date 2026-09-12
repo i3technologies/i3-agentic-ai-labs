@@ -185,7 +185,7 @@ async function callLiteLLM(prompt: string, signal: AbortSignal): Promise<string>
       model: LITELLM_MODEL,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
-      max_tokens: 700,
+      max_tokens: 500,
       top_p: 0.9,
     }),
     signal,
@@ -209,7 +209,7 @@ async function callOllama(prompt: string, signal: AbortSignal): Promise<string> 
       model: OLLAMA_MODEL,
       prompt,
       stream: false,
-      options: { temperature: 0.7, num_predict: 700, top_p: 0.9 },
+      options: { temperature: 0.7, num_predict: 500, top_p: 0.9 },
     }),
     signal,
   })
@@ -262,7 +262,7 @@ export async function GET(
   let modelUsed = ''
 
   try {
-    const signal = AbortSignal.timeout(90_000)
+    const signal = AbortSignal.timeout(110_000)
 
     // Prefer LiteLLM if configured; fall back to direct Ollama
     if (LITELLM_URL && LITELLM_KEY) {
