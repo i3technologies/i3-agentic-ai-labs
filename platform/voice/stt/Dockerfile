@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM image-registry.openshift-image-registry.svc:5000/openshift/python:3.11-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
@@ -7,9 +7,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 RUN pip install --no-cache-dir \
-    fastapi==0.111.0 \
-    uvicorn[standard]==0.29.0 \
-    faster-whisper==1.0.1 \
+    fastapi==0.115.0 \
+    uvicorn[standard]==0.30.6 \
+    faster-whisper==1.1.0 \
     python-multipart
 
 COPY stt_service.py .

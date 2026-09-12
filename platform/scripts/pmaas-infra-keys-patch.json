@@ -1,0 +1,8 @@
+{"stringData":{
+  "LITELLM_KEY":    "sk-litellm-i3-f951c9377163a11275864cb92e90ad13",
+  "LITELLM_URL":    "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1",
+  "CHROMA_TOKEN":   "fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c",
+  "VOICE_API_KEY":  "996c39cfc16b10eb1952e76036e1dcb6213f2b56ba28fe96",
+  "VOICE_STT_URL":  "http://voice-stt.i3-voice.svc.cluster.local:8001",
+  "VOICE_TTS_URL":  "http://voice-tts.i3-voice.svc.cluster.local:8000"
+}}

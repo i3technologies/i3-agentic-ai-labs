@@ -46,19 +46,19 @@ data:
   # Keycloak OIDC SSO
   ENABLE_OAUTH_SIGNUP: "true"
   OAUTH_PROVIDER_NAME: "i3 SSO"
-  OPENID_PROVIDER_URL: "https://auth.i3technologies.co.ke/realms/i3/.well-known/openid-configuration"
+  OPENID_PROVIDER_URL: "https://sso.i3technologies.co.ke/auth/realms/i3/.well-known/openid-configuration"
   OAUTH_SCOPES: "openid email profile"
   # Route all LLM calls through LiteLLM gateway
   OPENAI_API_BASE_URL: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1"
-  # RAG — Ollama embeddings (nomic-embed-text already pulled)
+  # RAG — Ollama embeddings (nomic-embed-text, no HuggingFace download needed)
   RAG_EMBEDDING_ENGINE: "ollama"
   RAG_EMBEDDING_MODEL: "nomic-embed-text:latest"
   OLLAMA_BASE_URL: "http://ollama.i3-model-gateway.svc.cluster.local:11434"
   ENABLE_OLLAMA_API: "true"
-  # ChromaDB vector store — will be enabled once ChromaDB is deployed
-  VECTOR_DB: "chroma"
-  CHROMA_HTTP_HOST: "chromadb.i3-ai-lab.svc.cluster.local"
-  CHROMA_HTTP_PORT: "8000"
+  # ChromaDB: disabled until Open WebUI client/server version compatibility is confirmed
+  # VECTOR_DB: "chroma"
+  # CHROMA_HTTP_HOST: "chromadb.i3-ai-lab.svc.cluster.local"
+  # CHROMA_HTTP_PORT: "8000"
   # Enable Whisper STT (voice input)
   AUDIO_STT_ENGINE: "openai"
   AUDIO_STT_OPENAI_API_BASE_URL: "http://voice-stt.i3-voice.svc.cluster.local:8001/v1"
@@ -91,7 +91,7 @@ stringData:
   OPENAI_API_KEY: "sk-litellm-i3-f951c9377163a11275864cb92e90ad13"
   # Keycloak OIDC client
   OAUTH_CLIENT_ID: "open-webui-sage"
-  OAUTH_CLIENT_SECRET: "sage-keycloak-secret-pending-registration"
+  OAUTH_CLIENT_SECRET: "vCPpBNpKifUUzeQICwleE5PoXxjycbNt"
   # Open WebUI internal JWT secret
   WEBUI_SECRET_KEY: "a3f8d2e1c9b74056e8f1a2d3c4b5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3"
 

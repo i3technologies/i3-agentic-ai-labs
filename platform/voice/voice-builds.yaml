@@ -1,0 +1,73 @@
+---
+# ── BuildConfig: voice-tts ────────────────────────────────────
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: voice-tts
+  namespace: i3-voice
+  labels:
+    app: voice-tts
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  source:
+    type: Binary
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: voice-tts:latest
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+
+---
+# ── ImageStream: voice-tts ────────────────────────────────────
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: voice-tts
+  namespace: i3-voice
+
+---
+# ── BuildConfig: voice-stt ────────────────────────────────────
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: voice-stt
+  namespace: i3-voice
+  labels:
+    app: voice-stt
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  source:
+    type: Binary
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: voice-stt:latest
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+
+---
+# ── ImageStream: voice-stt ────────────────────────────────────
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: voice-stt
+  namespace: i3-voice

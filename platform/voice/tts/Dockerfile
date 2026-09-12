@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM image-registry.openshift-image-registry.svc:5000/openshift/python:3.11-slim
 
 # System deps for audio processing
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -8,11 +8,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
+# Install torch CPU-only first, then the rest from PyPI
 RUN pip install --no-cache-dir \
-    fastapi==0.111.0 \
-    uvicorn[standard]==0.29.0 \
+    torch==2.2.2 \
+    torchaudio==2.2.2 \
+    --index-url https://download.pytorch.org/whl/cpu
+
+RUN pip install --no-cache-dir \
+    fastapi==0.115.0 \
+    uvicorn[standard]==0.30.6 \
     TTS==0.22.0 \
-    torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu \
     numpy \
     soundfile \
     python-multipart
