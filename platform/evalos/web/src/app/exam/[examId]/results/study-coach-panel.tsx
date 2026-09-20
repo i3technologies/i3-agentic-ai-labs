@@ -67,7 +67,10 @@ export default function StudyCoachPanel({ attemptId, passed, score }: StudyCoach
     const timer = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 1000)
 
     try {
-      const res = await fetch(`/api/study-coach/${attemptId}`, { cache: 'no-store' })
+      const res = await fetch(`/api/study-coach/${attemptId}`, {
+        cache: 'no-store',
+        signal: AbortSignal.timeout(112_000),  // 112 s — server has 110 s; aborts before 120 s HAProxy cut-off
+      })
       clearInterval(timer)
       setElapsed(Math.floor((Date.now() - start) / 1000))
 
@@ -84,7 +87,15 @@ export default function StudyCoachPanel({ attemptId, passed, score }: StudyCoach
       setState('done')
     } catch (e) {
       clearInterval(timer)
-      setErrorMsg(String(e))
+      const isTimeout = e instanceof DOMException && e.name === 'TimeoutError'
+      const isNetwork = e instanceof TypeError && e.message.includes('fetch')
+      setErrorMsg(
+        isTimeout
+          ? 'Request timed out — the LLM is taking too long. Please try again.'
+          : isNetwork
+          ? 'Network error — could not reach the server. Check your connection and try again.'
+          : String(e)
+      )
       setState('error')
     }
   }

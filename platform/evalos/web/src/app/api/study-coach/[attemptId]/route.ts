@@ -6,6 +6,7 @@ import { traceLangfuse, estimateTokens } from '@/lib/langfuse'
 import { randomUUID } from 'crypto'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 115   // seconds — covers 110 s LLM AbortSignal + overhead, under 120 s HAProxy cut-off
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -159,12 +160,14 @@ Warm, direct tone. 300-400 words total.`
  * Call LiteLLM OpenAI-compatible /chat/completions endpoint.
  * Returns the assistant message content.
  */
-async function callLiteLLM(prompt: string, signal: AbortSignal): Promise<string> {
+async function callLiteLLM(prompt: string, signal: AbortSignal, tenantId: string, userId: string): Promise<string> {
   const resp = await fetch(`${LITELLM_URL}/chat/completions`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${LITELLM_KEY}`,
+      'Content-Type':         'application/json',
+      'Authorization':        `Bearer ${LITELLM_KEY}`,
+      'x-litellm-max-tokens': '500',
+      'x-litellm-metadata':   JSON.stringify({ tenant_id: tenantId, agent_id: 'evalos-study-coach', user_id: userId }),
     },
     body: JSON.stringify({
       model: LITELLM_MODEL,
@@ -216,7 +219,8 @@ export async function GET(
   const { attemptId } = params
   if (!UUID_RE.test(attemptId)) return NextResponse.json({ error: 'Invalid attempt ID' }, { status: 400 })
 
-  const userId = session.user.userId || session.user.email || ''
+  const userId   = session.user.userId || session.user.email || ''
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000001'
 
   const { rows } = await pool.query(
     `SELECT qa.question_snapshot, qa.answers, qa.pct_score, qa.passed,
@@ -252,7 +256,7 @@ export async function GET(
     // Prefer LiteLLM if configured; fall back to direct Ollama
     if (LITELLM_URL && LITELLM_KEY) {
       try {
-        coachReport = await callLiteLLM(prompt, signal)
+        coachReport = await callLiteLLM(prompt, signal, tenantId, userId)
         modelUsed = `litellm/${LITELLM_MODEL}`
       } catch (litellmErr) {
         console.warn('[study-coach] LiteLLM failed, falling back to Ollama:', litellmErr)

@@ -329,6 +329,17 @@ spec:
           port: 8080
         - protocol: TCP
           port: 8443
+    - from:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - i3-evalos
+                  - i3-admissions
+      ports:
+        - protocol: TCP
+          port: 11434   # Ollama API — study-coach + interview fallback
 
 # ─── i3-admissions: FastAPI reachable from ingress only ──────────────────────
 ---
@@ -389,3 +400,78 @@ spec:
           port: 9090   # Prometheus
         - protocol: TCP
           port: 3000   # Grafana
+
+# ─── i3-agent-mesh: Agent Registry + MCP Gateway ─────────────────────────────
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-ingress
+  namespace: i3-agent-mesh
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-mcp-gateway-clients
+  namespace: i3-agent-mesh
+spec:
+  podSelector:
+    matchLabels:
+      app: mcp-gateway
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - i3-admissions
+                  - i3-pmaas
+                  - i3-onboarding
+                  - i3-ai-lab
+                  - i3-evalos
+                  - i3-engage
+      ports:
+        - protocol: TCP
+          port: 8100   # MCP Gateway HTTP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-agent-registry-clients
+  namespace: i3-agent-mesh
+spec:
+  podSelector:
+    matchLabels:
+      app: agent-registry
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - i3-admissions
+                  - i3-pmaas
+                  - i3-onboarding
+                  - i3-ai-lab
+                  - i3-evalos
+                  - i3-engage
+      ports:
+        - protocol: TCP
+          port: 8200   # Agent Registry HTTP
+    - from:
+        - podSelector:
+            matchLabels:
+              app: mcp-gateway   # gateway reads manifests from registry
+      ports:
+        - protocol: TCP
+          port: 8200
