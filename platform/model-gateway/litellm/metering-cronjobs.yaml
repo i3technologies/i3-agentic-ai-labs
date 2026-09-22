@@ -1,0 +1,218 @@
+# =============================================================
+# LiteLLM Metering CronJobs — IMP-07 (PLN-02/PLN-05)
+# Namespace: i3-model-gateway
+# =============================================================
+# Two jobs:
+#   1. litellm-metering-etl   — nightly 00:05 UTC
+#   2. litellm-key-rotation   — monthly 02:00 UTC on the 1st
+#
+# Both run as the litellm-break-glass-sa ServiceAccount, which
+# has a time-limited OpenBao token projection giving access ONLY to:
+#   i3/litellm/master-key          (R1 break-glass path)
+#   i3/litellm/key-hmac-secret
+#   i3/litellm/virtual-keys/**     (write)
+#
+# R1: master_key is unreachable by any other SA or pod.
+# =============================================================
+
+---
+# ── ServiceAccount for break-glass operations ─────────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: litellm-break-glass-sa
+  namespace: i3-model-gateway
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/imp: IMP-07
+  annotations:
+    # OpenBao agent will inject a token with break-glass-only policy
+    openbao.org/agent-inject: "true"
+    openbao.org/role: "litellm-break-glass"
+
+---
+# ── Secret: metering job credentials (non-master values) ──
+# master_key and key-hmac-secret are injected by OpenBao agent;
+# they do NOT appear in this Secret.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: litellm-metering-secrets
+  namespace: i3-model-gateway
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/imp: IMP-07
+  annotations:
+    openbao.org/agent-inject: "true"
+    openbao.org/role: "litellm-break-glass"
+type: Opaque
+stringData:
+  # Retrieve at deploy time:
+  #   vault kv get -field=url i3/litellm/billing-db-url
+  LITELLM_BILLING_DB_URL: "REPLACE_FROM_OPENBAO_i3/litellm/billing-db-url"
+  LITELLM_DB_URL:         "REPLACE_FROM_OPENBAO_i3/litellm/billing-db-url"
+  S3_ACCESS_KEY:          "REPLACE_FROM_OPENBAO_i3/minio/billing-access-key"
+  S3_SECRET_KEY:          "REPLACE_FROM_OPENBAO_i3/minio/billing-secret-key"
+  BILLING_TENANT_ID:      "00000000-0000-0000-0000-000000000001"
+  LITELLM_URL:            "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000"
+  S3_BILLING_BUCKET:      "i3-billing"
+  S3_ENDPOINT:            "http://minio.i3-data.svc.cluster.local:9000"
+  # master_key and KEY_HMAC_SECRET injected by OpenBao agent — not here
+
+---
+# ── CronJob 1: Nightly ETL ─────────────────────────────────
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: litellm-metering-etl
+  namespace: i3-model-gateway
+  labels:
+    app: litellm-metering-etl
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/imp: IMP-07
+spec:
+  schedule: "5 0 * * *"         # 00:05 UTC daily
+  concurrencyPolicy: Forbid      # never run two ETLs simultaneously
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: litellm-metering-etl
+          annotations:
+            openbao.org/agent-inject: "true"
+            openbao.org/role: "litellm-break-glass"
+            # Injects LITELLM_MASTER_KEY and KEY_HMAC_SECRET as env vars
+            openbao.org/agent-inject-secret-master-key: "i3/litellm/master-key"
+            openbao.org/agent-inject-template-master-key: |
+              {{- with secret "i3/litellm/master-key" -}}
+              export LITELLM_MASTER_KEY="{{ .Data.data.key }}"
+              {{- end }}
+            openbao.org/agent-inject-secret-hmac: "i3/litellm/key-hmac-secret"
+            openbao.org/agent-inject-template-hmac: |
+              {{- with secret "i3/litellm/key-hmac-secret" -}}
+              export KEY_HMAC_SECRET="{{ .Data.data.secret }}"
+              {{- end }}
+        spec:
+          serviceAccountName: litellm-break-glass-sa
+          restartPolicy: OnFailure
+          containers:
+            - name: etl
+              image: python:3.12-slim
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  pip install asyncpg boto3 httpx --quiet
+                  source /vault/secrets/master-key
+                  source /vault/secrets/hmac
+                  python /app/metering_etl.py
+              envFrom:
+                - secretRef:
+                    name: litellm-metering-secrets
+              volumeMounts:
+                - name: etl-script
+                  mountPath: /app
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+          volumes:
+            - name: etl-script
+              configMap:
+                name: litellm-metering-scripts
+
+---
+# ── CronJob 2: Monthly Key Rotation ───────────────────────
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: litellm-key-rotation
+  namespace: i3-model-gateway
+  labels:
+    app: litellm-key-rotation
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/imp: IMP-07
+spec:
+  schedule: "0 2 1 * *"         # 02:00 UTC on the 1st of every month
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      backoffLimit: 1            # rotation failures should page on-call, not silently retry
+      template:
+        metadata:
+          labels:
+            app: litellm-key-rotation
+          annotations:
+            openbao.org/agent-inject: "true"
+            openbao.org/role: "litellm-break-glass"
+            openbao.org/agent-inject-secret-master-key: "i3/litellm/master-key"
+            openbao.org/agent-inject-template-master-key: |
+              {{- with secret "i3/litellm/master-key" -}}
+              export LITELLM_MASTER_KEY="{{ .Data.data.key }}"
+              {{- end }}
+            openbao.org/agent-inject-secret-hmac: "i3/litellm/key-hmac-secret"
+            openbao.org/agent-inject-template-hmac: |
+              {{- with secret "i3/litellm/key-hmac-secret" -}}
+              export KEY_HMAC_SECRET="{{ .Data.data.secret }}"
+              {{- end }}
+        spec:
+          serviceAccountName: litellm-break-glass-sa
+          restartPolicy: OnFailure
+          containers:
+            - name: rotation
+              image: python:3.12-slim
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  pip install asyncpg httpx --quiet
+                  apt-get install -y vault --quiet 2>/dev/null || true
+                  source /vault/secrets/master-key
+                  source /vault/secrets/hmac
+                  python /app/key_rotation.py
+              envFrom:
+                - secretRef:
+                    name: litellm-metering-secrets
+              volumeMounts:
+                - name: etl-script
+                  mountPath: /app
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+          volumes:
+            - name: etl-script
+              configMap:
+                name: litellm-metering-scripts
+
+---
+# ── ConfigMap: Python scripts (mounted into both CronJobs) ─
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: litellm-metering-scripts
+  namespace: i3-model-gateway
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/imp: IMP-07
+# Scripts are maintained in:
+#   platform/model-gateway/litellm/metering_etl.py
+#   platform/model-gateway/litellm/key_rotation.py
+# Sync with:
+#   oc create configmap litellm-metering-scripts \
+#     --from-file=metering_etl.py=platform/model-gateway/litellm/metering_etl.py \
+#     --from-file=key_rotation.py=platform/model-gateway/litellm/key_rotation.py \
+#     -n i3-model-gateway --dry-run=client -o yaml | oc apply -f -
+data: {}
