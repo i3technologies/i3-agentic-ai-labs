@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Component 06: i3 Engage — WhatsApp &amp; Communication Hub</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #1f2328;
+      background: #f7f8fa;
+    }
+
+    /* ── Cover ── */
+    .cover {
+      background: linear-gradient(135deg, #1a7f37, #2ea043);
+      color: #fff;
+      padding: 56px 40px 48px;
+      text-align: center;
+    }
+    .cover .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 20px;
+      padding: 4px 16px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .cover h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.3px;
+    }
+    .cover .subtitle {
+      font-size: 15px;
+      opacity: 0.88;
+      margin-bottom: 28px;
+    }
+    .cover .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .cover .meta-chip {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 6px;
+      padding: 5px 14px;
+      font-size: 12px;
+    }
+    .cover .meta-chip strong { opacity: 0.75; margin-right: 4px; }
+
+    /* ── Layout ── */
+    .page { max-width: 860px; margin: 0 auto; padding: 36px 24px 60px; }
+
+    /* ── Section headings ── */
+    h2 {
+      color: #1a7f37;
+      font-size: 20px;
+      font-weight: 700;
+      margin: 42px 0 14px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #1a7f37;
+    }
+    h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin: 24px 0 10px;
+      color: #1f2328;
+    }
+    h4 {
+      font-size: 13px;
+      font-weight: 700;
+      margin: 18px 0 6px;
+      color: #1a7f37;
+    }
+    p { margin-bottom: 10px; }
+    ul, ol { margin: 8px 0 12px 22px; }
+    li { margin-bottom: 5px; }
+
+    /* ── Code / inline code ── */
+    code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 12.5px;
+      background: #f0fff4;
+      border: 1px solid #9be9a8;
+      border-radius: 4px;
+      padding: 1px 6px;
+    }
+    pre {
+      background: #f0fff4;
+      border: 1px solid #9be9a8;
+      border-radius: 6px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      margin: 10px 0 16px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 12.5px;
+      line-height: 1.6;
+    }
+    pre code { background: none; border: none; padding: 0; }
+
+    /* ── Tables ── */
+    .table-wrap { overflow-x: auto; margin: 14px 0 20px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead tr { background: #1a7f37; color: #fff; }
+    thead th {
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    tbody tr { border-bottom: 1px solid #e5e7eb; }
+    tbody tr:nth-child(even) { background: #f7f8fa; }
+    tbody td { padding: 9px 14px; vertical-align: top; }
+
+    /* ── Callout boxes ── */
+    .callout {
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin: 14px 0 18px;
+      border-left: 4px solid;
+      font-size: 13px;
+    }
+    .callout-info    { background: #f0fff4; border-color: #2ea043; }
+    .callout-warn    { background: #fff8e1; border-color: #e6a817; }
+    .callout-danger  { background: #fff0f0; border-color: #cf222e; }
+    .callout-action  { background: #f0f7ff; border-color: #3b82d4; }
+    .callout strong  { display: block; margin-bottom: 4px; }
+
+    /* ── Part banners ── */
+    .part-banner {
+      background: linear-gradient(135deg, #1a7f37, #2ea043);
+      color: #fff;
+      border-radius: 8px;
+      padding: 16px 22px;
+      margin: 46px 0 6px;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .part-banner span {
+      opacity: 0.75;
+      font-size: 12px;
+      font-weight: 400;
+      margin-left: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Step list ── */
+    .steps { counter-reset: step; list-style: none; margin-left: 0; }
+    .steps li {
+      counter-increment: step;
+      padding: 8px 0 8px 38px;
+      position: relative;
+      border-bottom: 1px dashed #e5e7eb;
+      margin-bottom: 0;
+    }
+    .steps li:last-child { border-bottom: none; }
+    .steps li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0; top: 9px;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: #2ea043;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Tag pill ── */
+    .pill {
+      display: inline-block;
+      border-radius: 12px;
+      padding: 2px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      vertical-align: middle;
+    }
+    .pill-green  { background: #dafbe1; color: #1a7f37; }
+    .pill-blue   { background: #ddf4ff; color: #0969da; }
+    .pill-yellow { background: #fff8c5; color: #9a6700; }
+    .pill-red    { background: #ffebe9; color: #cf222e; }
+
+    /* ── URL box ── */
+    .url-box {
+      background: #f0fff4;
+      border: 1px solid #9be9a8;
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 13px;
+      margin: 8px 0 14px;
+      word-break: break-all;
+      color: #1a7f37;
+    }
+
+    /* ── Section divider ── */
+    hr { border: none; border-top: 1px solid #e5e7eb; margin: 28px 0; }
+
+    /* ── TOC ── */
+    .toc {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin: 24px 0 36px;
+    }
+    .toc h3 { margin-top: 0; font-size: 14px; color: #1a7f37; }
+    .toc ul { margin: 8px 0 0 0; list-style: none; columns: 2; column-gap: 20px; }
+    .toc li { margin-bottom: 5px; break-inside: avoid; }
+    .toc a { color: #1a7f37; text-decoration: none; font-size: 13px; }
+    .toc a:hover { text-decoration: underline; }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #57606a;
+      border-top: 1px solid #e5e7eb;
+      padding: 20px 0 10px;
+      margin-top: 60px;
+    }
+
+    @media (max-width: 600px) {
+      .cover h1 { font-size: 24px; }
+      .toc ul { columns: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     COVER
+════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="badge">Component 06 of 14 &mdash; i3 Platform</div>
+  <h1>i3 Engage</h1>
+  <p class="subtitle">WhatsApp &amp; Communication Hub &mdash; Admin &amp; User Guide</p>
+  <div class="meta-row">
+    <div class="meta-chip"><strong>URL</strong> engage.i3technologies.co.ke</div>
+    <div class="meta-chip"><strong>Namespace</strong> i3-engage</div>
+    <div class="meta-chip"><strong>Channels</strong> WhatsApp · SMS · Email</div>
+    <div class="meta-chip"><strong>AI Coworker</strong> Nuru AI</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE BODY
+════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <!-- TOC -->
+  <div class="toc">
+    <h3>Table of Contents</h3>
+    <ul>
+      <li><a href="#overview">1. Overview</a></li>
+      <li><a href="#credentials">2. Credentials &amp; Config Reference</a></li>
+      <li><a href="#admin-whatsapp">3. Configuring WhatsApp Webhook</a></li>
+      <li><a href="#admin-sms">4. Configuring Africa's Talking (SMS)</a></li>
+      <li><a href="#admin-email">5. Email via Brevo</a></li>
+      <li><a href="#admin-templates">6. Message Templates</a></li>
+      <li><a href="#admin-logs">7. Message Logs &amp; Analytics</a></li>
+      <li><a href="#admin-n8n">8. n8n Integration</a></li>
+      <li><a href="#admin-kafka">9. Kafka Topics</a></li>
+      <li><a href="#admin-nuru">10. Nuru AI Coworker</a></li>
+      <li><a href="#admin-ops">11. Operations &amp; Health</a></li>
+      <li><a href="#user-dashboard">12. User: Accessing Dashboard</a></li>
+      <li><a href="#user-send">13. User: Sending a Message</a></li>
+      <li><a href="#user-contacts">14. User: Managing Contacts</a></li>
+      <li><a href="#user-history">15. User: Conversation History</a></li>
+      <li><a href="#user-autoresponse">16. User: Automated Responses</a></li>
+      <li><a href="#user-nuru">17. User: Nuru AI Assistant</a></li>
+    </ul>
+  </div>
+
+  <!-- ─── OVERVIEW ─── -->
+  <h2 id="overview">1. Overview</h2>
+
+  <p><strong>i3 Engage</strong> is the unified communication hub of the i3 platform. It consolidates outbound and inbound messaging across three channels — WhatsApp Business API, SMS (Africa's Talking), and Email (Brevo) — into a single operator dashboard, event-driven automation engine, and API surface used by every other platform component.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Attribute</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Dashboard URL</td><td><code>https://engage.i3technologies.co.ke</code></td></tr>
+        <tr><td>WhatsApp Webhook</td><td><code>https://engage-webhook.i3technologies.co.ke/webhook/whatsapp</code></td></tr>
+        <tr><td>Kubernetes Namespace</td><td><code>i3-engage</code></td></tr>
+        <tr><td>AI Coworker</td><td>Nuru AI — <code>https://nuru.i3technologies.co.ke</code></td></tr>
+        <tr><td>Messaging Channels</td><td>WhatsApp · SMS · Email</td></tr>
+        <tr><td>Auth</td><td>Keycloak SSO (client: <code>engage-web</code>)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Channels &amp; Use Cases</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Channel</th><th>Provider</th><th>Primary Use Cases</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="pill pill-green">WhatsApp</span></td>
+          <td>Meta Business API</td>
+          <td>Customer notifications, order confirmations, support conversations, Nuru AI bot responses</td>
+        </tr>
+        <tr>
+          <td><span class="pill pill-blue">SMS</span></td>
+          <td>Africa's Talking</td>
+          <td>OTP delivery, alert broadcasts, fallback channel when WhatsApp unavailable</td>
+        </tr>
+        <tr>
+          <td><span class="pill pill-yellow">Email</span></td>
+          <td>Brevo (SMTP + API)</td>
+          <td>Transactional emails, reports, onboarding flows, campaign newsletters</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Platform Integration Points</h3>
+  <ul>
+    <li><strong>n8n</strong> — Engage fires webhook events that trigger n8n workflows; n8n also calls the Engage API to send messages from automation flows.</li>
+    <li><strong>Kafka</strong> — All inbound and outbound message events are published to the Kafka event bus for downstream consumers (analytics, AI, audit).</li>
+    <li><strong>Platform apps</strong> — Any i3 component (iShop, iTrack, iLearn, etc.) can call the Engage REST API to send contextual messages to users.</li>
+    <li><strong>ChromaDB</strong> — Conversation embeddings are stored in ChromaDB for Nuru AI semantic retrieval and context management.</li>
+  </ul>
+
+  <!-- ─── CREDENTIALS ─── -->
+  <h2 id="credentials">2. Credentials &amp; Configuration Reference</h2>
+
+  <div class="callout callout-warn">
+    <strong>⚠ Security Notice</strong>
+    This section contains live credentials. Restrict access to this document. Rotate keys immediately if any credential is believed to be compromised.
+  </div>
+
+  <div class="callout callout-danger">
+    <strong>🔴 Action Required — Africa's Talking</strong>
+    Africa's Talking credentials (<code>AT_API_KEY</code> and <code>AT_USERNAME</code>) have <strong>not yet been configured</strong>. SMS sending will fail until these are set. See <a href="#admin-sms">Section 4</a> for setup instructions.
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Item</th><th>Value / Notes</th></tr></thead>
+      <tbody>
+        <tr><td>SSO Client</td><td><code>engage-web</code> (Keycloak)</td></tr>
+        <tr><td>Brevo API Key</td><td><code>BREVO_API_KEY_REDACTED</code></td></tr>
+        <tr><td>Brevo SMTP Host</td><td><code>smtp-relay.brevo.com:587</code></td></tr>
+        <tr><td>Brevo SMTP Login</td><td><code>b8994d001@smtp-brevo.com</code></td></tr>
+        <tr><td>AT_API_KEY</td><td><span class="pill pill-red">REPLACE_WITH_AT_API_KEY</span> — not yet set</td></tr>
+        <tr><td>AT_USERNAME</td><td><span class="pill pill-red">REPLACE_WITH_AT_USERNAME</span> — not yet set</td></tr>
+        <tr><td>Database Name</td><td><code>engage_db</code></td></tr>
+        <tr><td>Database User</td><td><code>engage</code></td></tr>
+        <tr><td>Database Password</td><td><code>engage-2026-secure</code></td></tr>
+        <tr><td>Kafka Bootstrap</td><td><code>kafka-bootstrap.i3-messaging.svc.cluster.local:9092</code></td></tr>
+        <tr><td>ChromaDB Host</td><td><code>chromadb.i3-ai-lab.svc.cluster.local</code></td></tr>
+        <tr><td>ChromaDB Token</td><td><code>fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="part-banner">Part A — Admin Guide <span>Sections 3 – 11</span></div>
+
+  <!-- ─── WHATSAPP WEBHOOK ─── -->
+  <h2 id="admin-whatsapp">3. Configuring the WhatsApp Webhook</h2>
+
+  <p>Engage receives inbound WhatsApp messages and delivery receipts through a Meta-verified webhook endpoint. Use the following URL when registering in Meta Business Manager:</p>
+  <div class="url-box">https://engage-webhook.i3technologies.co.ke/webhook/whatsapp</div>
+
+  <h3>Step-by-Step Setup in Meta Business Manager</h3>
+  <ol class="steps">
+    <li>Log in to <strong>Meta Business Manager</strong> at <code>business.facebook.com</code> using the account linked to the i3 WhatsApp Business number.</li>
+    <li>Navigate to <strong>Business Settings → WhatsApp Accounts → [Your Account] → Configuration</strong>.</li>
+    <li>Under <strong>Webhook</strong>, click <strong>Edit</strong> and paste the webhook URL above into the <em>Callback URL</em> field.</li>
+    <li>Set the <strong>Verify Token</strong> to the value stored in the Engage deployment secret <code>engage-secrets/WHATSAPP_VERIFY_TOKEN</code>. Retrieve it with:
+      <pre><code>kubectl get secret engage-secrets -n i3-engage \
+  -o jsonpath='{.data.WHATSAPP_VERIFY_TOKEN}' | base64 -d</code></pre>
+    </li>
+    <li>Click <strong>Verify and Save</strong>. Meta will send a <code>GET</code> challenge to the webhook; Engage will respond automatically.</li>
+    <li>Subscribe to the following webhook fields: <code>messages</code>, <code>message_deliveries</code>, <code>message_reads</code>, <code>messaging_postbacks</code>.</li>
+    <li>Confirm the green <strong>Active</strong> badge appears next to the webhook URL in Business Manager.</li>
+  </ol>
+
+  <h3>Testing the Webhook</h3>
+  <pre><code># Send a test verification challenge manually
+curl -X GET "https://engage-webhook.i3technologies.co.ke/webhook/whatsapp\
+?hub.mode=subscribe\
+&hub.verify_token=YOUR_VERIFY_TOKEN\
+&hub.challenge=test123"
+
+# Expected response: test123</code></pre>
+
+  <div class="callout callout-info">
+    <strong>💡 Tip</strong>
+    Webhook logs are streamed to the Engage pod. To tail in real time: <code>kubectl logs -f deploy/engage-webhook -n i3-engage</code>
+  </div>
+
+  <!-- ─── SMS ─── -->
+  <h2 id="admin-sms">4. Configuring Africa's Talking for SMS</h2>
+
+  <div class="callout callout-danger">
+    <strong>🔴 Action Required</strong>
+    Africa's Talking credentials are currently set to placeholder values. SMS messages will not be delivered until you complete the steps below.
+  </div>
+
+  <h3>Obtaining Your Credentials</h3>
+  <ol>
+    <li>Log in to the Africa's Talking dashboard at <code>account.africastalking.com</code>.</li>
+    <li>Go to <strong>Settings → API Key</strong> — copy the production API key.</li>
+    <li>Your <strong>username</strong> is shown at the top-right of the dashboard (typically your registered account name, e.g., <code>i3technologies</code>).</li>
+  </ol>
+
+  <h3>Applying the Credentials to the Cluster</h3>
+  <pre><code># Patch the Kubernetes secret
+kubectl patch secret engage-secrets -n i3-engage \
+  --type='json' \
+  -p='[
+    {"op":"replace","path":"/data/AT_API_KEY",
+     "value":"'$(echo -n "YOUR_ACTUAL_API_KEY" | base64)'"},
+    {"op":"replace","path":"/data/AT_USERNAME",
+     "value":"'$(echo -n "YOUR_ACTUAL_USERNAME" | base64)'"}
+  ]'
+
+# Restart the Engage deployment to pick up the new secret
+kubectl rollout restart deployment/engage-api -n i3-engage
+kubectl rollout status deployment/engage-api -n i3-engage</code></pre>
+
+  <div class="callout callout-info">
+    <strong>Sandbox vs Production</strong>
+    Africa's Talking provides a <strong>sandbox</strong> environment (<code>username: sandbox</code>, test API key) for development. Switch to <em>production</em> credentials before going live. The Engage configuration key <code>AT_ENVIRONMENT</code> should be set to <code>production</code> for live traffic.
+  </div>
+
+  <h3>Verifying SMS Delivery</h3>
+  <ol>
+    <li>From the Engage dashboard → <strong>Send Message</strong> → select <strong>SMS</strong> channel.</li>
+    <li>Enter a valid Kenyan mobile number (format: <code>+2547XXXXXXXX</code>).</li>
+    <li>Click <strong>Send</strong> and observe the delivery status in <strong>Message Logs</strong>.</li>
+    <li>Cross-check delivery receipts in the Africa's Talking dashboard under <strong>SMS → Outbox</strong>.</li>
+  </ol>
+
+  <!-- ─── EMAIL ─── -->
+  <h2 id="admin-email">5. Email Configuration via Brevo</h2>
+
+  <p>Email delivery is pre-configured using the <strong>Brevo</strong> (formerly Sendinblue) transactional email platform. No further setup is needed for basic operation.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>SMTP Host</td><td><code>smtp-relay.brevo.com</code></td></tr>
+        <tr><td>SMTP Port</td><td><code>587</code> (STARTTLS)</td></tr>
+        <tr><td>SMTP Login</td><td><code>b8994d001@smtp-brevo.com</code></td></tr>
+        <tr><td>API Key</td><td><code>BREVO_API_KEY_REDACTED</code></td></tr>
+        <tr><td>Status</td><td><span class="pill pill-green">Active &amp; Configured</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Verifying Email Delivery</h3>
+  <pre><code># Test SMTP connectivity from within the cluster
+kubectl run smtp-test --image=alpine --rm -it --restart=Never -n i3-engage -- \
+  sh -c "apk add --no-cache curl && \
+  curl -v smtp://smtp-relay.brevo.com:587 --ssl-reqd"</code></pre>
+
+  <h3>Changing the Brevo API Key</h3>
+  <ol>
+    <li>Generate a new API key in the <a href="https://app.brevo.com/settings/keys/api">Brevo API Keys page</a>.</li>
+    <li>Update the Kubernetes secret:
+      <pre><code>kubectl patch secret engage-secrets -n i3-engage \
+  --type='json' \
+  -p='[{"op":"replace","path":"/data/BREVO_API_KEY",
+        "value":"'$(echo -n "NEW_KEY" | base64)'"}]'
+kubectl rollout restart deployment/engage-api -n i3-engage</code></pre>
+    </li>
+    <li>Revoke the old API key from the Brevo dashboard to prevent unauthorized use.</li>
+  </ol>
+
+  <h3>Sender Domain &amp; DKIM</h3>
+  <p>Ensure the sending domain (e.g., <code>i3technologies.co.ke</code>) has valid <strong>SPF</strong> and <strong>DKIM</strong> records configured in DNS, as required by Brevo. Check the status under <strong>Brevo → Senders &amp; IP → Domains</strong>.</p>
+
+  <!-- ─── TEMPLATES ─── -->
+  <h2 id="admin-templates">6. Creating Message Templates</h2>
+
+  <p>Templates define reusable message structures with variable placeholders (<code>{{1}}</code>, <code>{{2}}</code>, …). WhatsApp templates must additionally be approved by Meta before they can be used in business-initiated conversations.</p>
+
+  <h3>WhatsApp Template Requirements</h3>
+  <ul>
+    <li>Templates are created in <strong>Meta Business Manager → WhatsApp → Message Templates</strong>.</li>
+    <li>Categories: <em>Marketing</em>, <em>Utility</em>, or <em>Authentication</em>.</li>
+    <li>Approval typically takes 24–48 hours. Status is visible in Business Manager.</li>
+    <li>Approved template names must then be registered in the Engage <strong>Templates</strong> section so the platform knows which template maps to which event.</li>
+  </ul>
+
+  <h3>Creating an Engage Template (Dashboard)</h3>
+  <ol class="steps">
+    <li>Navigate to <strong>Engage → Templates → New Template</strong>.</li>
+    <li>Choose the channel: <em>WhatsApp</em>, <em>SMS</em>, or <em>Email</em>.</li>
+    <li>For WhatsApp: enter the <strong>Template Name</strong> exactly as approved in Meta Business Manager. Select the language code (e.g., <code>en_US</code>).</li>
+    <li>Define the <strong>Body</strong> with variable placeholders: <code>Hello {{1}}, your order {{2}} is confirmed.</code></li>
+    <li>For Email: fill in <strong>Subject</strong>, <strong>HTML Body</strong>, and optionally a <strong>Plain-text fallback</strong>.</li>
+    <li>Assign a <strong>Template Key</strong> (snake_case identifier used by other platform components when calling the Engage API).</li>
+    <li>Click <strong>Save &amp; Activate</strong>. The template is immediately available for use.</li>
+  </ol>
+
+  <h3>Calling a Template from the API</h3>
+  <pre><code>POST https://engage.i3technologies.co.ke/api/v1/messages/send
+Authorization: Bearer &lt;JWT&gt;
+
+{
+  "channel": "whatsapp",
+  "to": "+254700000000",
+  "template_key": "order_confirmed",
+  "variables": ["John", "ORD-9921"]
+}</code></pre>
+
+  <!-- ─── LOGS ─── -->
+  <h2 id="admin-logs">7. Message Logs &amp; Analytics</h2>
+
+  <h3>Viewing Logs in the Dashboard</h3>
+  <ol class="steps">
+    <li>Go to <strong>Engage → Logs</strong>. The default view shows the last 24 hours across all channels.</li>
+    <li>Use the filters: <strong>Channel</strong>, <strong>Status</strong> (sent / delivered / failed / read), <strong>Date Range</strong>, and <strong>Contact</strong>.</li>
+    <li>Click any log row to expand the full message payload, delivery timestamps, and any provider error codes.</li>
+    <li>Export logs as <strong>CSV</strong> using the <em>Export</em> button (top-right of the logs table).</li>
+  </ol>
+
+  <h3>Key Status Codes</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Status</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill pill-blue">queued</span></td><td>Message accepted, waiting for provider submission</td></tr>
+        <tr><td><span class="pill pill-yellow">sent</span></td><td>Submitted to provider; not yet confirmed at device</td></tr>
+        <tr><td><span class="pill pill-green">delivered</span></td><td>Confirmed delivery to recipient device</td></tr>
+        <tr><td><span class="pill pill-green">read</span></td><td>Recipient opened the message (WhatsApp only)</td></tr>
+        <tr><td><span class="pill pill-red">failed</span></td><td>Provider rejected or could not deliver; check error_code</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Analytics Dashboard</h3>
+  <p>Navigate to <strong>Engage → Analytics</strong> for aggregated metrics: delivery rates by channel, hourly message volume, template performance, and error rate trends. Data is sourced from Kafka consumer offsets and refreshed every 5 minutes.</p>
+
+  <!-- ─── N8N ─── -->
+  <h2 id="admin-n8n">8. n8n Integration</h2>
+
+  <p>i3 Engage and n8n form a bidirectional automation bridge:</p>
+  <ul>
+    <li><strong>Engage → n8n:</strong> Engage publishes webhook events when messages are received, delivered, or fail — n8n listens via its Webhook trigger node and executes downstream workflow logic.</li>
+    <li><strong>n8n → Engage:</strong> n8n workflows call the Engage REST API (with a service-account JWT) to send messages as part of multi-step automations.</li>
+  </ul>
+
+  <h3>Registering an n8n Webhook Listener</h3>
+  <ol class="steps">
+    <li>In n8n, create a new workflow and add a <strong>Webhook</strong> trigger node.</li>
+    <li>Copy the generated Webhook URL from n8n (e.g., <code>https://n8n.i3technologies.co.ke/webhook/xxxxxxxx</code>).</li>
+    <li>In Engage → <strong>Settings → Webhook Subscriptions → Add Subscription</strong>, paste the n8n URL.</li>
+    <li>Select the event types to forward: <em>message.received</em>, <em>message.delivered</em>, <em>message.failed</em>, <em>conversation.started</em>.</li>
+    <li>Set a <strong>Secret Header</strong> (HMAC-SHA256) that n8n will use to verify payloads. Store this in n8n as a credential.</li>
+    <li>Save and <strong>Test Delivery</strong> — Engage will POST a sample payload to the n8n URL.</li>
+  </ol>
+
+  <h3>Engage Event Payload Shape</h3>
+  <pre><code>{
+  "event": "message.received",
+  "timestamp": "2026-01-15T09:00:00Z",
+  "channel": "whatsapp",
+  "contact": { "phone": "+254700000000", "name": "Jane Doe" },
+  "message": {
+    "id": "wamid.XXXX",
+    "type": "text",
+    "body": "Hello, I need help with my order.",
+    "media_url": null
+  }
+}</code></pre>
+
+  <!-- ─── KAFKA ─── -->
+  <h2 id="admin-kafka">9. Kafka Topics</h2>
+
+  <p>Engage produces and consumes events on the shared Kafka bus at <code>kafka-bootstrap.i3-messaging.svc.cluster.local:9092</code>.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Topic</th><th>Direction</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>engage.messages.outbound</code></td>
+          <td><span class="pill pill-blue">Producer</span></td>
+          <td>All outbound message events (sent/failed) for downstream analytics and audit</td>
+        </tr>
+        <tr>
+          <td><code>engage.messages.inbound</code></td>
+          <td><span class="pill pill-blue">Producer</span></td>
+          <td>All inbound WhatsApp/SMS messages received by Engage</td>
+        </tr>
+        <tr>
+          <td><code>engage.messages.status</code></td>
+          <td><span class="pill pill-blue">Producer</span></td>
+          <td>Delivery status updates (delivered, read, failed) from providers</td>
+        </tr>
+        <tr>
+          <td><code>engage.conversations</code></td>
+          <td><span class="pill pill-blue">Producer</span></td>
+          <td>Conversation lifecycle events (started, assigned, closed)</td>
+        </tr>
+        <tr>
+          <td><code>platform.notifications</code></td>
+          <td><span class="pill pill-green">Consumer</span></td>
+          <td>Notification requests from other platform services (iShop, iTrack, etc.)</td>
+        </tr>
+        <tr>
+          <td><code>nuru.ai.events</code></td>
+          <td><span class="pill pill-green">Consumer</span></td>
+          <td>Responses and routing decisions emitted by Nuru AI for delivery via Engage</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Inspecting Topics</h3>
+  <pre><code># List Engage-related topics
+kubectl exec -n i3-messaging kafka-0 -- \
+  kafka-topics.sh --bootstrap-server localhost:9092 --list | grep engage
+
+# Tail the inbound topic (last 10 messages)
+kubectl exec -n i3-messaging kafka-0 -- \
+  kafka-console-consumer.sh \
+    --bootstrap-server localhost:9092 \
+    --topic engage.messages.inbound \
+    --from-beginning --max-messages 10</code></pre>
+
+  <!-- ─── NURU ─── -->
+  <h2 id="admin-nuru">10. Nuru AI Coworker</h2>
+
+  <p><strong>Nuru AI</strong> (<code>https://nuru.i3technologies.co.ke</code>) is the i3 platform's WhatsApp AI assistant. It operates as a coworker to Engage: inbound WhatsApp messages routed to Nuru are processed through its LLM pipeline, with conversation context retrieved from ChromaDB, and responses dispatched back through Engage.</p>
+
+  <h3>Architecture</h3>
+  <ul>
+    <li>Engage receives a WhatsApp inbound message and publishes it to <code>engage.messages.inbound</code>.</li>
+    <li>Nuru AI consumes the event, performs retrieval-augmented generation (RAG) against ChromaDB, and emits a response to <code>nuru.ai.events</code>.</li>
+    <li>Engage consumes <code>nuru.ai.events</code> and sends the AI response back to the original WhatsApp sender.</li>
+    <li>Full conversation thread is stored as embeddings in ChromaDB (collection: <code>nuru_conversations</code>).</li>
+  </ul>
+
+  <h3>Configuration</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Config Key</th><th>Value / Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>CHROMADB_HOST</code></td><td><code>chromadb.i3-ai-lab.svc.cluster.local</code></td></tr>
+        <tr><td><code>CHROMADB_TOKEN</code></td><td><code>fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c</code></td></tr>
+        <tr><td><code>NURU_COLLECTION</code></td><td><code>nuru_conversations</code></td></tr>
+        <tr><td>Kafka Input Topic</td><td><code>engage.messages.inbound</code></td></tr>
+        <tr><td>Kafka Output Topic</td><td><code>nuru.ai.events</code></td></tr>
+        <tr><td>Routing Rule</td><td>Messages addressed to the Nuru bot number, or containing trigger keyword <code>!nuru</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Enabling / Disabling Nuru for a Contact</h3>
+  <p>In Engage → <strong>Contacts → [Contact] → Settings</strong>, toggle the <strong>AI Handled</strong> switch. When off, messages route to the human agent inbox instead.</p>
+
+  <h3>Monitoring Nuru AI</h3>
+  <pre><code># Check Nuru AI pod health
+kubectl get pods -n i3-engage -l app=nuru-ai
+
+# Tail Nuru logs
+kubectl logs -f deploy/nuru-ai -n i3-engage
+
+# Inspect ChromaDB collections
+kubectl run chroma-check --image=curlimages/curl --rm -it --restart=Never \
+  -n i3-ai-lab -- \
+  curl -H "Authorization: Bearer fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c" \
+  http://chromadb.i3-ai-lab.svc.cluster.local:8000/api/v1/collections</code></pre>
+
+  <!-- ─── OPS ─── -->
+  <h2 id="admin-ops">11. Operations &amp; Health</h2>
+
+  <h3>Pod Overview</h3>
+  <pre><code>kubectl get pods -n i3-engage -o wide</code></pre>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Deployment</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>engage-api</code></td><td>Core REST API, message routing, Kafka producer/consumer</td></tr>
+        <tr><td><code>engage-webhook</code></td><td>Inbound webhook receiver (WhatsApp, AT delivery receipts)</td></tr>
+        <tr><td><code>engage-frontend</code></td><td>React dashboard served at engage.i3technologies.co.ke</td></tr>
+        <tr><td><code>nuru-ai</code></td><td>AI assistant service (optional — may be in i3-ai-lab namespace)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Restart Procedures</h3>
+  <pre><code># Restart all Engage deployments
+kubectl rollout restart deployment -n i3-engage
+
+# Restart a specific component
+kubectl rollout restart deployment/engage-api -n i3-engage
+
+# Wait for rollout to complete
+kubectl rollout status deployment/engage-api -n i3-engage</code></pre>
+
+  <h3>Viewing Logs</h3>
+  <pre><code># API logs (last 200 lines)
+kubectl logs deploy/engage-api -n i3-engage --tail=200
+
+# Webhook logs (live stream)
+kubectl logs -f deploy/engage-webhook -n i3-engage
+
+# Previous container logs (after crash/restart)
+kubectl logs deploy/engage-api -n i3-engage --previous</code></pre>
+
+  <h3>Database Health Check</h3>
+  <pre><code># Port-forward to the Postgres pod
+kubectl port-forward svc/engage-postgres -n i3-engage 5432:5432
+
+# Connect and verify (in a separate terminal)
+psql -h localhost -U engage -d engage_db
+# Password: engage-2026-secure
+
+# Check table row counts
+SELECT schemaname, tablename, n_live_tup
+FROM pg_stat_user_tables
+ORDER BY n_live_tup DESC;</code></pre>
+
+  <h3>Health Endpoints</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Endpoint</th><th>Expected Response</th></tr></thead>
+      <tbody>
+        <tr><td><code>GET /health</code></td><td><code>{"status":"ok"}</code></td></tr>
+        <tr><td><code>GET /health/db</code></td><td><code>{"status":"ok","latency_ms":&lt;n&gt;}</code></td></tr>
+        <tr><td><code>GET /health/kafka</code></td><td><code>{"status":"ok","topics_connected":6}</code></td></tr>
+        <tr><td><code>GET /health/providers</code></td><td>Per-channel status for WhatsApp, AT, Brevo</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="part-banner">Part B — User Guide <span>Sections 12 – 17</span></div>
+
+  <!-- ─── USER: DASHBOARD ─── -->
+  <h2 id="user-dashboard">12. Accessing the Engage Dashboard</h2>
+
+  <ol class="steps">
+    <li>Open your browser and navigate to <strong><code>https://engage.i3technologies.co.ke</code></strong>.</li>
+    <li>You will be redirected to the <strong>Keycloak login page</strong>. Enter your i3 platform username and password.</li>
+    <li>On first login, you may be prompted to set up two-factor authentication — follow the on-screen instructions.</li>
+    <li>After authentication you land on the <strong>Engage Home Dashboard</strong>, which displays:
+      <ul>
+        <li>Message volume summary (last 24 h) by channel</li>
+        <li>Recent conversations feed</li>
+        <li>Quick-send widget</li>
+        <li>Active automation status</li>
+      </ul>
+    </li>
+    <li>Use the left navigation to switch between <strong>Inbox</strong>, <strong>Contacts</strong>, <strong>Templates</strong>, <strong>Automation</strong>, <strong>Logs</strong>, and <strong>Analytics</strong>.</li>
+  </ol>
+
+  <div class="callout callout-info">
+    <strong>Role-based Access</strong>
+    Your dashboard view may differ depending on your role: <em>Agent</em> sees only their assigned conversations; <em>Supervisor</em> sees team-wide inboxes; <em>Admin</em> has access to all settings and configuration panels.
+  </div>
+
+  <!-- ─── USER: SEND ─── -->
+  <h2 id="user-send">13. Sending a Manual Message</h2>
+
+  <h3>Quick Send (Single Recipient)</h3>
+  <ol class="steps">
+    <li>Click the <strong>Compose</strong> button (pencil icon) in the top-right of the dashboard, or navigate to <strong>Inbox → New Conversation</strong>.</li>
+    <li>In the <em>To</em> field, type a phone number (WhatsApp/SMS: <code>+2547XXXXXXXX</code>) or email address. The system will auto-suggest existing contacts.</li>
+    <li>Select the <strong>Channel</strong>: WhatsApp, SMS, or Email.</li>
+    <li>For WhatsApp, if no open conversation exists with this contact, you must select an approved <strong>Template</strong> to initiate the conversation (Meta policy). Once the contact replies, you may send free-form messages for 24 hours.</li>
+    <li>For SMS and Email, type your message directly in the body field. For Email, fill in the Subject line as well.</li>
+    <li>Attach files if needed (WhatsApp and Email support attachments; SMS does not).</li>
+    <li>Click <strong>Send</strong>. A confirmation toast will appear and the conversation is added to your Inbox.</li>
+  </ol>
+
+  <h3>Bulk Message (Broadcast)</h3>
+  <ol class="steps">
+    <li>Go to <strong>Contacts → Broadcast</strong>.</li>
+    <li>Select a <strong>Contact List</strong> or apply filters (tag, segment, last-active date).</li>
+    <li>Choose a <strong>Template</strong> and map variable fields to contact attributes (e.g., <code>{{1}}</code> → <em>First Name</em>).</li>
+    <li>Review the recipient count and preview a sample message.</li>
+    <li>Click <strong>Schedule</strong> (to send later) or <strong>Send Now</strong>. Monitor delivery in <strong>Logs → Broadcast</strong>.</li>
+  </ol>
+
+  <!-- ─── USER: CONTACTS ─── -->
+  <h2 id="user-contacts">14. Managing Contact Lists</h2>
+
+  <h3>Adding a Contact</h3>
+  <ol class="steps">
+    <li>Navigate to <strong>Contacts → New Contact</strong>.</li>
+    <li>Fill in: <em>Full Name</em>, <em>Phone</em> (required for WhatsApp/SMS), <em>Email</em> (required for email channel), and any custom attributes.</li>
+    <li>Assign one or more <strong>Tags</strong> (e.g., <code>vip</code>, <code>supplier</code>, <code>student</code>) for segmentation.</li>
+    <li>Click <strong>Save Contact</strong>.</li>
+  </ol>
+
+  <h3>Importing Contacts (CSV)</h3>
+  <ol class="steps">
+    <li>Go to <strong>Contacts → Import</strong>.</li>
+    <li>Download the CSV template and fill in your contact data.</li>
+    <li>Required columns: <code>name</code>, <code>phone</code>. Optional: <code>email</code>, <code>tags</code>.</li>
+    <li>Upload the completed CSV. Engage will validate and show a preview with any error rows highlighted.</li>
+    <li>Click <strong>Confirm Import</strong>. Duplicates (matched on phone number) are automatically merged.</li>
+  </ol>
+
+  <h3>Segmenting Contacts</h3>
+  <p>Use <strong>Contacts → Segments</strong> to create dynamic groups based on filter rules (e.g., <em>tag = student AND last_message &gt; 30 days ago</em>). Segments update automatically as contact data changes and can be used directly as broadcast targets.</p>
+
+  <!-- ─── USER: HISTORY ─── -->
+  <h2 id="user-history">15. Viewing Conversation History</h2>
+
+  <ol class="steps">
+    <li>Go to <strong>Inbox</strong>. Use the channel filter tabs (All / WhatsApp / SMS / Email) and status filters (Open / Pending / Resolved).</li>
+    <li>Click any conversation to open the thread view. The full message history is displayed in chronological order with timestamps and delivery indicators.</li>
+    <li>To search across all conversations, use the global <strong>Search</strong> bar (magnifier icon, top navigation). Search by contact name, phone number, message content, or template used.</li>
+    <li>To view a specific contact's complete history across all channels, open <strong>Contacts → [Contact Name] → Conversation History</strong>.</li>
+    <li>To export a conversation, open it and click <strong>⋯ → Export as PDF</strong> or <strong>Export as CSV</strong>.</li>
+  </ol>
+
+  <div class="callout callout-info">
+    <strong>Conversation Assignment</strong>
+    Conversations can be assigned to specific agents via the <strong>Assign</strong> button in the thread view. Assigned conversations appear in the agent's personal <em>My Conversations</em> queue.
+  </div>
+
+  <!-- ─── USER: AUTOMATION ─── -->
+  <h2 id="user-autoresponse">16. Setting Up Automated Responses</h2>
+
+  <h3>Auto-Reply Rules</h3>
+  <ol class="steps">
+    <li>Navigate to <strong>Automation → Rules → New Rule</strong>.</li>
+    <li>Set the <strong>Trigger</strong>: e.g., <em>Message Received</em>, <em>Keyword Match</em> (<code>hello</code>, <code>hi</code>), or <em>Business Hours</em> (outside working hours).</li>
+    <li>Set the <strong>Condition</strong>: channel, contact tag, time of day, etc.</li>
+    <li>Set the <strong>Action</strong>: <em>Send Template Message</em>, <em>Assign to Agent</em>, <em>Add Tag</em>, or <em>Trigger n8n Webhook</em>.</li>
+    <li>Toggle the rule to <strong>Active</strong> and click <strong>Save</strong>.</li>
+  </ol>
+
+  <h3>Out-of-Office / Business Hours Reply</h3>
+  <ol>
+    <li>Go to <strong>Settings → Business Hours</strong> and configure your working hours and timezone.</li>
+    <li>In <strong>Automation → Rules</strong>, create a rule: Trigger = <em>Message Received</em>, Condition = <em>Outside Business Hours</em>, Action = <em>Send Template Message</em> (select an appropriate out-of-office template).</li>
+  </ol>
+
+  <h3>Keyword-Based Routing</h3>
+  <p>Use keyword triggers to route conversations to the right team. Example: a message containing <em>"invoice"</em> or <em>"payment"</em> → assign to <em>Finance Team</em> inbox. Add multiple keywords in the rule by separating with commas.</p>
+
+  <!-- ─── USER: NURU ─── -->
+  <h2 id="user-nuru">17. Using the Nuru AI Assistant</h2>
+
+  <p><strong>Nuru AI</strong> is an AI-powered WhatsApp assistant accessible at <code>https://nuru.i3technologies.co.ke</code>. From the operator perspective, Nuru can handle conversations autonomously and hand off to human agents when needed.</p>
+
+  <h3>Triggering Nuru AI</h3>
+  <ul>
+    <li><strong>Automatic routing:</strong> Messages to the Nuru-designated WhatsApp number are handled by AI by default.</li>
+    <li><strong>Manual assignment:</strong> Inside any conversation, click <strong>⋯ → Assign to Nuru AI</strong> to hand off the conversation to the AI assistant.</li>
+    <li><strong>Keyword trigger:</strong> If a user sends <code>!nuru</code> in a conversation, Nuru AI takes over automatically.</li>
+  </ul>
+
+  <h3>Monitoring AI Conversations</h3>
+  <ol class="steps">
+    <li>Go to <strong>Inbox → Filter → Handled by AI</strong> to see all Nuru-managed conversations.</li>
+    <li>Each conversation shows an <strong>AI</strong> badge. You can read the full dialogue including AI-generated responses.</li>
+    <li>If an AI response is unsatisfactory, click <strong>Take Over</strong> to reassign the conversation to a human agent. Nuru will stop responding to that thread.</li>
+    <li>Nuru confidence scores (low/medium/high) are shown per message. Conversations with low-confidence responses are automatically flagged for review in the <strong>Review Queue</strong>.</li>
+  </ol>
+
+  <h3>Training &amp; Feedback</h3>
+  <ul>
+    <li>Use the <strong>👍 / 👎</strong> feedback buttons on AI messages to signal response quality. Feedback is logged and used to refine the model.</li>
+    <li>Add frequently asked questions and their answers in <strong>Nuru AI → Knowledge Base</strong> to improve response accuracy for recurring queries.</li>
+    <li>Embed new documents (PDFs, product guides) via <strong>Nuru AI → Upload Document</strong> — these are indexed into ChromaDB for RAG retrieval.</li>
+  </ul>
+
+  <div class="callout callout-info">
+    <strong>Context Window</strong>
+    Nuru retrieves the last 10 messages of each conversation thread plus semantically similar past interactions from ChromaDB to maintain context. Long-dormant conversations (&gt; 7 days) start with a fresh context window.
+  </div>
+
+  <hr />
+
+  <div class="callout callout-action">
+    <strong>📋 Quick Reference — URLs &amp; Endpoints</strong>
+    <ul style="margin-top:8px;">
+      <li><strong>Dashboard:</strong> <code>https://engage.i3technologies.co.ke</code></li>
+      <li><strong>WhatsApp Webhook:</strong> <code>https://engage-webhook.i3technologies.co.ke/webhook/whatsapp</code></li>
+      <li><strong>Nuru AI:</strong> <code>https://nuru.i3technologies.co.ke</code></li>
+      <li><strong>API Base:</strong> <code>https://engage.i3technologies.co.ke/api/v1</code></li>
+      <li><strong>Health:</strong> <code>https://engage.i3technologies.co.ke/health</code></li>
+    </ul>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    Made with IBM Bob &nbsp;|&nbsp; Component 06 of 14
+  </div>
+
+</div>
+</body>
+</html>

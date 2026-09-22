@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Component 14 — Supporting Infrastructure Services | i3 Platform</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #1f2328;
+    background: #ffffff;
+  }
+
+  /* ── Cover ── */
+  .cover {
+    background: linear-gradient(135deg, #0550ae, #1a7f37);
+    color: #ffffff;
+    padding: 64px 40px 56px;
+    text-align: center;
+  }
+  .cover .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .cover h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+  .cover .subtitle {
+    font-size: 1rem;
+    opacity: 0.88;
+    max-width: 680px;
+    margin: 0 auto 28px;
+  }
+  .cover .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 24px;
+    font-size: 12.5px;
+    opacity: 0.82;
+  }
+  .cover .meta-row span::before {
+    content: "▸ ";
+    opacity: 0.6;
+  }
+
+  /* ── Layout ── */
+  .wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 32px 60px;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 24px 28px;
+    margin-bottom: 48px;
+  }
+  .toc h2 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #57606a;
+    margin-bottom: 14px;
+    border: none !important;
+  }
+  .toc ol {
+    padding-left: 20px;
+    columns: 2;
+    column-gap: 32px;
+  }
+  .toc li {
+    margin-bottom: 5px;
+    break-inside: avoid;
+  }
+  .toc a {
+    color: #0550ae;
+    text-decoration: none;
+    font-size: 13.5px;
+  }
+  .toc a:hover { text-decoration: underline; }
+
+  /* ── Section headings ── */
+  h2 {
+    color: #0550ae;
+    font-size: 1.35rem;
+    font-weight: 700;
+    border-bottom: 2px solid #0550ae;
+    padding-bottom: 8px;
+    margin: 48px 0 20px;
+  }
+  h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #1f2328;
+    border-left: 3px solid #0550ae;
+    padding-left: 8px;
+    margin: 28px 0 12px;
+  }
+  h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0550ae;
+    margin: 20px 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  p { margin-bottom: 10px; }
+  ul, ol { padding-left: 22px; margin-bottom: 10px; }
+  li { margin-bottom: 4px; }
+
+  /* ── Code ── */
+  code {
+    background: #f0f6ff;
+    border: 1px solid #b6d4fe;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12.5px;
+    color: #0550ae;
+  }
+  pre {
+    background: #f0f6ff;
+    border: 1px solid #b6d4fe;
+    border-radius: 6px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    margin: 12px 0 16px;
+    line-height: 1.55;
+  }
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 12.5px;
+    color: #1f2328;
+  }
+
+  /* ── Info / Warning / Note boxes ── */
+  .note, .warn, .tip {
+    border-radius: 5px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 13.5px;
+  }
+  .note  { background: #dbeafe; border-left: 4px solid #3b82d4; }
+  .warn  { background: #fef3c7; border-left: 4px solid #d97706; }
+  .tip   { background: #dcfce7; border-left: 4px solid #1a7f37; }
+  .note strong, .warn strong, .tip strong { display: block; margin-bottom: 4px; }
+
+  /* ── Service meta card ── */
+  .meta-card {
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 16px 0 24px;
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    row-gap: 6px;
+    column-gap: 12px;
+    font-size: 13px;
+  }
+  .meta-card .label {
+    color: #57606a;
+    font-weight: 600;
+  }
+  .meta-card a {
+    color: #0550ae;
+    text-decoration: none;
+  }
+  .meta-card a:hover { text-decoration: underline; }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 13px;
+  }
+  thead th {
+    background: #0550ae;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 10px 14px;
+    text-align: left;
+  }
+  tbody tr:nth-child(even) { background: #f7f8fa; }
+  tbody td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: top;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* ── Divider ── */
+  hr {
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    margin: 48px 0 0;
+  }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid #e5e7eb;
+    margin-top: 60px;
+    padding-top: 18px;
+    text-align: center;
+    font-size: 12px;
+    color: #57606a;
+  }
+
+  @media (max-width: 600px) {
+    .toc ol { columns: 1; }
+    .meta-card { grid-template-columns: 1fr; }
+    .cover h1 { font-size: 1.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     COVER
+════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="badge">Component 14 of 14 · i3 Platform Documentation</div>
+  <h1>Supporting Infrastructure Services</h1>
+  <p class="subtitle">
+    Administration &amp; User Guide — OpenBao/Vault · Grafana/Prometheus · ArgoCD ·
+    Voice STT/TTS · SmartLab · Admissions Agent · Onboarding Agent · Kafka
+  </p>
+  <div class="meta-row">
+    <span>Cluster: OpenShift (i3 Technologies)</span>
+    <span>Domain: i3technologies.co.ke</span>
+    <span>Scope: 9 Services · 12 Kafka Topics</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     CONTENT WRAPPER
+════════════════════════════════════════════════ -->
+<div class="wrapper">
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#vault">A. OpenBao / Vault — Secrets Management</a></li>
+      <li><a href="#grafana">B. Grafana / Prometheus — Monitoring</a></li>
+      <li><a href="#argocd">C. ArgoCD — GitOps Deployment</a></li>
+      <li><a href="#stt">D. Voice STT — Speech-to-Text</a></li>
+      <li><a href="#tts">E. Voice TTS — Text-to-Speech</a></li>
+      <li><a href="#smartlab">F. SmartLab API</a></li>
+      <li><a href="#admissions">G. Admissions Agent</a></li>
+      <li><a href="#onboarding">H. Onboarding Agent</a></li>
+      <li><a href="#kafka">I. Kafka — Event Streaming</a></li>
+    </ol>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════
+       A. OPENBAO / VAULT
+  ══════════════════════════════════════════ -->
+  <h2 id="vault">A. OpenBao / Vault — Secrets Management</h2>
+
+  <div class="meta-card">
+    <span class="label">Public URL</span>
+    <span><a href="https://vault.i3technologies.co.ke" target="_blank">https://vault.i3technologies.co.ke</a></span>
+    <span class="label">Namespace</span><span><code>i3-security</code></span>
+    <span class="label">Internal Address</span>
+    <span><code>openbao-active.i3-security.svc:8200</code></span>
+    <span class="label">Purpose</span>
+    <span>Centralised secrets management — API keys, database passwords, TLS certificates</span>
+  </div>
+
+  <div class="warn">
+    <strong>⚠ Critical: Root Token &amp; Unseal Keys</strong>
+    The Vault root token is <strong>not</strong> stored in any Kubernetes secret. It was generated at initialisation time and must be held securely by the IT team (e.g., in a hardware security module, password manager, or physical safe). If the root token is lost, Vault must be re-initialised and <em>every secret re-entered from scratch</em>.<br /><br />
+    Vault uses <strong>Shamir secret sharing</strong>: 3 of 5 unseal keys are required to unseal after every restart. All 5 keys must be stored externally. Losing &gt;2 keys permanently locks the Vault.
+  </div>
+
+  <h3>Admin Guide</h3>
+
+  <h4>1 — Unsealing After a Restart</h4>
+  <p>Vault seals itself whenever the pod restarts. Until unsealed, <em>all secrets are inaccessible</em>.</p>
+  <pre><code># Check current seal status
+vault status -address=https://vault.i3technologies.co.ke
+
+# Unseal — run this 3 times, each with a different unseal key
+vault operator unseal -address=https://vault.i3technologies.co.ke
+# Enter unseal key when prompted — repeat with key #2 and key #3
+</code></pre>
+  <p>Watch for <code>Sealed: false</code> and <code>Unseal Progress: 3/3</code> after the third command.</p>
+
+  <h4>2 — Logging In as Admin</h4>
+  <pre><code># Using root token (initial setup only — use a named token in production)
+vault login -address=https://vault.i3technologies.co.ke
+# Enter root token when prompted
+
+# Or via environment variable
+export VAULT_ADDR=https://vault.i3technologies.co.ke
+export VAULT_TOKEN=&lt;root-token&gt;
+vault status
+</code></pre>
+
+  <h4>3 — Creating a KV Secrets Engine</h4>
+  <pre><code>vault secrets enable -path=i3platform kv-v2
+# Verify
+vault secrets list
+</code></pre>
+
+  <h4>4 — Writing and Reading Secrets</h4>
+  <pre><code># Write a secret
+vault kv put i3platform/database \
+  host="postgres.i3-data.svc:5432" \
+  username="appuser" \
+  password="s3cur3p@ss"
+
+# Read a secret
+vault kv get i3platform/database
+
+# Read single field
+vault kv get -field=password i3platform/database
+</code></pre>
+
+  <h4>5 — AppRole Authentication (for Applications)</h4>
+  <p>Applications authenticate to Vault using AppRole — they present a <code>role_id</code> and <code>secret_id</code> to receive a short-lived token.</p>
+  <pre><code># Enable AppRole auth method
+vault auth enable approle
+
+# Create a role (e.g., for the EvalOS backend)
+vault write auth/approle/role/evalos \
+  token_policies="evalos-policy" \
+  token_ttl=1h \
+  token_max_ttl=4h \
+  secret_id_ttl=24h
+
+# Retrieve role_id (shared with the app at deploy time)
+vault read auth/approle/role/evalos/role-id
+
+# Generate a secret_id (rotated regularly)
+vault write -f auth/approle/role/evalos/secret-id
+</code></pre>
+
+  <h4>6 — Writing a Policy</h4>
+  <pre><code># evalos-policy.hcl
+path "i3platform/data/evalos/*" {
+  capabilities = ["read", "list"]
+}
+
+# Upload policy
+vault policy write evalos-policy evalos-policy.hcl
+</code></pre>
+
+  <h4>7 — Rotating Secrets</h4>
+  <pre><code># Update a secret (creates a new version; old version is preserved)
+vault kv put i3platform/database password="n3wP@ss!"
+
+# Delete old versions if needed
+vault kv delete i3platform/database  # soft delete of latest
+vault kv destroy -versions=1 i3platform/database  # hard delete version 1
+</code></pre>
+
+  <h4>8 — Enabling Audit Logs</h4>
+  <pre><code># Log to file inside the pod
+vault audit enable file file_path=/vault/logs/audit.log
+
+# View audit log
+oc exec -n i3-security deploy/openbao -- cat /vault/logs/audit.log | tail -50
+</code></pre>
+
+  <div class="note">
+    <strong>ℹ User Guide</strong>
+    Vault is infrastructure-only. End-users and developers do not access Vault directly. Applications receive credentials via Kubernetes secrets injected at deploy time or through the AppRole API. Contact the IT administrator if a service is reporting missing or expired credentials.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════
+       B. GRAFANA / PROMETHEUS
+  ══════════════════════════════════════════ -->
+  <h2 id="grafana">B. Grafana / Prometheus — Monitoring &amp; Observability</h2>
+
+  <div class="meta-card">
+    <span class="label">Grafana URL</span>
+    <span><a href="https://grafana.i3technologies.co.ke" target="_blank">https://grafana.i3technologies.co.ke</a></span>
+    <span class="label">Namespace</span><span><code>i3-monitoring</code></span>
+    <span class="label">Prometheus</span><span><code>prometheus-k8s</code> in <code>openshift-monitoring</code></span>
+    <span class="label">Purpose</span>
+    <span>Monitor all pods, resource usage, and custom application metrics across the i3 platform</span>
+  </div>
+
+  <h3>Retrieving Admin Credentials</h3>
+  <p>Grafana admin credentials are stored in the <code>grafana-admin</code> secret in the <code>i3-monitoring</code> namespace:</p>
+  <pre><code>oc get secret grafana-admin -n i3-monitoring \
+  -o jsonpath="{.data.admin-password}" | base64 -d
+</code></pre>
+  <p>Log in at <a href="https://grafana.i3technologies.co.ke" target="_blank">https://grafana.i3technologies.co.ke</a> with username <code>admin</code> and the decoded password.</p>
+
+  <h3>Admin Guide</h3>
+
+  <h4>1 — Creating a Dashboard</h4>
+  <ol>
+    <li>Click <strong>+ → New Dashboard</strong> in the left sidebar.</li>
+    <li>Click <strong>Add visualisation</strong> → select data source <code>Prometheus</code>.</li>
+    <li>Enter a PromQL query (example below), configure panel type (Graph, Gauge, Stat), and click <strong>Apply</strong>.</li>
+    <li>Click the floppy-disk icon to save. Give the dashboard a meaningful name and folder.</li>
+  </ol>
+  <pre><code># Example — CPU usage for all pods in a namespace
+sum(rate(container_cpu_usage_seconds_total{namespace="i3-engage"}[5m]))
+  by (pod)
+
+# Memory usage (bytes)
+sum(container_memory_working_set_bytes{namespace="i3-evalos"})
+  by (pod)
+</code></pre>
+
+  <h4>2 — Adding a Data Source</h4>
+  <ol>
+    <li>Go to <strong>Connections → Data Sources → Add data source</strong>.</li>
+    <li>Select <strong>Prometheus</strong>.</li>
+    <li>URL: <code>https://prometheus-k8s.openshift-monitoring.svc:9091</code></li>
+    <li>Enable <strong>Skip TLS verify</strong> (internal cluster CA) or add the CA cert.</li>
+    <li>Click <strong>Save &amp; Test</strong>.</li>
+  </ol>
+
+  <h4>3 — Setting Up Alerts</h4>
+  <ol>
+    <li>Open a panel → <strong>Edit → Alert</strong> tab.</li>
+    <li>Set condition (e.g., <em>IS ABOVE 80</em> for CPU %).</li>
+    <li>Configure a notification channel: <strong>Alerting → Contact points → Add contact point</strong> (email, Slack, webhook).</li>
+    <li>Set <strong>Notification policy</strong> to route alerts to the correct contact.</li>
+  </ol>
+
+  <h4>4 — Importing a Community Dashboard</h4>
+  <ol>
+    <li>Browse <a href="https://grafana.com/grafana/dashboards" target="_blank">grafana.com/grafana/dashboards</a> and copy the dashboard ID.</li>
+    <li>In Grafana: <strong>+ → Import → Enter dashboard ID → Load</strong>.</li>
+    <li>Select the Prometheus data source and click <strong>Import</strong>.</li>
+  </ol>
+  <p>Recommended IDs: <code>315</code> (Kubernetes cluster monitoring), <code>12740</code> (Kafka overview), <code>3662</code> (Prometheus internal).</p>
+
+  <h3>User Guide</h3>
+
+  <h4>Navigating Dashboards</h4>
+  <p>After logging in, click <strong>Dashboards</strong> in the left sidebar to browse available dashboards. Use the folder structure to find platform-specific boards (e.g., <em>i3 Platform / EvalOS</em>).</p>
+
+  <h4>Reading Pod CPU &amp; Memory Charts</h4>
+  <ul>
+    <li><strong>CPU panel</strong> — shows cores consumed over time. Spikes indicate heavy processing; sustained near-limit values suggest the pod needs more resources.</li>
+    <li><strong>Memory panel</strong> — shows working-set memory in MiB/GiB. A continuously rising line (no drops) may indicate a memory leak.</li>
+    <li>Use the <strong>time range picker</strong> (top-right) to zoom into an incident window.</li>
+  </ul>
+
+  <h4>Viewing Alert History</h4>
+  <p>Go to <strong>Alerting → Alert Rules</strong> to see all defined rules and their current state. Go to <strong>Alerting → Silences</strong> to manage maintenance windows. Historical firing events appear in <strong>Alerting → Alert rules → State history</strong>.</p>
+
+
+  <!-- ══════════════════════════════════════════
+       C. ARGOCD
+  ══════════════════════════════════════════ -->
+  <h2 id="argocd">C. ArgoCD — GitOps Continuous Deployment</h2>
+
+  <div class="meta-card">
+    <span class="label">URL</span>
+    <span><a href="https://argocd.i3technologies.co.ke" target="_blank">https://argocd.i3technologies.co.ke</a></span>
+    <span class="label">Namespace</span><span><code>openshift-gitops</code></span>
+    <span class="label">Admin User</span><span><code>admin</code></span>
+    <span class="label">Admin Password</span><span><code>2xvrjq4E0CYnwakSIohQ3eGHftVi7zLM</code></span>
+    <span class="label">Purpose</span>
+    <span>GitOps continuous deployment — syncs Kubernetes manifests from Git repositories to the cluster</span>
+  </div>
+
+  <div class="warn">
+    <strong>⚠ Rotate the Admin Password</strong>
+    The password above is the initial default. It should be rotated immediately after first access via <strong>User Info → Update Password</strong> in the ArgoCD UI, or via the <code>argocd account update-password</code> CLI command.
+  </div>
+
+  <h3>Admin Guide</h3>
+
+  <h4>1 — CLI Login</h4>
+  <pre><code>argocd login argocd.i3technologies.co.ke \
+  --username admin \
+  --password 2xvrjq4E0CYnwakSIohQ3eGHftVi7zLM \
+  --grpc-web
+</code></pre>
+
+  <h4>2 — Adding a Git Repository</h4>
+  <pre><code># HTTPS with token
+argocd repo add https://github.com/i3technologies/platform-manifests \
+  --username git \
+  --password &lt;github-token&gt;
+
+# SSH
+argocd repo add git@github.com:i3technologies/platform-manifests.git \
+  --ssh-private-key-path ~/.ssh/id_rsa
+</code></pre>
+  <p>Or via UI: <strong>Settings → Repositories → Connect Repo</strong>.</p>
+
+  <h4>3 — Creating an Application</h4>
+  <pre><code>argocd app create evalos-backend \
+  --repo https://github.com/i3technologies/platform-manifests \
+  --path apps/evalos/backend \
+  --dest-server https://kubernetes.default.svc \
+  --dest-namespace i3-evalos \
+  --sync-policy automated \
+  --self-heal \
+  --auto-prune
+</code></pre>
+
+  <h4>4 — Syncing &amp; Rollback</h4>
+  <pre><code># Manual sync
+argocd app sync evalos-backend
+
+# View sync history
+argocd app history evalos-backend
+
+# Rollback to a previous revision
+argocd app rollback evalos-backend &lt;revision-number&gt;
+</code></pre>
+
+  <h4>5 — RBAC — Creating a Read-Only Project User</h4>
+  <pre><code># Edit the ArgoCD RBAC ConfigMap
+oc edit configmap argocd-rbac-cm -n openshift-gitops
+</code></pre>
+  <p>Add under <code>policy.csv</code>:</p>
+  <pre><code>p, role:readonly, applications, get, */*, allow
+g, devteam, role:readonly
+</code></pre>
+
+  <h4>6 — SSO Integration (OpenShift OAuth)</h4>
+  <p>ArgoCD in OpenShift GitOps integrates with the cluster's built-in OAuth server. Add the following to the <code>argocd-cm</code> ConfigMap:</p>
+  <pre><code>oidc.config: |
+  name: OpenShift
+  issuer: https://oauth-openshift.apps.&lt;cluster-domain&gt;
+  clientID: argocd
+  clientSecret: &lt;oidc-secret&gt;
+  requestedScopes: ["openid", "profile", "email", "groups"]
+</code></pre>
+
+  <h3>User Guide</h3>
+
+  <h4>Viewing Application Sync Status</h4>
+  <p>The ArgoCD home screen lists all applications with a coloured status badge:</p>
+  <ul>
+    <li><strong>Synced (green)</strong> — live cluster matches the Git repo.</li>
+    <li><strong>OutOfSync (yellow)</strong> — changes exist in Git that have not been deployed.</li>
+    <li><strong>Degraded (red)</strong> — resources are unhealthy (pods crashing, etc.).</li>
+    <li><strong>Unknown</strong> — ArgoCD cannot reach the resource; check permissions.</li>
+  </ul>
+
+  <h4>Triggering a Manual Sync</h4>
+  <ol>
+    <li>Open the application tile and click <strong>SYNC</strong>.</li>
+    <li>Review the list of resources to be changed.</li>
+    <li>Click <strong>Synchronize</strong> to confirm.</li>
+  </ol>
+
+  <h4>Viewing Diff Between Git and Live</h4>
+  <p>Open the application → click <strong>DIFF</strong> to see a line-by-line comparison between the desired state (Git) and the current live state on the cluster.</p>
+
+  <h4>Checking Deployment History</h4>
+  <p>Open the application → click the <strong>History and Rollback</strong> icon (clock icon, top-right panel) to see all past syncs with commit SHA, timestamp, and author.</p>
+
+
+  <!-- ══════════════════════════════════════════
+       D. VOICE STT
+  ══════════════════════════════════════════ -->
+  <h2 id="stt">D. Voice STT — Speech-to-Text</h2>
+
+  <div class="meta-card">
+    <span class="label">URL</span>
+    <span><a href="https://stt.i3technologies.co.ke" target="_blank">https://stt.i3technologies.co.ke</a></span>
+    <span class="label">Health Check</span>
+    <span><a href="https://stt.i3technologies.co.ke/v1/health" target="_blank">https://stt.i3technologies.co.ke/v1/health</a></span>
+    <span class="label">Namespace</span><span><code>i3-voice</code></span>
+    <span class="label">Engine</span><span>OpenAI Whisper (self-hosted)</span>
+    <span class="label">Purpose</span>
+    <span>Transcribe audio to text — EvalOS oral exams, Engage voice messages, and all platform voice features</span>
+  </div>
+
+  <h3>Admin Guide</h3>
+
+  <h4>1 — Checking Service &amp; Model Status</h4>
+  <pre><code># Health endpoint
+curl https://stt.i3technologies.co.ke/v1/health
+
+# Pod status
+oc get pods -n i3-voice -l app=stt
+
+# View logs
+oc logs -n i3-voice deploy/stt --tail=100
+</code></pre>
+  <p>A healthy response returns <code>{"status":"ok","model":"whisper"}</code>.</p>
+
+  <h4>2 — Supported Audio Formats</h4>
+  <table>
+    <thead><tr><th>Format</th><th>Extension</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>MP3</td><td><code>.mp3</code></td><td>Recommended for mobile uploads</td></tr>
+      <tr><td>WAV</td><td><code>.wav</code></td><td>Lossless; larger file size</td></tr>
+      <tr><td>M4A / AAC</td><td><code>.m4a</code></td><td>iOS voice memos default format</td></tr>
+      <tr><td>WebM / Opus</td><td><code>.webm</code></td><td>Browser MediaRecorder API default</td></tr>
+      <tr><td>OGG</td><td><code>.ogg</code></td><td>Open format; supported by Android</td></tr>
+      <tr><td>FLAC</td><td><code>.flac</code></td><td>High-quality lossless</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Developer / User Guide</h3>
+
+  <h4>Transcribing Audio — API</h4>
+  <p>POST audio as <code>multipart/form-data</code> to the transcription endpoint:</p>
+  <pre><code>curl -X POST https://stt.i3technologies.co.ke/v1/transcribe \
+  -F "audio=@recording.mp3" \
+  -F "language=en"
+</code></pre>
+  <p>Supported language codes:</p>
+  <ul>
+    <li><code>en</code> — English</li>
+    <li><code>sw</code> — Swahili (Kiswahili)</li>
+  </ul>
+  <p>Sample successful response:</p>
+  <pre><code>{
+  "text": "The student correctly identified the solution.",
+  "language": "en",
+  "duration_seconds": 4.2,
+  "segments": [...]
+}
+</code></pre>
+
+  <h4>JavaScript SDK Example (Browser)</h4>
+  <pre><code>const formData = new FormData();
+formData.append("audio", audioBlob, "recording.webm");
+formData.append("language", "sw");
+
+const res = await fetch("https://stt.i3technologies.co.ke/v1/transcribe", {
+  method: "POST",
+  body: formData,
+});
+const { text } = await res.json();
+console.log("Transcript:", text);
+</code></pre>
+
+
+  <!-- ══════════════════════════════════════════
+       E. VOICE TTS
+  ══════════════════════════════════════════ -->
+  <h2 id="tts">E. Voice TTS — Text-to-Speech</h2>
+
+  <div class="meta-card">
+    <span class="label">URL</span>
+    <span><a href="https://tts.i3technologies.co.ke" target="_blank">https://tts.i3technologies.co.ke</a></span>
+    <span class="label">Health Check</span>
+    <span><a href="https://tts.i3technologies.co.ke/v1/health" target="_blank">https://tts.i3technologies.co.ke/v1/health</a></span>
+    <span class="label">Namespace</span><span><code>i3-voice</code></span>
+    <span class="label">Engine</span><span>Piper TTS (self-hosted)</span>
+    <span class="label">Purpose</span>
+    <span>Convert text to spoken audio — AI coworkers, EvalOS accessibility features, Engage voice responses</span>
+  </div>
+
+  <h3>Admin Guide</h3>
+
+  <h4>1 — Checking Service Status</h4>
+  <pre><code>curl https://tts.i3technologies.co.ke/v1/health
+oc get pods -n i3-voice -l app=tts
+oc logs -n i3-voice deploy/tts --tail=100
+</code></pre>
+
+  <h4>2 — Available Voices</h4>
+  <table>
+    <thead><tr><th>Voice ID</th><th>Language</th><th>Gender</th><th>Style</th></tr></thead>
+    <tbody>
+      <tr><td><code>en_US-lessac-medium</code></td><td>English (US)</td><td>Male</td><td>Neutral / Clear</td></tr>
+      <tr><td><code>en_GB-alba-medium</code></td><td>English (GB)</td><td>Female</td><td>Professional</td></tr>
+      <tr><td><code>sw_KE-swahili-medium</code></td><td>Swahili (KE)</td><td>Neutral</td><td>Standard</td></tr>
+    </tbody>
+  </table>
+  <p>List all voices installed on the pod:</p>
+  <pre><code>oc exec -n i3-voice deploy/tts -- ls /app/voices/
+</code></pre>
+
+  <h3>Developer Guide</h3>
+
+  <h4>Synthesising Speech — API</h4>
+  <p>POST a JSON body to <code>/v1/synthesize</code>. The response is a <code>audio/wav</code> stream.</p>
+  <pre><code>curl -X POST https://tts.i3technologies.co.ke/v1/synthesize \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Welcome to the i3 platform. Your assessment will begin shortly.",
+    "voice": "en_US-lessac-medium",
+    "speed": 1.0
+  }' \
+  --output response.wav
+</code></pre>
+
+  <h4>Request Parameters</h4>
+  <table>
+    <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>text</code></td><td>string</td><td>Yes</td><td>Text to synthesise (max 5 000 chars)</td></tr>
+      <tr><td><code>voice</code></td><td>string</td><td>Yes</td><td>Voice ID (see table above)</td></tr>
+      <tr><td><code>speed</code></td><td>float</td><td>No</td><td>Playback speed multiplier (0.5–2.0, default 1.0)</td></tr>
+      <tr><td><code>format</code></td><td>string</td><td>No</td><td><code>wav</code> (default) or <code>mp3</code></td></tr>
+    </tbody>
+  </table>
+
+  <h4>JavaScript Example</h4>
+  <pre><code>const res = await fetch("https://tts.i3technologies.co.ke/v1/synthesize", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    text: "Karibu kwenye mfumo wa i3.",
+    voice: "sw_KE-swahili-medium",
+  }),
+});
+const audioBlob = await res.blob();
+const url = URL.createObjectURL(audioBlob);
+new Audio(url).play();
+</code></pre>
+
+
+  <!-- ══════════════════════════════════════════
+       F. SMARTLAB API
+  ══════════════════════════════════════════ -->
+  <h2 id="smartlab">F. SmartLab API</h2>
+
+  <div class="meta-card">
+    <span class="label">Primary URL</span>
+    <span><a href="https://api.smartlab.i3technologies.co.ke" target="_blank">https://api.smartlab.i3technologies.co.ke</a></span>
+    <span class="label">Alias URL</span>
+    <span><a href="https://smartlab-api.i3technologies.co.ke" target="_blank">https://smartlab-api.i3technologies.co.ke</a></span>
+    <span class="label">Namespace</span><span><code>i3-smartlab</code></span>
+    <span class="label">Keycloak Client</span><span><code>i3smartlab</code></span>
+    <span class="label">Purpose</span>
+    <span>IoT lab management — physical equipment control, sensor data, attendance tracking, experiment logging</span>
+  </div>
+
+  <h3>Admin Guide</h3>
+
+  <h4>1 — Device Registration</h4>
+  <pre><code>POST /api/v1/devices/register
+Authorization: Bearer &lt;admin-jwt&gt;
+Content-Type: application/json
+
+{
+  "device_id": "sensor-lab2-001",
+  "type": "temperature_humidity",
+  "lab_id": "lab-002",
+  "location": "Bench 4, Row B",
+  "firmware_version": "2.1.4"
+}
+</code></pre>
+
+  <h4>2 — Viewing Sensor Data</h4>
+  <pre><code># List latest readings for a lab
+GET /api/v1/labs/{lab_id}/sensors?limit=50
+
+# Historical data with time range
+GET /api/v1/sensors/{device_id}/readings?from=2024-01-01T00:00:00Z&amp;to=2024-01-02T00:00:00Z
+</code></pre>
+
+  <h4>3 — API Authentication via Keycloak JWT</h4>
+  <p>All API requests require a Bearer token issued by Keycloak for the <code>i3smartlab</code> client:</p>
+  <pre><code># Obtain token
+curl -X POST \
+  https://sso.i3technologies.co.ke/realms/i3/protocol/openid-connect/token \
+  -d "grant_type=client_credentials" \
+  -d "client_id=i3smartlab" \
+  -d "client_secret=&lt;client-secret&gt;"
+
+# Use token
+curl -H "Authorization: Bearer &lt;access_token&gt;" \
+  https://api.smartlab.i3technologies.co.ke/api/v1/labs
+</code></pre>
+
+  <h4>4 — TLS Certificate Management</h4>
+  <pre><code># View current cert details
+oc get certificate -n i3-smartlab
+
+# Force cert-manager renewal
+oc annotate certificate smartlab-tls \
+  cert-manager.io/issuer-name=letsencrypt-prod \
+  -n i3-smartlab --overwrite
+</code></pre>
+
+  <h3>User Guide</h3>
+
+  <h4>Logging Into the Lab</h4>
+  <ol>
+    <li>Scan your student/staff ID card at the lab entrance terminal, or log in via the SmartLab web portal.</li>
+    <li>The system records your check-in time and grants equipment access based on your enrolled courses.</li>
+    <li>Your session is automatically closed at check-out (or after 4 hours of inactivity).</li>
+  </ol>
+
+  <h4>Recording an Experiment Session</h4>
+  <ol>
+    <li>Navigate to <strong>My Sessions → New Experiment</strong>.</li>
+    <li>Select the experiment template from your coursework.</li>
+    <li>Add observations, attach sensor readings, and upload photos/sketches.</li>
+    <li>Click <strong>Submit Session</strong> — the session is timestamped and linked to your course record.</li>
+  </ol>
+
+  <h4>Accessing Sensor Readings</h4>
+  <p>From the <strong>Lab Dashboard</strong>, select a bench to see live sensor values (temperature, humidity, voltage, etc.). Use the <strong>Export</strong> button to download a CSV of readings for your experiment report.</p>
+
+
+  <!-- ══════════════════════════════════════════
+       G. ADMISSIONS AGENT
+  ══════════════════════════════════════════ -->
+  <h2 id="admissions">G. Admissions Agent</h2>
+
+  <div class="meta-card">
+    <span class="label">URL</span>
+    <span><a href="https://admissions.i3technologies.co.ke" target="_blank">https://admissions.i3technologies.co.ke</a></span>
+    <span class="label">Health Check</span>
+    <span><a href="https://admissions.i3technologies.co.ke/health" target="_blank">https://admissions.i3technologies.co.ke/health</a></span>
+    <span class="label">Namespace</span><span><code>i3-admissions</code></span>
+    <span class="label">Keycloak Client</span><span><code>admissions-widget</code></span>
+    <span class="label">Purpose</span>
+    <span>AI-powered student admissions — integrates with Engage (WhatsApp intake) and EvalOS (entry testing)</span>
+  </div>
+
+  <h3>Admin Guide</h3>
+
+  <h4>1 — Viewing Applications</h4>
+  <p>Navigate to <strong>Admissions Dashboard → All Applications</strong>. Filter by status:</p>
+  <ul>
+    <li><strong>Submitted</strong> — applicant has completed the form.</li>
+    <li><strong>Under Review</strong> — entry test scheduled or in progress via EvalOS.</li>
+    <li><strong>Approved</strong> — admission granted; SIT enrollment triggered.</li>
+    <li><strong>Rejected</strong> — admission denied; automated notification sent.</li>
+    <li><strong>Waitlisted</strong> — deferred pending cohort capacity.</li>
+  </ul>
+
+  <h4>2 — Approval Workflow</h4>
+  <ol>
+    <li>Open an application → review personal details, uploaded documents, and EvalOS entry test score.</li>
+    <li>Click <strong>Approve</strong> or <strong>Reject</strong>.</li>
+    <li>On approval, the system automatically:
+      <ul>
+        <li>Creates a Keycloak account for the student.</li>
+        <li>Triggers the Onboarding Agent (see §H).</li>
+        <li>Publishes a <code>sit.enrollments</code> event to Kafka.</li>
+        <li>Sends a welcome email via n8n.</li>
+      </ul>
+    </li>
+  </ol>
+
+  <h4>3 — Integration with WhatsApp (Engage)</h4>
+  <p>When a prospective student messages the admissions WhatsApp number, Engage routes the conversation to the Admissions Agent. The agent collects required information conversationally and creates a draft application. Admins can view these draft applications under <strong>Applications → Draft (Engage)</strong>.</p>
+
+  <h4>4 — Checking Health</h4>
+  <pre><code>curl https://admissions.i3technologies.co.ke/health
+oc get pods -n i3-admissions
+oc logs -n i3-admissions deploy/admissions-agent --tail=100
+</code></pre>
+
+  <h3>User Guide (Applicant)</h3>
+
+  <h4>Submitting an Application</h4>
+  <ol>
+    <li>Visit <a href="https://admissions.i3technologies.co.ke" target="_blank">https://admissions.i3technologies.co.ke</a> or initiate via WhatsApp.</li>
+    <li>Complete the online application form: personal details, course preference, supporting documents.</li>
+    <li>Submit — you will receive a reference number via email and/or WhatsApp.</li>
+    <li>If required, you will be scheduled for an online entry test via EvalOS (link sent via email).</li>
+  </ol>
+
+  <h4>Checking Application Status</h4>
+  <p>Return to the admissions portal and enter your reference number (or log in if you created an account). Your current status, any pending actions, and the admissions team's notes will be displayed.</p>
+
+
+  <!-- ══════════════════════════════════════════
+       H. ONBOARDING AGENT
+  ══════════════════════════════════════════ -->
+  <h2 id="onboarding">H. Onboarding Agent</h2>
+
+  <div class="meta-card">
+    <span class="label">URL</span>
+    <span><a href="https://onboarding.i3technologies.co.ke" target="_blank">https://onboarding.i3technologies.co.ke</a></span>
+    <span class="label">Health Check</span>
+    <span><a href="https://onboarding.i3technologies.co.ke/health" target="_blank">https://onboarding.i3technologies.co.ke/health</a></span>
+    <span class="label">Namespace</span><span><code>i3-onboarding</code></span>
+    <span class="label">Purpose</span>
+    <span>Automated new-user onboarding — welcome emails, Keycloak account creation, n8n workflow triggers</span>
+  </div>
+
+  <h3>Admin Guide</h3>
+
+  <h4>1 — How Onboarding Works</h4>
+  <p>The Onboarding Agent is triggered automatically by an event (typically from the Admissions Agent or by an admin manually enrolling a user). On trigger, it:</p>
+  <ol>
+    <li>Creates or updates the Keycloak account in the <code>i3</code> realm with the correct roles.</li>
+    <li>Sends a welcome email containing the login URL and temporary password.</li>
+    <li>Publishes a <code>sit.enrollments</code> event to Kafka so downstream services (LMS, SmartLab, etc.) can provision the user.</li>
+    <li>Triggers a configurable n8n workflow for institution-specific steps (e.g., printing an ID card, assigning a locker).</li>
+  </ol>
+
+  <h4>2 — Configuring Onboarding Flows</h4>
+  <p>Onboarding flows are defined via the Onboarding Agent admin panel at <a href="https://onboarding.i3technologies.co.ke" target="_blank">https://onboarding.i3technologies.co.ke</a>:</p>
+  <ul>
+    <li><strong>Flows</strong> — define step sequences per user type (Student, Staff, Instructor).</li>
+    <li><strong>Templates</strong> — customise email and WhatsApp welcome message templates (supports Handlebars variables: <code>{{firstName}}</code>, <code>{{courseTitle}}</code>, etc.).</li>
+    <li><strong>n8n Webhooks</strong> — configure the n8n webhook URL to call at each step.</li>
+    <li><strong>Keycloak Mapping</strong> — map user type to Keycloak realm roles.</li>
+  </ul>
+
+  <h4>3 — Monitoring Onboarding Events</h4>
+  <pre><code># View recent onboarding events
+oc logs -n i3-onboarding deploy/onboarding-agent --tail=200 | grep "event"
+
+# Check pod health
+oc get pods -n i3-onboarding
+
+# Health API
+curl https://onboarding.i3technologies.co.ke/health
+</code></pre>
+  <p>The admin dashboard shows a real-time feed of onboarding events with status indicators (Pending, In Progress, Completed, Failed). Failed events can be retried from the dashboard.</p>
+
+  <h4>4 — Manual Trigger</h4>
+  <pre><code>POST https://onboarding.i3technologies.co.ke/api/v1/onboard
+Authorization: Bearer &lt;admin-jwt&gt;
+Content-Type: application/json
+
+{
+  "user_id": "kc-user-uuid",
+  "flow": "student",
+  "metadata": {
+    "course": "Diploma in ICT",
+    "intake": "January 2025"
+  }
+}
+</code></pre>
+
+
+  <!-- ══════════════════════════════════════════
+       I. KAFKA
+  ══════════════════════════════════════════ -->
+  <h2 id="kafka">I. Kafka — Event Streaming</h2>
+
+  <div class="meta-card">
+    <span class="label">Namespace</span><span><code>i3-messaging</code></span>
+    <span class="label">Bootstrap Server</span>
+    <span><code>kafka-bootstrap.i3-messaging.svc.cluster.local:9092</code></span>
+    <span class="label">Cluster Topology</span>
+    <span>3-node combined cluster (each node acts as both broker and KRaft controller)</span>
+    <span class="label">Topics</span><span>12 topics provisioned across all platform services</span>
+    <span class="label">Purpose</span>
+    <span>Asynchronous event streaming backbone — decouples all platform services</span>
+  </div>
+
+  <h3>Topic Inventory</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Topic Name</th>
+        <th>Owning Service</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>talent-assessments</code></td>
+        <td>Talent / EvalOS</td>
+        <td>Assessment events — when a talent assessment is initiated or completed</td>
+      </tr>
+      <tr>
+        <td><code>talent-score-updates</code></td>
+        <td>Talent / EvalOS</td>
+        <td>Score change events — graded results and manual score overrides</td>
+      </tr>
+      <tr>
+        <td><code>talent-placements</code></td>
+        <td>Talent</td>
+        <td>Placement decisions — candidate-to-opportunity match confirmed</td>
+      </tr>
+      <tr>
+        <td><code>sit.enrollments</code></td>
+        <td>SIT / Admissions</td>
+        <td>Student enrollment events — new student admitted and provisioned</td>
+      </tr>
+      <tr>
+        <td><code>sit.ecitizen</code></td>
+        <td>SIT</td>
+        <td>eCitizen integration events — payments and government portal callbacks</td>
+      </tr>
+      <tr>
+        <td><code>sit.credentials</code></td>
+        <td>SIT</td>
+        <td>Academic credential issuance — certificates and transcripts generated</td>
+      </tr>
+      <tr>
+        <td><code>sit.membership-checkins</code></td>
+        <td>SIT / SmartLab</td>
+        <td>Physical check-in events — lab and facility attendance</td>
+      </tr>
+      <tr>
+        <td><code>ar.actions</code></td>
+        <td>AR Module</td>
+        <td>Augmented reality interaction events — student AR session actions</td>
+      </tr>
+      <tr>
+        <td><code>ar.approvals</code></td>
+        <td>AR Module</td>
+        <td>AR content approval workflow — instructor approval of AR assets</td>
+      </tr>
+      <tr>
+        <td><code>ford.membership.registrations</code></td>
+        <td>FORD</td>
+        <td>New member registration events for the FORD programme</td>
+      </tr>
+      <tr>
+        <td><code>ford.membership.verified</code></td>
+        <td>FORD</td>
+        <td>Membership verification completed — KYC/document checks passed</td>
+      </tr>
+      <tr>
+        <td><code>ford.primary.ballots</code></td>
+        <td>FORD</td>
+        <td>Ballot/voting events for FORD primary elections</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Admin Guide</h3>
+
+  <h4>1 — Connecting to the Cluster</h4>
+  <pre><code># From inside the cluster (any pod)
+kafka-topics.sh --bootstrap-server kafka-bootstrap.i3-messaging.svc.cluster.local:9092 \
+  --list
+
+# Via a temporary pod
+oc run kafka-cli --rm -it --image=quay.io/strimzi/kafka:latest \
+  -n i3-messaging -- bash
+</code></pre>
+
+  <h4>2 — Listing Topics</h4>
+  <pre><code>kafka-topics.sh \
+  --bootstrap-server kafka-bootstrap.i3-messaging.svc.cluster.local:9092 \
+  --list
+
+# Describe a single topic
+kafka-topics.sh \
+  --bootstrap-server kafka-bootstrap.i3-messaging.svc.cluster.local:9092 \
+  --describe --topic sit.enrollments
+</code></pre>
+
+  <h4>3 — Checking Consumer Groups &amp; Lag</h4>
+  <pre><code># List all consumer groups
+kafka-consumer-groups.sh \
+  --bootstrap-server kafka-bootstrap.i3-messaging.svc.cluster.local:9092 \
+  --list
+
+# View lag for a specific group
+kafka-consumer-groups.sh \
+  --bootstrap-server kafka-bootstrap.i3-messaging.svc.cluster.local:9092 \
+  --describe --group evalos-consumer-group
+</code></pre>
+  <p>The <strong>LAG</strong> column shows how many messages a consumer is behind. Sustained high lag (&gt;1 000) indicates a slow or stuck consumer — check the consumer pod logs.</p>
+
+  <h4>4 — Creating a New Topic</h4>
+  <pre><code>kafka-topics.sh \
+  --bootstrap-server kafka-bootstrap.i3-messaging.svc.cluster.local:9092 \
+  --create \
+  --topic my.new.topic \
+  --partitions 3 \
+  --replication-factor 3
+</code></pre>
+  <div class="tip">
+    <strong>✔ Naming Convention</strong>
+    Use <code>domain.entity.action</code> (e.g., <code>sit.enrollments</code>, <code>ford.membership.verified</code>). Keep names lowercase with dots as separators. Avoid underscores to be consistent with the existing inventory.
+  </div>
+
+  <h4>5 — Viewing Messages (Debug)</h4>
+  <pre><code># Consume from the beginning of a topic
+kafka-console-consumer.sh \
+  --bootstrap-server kafka-bootstrap.i3-messaging.svc.cluster.local:9092 \
+  --topic sit.enrollments \
+  --from-beginning \
+  --max-messages 10
+</code></pre>
+
+  <h3>Developer Guide</h3>
+
+  <h4>Producing Messages</h4>
+  <pre><code># CLI producer (for testing)
+kafka-console-producer.sh \
+  --bootstrap-server kafka-bootstrap.i3-messaging.svc.cluster.local:9092 \
+  --topic talent-assessments
+# Type JSON payload and press Enter
+
+# Node.js (kafkajs)
+const { Kafka } = require("kafkajs");
+const kafka = new Kafka({
+  brokers: ["kafka-bootstrap.i3-messaging.svc.cluster.local:9092"],
+});
+const producer = kafka.producer();
+await producer.connect();
+await producer.send({
+  topic: "talent-assessments",
+  messages: [{ value: JSON.stringify({ studentId: "stu-123", type: "entry" }) }],
+});
+await producer.disconnect();
+</code></pre>
+
+  <h4>Consuming Messages</h4>
+  <pre><code>// Node.js (kafkajs)
+const consumer = kafka.consumer({ groupId: "my-service-group" });
+await consumer.connect();
+await consumer.subscribe({ topic: "sit.enrollments", fromBeginning: false });
+
+await consumer.run({
+  eachMessage: async ({ topic, partition, message }) => {
+    const payload = JSON.parse(message.value.toString());
+    console.log("Received:", payload);
+    // Process enrollment...
+  },
+});
+</code></pre>
+
+  <h4>Python Example</h4>
+  <pre><code>from kafka import KafkaProducer, KafkaConsumer
+import json
+
+# Producer
+producer = KafkaProducer(
+    bootstrap_servers="kafka-bootstrap.i3-messaging.svc.cluster.local:9092",
+    value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+)
+producer.send("ford.membership.registrations", {"memberId": "frd-456", "name": "Jane Doe"})
+producer.flush()
+
+# Consumer
+consumer = KafkaConsumer(
+    "ford.membership.verified",
+    bootstrap_servers="kafka-bootstrap.i3-messaging.svc.cluster.local:9092",
+    group_id="ford-verification-service",
+    value_deserializer=lambda m: json.loads(m.decode("utf-8")),
+)
+for message in consumer:
+    print(f"Verified: {message.value}")
+</code></pre>
+
+</div><!-- /.wrapper -->
+
+<!-- ══════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════ -->
+<footer>
+  <div class="wrapper" style="padding-top:0;padding-bottom:24px;">
+    Made with IBM Bob | Component 14 of 14 · i3 Platform Documentation
+  </div>
+</footer>
+
+</body>
+</html>

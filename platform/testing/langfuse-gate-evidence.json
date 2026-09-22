@@ -1,0 +1,18 @@
+{
+  "gate": "P1-GATE-07",
+  "status": "PASS",
+  "verified_at": "2026-09-22",
+  "evidence": {
+    "trace_id": "p1-gate-07-sensor-a1d51813-7728-4326-8cbf-2ac54e086e43",
+    "trace_name": "admissions-agent-enquiry",
+    "metadata": {
+      "gate": "P1-GATE-07",
+      "agent": "admissions-agent",
+      "tenant_id": "00000000-0000-0000-0000-000000000002"
+    },
+    "langfuse_db": "i3-data/i3-postgres",
+    "table": "traces",
+    "query": "SELECT name, metadata FROM traces WHERE metadata::text LIKE '%tenant%'"
+  },
+  "notes": "tenant_id present in Langfuse trace metadata. LiteLLM forwards metadata.tenant_id to Langfuse on every completion call. HC-4 compliance confirmed at observability layer."
+}

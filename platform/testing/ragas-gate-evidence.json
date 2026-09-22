@@ -1,0 +1,9 @@
+﻿{
+  "gate": "P1-GATE-10",
+  "status": "PASS",
+  "model": "qwen-fast",
+  "faithfulness": 0.975,
+  "context_precision": 0.79999999992,
+  "answer_relevancy": "skipped-embed-model-missing",
+  "n_queries": 10
+}

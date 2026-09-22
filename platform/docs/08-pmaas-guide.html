@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Component 08 — PMaaS Admin &amp; User Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #1f2328;
+    background: #f7f8fa;
+  }
+  a { color: #9a6700; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── Cover ── */
+  .cover {
+    background: linear-gradient(135deg, #9a6700, #d4a72c);
+    color: #fff;
+    padding: 56px 40px 48px;
+    text-align: center;
+  }
+  .cover .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.25);
+    border: 1px solid rgba(255,255,255,0.45);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    padding: 3px 14px;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+  }
+  .cover h1 { font-size: 32px; font-weight: 700; margin-bottom: 10px; }
+  .cover p  { font-size: 15px; opacity: .9; max-width: 600px; margin: 0 auto 6px; }
+  .cover .meta { font-size: 12px; opacity: .7; margin-top: 16px; letter-spacing: .04em; }
+
+  /* ── Layout ── */
+  .container { max-width: 900px; margin: 0 auto; padding: 0 24px 60px; }
+
+  /* ── TOC ── */
+  .toc {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 28px 32px;
+    margin: 32px 0;
+  }
+  .toc h2 { font-size: 14px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .06em; color: #57606a; margin-bottom: 14px; border: none; }
+  .toc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
+  .toc-col h3 { font-size: 12px; font-weight: 700; color: #9a6700;
+                text-transform: uppercase; letter-spacing: .06em;
+                margin-bottom: 8px; padding-bottom: 4px;
+                border-bottom: 1px solid #e5e7eb; }
+  .toc-col ol { padding-left: 18px; }
+  .toc-col ol li { font-size: 13px; margin-bottom: 3px; }
+  .toc-col ol li a { color: #1f2328; }
+  .toc-col ol li a:hover { color: #9a6700; }
+
+  /* ── Section headings ── */
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; color: #9a6700;
+    margin-top: 48px; margin-bottom: 4px;
+  }
+  h2 {
+    font-size: 20px; font-weight: 700;
+    color: #9a6700;
+    border-bottom: 2px solid #9a6700;
+    padding-bottom: 8px;
+    margin-bottom: 18px;
+  }
+  h3 { font-size: 15px; font-weight: 700; color: #1f2328; margin: 22px 0 10px; }
+  h4 { font-size: 13px; font-weight: 700; color: #57606a; margin: 16px 0 8px; text-transform: uppercase; letter-spacing: .05em; }
+
+  /* ── Cards / panels ── */
+  .card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 22px 26px;
+    margin-bottom: 20px;
+  }
+  .card p, .card li { margin-bottom: 6px; }
+
+  /* ── Info / Warning / Danger boxes ── */
+  .box {
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 18px 0;
+    border-left: 4px solid;
+  }
+  .box-info    { background: #fff8c5; border-color: #ffd33d; }
+  .box-warn    { background: #fff3cd; border-color: #e6a817; }
+  .box-danger  { background: #ffeef0; border-color: #d1242f; }
+  .box-success { background: #dafbe1; border-color: #2da44e; }
+  .box strong  { display: block; margin-bottom: 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; }
+  .box-info strong    { color: #7a4f00; }
+  .box-warn strong    { color: #7a4f00; }
+  .box-danger strong  { color: #d1242f; }
+  .box-success strong { color: #1a7f37; }
+  .box ol, .box ul { padding-left: 20px; margin-top: 6px; }
+  .box li { margin-bottom: 4px; }
+
+  /* ── Code ── */
+  code {
+    background: #fff8c5;
+    border: 1px solid #ffd33d;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 12.5px;
+  }
+  pre {
+    background: #fff8c5;
+    border: 1px solid #ffd33d;
+    border-radius: 6px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    margin: 14px 0;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+  pre code { background: none; border: none; padding: 0; }
+
+  /* ── Tables ── */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  th {
+    background: #9a6700;
+    color: #fff;
+    font-weight: 600;
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 12.5px;
+    letter-spacing: .03em;
+  }
+  td { padding: 9px 14px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #f7f8fa; }
+
+  /* ── Numbered steps ── */
+  .steps { padding-left: 0; list-style: none; counter-reset: step; }
+  .steps li {
+    counter-increment: step;
+    display: flex;
+    gap: 14px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+  }
+  .steps li::before {
+    content: counter(step);
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    background: #9a6700;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 2px;
+  }
+  .steps li p { margin: 0; }
+
+  /* ── KV pairs ── */
+  .kv { display: grid; grid-template-columns: 200px 1fr; gap: 6px 16px; margin: 12px 0; }
+  .kv dt { font-weight: 600; color: #57606a; font-size: 13px; }
+  .kv dd { font-size: 13px; word-break: break-all; }
+
+  /* ── Divider ── */
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 36px 0; }
+
+  /* ── Pill tag ── */
+  .pill {
+    display: inline-block;
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .pill-amber  { background: #fff3cd; color: #7a4f00; border: 1px solid #ffd33d; }
+  .pill-green  { background: #dafbe1; color: #1a7f37; border: 1px solid #2da44e; }
+  .pill-red    { background: #ffeef0; color: #d1242f; border: 1px solid #ffb8b8; }
+  .pill-purple { background: #f3e8ff; color: #6639ba; border: 1px solid #d2b0ff; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    font-size: 12px;
+    color: #57606a;
+    padding: 20px 24px 28px;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 48px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════ COVER ════════════════════ -->
+<div class="cover">
+  <div class="badge">Component 08 of 14 · i3 Technologies</div>
+  <h1>PMaaS — Project Management as a Service</h1>
+  <p>Admin &amp; User Guide — AI-enhanced project planning, campaign management, grant tracking, and field operations</p>
+  <p class="meta">
+    URL: <a href="https://pmaas.i3technologies.co.ke" style="color:#fff;text-decoration:underline">pmaas.i3technologies.co.ke</a>
+    &nbsp;·&nbsp; Namespace: <strong>i3-pmaas</strong>
+    &nbsp;·&nbsp; Coworker: <strong>Dawa AI</strong>
+    &nbsp;·&nbsp; Built on: Next.js 14
+  </p>
+</div>
+
+<div class="container">
+
+<!-- ════════════════════ TABLE OF CONTENTS ════════════════════ -->
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <div class="toc-grid">
+    <div class="toc-col">
+      <h3>Admin Guide</h3>
+      <ol>
+        <li><a href="#a1">Overview &amp; Client Use Cases</a></li>
+        <li><a href="#a2">User Onboarding in Keycloak</a></li>
+        <li><a href="#a3">Project / Program Setup</a></li>
+        <li><a href="#a4">Campaign Management Workflow</a></li>
+        <li><a href="#a5">Dawa AI Coworker</a></li>
+        <li><a href="#a6">Email Notifications via Brevo</a></li>
+        <li><a href="#a7">FORD-Asili Integration</a></li>
+        <li><a href="#a8">Database Setup — Password Fix ⚠</a></li>
+        <li><a href="#a9">Operations: Pods, Logs &amp; Scaling</a></li>
+        <li><a href="#a10">Admin Troubleshooting</a></li>
+      </ol>
+    </div>
+    <div class="toc-col">
+      <h3>User Guide</h3>
+      <ol>
+        <li><a href="#u1">Logging In with SSO</a></li>
+        <li><a href="#u2">Dashboard Overview</a></li>
+        <li><a href="#u3">Creating a New Project</a></li>
+        <li><a href="#u4">Adding Team Members &amp; Tasks</a></li>
+        <li><a href="#u5">Tracking Milestones &amp; Progress</a></li>
+        <li><a href="#u6">Using Dawa AI</a></li>
+        <li><a href="#u7">Reports &amp; PDF Export</a></li>
+        <li><a href="#u8">Grants &amp; Budget Management</a></li>
+        <li><a href="#u9">User Troubleshooting</a></li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ QUICK-REFERENCE ════════════════════ -->
+<div class="section-label">Reference</div>
+<h2 id="ref">Quick Reference — Credentials &amp; Endpoints</h2>
+
+<div class="box box-warn">
+  <strong>⚠ Credentials Notice</strong>
+  These credentials are internal platform configuration. Treat this document as sensitive. Do not share externally or commit to version control.
+</div>
+
+<div class="card">
+  <dl class="kv">
+    <dt>App URL</dt>              <dd><a href="https://pmaas.i3technologies.co.ke">https://pmaas.i3technologies.co.ke</a></dd>
+    <dt>Namespace</dt>            <dd><code>i3-pmaas</code></dd>
+    <dt>Keycloak Client</dt>      <dd><code>pmaas-web</code></dd>
+    <dt>Database</dt>             <dd><code>pmaas_db</code> via PGBouncer</dd>
+    <dt>Dawa AI Coworker</dt>     <dd><a href="https://dawa.i3technologies.co.ke">https://dawa.i3technologies.co.ke</a></dd>
+    <dt>Agent URL (internal)</dt> <dd><code>http://campaign-agent.i3-pmaas.svc.cluster.local:8080</code></dd>
+    <dt>ChromaDB Host</dt>        <dd><code>chromadb.i3-ai-lab.svc.cluster.local</code></dd>
+    <dt>ChromaDB Token</dt>       <dd><code>fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c</code></dd>
+    <dt>LiteLLM Key</dt>          <dd><code>sk-litellm-i3-f951c9377163a11275864cb92e90ad13</code></dd>
+    <dt>Brevo SMTP Host</dt>      <dd><code>smtp-relay.brevo.com:587</code></dd>
+    <dt>Brevo SMTP Login</dt>     <dd><code>b8994d001@smtp-brevo.com</code></dd>
+    <dt>Brevo API Key</dt>        <dd><code>BREVO_API_KEY_REDACTED</code></dd>
+  </dl>
+</div>
+
+<hr />
+
+<!-- ════════════════════════════════════════════
+     ADMIN GUIDE
+════════════════════════════════════════════ -->
+<div class="section-label">Admin Guide</div>
+<h2 id="a1">A1 — Overview &amp; Client Use Cases</h2>
+
+<p>PMaaS (Project Management as a Service) is the i3 Technologies platform for AI-enhanced project delivery across three primary client segments:</p>
+
+<table>
+  <thead><tr><th>Segment</th><th>Key Use Cases</th><th>Key Features Used</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><span class="pill pill-amber">County Governments</span></td>
+      <td>Ward-level project tracking, FORD 2027 initiative management, field team coordination</td>
+      <td>FORD-Asili integration, geospatial project maps, team assignments per ward</td>
+    </tr>
+    <tr>
+      <td><span class="pill pill-green">NGOs</span></td>
+      <td>Grant lifecycle management, donor reporting, program M&amp;E</td>
+      <td>Grant module, budget tracking, report generation, Dawa AI insights</td>
+    </tr>
+    <tr>
+      <td><span class="pill pill-purple">Corporates</span></td>
+      <td>Campaign management, cross-team project delivery, KPI dashboards</td>
+      <td>Campaign workflows, Brevo email automation, milestone tracking</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Platform Architecture</h3>
+<div class="card">
+  <dl class="kv">
+    <dt>Frontend</dt>    <dd>Next.js 14 (App Router) — deployed as <code>pmaas-web</code> deployment in <code>i3-pmaas</code></dd>
+    <dt>AI Agent</dt>    <dd>campaign-agent service (Python/FastAPI) — Dawa AI coworker with LiteLLM + ChromaDB RAG</dd>
+    <dt>Database</dt>    <dd>PostgreSQL (<code>pmaas_db</code>) via PGBouncer connection pooler</dd>
+    <dt>Auth</dt>        <dd>Keycloak SSO — <code>pmaas-web</code> client, realm <code>i3</code></dd>
+    <dt>Email</dt>       <dd>Brevo transactional email (SMTP + API)</dd>
+    <dt>FORD Data</dt>   <dd>ford-api integration for ward/constituency data (<code>i3-ford</code> namespace)</dd>
+  </dl>
+</div>
+
+<h2 id="a2">A2 — User Onboarding — Creating Client Accounts in Keycloak</h2>
+
+<p>All PMaaS users authenticate via Keycloak SSO. Client accounts must be created in the <code>i3</code> realm and assigned the <code>i3-client</code> role.</p>
+
+<h3>Steps to Create a New Client Account</h3>
+<ol class="steps">
+  <li><p>Log in to the Keycloak Admin Console. Navigate to <strong>Realm: i3</strong> → <strong>Users</strong> → <strong>Add User</strong>.</p></li>
+  <li><p>Fill in: <strong>Username</strong> (email preferred), <strong>Email</strong>, <strong>First Name</strong>, <strong>Last Name</strong>. Set <strong>Email Verified: ON</strong>. Click <strong>Save</strong>.</p></li>
+  <li><p>Go to the <strong>Credentials</strong> tab → <strong>Set Password</strong>. Provide a temporary password and toggle <em>Temporary: ON</em> so the user is prompted to change it on first login. Click <strong>Set Password</strong>.</p></li>
+  <li><p>Go to the <strong>Role Mappings</strong> tab → <strong>Client Roles</strong> → select <code>pmaas-web</code>. Add the role <code>i3-client</code>. This grants access to the PMaaS application.</p></li>
+  <li><p>Optional — for admin access within PMaaS, also assign <code>i3-admin</code> role on the same client.</p></li>
+  <li><p>Notify the user of their login URL: <a href="https://pmaas.i3technologies.co.ke">https://pmaas.i3technologies.co.ke</a> and their temporary password.</p></li>
+</ol>
+
+<div class="box box-info">
+  <strong>ℹ Multi-tenancy Note</strong>
+  Each client organisation should be set up as a Keycloak <strong>Group</strong> (e.g. <code>nairobi-county</code>, <code>ngo-xyz</code>). Assign users to the group so PMaaS can scope project visibility by organisation.
+</div>
+
+<h3>Disabling or Removing a User</h3>
+<ol class="steps">
+  <li><p>In Keycloak Users list, find the user and click their username.</p></li>
+  <li><p>To disable: set <strong>Enabled: OFF</strong> and Save. The user loses access immediately — no need to delete.</p></li>
+  <li><p>To permanently delete: click <strong>Delete</strong> at the bottom of the user detail page.</p></li>
+</ol>
+
+<h2 id="a3">A3 — Project / Program Setup</h2>
+
+<p>PMaaS supports a two-level hierarchy: <strong>Programs</strong> (top-level strategic containers) and <strong>Projects</strong> (deliverable units within a program). For county clients, Programs map to strategic pillars (e.g., Health, Agriculture); for NGOs they map to donor-funded programmes.</p>
+
+<h3>Creating a Program</h3>
+<ol class="steps">
+  <li><p>Log in as an admin user → navigate to <strong>Programs</strong> in the left sidebar.</p></li>
+  <li><p>Click <strong>New Program</strong>. Fill in: Program Name, Description, Start Date, End Date, Client Organisation (select from dropdown), and Program Manager.</p></li>
+  <li><p>Under <strong>Program Type</strong> select: <em>County Government</em>, <em>NGO</em>, or <em>Corporate</em>. This controls which module features are visible to client users.</p></li>
+  <li><p>Save. The program appears in the client organisation's workspace.</p></li>
+</ol>
+
+<h3>Creating a Project within a Program</h3>
+<ol class="steps">
+  <li><p>Open the Program → click <strong>+ Add Project</strong>.</p></li>
+  <li><p>Enter: Project Name, Objective, Budget (if applicable), Ward/Location (for county clients — pulled from FORD-Asili API), and Assigned Team Lead.</p></li>
+  <li><p>Set <strong>Status</strong>: Planning → Active → Completed → Closed.</p></li>
+  <li><p>Click <strong>Save Project</strong>. The project is now visible to all team members assigned to it.</p></li>
+</ol>
+
+<h2 id="a4">A4 — Campaign Management Workflow</h2>
+
+<p>The Campaign module is primarily used by county governments and corporates for structured communication and mobilisation campaigns.</p>
+
+<h3>Campaign Lifecycle</h3>
+<table>
+  <thead><tr><th>Stage</th><th>Action</th><th>Responsible</th></tr></thead>
+  <tbody>
+    <tr><td>Draft</td>    <td>Campaign created, Dawa AI generates initial plan</td><td>Campaign Manager</td></tr>
+    <tr><td>Review</td>   <td>Admin reviews AI-generated plan, adjusts targets</td><td>Admin / Manager</td></tr>
+    <tr><td>Active</td>   <td>Tasks assigned, Brevo email notifications sent to field teams</td><td>System + Manager</td></tr>
+    <tr><td>Monitoring</td><td>Dawa AI tracks progress, flags blockers, sends summaries</td><td>Dawa AI Agent</td></tr>
+    <tr><td>Closed</td>   <td>Final report generated and exported to PDF</td><td>Campaign Manager</td></tr>
+  </tbody>
+</table>
+
+<h3>Creating a Campaign</h3>
+<ol class="steps">
+  <li><p>Navigate to <strong>Campaigns</strong> → <strong>New Campaign</strong>.</p></li>
+  <li><p>Enter: Campaign Name, linked Project, Start/End dates, Target Audience, and Geographic Scope (ward or county-level).</p></li>
+  <li><p>Click <strong>Generate AI Plan</strong> — this calls Dawa AI at <code>http://campaign-agent.i3-pmaas.svc.cluster.local:8080/plan</code> to generate a structured campaign plan with milestones, resource recommendations, and risk flags.</p></li>
+  <li><p>Review the AI plan. Accept, modify, or regenerate individual sections as needed.</p></li>
+  <li><p>Click <strong>Activate Campaign</strong>. This triggers Brevo email notifications to all assigned team members.</p></li>
+</ol>
+
+<h2 id="a5">A5 — Dawa AI Coworker</h2>
+
+<p><strong>Dawa AI</strong> (<a href="https://dawa.i3technologies.co.ke">dawa.i3technologies.co.ke</a>) is the intelligent coworker embedded in PMaaS. It is a FastAPI-based Python agent using LiteLLM for LLM inference and ChromaDB for retrieval-augmented generation (RAG) over project documents.</p>
+
+<h3>Dawa AI Capabilities</h3>
+<ul style="padding-left:20px">
+  <li>AI campaign plan generation from project brief inputs</li>
+  <li>Progress monitoring — automatic daily summaries of overdue tasks</li>
+  <li>Risk flagging — highlights blocked or at-risk milestones</li>
+  <li>Grant narrative drafting for NGO grant applications</li>
+  <li>Budget variance analysis with natural-language commentary</li>
+  <li>RAG-powered Q&amp;A over uploaded project documents (reports, SOPs, proposal PDFs)</li>
+</ul>
+
+<h3>Internal Service Endpoint</h3>
+<pre><code>Base URL:   http://campaign-agent.i3-pmaas.svc.cluster.local:8080
+/plan       POST — generate a campaign plan
+/summary    POST — summarise project progress
+/chat       POST — conversational Q&amp;A (RAG)
+/health     GET  — health check</code></pre>
+
+<h3>Monitoring the Agent</h3>
+<pre><code># Check pod status
+oc get pods -n i3-pmaas -l app=campaign-agent
+
+# Live logs
+oc logs -n i3-pmaas -l app=campaign-agent --tail=100 -f
+
+# Health check from another pod
+oc exec -n i3-pmaas deploy/pmaas-web -- \
+  curl -s http://campaign-agent.i3-pmaas.svc.cluster.local:8080/health</code></pre>
+
+<h3>Restarting the Agent</h3>
+<pre><code>oc rollout restart deployment/campaign-agent -n i3-pmaas
+oc rollout status  deployment/campaign-agent -n i3-pmaas</code></pre>
+
+<h3>ChromaDB Connection</h3>
+<div class="card">
+  <dl class="kv">
+    <dt>Host</dt>  <dd><code>chromadb.i3-ai-lab.svc.cluster.local</code></dd>
+    <dt>Token</dt> <dd><code>fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c</code></dd>
+    <dt>Secret</dt><dd>Stored in <code>pmaas-secrets</code> key <code>CHROMA_AUTH_TOKEN</code></dd>
+  </dl>
+</div>
+
+<div class="box box-info">
+  <strong>ℹ LiteLLM Key</strong>
+  The agent uses LiteLLM for unified LLM access. The key <code>sk-litellm-i3-f951c9377163a11275864cb92e90ad13</code> is stored in <code>pmaas-secrets</code> as <code>LITELLM_API_KEY</code>. Rotate via the i3-AI-Lab LiteLLM admin console.
+</div>
+
+<h2 id="a6">A6 — Email Notifications via Brevo</h2>
+
+<h3>Configuration</h3>
+<div class="card">
+  <dl class="kv">
+    <dt>Provider</dt>     <dd>Brevo (formerly Sendinblue)</dd>
+    <dt>SMTP Host</dt>    <dd><code>smtp-relay.brevo.com</code></dd>
+    <dt>SMTP Port</dt>    <dd><code>587</code> (STARTTLS)</dd>
+    <dt>SMTP Login</dt>   <dd><code>b8994d001@smtp-brevo.com</code></dd>
+    <dt>API Key</dt>      <dd><code>BREVO_API_KEY_REDACTED</code></dd>
+    <dt>Secret Key</dt>   <dd><code>BREVO_API_KEY</code> in <code>pmaas-secrets</code></dd>
+    <dt>From Address</dt> <dd>Configured in PMaaS env: typically <code>noreply@i3technologies.co.ke</code></dd>
+  </dl>
+</div>
+
+<h3>Email Triggers</h3>
+<table>
+  <thead><tr><th>Event</th><th>Recipients</th><th>Template</th></tr></thead>
+  <tbody>
+    <tr><td>Campaign Activated</td>        <td>All assigned field team members</td>  <td><code>campaign-activation</code></td></tr>
+    <tr><td>Task Assigned</td>             <td>Assignee</td>                          <td><code>task-assignment</code></td></tr>
+    <tr><td>Milestone Overdue</td>         <td>Task owner + Campaign Manager</td>     <td><code>milestone-overdue</code></td></tr>
+    <tr><td>Dawa AI Daily Summary</td>     <td>Project / Program Manager</td>         <td><code>ai-daily-summary</code></td></tr>
+    <tr><td>Grant Report Due (14 days)</td><td>Grant Manager</td>                     <td><code>grant-reminder</code></td></tr>
+  </tbody>
+</table>
+
+<h3>Testing Email Delivery</h3>
+<pre><code># From within the pmaas-web pod
+oc exec -n i3-pmaas deploy/pmaas-web -- \
+  curl -s -X POST https://api.brevo.com/v3/smtp/email \
+  -H "api-key: BREVO_API_KEY_REDACTED" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sender":{"name":"PMaaS","email":"noreply@i3technologies.co.ke"},
+    "to":[{"email":"admin@i3technologies.co.ke"}],
+    "subject":"PMaaS Email Test",
+    "textContent":"Email delivery test from PMaaS pod."
+  }'</code></pre>
+
+<h2 id="a7">A7 — FORD-Asili Integration</h2>
+
+<p>PMaaS serves as the front-end platform for the <strong>FORD 2027 ward-first strategy</strong>, managed by FORD-Asili. The integration pulls live ward and constituency data from the <code>ford-api</code> service running in the <code>i3-ford</code> namespace.</p>
+
+<h3>How It Works</h3>
+<ol class="steps">
+  <li><p>When a user creates a project or campaign, PMaaS calls <code>ford-api</code> to populate the ward/constituency selector with live Kenya geographic data (47 counties → constituencies → wards).</p></li>
+  <li><p>Projects tagged with a ward are visible on the FORD-Asili ward-level heatmap dashboard.</p></li>
+  <li><p>Field agents assigned to a ward project receive location-aware task lists through their PMaaS dashboard.</p></li>
+  <li><p>Dawa AI can generate ward-specific reports showing coverage, task completion rates, and pending activities per ward.</p></li>
+</ol>
+
+<h3>API Endpoint (internal)</h3>
+<pre><code># ford-api service (i3-ford namespace)
+http://ford-api.i3-ford.svc.cluster.local/api/v1/wards
+http://ford-api.i3-ford.svc.cluster.local/api/v1/constituencies
+http://ford-api.i3-ford.svc.cluster.local/api/v1/counties</code></pre>
+
+<div class="box box-info">
+  <strong>ℹ Configuration</strong>
+  The FORD API base URL is stored in <code>pmaas-secrets</code> as <code>FORD_API_URL</code>. If the ford-api service is relocated, update this secret and rollout restart <code>pmaas-web</code>.
+</div>
+
+<!-- ════════════ DATABASE — DANGER BOX ════════════ -->
+<h2 id="a8">A8 — Database Setup — Fixing the pmaas_db Password</h2>
+
+<div class="box box-danger">
+  <strong>🚨 ACTION REQUIRED — Database Password Not Set</strong>
+  The <code>pmaas_db</code> database user password is currently set to the placeholder value <code>REPLACE</code> in the <code>pmaas-secrets</code> Kubernetes Secret. The application <strong>cannot connect to the database</strong> until this is fixed. Complete the steps below before going live with any client.
+</div>
+
+<h3>Step-by-Step: Set the Database Password</h3>
+<ol class="steps">
+  <li>
+    <p><strong>Connect to PostgreSQL as the superuser</strong> (from any pod with <code>psql</code> access or the postgres pod itself):</p>
+    <pre><code>oc exec -it -n i3-infra deploy/postgresql -- psql -U i3admin -d postgres</code></pre>
+  </li>
+  <li>
+    <p><strong>Set the pmaas role password</strong> inside the psql session:</p>
+    <pre><code>ALTER ROLE pmaas WITH PASSWORD 'new-secure-password';
+\q</code></pre>
+  </li>
+  <li>
+    <p><strong>Base64-encode the new DATABASE_URL</strong> (substitute your actual password and host):</p>
+    <pre><code>echo -n "postgresql://pmaas:new-secure-password@pgbouncer.i3-infra.svc.cluster.local:5432/pmaas_db" \
+  | base64</code></pre>
+  </li>
+  <li>
+    <p><strong>Patch the Kubernetes secret</strong> with the base64 value from step 3:</p>
+    <pre><code>oc patch secret pmaas-secrets -n i3-pmaas --type=merge \
+  -p '{"data":{"DATABASE_URL":"&lt;base64-encoded-url-here&gt;"}}'</code></pre>
+  </li>
+  <li>
+    <p><strong>Rollout restart</strong> the deployment to pick up the new secret:</p>
+    <pre><code>oc rollout restart deployment/pmaas-web -n i3-pmaas
+oc rollout status  deployment/pmaas-web -n i3-pmaas</code></pre>
+  </li>
+  <li>
+    <p><strong>Verify connectivity</strong> — check the pod logs for a successful DB connection message:</p>
+    <pre><code>oc logs -n i3-pmaas -l app=pmaas-web --tail=50 | grep -i "database\|prisma\|pool"</code></pre>
+  </li>
+</ol>
+
+<div class="box box-success">
+  <strong>✔ Success Indicator</strong>
+  The pmaas-web pod logs should show <code>Database connected</code> or similar Prisma pool message. The <strong>PMaaS login page should load without a 500 error</strong>.
+</div>
+
+<h2 id="a9">A9 — Operations: Pod Health, Restart, Logs &amp; Scaling</h2>
+
+<h3>Key Workloads</h3>
+<table>
+  <thead><tr><th>Deployment</th><th>Replicas</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>pmaas-web</code></td>       <td>2</td><td>Next.js 14 frontend + API routes</td></tr>
+    <tr><td><code>campaign-agent</code></td>  <td>1</td><td>Dawa AI campaign agent (FastAPI)</td></tr>
+  </tbody>
+</table>
+
+<h3>Common Commands</h3>
+<pre><code># List all pods in namespace
+oc get pods -n i3-pmaas
+
+# Describe a specific pod (for events/errors)
+oc describe pod -n i3-pmaas &lt;pod-name&gt;
+
+# Tail live logs for pmaas-web
+oc logs -n i3-pmaas -l app=pmaas-web --tail=100 -f
+
+# Tail live logs for campaign-agent
+oc logs -n i3-pmaas -l app=campaign-agent --tail=100 -f
+
+# Restart pmaas-web
+oc rollout restart deployment/pmaas-web -n i3-pmaas
+
+# Restart campaign-agent
+oc rollout restart deployment/campaign-agent -n i3-pmaas
+
+# Scale pmaas-web to 3 replicas (high load)
+oc scale deployment/pmaas-web --replicas=3 -n i3-pmaas
+
+# Scale back to 2
+oc scale deployment/pmaas-web --replicas=2 -n i3-pmaas
+
+# Check all secrets
+oc get secrets -n i3-pmaas
+
+# View pmaas-secrets keys (without values)
+oc describe secret pmaas-secrets -n i3-pmaas</code></pre>
+
+<h2 id="a10">A10 — Admin Troubleshooting</h2>
+
+<table>
+  <thead><tr><th>Symptom</th><th>Likely Cause</th><th>Resolution</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Redirect loop on homepage</strong></td>
+      <td>Keycloak misconfiguration — invalid redirect URI or missing <code>pmaas-web</code> client setup</td>
+      <td>In Keycloak Admin → Client <code>pmaas-web</code> → check <em>Valid Redirect URIs</em> includes <code>https://pmaas.i3technologies.co.ke/*</code>. Check <code>NEXTAUTH_URL</code> env var in <code>pmaas-web</code> deployment matches the public URL exactly.</td>
+    </tr>
+    <tr>
+      <td><strong>AI agent not responding / 502 on AI features</strong></td>
+      <td><code>campaign-agent</code> pod crashed or OOMKilled</td>
+      <td>Run <code>oc get pods -n i3-pmaas</code> — check agent pod status. <code>oc describe pod</code> for exit reason. Restart with <code>oc rollout restart deployment/campaign-agent -n i3-pmaas</code>. Check ChromaDB reachability.</td>
+    </tr>
+    <tr>
+      <td><strong>Email not sending</strong></td>
+      <td>Brevo API key invalid or SMTP credentials rejected</td>
+      <td>Test via curl (see A6). Verify <code>BREVO_API_KEY</code> in <code>pmaas-secrets</code> is up to date. Log in to Brevo dashboard to check account status and sending quota.</td>
+    </tr>
+    <tr>
+      <td><strong>Database connection error / 500 on login</strong></td>
+      <td>pmaas_db password still set to <code>REPLACE</code></td>
+      <td>Follow the full procedure in <a href="#a8">A8 — Database Setup</a>. This is the most likely cause of a fresh deployment failing.</td>
+    </tr>
+    <tr>
+      <td><strong>Ward selector empty in project form</strong></td>
+      <td>ford-api unreachable from i3-pmaas namespace</td>
+      <td>Check <code>FORD_API_URL</code> in <code>pmaas-secrets</code>. Verify ford-api pod is running: <code>oc get pods -n i3-ford</code>. Check NetworkPolicy allows cross-namespace traffic from <code>i3-pmaas</code> to <code>i3-ford</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>Dawa AI returns generic/poor quality responses</strong></td>
+      <td>ChromaDB collection empty or LiteLLM key expired</td>
+      <td>Check ChromaDB collections via admin API. Verify <code>LITELLM_API_KEY</code> in secret is current. Rotate via LiteLLM admin console if expired.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<!-- ════════════════════════════════════════════
+     USER GUIDE
+════════════════════════════════════════════ -->
+<div class="section-label">User Guide</div>
+<h2 id="u1">U1 — Logging In with SSO</h2>
+
+<p>PMaaS uses Single Sign-On (SSO) via Keycloak. You do not need a separate PMaaS password — your i3 platform credentials work across all i3 services.</p>
+
+<ol class="steps">
+  <li><p>Open your browser and navigate to <a href="https://pmaas.i3technologies.co.ke">https://pmaas.i3technologies.co.ke</a>.</p></li>
+  <li><p>You will be redirected to the i3 login page. Enter your <strong>username</strong> (usually your work email) and <strong>password</strong>.</p></li>
+  <li><p>If it is your first login, you will be prompted to set a new password. Choose a strong password (minimum 12 characters).</p></li>
+  <li><p>After authentication you are redirected back to the PMaaS dashboard.</p></li>
+  <li><p>To log out, click your name/avatar in the top-right corner → <strong>Sign Out</strong>. This logs you out of all i3 SSO-connected services.</p></li>
+</ol>
+
+<div class="box box-info">
+  <strong>ℹ Forgot Password?</strong>
+  Click <strong>Forgot Password</strong> on the login page and enter your email. A reset link will be sent to you. If you do not receive it within 5 minutes, contact your organisation's PMaaS administrator.
+</div>
+
+<h2 id="u2">U2 — Dashboard Overview</h2>
+
+<p>After logging in, the <strong>PMaaS Dashboard</strong> gives you a real-time summary of your workspace. The layout depends on your role:</p>
+
+<table>
+  <thead><tr><th>Widget</th><th>Description</th><th>Visible to</th></tr></thead>
+  <tbody>
+    <tr><td><strong>My Projects</strong></td>      <td>List of all projects you are assigned to, with status and last update</td>    <td>All users</td></tr>
+    <tr><td><strong>Active Campaigns</strong></td>  <td>Campaigns in progress across your programs</td>                               <td>Campaign Managers</td></tr>
+    <tr><td><strong>KPI Summary</strong></td>       <td>Key metrics — tasks completed, milestones hit, overdue items</td>             <td>All users</td></tr>
+    <tr><td><strong>Dawa AI Feed</strong></td>      <td>AI-generated daily digest: progress summaries and alerts</td>                  <td>Project Managers</td></tr>
+    <tr><td><strong>Grant Tracker</strong></td>     <td>Grant status, disbursement dates, reporting deadlines</td>                    <td>NGO users only</td></tr>
+    <tr><td><strong>Ward Map</strong></td>          <td>Geographic view of active projects per ward (FORD integration)</td>           <td>County users only</td></tr>
+  </tbody>
+</table>
+
+<p>Use the <strong>left sidebar</strong> to navigate between modules: Programs, Projects, Campaigns, Grants, Reports, and Settings.</p>
+
+<h2 id="u3">U3 — Creating a New Project</h2>
+
+<p>You need the <strong>Project Manager</strong> or <strong>Admin</strong> role within your organisation to create projects.</p>
+
+<ol class="steps">
+  <li><p>In the left sidebar, click <strong>Projects</strong> → <strong>+ New Project</strong> (top right button).</p></li>
+  <li><p>Select the <strong>Program</strong> this project belongs to from the dropdown. If no program exists, contact your admin to create one first.</p></li>
+  <li><p>Fill in the project details:
+    <br />• <strong>Project Name</strong> — clear, descriptive name
+    <br />• <strong>Objective</strong> — one-sentence goal statement
+    <br />• <strong>Start Date &amp; End Date</strong>
+    <br />• <strong>Budget</strong> (optional — required for grant-linked projects)
+    <br />• <strong>Location / Ward</strong> (county users — select from the ward picker)
+  </p></li>
+  <li><p>Under <strong>Team Lead</strong>, search and select the person responsible for delivery.</p></li>
+  <li><p>Set the initial <strong>Status</strong> to <em>Planning</em>.</p></li>
+  <li><p>Click <strong>Create Project</strong>. You will be taken to the new project's detail page.</p></li>
+  <li><p>Optionally, click <strong>Ask Dawa AI</strong> to get an AI-generated project plan with suggested milestones and tasks based on your objective.</p></li>
+</ol>
+
+<h2 id="u4">U4 — Adding Team Members &amp; Assigning Tasks</h2>
+
+<h3>Adding Team Members to a Project</h3>
+<ol class="steps">
+  <li><p>Open the project → go to the <strong>Team</strong> tab.</p></li>
+  <li><p>Click <strong>Add Member</strong>. Search by name or email. Only users registered in your organisation appear (contact admin to add new users).</p></li>
+  <li><p>Assign a <strong>role</strong> for the project: <em>Contributor</em>, <em>Reviewer</em>, or <em>Viewer</em>.</p></li>
+  <li><p>Click <strong>Add</strong>. The user receives an email notification (via Brevo) that they have been added to the project.</p></li>
+</ol>
+
+<h3>Creating and Assigning Tasks</h3>
+<ol class="steps">
+  <li><p>Within the project, go to the <strong>Tasks</strong> tab → <strong>+ Add Task</strong>.</p></li>
+  <li><p>Enter: Task Title, Description, Due Date, Priority (Low / Medium / High / Critical), and link to a Milestone if applicable.</p></li>
+  <li><p>In the <strong>Assignee</strong> field, select a team member from the project team (added in the step above).</p></li>
+  <li><p>Click <strong>Save Task</strong>. The assignee receives an email notification.</p></li>
+  <li><p>Tasks can be viewed in <strong>List</strong>, <strong>Board (Kanban)</strong>, or <strong>Gantt</strong> views using the view toggle at the top of the Tasks tab.</p></li>
+</ol>
+
+<div class="box box-info">
+  <strong>ℹ Bulk Task Import</strong>
+  You can import tasks from a CSV file. Click the <strong>Import</strong> button on the Tasks tab, download the template, fill it in, and re-upload. Dawa AI will automatically suggest priorities and assignees based on task descriptions.
+</div>
+
+<h2 id="u5">U5 — Tracking Milestones &amp; Progress</h2>
+
+<h3>Creating Milestones</h3>
+<ol class="steps">
+  <li><p>In the project, go to <strong>Milestones</strong> → <strong>+ Add Milestone</strong>.</p></li>
+  <li><p>Enter the milestone name, target date, and description. Link related tasks to the milestone.</p></li>
+  <li><p>Save. Milestones appear on the project timeline and the programme-level Gantt chart.</p></li>
+</ol>
+
+<h3>Updating Progress</h3>
+<ol class="steps">
+  <li><p>To update a task, click it in the task list → change the <strong>Status</strong>: <em>To Do → In Progress → Review → Done</em>.</p></li>
+  <li><p>Add a <strong>Progress Note</strong> (optional) to log what was done. These notes are visible to the team and are ingested by Dawa AI for reporting.</p></li>
+  <li><p>The project <strong>Overall Progress</strong> bar (visible on the project card and dashboard) auto-calculates from completed tasks vs total tasks.</p></li>
+  <li><p>For milestone completion: open the milestone and click <strong>Mark as Complete</strong>. A completion timestamp is recorded and the programme manager is notified.</p></li>
+</ol>
+
+<h2 id="u6">U6 — Using Dawa AI for Project Insights</h2>
+
+<p>Dawa AI is your intelligent project coworker. It is accessible from any project or campaign via the <strong>Ask Dawa</strong> button or the <strong>AI Insights</strong> panel.</p>
+
+<h3>What You Can Ask Dawa AI</h3>
+<table>
+  <thead><tr><th>Request type</th><th>Example prompts</th></tr></thead>
+  <tbody>
+    <tr><td>Progress summary</td>    <td>"Summarise progress on Project X this week"</td></tr>
+    <tr><td>Risk identification</td> <td>"What tasks are most at risk of missing their deadline?"</td></tr>
+    <tr><td>Plan generation</td>     <td>"Generate a 90-day campaign plan for a health outreach in Kibera ward"</td></tr>
+    <tr><td>Grant narrative</td>     <td>"Draft an executive summary for our water sanitation grant proposal"</td></tr>
+    <tr><td>Budget analysis</td>     <td>"Show me the variance between planned and actual spend on Program Y"</td></tr>
+    <tr><td>Document Q&amp;A</td>    <td>"What does our M&amp;E framework say about indicator KPI-3?"</td></tr>
+  </tbody>
+</table>
+
+<h3>How to Use the AI Chat</h3>
+<ol class="steps">
+  <li><p>Open a project or campaign → click the <strong>Ask Dawa</strong> button (sparkle icon, bottom-right of the screen).</p></li>
+  <li><p>The AI chat panel opens. Type your question or request in plain English (Swahili is also supported).</p></li>
+  <li><p>Dawa AI responds with insights drawn from your project data and any uploaded documents. Responses include source references where applicable.</p></li>
+  <li><p>To use document Q&amp;A, first upload relevant files (PDF, DOCX) under <strong>Project → Files</strong>. Dawa AI indexes them within a few minutes.</p></li>
+  <li><p>You can click <strong>Insert into Report</strong> on any AI response to add it directly to a report draft.</p></li>
+</ol>
+
+<h2 id="u7">U7 — Generating Reports &amp; Exporting to PDF</h2>
+
+<ol class="steps">
+  <li><p>Navigate to <strong>Reports</strong> in the left sidebar → <strong>New Report</strong>.</p></li>
+  <li><p>Select the <strong>Report Type</strong>:
+    <br />• <em>Project Status Report</em> — overall health, milestone progress, tasks
+    <br />• <em>Campaign Summary</em> — campaign reach, activities, outcomes
+    <br />• <em>Grant Progress Report</em> — disbursements, activities vs targets, narrative
+    <br />• <em>Ward Activity Report</em> — field activities per ward (county clients)
+  </p></li>
+  <li><p>Select the <strong>Project</strong> or <strong>Programme</strong>, the reporting period (date range), and the sections to include.</p></li>
+  <li><p>Click <strong>Generate with AI</strong> to have Dawa AI pre-fill narrative sections based on project data and progress notes. Review and edit as needed.</p></li>
+  <li><p>Click <strong>Preview</strong> to see the formatted report. Make any final edits.</p></li>
+  <li><p>Click <strong>Export to PDF</strong>. The PDF is generated and downloaded to your browser.</p></li>
+  <li><p>To share with stakeholders, use <strong>Share Report Link</strong> to generate a read-only web link (no login required for external viewers).</p></li>
+</ol>
+
+<h2 id="u8">U8 — Managing Grants &amp; Budgets</h2>
+
+<div class="box box-info">
+  <strong>ℹ Grant Module Availability</strong>
+  The Grants module is available to organisations configured as <em>NGO</em> type. If you do not see the Grants menu item, contact your PMaaS administrator to enable it for your organisation.
+</div>
+
+<h3>Grant Lifecycle</h3>
+<ol class="steps">
+  <li><p>Go to <strong>Grants</strong> → <strong>+ New Grant</strong>. Enter: Grant Title, Donor Name, Total Award Amount, Currency, Grant Period (start/end), and link to a Programme.</p></li>
+  <li><p>Under <strong>Budget</strong>, break the grant into budget lines (Activities, Personnel, Equipment, M&amp;E, Overhead). Save the budget.</p></li>
+  <li><p>As activities are implemented, log <strong>Expenditures</strong> against each budget line. PMaaS automatically calculates variance (planned vs actual spend).</p></li>
+  <li><p>Set <strong>Reporting Deadlines</strong> — PMaaS sends Brevo email reminders 30 days, 14 days, and 7 days before each deadline.</p></li>
+  <li><p>When a reporting deadline approaches, use the <strong>Generate Report</strong> button (see U7) to produce a donor-ready grant progress report.</p></li>
+</ol>
+
+<h3>Budget Variance View</h3>
+<p>Open a grant → <strong>Budget</strong> tab. The variance table shows each budget line with:</p>
+<ul style="padding-left:20px; margin-top:8px">
+  <li>Budgeted amount</li>
+  <li>Amount spent to date</li>
+  <li>% utilised</li>
+  <li>Variance (over/under) highlighted in red/green</li>
+  <li>Dawa AI commentary on significant variances (click <strong>AI Analysis</strong>)</li>
+</ul>
+
+<h2 id="u9">U9 — User Troubleshooting</h2>
+
+<table>
+  <thead><tr><th>Problem</th><th>Likely Cause</th><th>What to Do</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Cannot log in — "Invalid credentials"</td>
+      <td>Wrong password or account not yet created</td>
+      <td>Use <strong>Forgot Password</strong> on the login page. If you've never logged in before, contact your admin to confirm your account was created in Keycloak.</td>
+    </tr>
+    <tr>
+      <td>Logged in but can't see any projects</td>
+      <td>Not assigned to any project or wrong Keycloak role</td>
+      <td>Contact your PMaaS admin to: (1) confirm your Keycloak role includes <code>i3-client</code>, and (2) ensure you are added to the relevant project team.</td>
+    </tr>
+    <tr>
+      <td>AI chat shows "Service unavailable"</td>
+      <td>Dawa AI agent pod is down</td>
+      <td>Report to your admin. It will be resolved by restarting the <code>campaign-agent</code> deployment. Expect resolution within 5 minutes of reporting.</td>
+    </tr>
+    <tr>
+      <td>Ward picker shows no results</td>
+      <td>FORD-Asili API connectivity issue</td>
+      <td>Report to your admin. Try refreshing the page. If the issue persists for more than 30 minutes, contact i3 support.</td>
+    </tr>
+    <tr>
+      <td>PDF export fails or is blank</td>
+      <td>Report has no content / browser extension conflict</td>
+      <td>Ensure the report has at least one section with content. Try in a private/incognito window with extensions disabled.</td>
+    </tr>
+    <tr>
+      <td>Did not receive task assignment email</td>
+      <td>Email in spam folder or Brevo delivery delay</td>
+      <td>Check spam/junk folder. If not there, ask your admin to verify Brevo delivery logs. Ensure your email address is correctly set in your Keycloak profile.</td>
+    </tr>
+    <tr>
+      <td>Page shows 500 Internal Server Error</td>
+      <td>Database connection issue (may be the REPLACE password issue)</td>
+      <td>Report to admin immediately — this requires database password configuration (see Admin Guide A8).</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<div class="section-label">Support</div>
+<h2 id="support">Support &amp; Contact</h2>
+
+<div class="card">
+  <dl class="kv">
+    <dt>Platform Admin</dt>  <dd>i3 Technologies Platform Team — <a href="mailto:admin@i3technologies.co.ke">admin@i3technologies.co.ke</a></dd>
+    <dt>App URL</dt>         <dd><a href="https://pmaas.i3technologies.co.ke">https://pmaas.i3technologies.co.ke</a></dd>
+    <dt>Dawa AI URL</dt>     <dd><a href="https://dawa.i3technologies.co.ke">https://dawa.i3technologies.co.ke</a></dd>
+    <dt>Namespace</dt>       <dd><code>i3-pmaas</code></dd>
+    <dt>Component</dt>       <dd>08 of 14</dd>
+    <dt>Version</dt>         <dd>Next.js 14 · Dawa AI v1</dd>
+  </dl>
+</div>
+
+</div><!-- /container -->
+
+<!-- ════════════════════ FOOTER ════════════════════ -->
+<div class="footer">
+  Made with IBM Bob &nbsp;|&nbsp; Component 08 of 14 &nbsp;|&nbsp; PMaaS — Project Management as a Service &nbsp;|&nbsp; i3 Technologies Platform
+</div>
+
+</body>
+</html>

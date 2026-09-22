@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Component 11: Talent Cloud — Admin &amp; User Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: #1f2328;
+    background: #ffffff;
+  }
+
+  /* ── Cover ── */
+  .cover {
+    background: linear-gradient(135deg, #1a7f37, #2ea043);
+    color: #ffffff;
+    padding: 60px 40px 50px;
+    text-align: center;
+  }
+  .cover .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .cover h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: -.02em;
+  }
+  .cover p {
+    font-size: 1rem;
+    opacity: .88;
+    max-width: 640px;
+    margin: 0 auto 24px;
+  }
+  .cover .meta {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    opacity: .82;
+  }
+  .cover .meta span { display: flex; align-items: center; gap: 6px; }
+
+  /* ── Layout ── */
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 28px 60px;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 28px 32px;
+    margin: 36px 0 48px;
+  }
+  .toc h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a7f37;
+    margin-bottom: 16px;
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .toc-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 32px;
+  }
+  .toc a {
+    color: #3b82d4;
+    text-decoration: none;
+    font-size: 13.5px;
+    display: block;
+    padding: 2px 0;
+  }
+  .toc a:hover { text-decoration: underline; }
+  .toc-section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #57606a;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    grid-column: 1 / -1;
+  }
+
+  /* ── Headings ── */
+  h2 {
+    color: #1a7f37;
+    font-size: 1.45rem;
+    font-weight: 700;
+    margin: 52px 0 18px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #1a7f37;
+  }
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2328;
+    margin: 32px 0 12px;
+  }
+  h4 {
+    font-size: .95rem;
+    font-weight: 700;
+    color: #1f2328;
+    margin: 22px 0 8px;
+  }
+
+  /* ── Prose ── */
+  p { margin-bottom: 14px; }
+  ul, ol { margin: 10px 0 14px 22px; }
+  li { margin-bottom: 5px; }
+  a { color: #3b82d4; }
+  strong { font-weight: 600; }
+
+  /* ── Code ── */
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 13px;
+    background: #f0fff4;
+    border: 1px solid #9be9a8;
+    border-radius: 4px;
+    padding: 1px 6px;
+  }
+  pre {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 13px;
+    background: #f0fff4;
+    border: 1px solid #9be9a8;
+    border-radius: 6px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    line-height: 1.55;
+    margin: 14px 0 20px;
+    white-space: pre;
+  }
+
+  /* ── Tables ── */
+  .table-wrap { overflow-x: auto; margin: 16px 0 24px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  thead tr { background: #1a7f37; color: #fff; }
+  thead th {
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  tbody tr { border-bottom: 1px solid #e5e7eb; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:nth-child(even) { background: #f7f8fa; }
+  tbody td { padding: 9px 14px; vertical-align: top; }
+
+  /* ── Callouts ── */
+  .callout {
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 18px 0;
+    font-size: 13.5px;
+    border-left: 4px solid;
+  }
+  .callout-info  { background: #f0fff4; border-color: #2ea043; }
+  .callout-warn  { background: #fffbeb; border-color: #d97706; }
+  .callout-tip   { background: #f0f7ff; border-color: #3b82d4; }
+  .callout strong { display: block; margin-bottom: 4px; }
+
+  /* ── Section divider ── */
+  .section-divider {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: #fff;
+    background: #1a7f37;
+    padding: 10px 0;
+    margin: 56px -28px 0;
+  }
+
+  /* ── Endpoint cards ── */
+  .endpoint {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin: 16px 0;
+    overflow: hidden;
+  }
+  .endpoint-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: #f7f8fa;
+    border-bottom: 1px solid #e5e7eb;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 13.5px;
+  }
+  .method {
+    font-weight: 700;
+    font-size: 12px;
+    border-radius: 4px;
+    padding: 2px 8px;
+    color: #fff;
+  }
+  .method-get  { background: #3b82d4; }
+  .method-post { background: #2ea043; }
+  .endpoint-body { padding: 14px 16px; }
+  .endpoint-body p { margin: 0 0 6px; }
+
+  /* ── Step list ── */
+  .steps { counter-reset: step; list-style: none; margin-left: 0; }
+  .steps li {
+    counter-increment: step;
+    display: flex;
+    gap: 14px;
+    margin-bottom: 16px;
+    align-items: flex-start;
+  }
+  .steps li::before {
+    content: counter(step);
+    min-width: 26px;
+    height: 26px;
+    background: #1a7f37;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* ── Architecture diagram ── */
+  .arch-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 20px 0;
+  }
+  .arch-box {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 14px;
+    background: #f7f8fa;
+    text-align: center;
+    font-size: 13px;
+  }
+  .arch-box .arch-icon {
+    font-size: 24px;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .arch-box strong { display: block; margin-bottom: 4px; color: #1a7f37; }
+  .arch-box small { color: #57606a; font-size: 12px; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    font-size: 12px;
+    color: #57606a;
+    border-top: 1px solid #e5e7eb;
+    padding: 20px 0 28px;
+    margin-top: 56px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════ COVER ══════════════════════════════════ -->
+<div class="cover">
+  <div class="badge">Component 11 of 14</div>
+  <h1>Talent Cloud</h1>
+  <p>AI-powered talent marketplace — candidate profiles, skills graph, job listings, bench management, and LiteLLM-driven job matching.</p>
+  <div class="meta">
+    <span>🌐 talent.i3technologies.co.ke</span>
+    <span>🔌 api.talent.i3technologies.co.ke</span>
+    <span>📦 Namespace: i3-talent</span>
+    <span>🗄️ DB: talent_db</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ MAIN ══════════════════════════════════ -->
+<div class="container">
+
+  <!-- TOC -->
+  <nav class="toc" aria-label="Table of Contents">
+    <h2>Table of Contents</h2>
+    <div class="toc-cols">
+      <div class="toc-section-label">Admin Guide</div>
+      <div></div>
+      <a href="#arch">1. Platform Architecture</a>
+      <a href="#candidate-mgmt">2. Candidate Management</a>
+      <a href="#skills-graph">3. Skills Graph Management</a>
+      <a href="#jobs-mgmt">4. Job Listings Management</a>
+      <a href="#ai-matching">5. AI Matching &amp; Bench API</a>
+      <a href="#bench-mgmt">6. Bench Management</a>
+      <a href="#sit-bridge">7. SIT Work-Centers Bridge</a>
+      <a href="#evalos-bridge">8. EvalOS Bridge</a>
+      <a href="#seaweedfs">9. SeaweedFS Uploads</a>
+      <a href="#operations">10. Operations</a>
+      <a href="#troubleshooting">11. Troubleshooting</a>
+      <div class="toc-section-label">User Guide</div>
+      <div></div>
+      <a href="#cand-register">C1. Registering Your Profile</a>
+      <a href="#cand-cv">C2. Uploading Your CV</a>
+      <a href="#cand-skills">C3. Adding Skills &amp; Certifications</a>
+      <a href="#cand-bench">C4. Checking Bench Status</a>
+      <a href="#cand-jobs">C5. Responding to Opportunities</a>
+      <a href="#rec-jobs">R1. Creating a Job Listing</a>
+      <a href="#rec-match">R2. Running AI Match</a>
+      <a href="#rec-review">R3. Reviewing Ranked Candidates</a>
+      <a href="#rec-placement">R4. Making a Placement</a>
+      <a href="#rec-feedback">R5. Providing Feedback</a>
+    </div>
+  </nav>
+
+  <!-- ═══ ADMIN GUIDE DIVIDER ═══ -->
+  <div class="section-divider">Admin Guide</div>
+
+  <!-- 1. ARCHITECTURE -->
+  <h2 id="arch">1. Platform Architecture</h2>
+  <p>Talent Cloud is the central talent marketplace for the i3 Technologies platform. It ingests graduates from <strong>SIT Work-Centers</strong>, enriches candidate profiles with certification scores from <strong>EvalOS</strong>, exposes a recruiter-facing API for job postings, and runs <strong>LiteLLM Mistral</strong> inference to score candidate–job fit in real time.</p>
+
+  <div class="arch-grid">
+    <div class="arch-box">
+      <span class="arch-icon">🎓</span>
+      <strong>SIT Work-Centers</strong>
+      <small>Graduates auto-sync into talent_db via write-through on sit-api</small>
+    </div>
+    <div class="arch-box">
+      <span class="arch-icon">📊</span>
+      <strong>EvalOS Bridge</strong>
+      <small>Certification scores populate the skills graph for each candidate</small>
+    </div>
+    <div class="arch-box">
+      <span class="arch-icon">🤖</span>
+      <strong>LiteLLM / Mistral</strong>
+      <small>Scores candidate profiles against job requirements, returns ranked list</small>
+    </div>
+    <div class="arch-box">
+      <span class="arch-icon">🗄️</span>
+      <strong>talent_db (PostgreSQL)</strong>
+      <small>9 tables — candidates, skills, jobs, placements, bench_status, feedback …</small>
+    </div>
+    <div class="arch-box">
+      <span class="arch-icon">🔐</span>
+      <strong>Keycloak SSO</strong>
+      <small>Roles: talent-candidate, talent-recruiter. Client: talent-web</small>
+    </div>
+    <div class="arch-box">
+      <span class="arch-icon">📁</span>
+      <strong>SeaweedFS</strong>
+      <small>talent-cvs · talent-certs · talent-reports buckets</small>
+    </div>
+  </div>
+
+  <h3>Data Flow Summary</h3>
+  <ol>
+    <li>SIT graduate completes a work-centre cohort → <code>sit-api</code> writes candidate row to <code>talent_db.candidates</code> via write-through.</li>
+    <li>EvalOS assessment result posted → bridge event updates <code>candidate_skills</code> with normalised score.</li>
+    <li>Recruiter creates a job listing via <code>POST /api/v1/jobs</code>.</li>
+    <li>Recruiter calls <code>POST /api/v1/match</code> → Talent API queries bench, scores via Mistral, returns ranked candidates.</li>
+    <li>Recruiter confirms placement via placement API → candidate moves off bench.</li>
+  </ol>
+
+  <div class="callout callout-info">
+    <strong>Namespace isolation</strong>
+    All workloads run in the <code>i3-talent</code> Kubernetes namespace. Database credentials, Keycloak secrets, and SeaweedFS endpoints are stored as Kubernetes Secrets within that namespace.
+  </div>
+
+  <!-- 2. CANDIDATE MANAGEMENT -->
+  <h2 id="candidate-mgmt">2. Candidate Management</h2>
+  <p>Candidates can be created directly via the API (for admin imports), or arrive automatically through the SIT bridge. Each candidate is keyed by a <strong>Keycloak subject UUID</strong> (<code>keycloak_sub</code>).</p>
+
+  <h3>Create a Candidate Profile</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method method-post">POST</span>
+      <span>https://api.talent.i3technologies.co.ke/api/v1/candidates</span>
+    </div>
+    <div class="endpoint-body">
+      <p><strong>Auth:</strong> Bearer token (recruiter or service account role)</p>
+    </div>
+  </div>
+
+  <h4>Request</h4>
+<pre>{
+  "keycloak_sub":       "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "full_name":          "Amina Omondi",
+  "email":              "amina.omondi@example.com",
+  "phone":              "+254712345678",
+  "location":           "Nairobi, Kenya",
+  "source":             "sit-workcenter",
+  "evalos_passport_id": "EVL-2024-00312"
+}</pre>
+
+  <h4>Response <code>201 Created</code></h4>
+<pre>{
+  "candidate_id": "cnd_8a3f2901c",
+  "keycloak_sub": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "full_name":    "Amina Omondi",
+  "status":       "active",
+  "bench_status": "available",
+  "created_at":   "2025-01-15T09:12:00Z"
+}</pre>
+
+  <h3>Retrieve a Candidate Profile</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method method-get">GET</span>
+      <span>https://api.talent.i3technologies.co.ke/api/v1/candidates/{candidate_id}</span>
+    </div>
+    <div class="endpoint-body">
+      <p><strong>Auth:</strong> Bearer token (recruiter, or the candidate themselves)</p>
+    </div>
+  </div>
+
+  <h4>Response <code>200 OK</code></h4>
+<pre>{
+  "candidate_id":       "cnd_8a3f2901c",
+  "full_name":          "Amina Omondi",
+  "email":              "amina.omondi@example.com",
+  "location":           "Nairobi, Kenya",
+  "source":             "sit-workcenter",
+  "evalos_passport_id": "EVL-2024-00312",
+  "bench_status":       "available",
+  "skills": [
+    { "skill_id": "sk_python", "name": "Python",           "score": 88 },
+    { "skill_id": "sk_ml",     "name": "Machine Learning", "score": 74 }
+  ],
+  "cv_url":   "https://seaweedfs.i3.internal/talent-cvs/cnd_8a3f2901c/cv.pdf",
+  "cert_url": "https://seaweedfs.i3.internal/talent-certs/cnd_8a3f2901c/evalos.pdf"
+}</pre>
+
+  <h3>Searching &amp; Filtering Candidates</h3>
+  <p>Query parameters supported on <code>GET /api/v1/candidates</code>:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>bench_status</code></td><td>string</td><td><code>available</code> | <code>placed</code> | <code>unavailable</code></td></tr>
+        <tr><td><code>skill</code></td><td>string</td><td>Skill name or ID to filter on (e.g. <code>Python</code>)</td></tr>
+        <tr><td><code>location</code></td><td>string</td><td>City or region substring match</td></tr>
+        <tr><td><code>source</code></td><td>string</td><td><code>sit-workcenter</code> | <code>manual</code> | <code>referral</code></td></tr>
+        <tr><td><code>limit</code></td><td>integer</td><td>Max results (default 20)</td></tr>
+        <tr><td><code>offset</code></td><td>integer</td><td>Pagination offset</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 3. SKILLS GRAPH -->
+  <h2 id="skills-graph">3. Skills Graph Management</h2>
+  <p>The skills graph is a normalised taxonomy stored across three tables: <code>skills</code> (master list), <code>candidate_skills</code> (candidate–skill associations with scores), and <code>assessments</code> (raw EvalOS assessment records).</p>
+
+  <h3>Skills Taxonomy</h3>
+  <p>Skills are pre-seeded categories. Administrators can add new skills directly in the database:</p>
+<pre>-- Add a new skill to the master taxonomy
+INSERT INTO skills (skill_id, name, category, description)
+VALUES ('sk_k8s', 'Kubernetes', 'DevOps', 'Container orchestration with Kubernetes');</pre>
+
+  <h3>Associating Skills with a Candidate</h3>
+  <p>Skill associations are created automatically by the EvalOS bridge, but can also be set manually:</p>
+<pre>-- Manually associate a skill score
+INSERT INTO candidate_skills (candidate_id, skill_id, score, source, updated_at)
+VALUES ('cnd_8a3f2901c', 'sk_k8s', 82, 'manual', NOW())
+ON CONFLICT (candidate_id, skill_id) DO UPDATE SET score = EXCLUDED.score;</pre>
+
+  <h3>Skills Schema Reference</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Table</th><th>Key Columns</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>skills</code></td><td>skill_id, name, category</td><td>Master skill taxonomy</td></tr>
+        <tr><td><code>candidate_skills</code></td><td>candidate_id, skill_id, score (0–100), source</td><td>Score from EvalOS or manual</td></tr>
+        <tr><td><code>assessments</code></td><td>assessment_id, candidate_id, evalos_passport_id, raw_score, normalised_score, assessed_at</td><td>Raw EvalOS records</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 4. JOB LISTINGS -->
+  <h2 id="jobs-mgmt">4. Job Listings Management</h2>
+  <p>Recruiters create job listings via the API. The <code>skills_req</code> field is a JSON array of required skills with minimum score thresholds — this structure is consumed directly by the AI matching engine.</p>
+
+  <h3>Create a Job Listing</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method method-post">POST</span>
+      <span>https://api.talent.i3technologies.co.ke/api/v1/jobs</span>
+    </div>
+    <div class="endpoint-body">
+      <p><strong>Auth:</strong> Bearer token (talent-recruiter role required)</p>
+    </div>
+  </div>
+
+  <h4>Request</h4>
+<pre>{
+  "title":       "Junior Data Engineer",
+  "client":      "Safaricom PLC",
+  "description": "Build and maintain data pipelines for the analytics team.",
+  "skills_req": [
+    { "skill": "Python",     "min_score": 70,  "weight": 0.40 },
+    { "skill": "SQL",        "min_score": 65,  "weight": 0.30 },
+    { "skill": "Kubernetes", "min_score": 50,  "weight": 0.15 },
+    { "skill": "Git",        "min_score": 60,  "weight": 0.15 }
+  ]
+}</pre>
+
+  <h4>Response <code>201 Created</code></h4>
+<pre>{
+  "job_id":      "job_c3f1a8b",
+  "title":       "Junior Data Engineer",
+  "client":      "Safaricom PLC",
+  "status":      "active",
+  "created_at":  "2025-01-16T14:00:00Z"
+}</pre>
+
+  <h3>List Active Jobs</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method method-get">GET</span>
+      <span>https://api.talent.i3technologies.co.ke/api/v1/jobs</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Returns all jobs with <code>status: active</code>. Add <code>?status=closed</code> to retrieve closed listings.</p>
+    </div>
+  </div>
+
+  <h3>skills_req JSON Format</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>skill</code></td><td>string</td><td>Yes</td><td>Skill name (must match <code>skills.name</code>)</td></tr>
+        <tr><td><code>min_score</code></td><td>integer 0–100</td><td>Yes</td><td>Candidates below this score are filtered out before AI scoring</td></tr>
+        <tr><td><code>weight</code></td><td>float 0–1</td><td>Yes</td><td>Relative importance; all weights across a job should sum to 1.0</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 5. AI MATCHING -->
+  <h2 id="ai-matching">5. AI Matching — How It Works</h2>
+  <p>The AI match pipeline uses <strong>LiteLLM with Mistral</strong> to generate a nuanced relevance score for each bench candidate against a job listing. Hard skill threshold filtering occurs first, then Mistral produces a ranked list with explanations.</p>
+
+  <h3>Matching Pipeline Steps</h3>
+  <ol class="steps">
+    <li><strong>Bench pull</strong> — Talent API fetches all candidates with <code>bench_status = available</code>.</li>
+    <li><strong>Hard filter</strong> — Candidates missing any required skill (below <code>min_score</code>) are eliminated before calling Mistral.</li>
+    <li><strong>Prompt construction</strong> — API builds a structured prompt: job description + required skills + each candidate's skill profile and scores.</li>
+    <li><strong>Mistral inference</strong> — LiteLLM routes the prompt to the Mistral model, which returns a weighted fit score (0–100) and a short rationale per candidate.</li>
+    <li><strong>Ranked response</strong> — Results are sorted by Mistral score descending and returned to the recruiter.</li>
+    <li><strong>Report storage</strong> — The full ranked result is saved to SeaweedFS <code>talent-reports</code> bucket for audit.</li>
+  </ol>
+
+  <h3>Run AI Match</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method method-post">POST</span>
+      <span>https://api.talent.i3technologies.co.ke/api/v1/match</span>
+    </div>
+    <div class="endpoint-body">
+      <p><strong>Auth:</strong> Bearer token (talent-recruiter role)</p>
+    </div>
+  </div>
+
+  <h4>Request</h4>
+<pre>{
+  "job_id": "job_c3f1a8b"
+}</pre>
+
+  <h4>Response <code>200 OK</code></h4>
+<pre>{
+  "job_id":    "job_c3f1a8b",
+  "job_title": "Junior Data Engineer",
+  "matched_at": "2025-01-16T14:22:05Z",
+  "report_url": "https://seaweedfs.i3.internal/talent-reports/job_c3f1a8b/match-20250116.json",
+  "candidates": [
+    {
+      "rank":         1,
+      "candidate_id": "cnd_8a3f2901c",
+      "full_name":    "Amina Omondi",
+      "match_score":  91,
+      "rationale":    "Strong Python (88) and SQL (84) scores exceed requirements. Kubernetes at 82 is well above threshold. Excellent overall fit.",
+      "skills_summary": {
+        "Python":     88,
+        "SQL":        84,
+        "Kubernetes": 82,
+        "Git":        79
+      }
+    },
+    {
+      "rank":         2,
+      "candidate_id": "cnd_b72e1204d",
+      "full_name":    "Brian Kariuki",
+      "match_score":  78,
+      "rationale":    "Good Python and Git scores. SQL at 68 meets minimum. Kubernetes at 53 is marginal.",
+      "skills_summary": {
+        "Python":     83,
+        "SQL":        68,
+        "Kubernetes": 53,
+        "Git":        81
+      }
+    }
+  ]
+}</pre>
+
+  <div class="callout callout-tip">
+    <strong>Tip: Weight tuning</strong>
+    Adjust <code>weight</code> values in <code>skills_req</code> when re-creating a job if the AI ranking does not reflect business priorities. Higher weight on a skill increases its influence on the Mistral scoring prompt.
+  </div>
+
+  <!-- 6. BENCH MANAGEMENT -->
+  <h2 id="bench-mgmt">6. Bench Management</h2>
+  <p>The <strong>bench</strong> is the pool of candidates who are <em>actively available</em> for placement. Bench status is tracked in the <code>bench_status</code> table and mirrored on the <code>candidates</code> row.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>bench_status value</th><th>Meaning</th><th>Appears in /bench?</th></tr></thead>
+      <tbody>
+        <tr><td><code>available</code></td><td>Ready and seeking placement</td><td>Yes</td></tr>
+        <tr><td><code>placed</code></td><td>Currently on active placement</td><td>No</td></tr>
+        <tr><td><code>unavailable</code></td><td>Not seeking — training, leave, etc.</td><td>No</td></tr>
+        <tr><td><code>pending</code></td><td>Profile incomplete / under review</td><td>No</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>List Available Bench Candidates</h3>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method method-get">GET</span>
+      <span>https://api.talent.i3technologies.co.ke/api/v1/bench</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Returns all candidates with <code>bench_status = available</code>, ordered by date added to bench (oldest first — longest waiting).</p>
+    </div>
+  </div>
+
+  <h3>Moving Candidates On/Off Bench (DB)</h3>
+<pre>-- Move candidate to bench (available)
+UPDATE bench_status
+SET status = 'available', available_since = NOW()
+WHERE candidate_id = 'cnd_8a3f2901c';
+
+-- Move candidate off bench after placement
+UPDATE bench_status
+SET status = 'placed', placed_at = NOW()
+WHERE candidate_id = 'cnd_8a3f2901c';</pre>
+
+  <div class="callout callout-warn">
+    <strong>Bench status consistency</strong>
+    Always update both <code>bench_status</code> table and <code>candidates.bench_status</code> column together, or use the placement API endpoint which handles both transactionally.
+  </div>
+
+  <!-- 7. SIT BRIDGE -->
+  <h2 id="sit-bridge">7. SIT Work-Centers Bridge</h2>
+  <p>When a learner completes a SIT Work-Center cohort, the <code>sit-api</code> fires a write-through event that creates a corresponding candidate profile in <code>talent_db</code>. No manual import is required.</p>
+
+  <h3>Bridge Behaviour</h3>
+  <ul>
+    <li><strong>Trigger:</strong> Cohort completion event in SIT (<code>cohort_status = graduated</code>).</li>
+    <li><strong>Action:</strong> <code>sit-api</code> calls <code>POST /api/v1/candidates</code> with <code>source: sit-workcenter</code> and links <code>evalos_passport_id</code> if the learner has an EvalOS record.</li>
+    <li><strong>Default bench status:</strong> New graduates land with <code>bench_status = pending</code> until a talent-recruiter reviews and approves (<code>available</code>).</li>
+    <li><strong>Deduplication:</strong> The API checks <code>keycloak_sub</code> uniqueness; duplicate submissions are silently ignored (idempotent).</li>
+  </ul>
+
+  <h3>Verifying Bridge Sync</h3>
+<pre>-- Check recent SIT-sourced candidates
+SELECT candidate_id, full_name, created_at, bench_status
+FROM candidates
+WHERE source = 'sit-workcenter'
+ORDER BY created_at DESC
+LIMIT 20;</pre>
+
+  <div class="callout callout-info">
+    <strong>SIT namespace</strong> The SIT Work-Centers API runs in namespace <code>i3-sit</code>. The service account used for write-through is <code>sit-talent-bridge</code>, granted the <code>talent-recruiter</code> Keycloak role.
+  </div>
+
+  <!-- 8. EVALOS BRIDGE -->
+  <h2 id="evalos-bridge">8. EvalOS Bridge</h2>
+  <p>EvalOS is the certification and assessment platform (Component 10). When a candidate completes an assessment, EvalOS posts the result to the Talent API, which normalises the score and updates the candidate's skills graph.</p>
+
+  <h3>Bridge Flow</h3>
+  <ol>
+    <li>Learner completes an EvalOS assessment linked to a skill (e.g., Python Fundamentals).</li>
+    <li>EvalOS posts the result to <code>POST /api/v1/assessments</code> (internal endpoint, not publicly documented).</li>
+    <li>Talent API resolves the <code>evalos_passport_id</code> to a <code>candidate_id</code>.</li>
+    <li>Raw score is normalised to 0–100 and upserted into <code>candidate_skills</code>.</li>
+    <li>A raw record is preserved in the <code>assessments</code> table for audit.</li>
+  </ol>
+
+  <h3>Verifying Assessment Sync</h3>
+<pre>-- View latest assessments for a candidate
+SELECT a.assessment_id, s.name AS skill, a.raw_score,
+       a.normalised_score, a.assessed_at
+FROM assessments a
+JOIN skills s ON a.skill_id = s.skill_id
+WHERE a.candidate_id = 'cnd_8a3f2901c'
+ORDER BY a.assessed_at DESC;</pre>
+
+  <!-- 9. SEAWEEDFS -->
+  <h2 id="seaweedfs">9. SeaweedFS CV &amp; Certificate Uploads</h2>
+  <p>All binary assets (CVs, certificates, match reports) are stored in SeaweedFS. Three dedicated buckets are used:</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Bucket</th><th>Contents</th><th>Path Pattern</th></tr></thead>
+      <tbody>
+        <tr><td><code>talent-cvs</code></td><td>Candidate CV uploads (PDF)</td><td><code>/{candidate_id}/cv.pdf</code></td></tr>
+        <tr><td><code>talent-certs</code></td><td>Certificate files from EvalOS or uploads</td><td><code>/{candidate_id}/{cert_name}.pdf</code></td></tr>
+        <tr><td><code>talent-reports</code></td><td>AI match result JSON reports</td><td><code>/{job_id}/match-{date}.json</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Upload a CV via API</h3>
+<pre>curl -X PUT \
+  https://seaweedfs.i3.internal/talent-cvs/cnd_8a3f2901c/cv.pdf \
+  -H "Authorization: Bearer &lt;token&gt;" \
+  -H "Content-Type: application/pdf" \
+  --data-binary @amina_omondi_cv.pdf</pre>
+
+  <h3>Verify Bucket Contents</h3>
+<pre>kubectl exec -n i3-talent deploy/talent-api -- \
+  weed filer.cat http://seaweedfs-filer:8888/talent-cvs/cnd_8a3f2901c/</pre>
+
+  <!-- 10. OPERATIONS -->
+  <h2 id="operations">10. Operations</h2>
+
+  <h3>Pod Health Check</h3>
+<pre>kubectl get pods -n i3-talent
+# Expected output:
+# NAME                           READY   STATUS    RESTARTS   AGE
+# talent-api-7f6b9c4d8-xk2lp    1/1     Running   0          3d
+# talent-web-5d8f4b6c7-mp9rt    1/1     Running   0          3d</pre>
+
+  <h3>API Health Endpoint</h3>
+<pre>curl https://api.talent.i3technologies.co.ke/health
+# {"status":"ok","db":"connected","seaweedfs":"connected","litellm":"connected"}</pre>
+
+  <h3>View Logs</h3>
+<pre># Talent API logs
+kubectl logs -n i3-talent deploy/talent-api --tail=100 -f
+
+# Talent Web logs
+kubectl logs -n i3-talent deploy/talent-web --tail=100 -f</pre>
+
+  <h3>Restart Deployments</h3>
+<pre>kubectl rollout restart deployment/talent-api -n i3-talent
+kubectl rollout restart deployment/talent-web -n i3-talent
+
+# Wait for rollout
+kubectl rollout status deployment/talent-api -n i3-talent</pre>
+
+  <h3>Build &amp; Deploy</h3>
+<pre># Build and push API image
+docker build -t registry.i3technologies.co.ke/talent-api:latest ./talent-api
+docker push registry.i3technologies.co.ke/talent-api:latest
+
+# Apply updated manifests
+kubectl apply -f k8s/i3-talent/ -n i3-talent
+
+# Force new image pull
+kubectl set image deployment/talent-api \
+  talent-api=registry.i3technologies.co.ke/talent-api:latest \
+  -n i3-talent</pre>
+
+  <h3>Database Access</h3>
+<pre>kubectl exec -it deploy/talent-api -n i3-talent -- \
+  psql -h postgres-svc -U talent_app -d talent_db
+# Password: 222d37ba48bf45f1b8f05987</pre>
+
+  <h3>Keycloak Client Reference</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Client ID</td><td><code>talent-web</code></td></tr>
+        <tr><td>Client Secret</td><td><code>vpWBWnUvNO0eslEKWqVASBIE8JzVlsY4</code></td></tr>
+        <tr><td>Roles</td><td><code>talent-candidate</code>, <code>talent-recruiter</code></td></tr>
+        <tr><td>Token endpoint</td><td><code>https://auth.i3technologies.co.ke/realms/i3/protocol/openid-connect/token</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 11. TROUBLESHOOTING -->
+  <h2 id="troubleshooting">11. Troubleshooting</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Symptom</th><th>Likely Cause</th><th>Resolution</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>POST /api/v1/candidates</code> returns 409 Conflict</td>
+          <td><code>keycloak_sub</code> already exists in <code>candidates</code></td>
+          <td>Candidate already registered. Use <code>GET /api/v1/candidates?keycloak_sub=...</code> to retrieve existing record.</td>
+        </tr>
+        <tr>
+          <td><code>POST /api/v1/match</code> returns 0 candidates</td>
+          <td>All bench candidates failed hard skill filter</td>
+          <td>Lower <code>min_score</code> thresholds in <code>skills_req</code>, or check that candidate skills have been synced from EvalOS.</td>
+        </tr>
+        <tr>
+          <td>LiteLLM timeout on <code>/match</code></td>
+          <td>Mistral model endpoint unreachable or overloaded</td>
+          <td>Check LiteLLM proxy pod: <code>kubectl logs deploy/litellm -n i3-ai</code>. Verify API key and model availability.</td>
+        </tr>
+        <tr>
+          <td>SIT graduates not appearing in talent_db</td>
+          <td>SIT bridge write-through failing silently</td>
+          <td>Check <code>sit-api</code> logs in <code>i3-sit</code> namespace for HTTP 4xx/5xx on bridge calls. Verify <code>sit-talent-bridge</code> service account token is valid.</td>
+        </tr>
+        <tr>
+          <td>EvalOS scores not updating <code>candidate_skills</code></td>
+          <td>Bridge event not firing, or <code>evalos_passport_id</code> mismatch</td>
+          <td>Confirm <code>evalos_passport_id</code> is set on the candidate row. Check EvalOS bridge logs. Run manual SQL upsert if needed.</td>
+        </tr>
+        <tr>
+          <td>CV upload returns 413 Payload Too Large</td>
+          <td>File exceeds SeaweedFS ingress limit (default 20 MB)</td>
+          <td>Compress PDF or increase ingress body size in the SeaweedFS ingress annotation: <code>nginx.ingress.kubernetes.io/proxy-body-size: "50m"</code>.</td>
+        </tr>
+        <tr>
+          <td>Keycloak 401 on API calls</td>
+          <td>Token expired or wrong role</td>
+          <td>Re-authenticate. Ensure the user has <code>talent-recruiter</code> role for job/match endpoints, or <code>talent-candidate</code> for profile endpoints.</td>
+        </tr>
+        <tr>
+          <td>talent-api pod in CrashLoopBackOff</td>
+          <td>DB connection failure at startup</td>
+          <td>Verify the <code>talent-db-secret</code> Kubernetes Secret is present and correct. Check PostgreSQL pod health in <code>i3-data</code> namespace.</td>
+        </tr>
+        <tr>
+          <td><code>GET /api/v1/bench</code> returns stale data</td>
+          <td>Candidate <code>bench_status</code> column not updated after placement</td>
+          <td>Check <code>placements</code> table for recent inserts. Run consistency check query between <code>bench_status</code> table and <code>candidates.bench_status</code> column.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Consistency Check Query</h3>
+<pre>-- Find mismatches between bench_status table and candidates column
+SELECT c.candidate_id, c.bench_status AS cand_col, b.status AS bench_tbl
+FROM candidates c
+JOIN bench_status b ON c.candidate_id = b.candidate_id
+WHERE c.bench_status != b.status;</pre>
+
+  <!-- ═══ USER GUIDE DIVIDER ═══ -->
+  <div class="section-divider">User Guide — Candidates &amp; Recruiters</div>
+
+  <h2 id="cand-register">C1. Registering Your Profile (Candidates)</h2>
+  <p>Your Talent Cloud profile is the foundation for job matching. It contains your contact details, location, skills, and CV. Profiles can be created by an admin on your behalf (e.g. after graduating from a SIT Work-Center), or you can register directly.</p>
+
+  <h3>How to Register</h3>
+  <ol class="steps">
+    <li>Log in to <a href="https://talent.i3technologies.co.ke/docs">talent.i3technologies.co.ke</a> using your i3 SSO credentials (Keycloak).</li>
+    <li>Navigate to <strong>Profile → Create Profile</strong>. Your name and email are pre-filled from Keycloak.</li>
+    <li>Fill in your <strong>phone number</strong> and <strong>location</strong> (city, country).</li>
+    <li>If you have an EvalOS passport ID, enter it in the <strong>EvalOS ID</strong> field — this links your certification scores automatically.</li>
+    <li>Click <strong>Save Profile</strong>. Your profile is created with status <code>pending</code> until reviewed by a recruiter.</li>
+  </ol>
+
+  <div class="callout callout-info">
+    <strong>SIT Work-Center graduates</strong>
+    If you completed a SIT Work-Center cohort, your profile was likely created automatically. Log in to verify it exists and update your phone and location.
+  </div>
+
+  <!-- C2 -->
+  <h2 id="cand-cv">C2. Uploading Your CV (Candidates)</h2>
+  <p>A current CV significantly improves your visibility to recruiters. Upload a PDF of your CV through your profile page.</p>
+
+  <h3>Steps</h3>
+  <ol class="steps">
+    <li>Navigate to <strong>Profile → Documents</strong>.</li>
+    <li>Click <strong>Upload CV</strong> and select your PDF (max 20 MB).</li>
+    <li>The CV is stored securely in the <code>talent-cvs</code> bucket and linked to your profile.</li>
+    <li>To replace an existing CV, simply upload a new one — it overwrites the previous file.</li>
+  </ol>
+
+  <div class="callout callout-tip">
+    <strong>Tip</strong>
+    Name your CV file descriptively (e.g. <code>AmineOmondi_CV_2025.pdf</code>) before uploading, as the original filename is preserved in metadata.
+  </div>
+
+  <!-- C3 -->
+  <h2 id="cand-skills">C3. Adding Skills &amp; Certifications (Candidates)</h2>
+  <p>Skills are the core of AI matching. Scores sourced from EvalOS are authoritative; additional skills can be self-declared and will be visible to recruiters with a <em>self-reported</em> label.</p>
+
+  <h3>Skills from EvalOS (Automatic)</h3>
+  <p>When your EvalOS assessments are synced, your skills appear automatically under <strong>Profile → Skills</strong> with a green checkmark and a numeric score (0–100).</p>
+
+  <h3>Adding a Self-Reported Skill</h3>
+  <ol class="steps">
+    <li>Go to <strong>Profile → Skills → Add Skill</strong>.</li>
+    <li>Search for the skill in the dropdown (e.g. "Docker", "React").</li>
+    <li>Select your self-assessed proficiency: <em>Beginner</em>, <em>Intermediate</em>, or <em>Advanced</em> (mapped to scores 40, 65, 85).</li>
+    <li>Optionally upload a supporting certificate under <strong>Profile → Documents → Upload Certificate</strong>.</li>
+    <li>Click <strong>Save</strong>.</li>
+  </ol>
+
+  <h3>Uploading a Certificate</h3>
+  <ol class="steps">
+    <li>Navigate to <strong>Profile → Documents → Upload Certificate</strong>.</li>
+    <li>Select the certificate PDF and enter the skill it relates to.</li>
+    <li>The file is stored in <code>talent-certs</code> and linked to your skills entry.</li>
+  </ol>
+
+  <!-- C4 -->
+  <h2 id="cand-bench">C4. Checking Your Bench Status (Candidates)</h2>
+  <p>Your bench status determines whether you appear in recruiter searches and AI match results.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Status</th><th>What it means for you</th></tr></thead>
+      <tbody>
+        <tr><td><code>available</code></td><td>Your profile is visible in searches and AI matching. You may receive placement offers.</td></tr>
+        <tr><td><code>pending</code></td><td>Your profile is under recruiter review. You are not yet visible in search results.</td></tr>
+        <tr><td><code>placed</code></td><td>You are on an active placement. Not visible in new match results.</td></tr>
+        <tr><td><code>unavailable</code></td><td>You have marked yourself as unavailable (e.g. taking a course). Not visible in searches.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Updating Your Availability</h3>
+  <ol class="steps">
+    <li>Go to <strong>Profile → Availability</strong>.</li>
+    <li>Toggle your status between <strong>Available</strong> and <strong>Unavailable</strong>.</li>
+    <li>If you are on an active placement, only a recruiter can change your status to <code>placed</code>.</li>
+  </ol>
+
+  <!-- C5 -->
+  <h2 id="cand-jobs">C5. Responding to Job Opportunities (Candidates)</h2>
+  <p>When a recruiter runs an AI match and your profile ranks highly, you may receive a notification or direct contact from the recruiter.</p>
+
+  <h3>Viewing Job Listings</h3>
+  <ol class="steps">
+    <li>Navigate to <strong>Jobs → Browse Listings</strong> to see active opportunities.</li>
+    <li>Each listing shows the title, client name, required skills, and a match indicator if your profile has been scored.</li>
+    <li>Click a listing to view the full description and required skills with your score gap (if any).</li>
+  </ol>
+
+  <h3>Expressing Interest</h3>
+  <ol class="steps">
+    <li>On a job listing, click <strong>Express Interest</strong>.</li>
+    <li>This flags your profile to the recruiter managing that listing.</li>
+    <li>The recruiter will contact you directly if they decide to proceed with a placement.</li>
+  </ol>
+
+  <!-- RECRUITER SECTION -->
+  <h2 id="rec-jobs">R1. Creating a Job Listing (Recruiters)</h2>
+  <p>Job listings define the requirements used by the AI matching engine. A well-constructed <code>skills_req</code> array with accurate weights produces the most relevant match results.</p>
+
+  <h3>Via the Web UI</h3>
+  <ol class="steps">
+    <li>Log in with your <code>talent-recruiter</code> account at <a href="https://talent.i3technologies.co.ke/docs">talent.i3technologies.co.ke</a>.</li>
+    <li>Navigate to <strong>Jobs → New Listing</strong>.</li>
+    <li>Fill in <strong>Title</strong>, <strong>Client</strong>, and <strong>Description</strong>.</li>
+    <li>Under <strong>Required Skills</strong>, search for each skill, set the minimum score threshold, and assign a weight (all weights must total 1.0).</li>
+    <li>Click <strong>Publish</strong>. The listing is immediately active and can be used for AI matching.</li>
+  </ol>
+
+  <h3>Via the API</h3>
+  <p>See the <a href="#jobs-mgmt">Job Listings Management</a> section above for the full API request/response example with <code>skills_req</code> JSON format.</p>
+
+  <!-- R2 -->
+  <h2 id="rec-match">R2. Running AI Match (Recruiters)</h2>
+  <p>AI matching queries the bench, applies hard skill filters, and uses Mistral to rank remaining candidates. The process takes 5–15 seconds depending on bench size.</p>
+
+  <h3>Via the Web UI</h3>
+  <ol class="steps">
+    <li>Navigate to <strong>Jobs → [Select a listing] → Run AI Match</strong>.</li>
+    <li>Click <strong>Start Matching</strong>. A loading indicator appears while Mistral processes the candidates.</li>
+    <li>Once complete, you are redirected to the ranked candidates view.</li>
+    <li>A match report JSON is automatically saved to SeaweedFS for audit.</li>
+  </ol>
+
+  <h3>Via the API</h3>
+<pre>curl -X POST https://api.talent.i3technologies.co.ke/api/v1/match \
+  -H "Authorization: Bearer &lt;your-token&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{"job_id": "job_c3f1a8b"}'</pre>
+
+  <div class="callout callout-warn">
+    <strong>Empty match results</strong>
+    If the result returns zero candidates, all bench candidates failed the hard skill filter. Lower <code>min_score</code> values on the job listing or check whether candidate skill profiles are up to date with EvalOS data.
+  </div>
+
+  <!-- R3 -->
+  <h2 id="rec-review">R3. Reviewing Ranked Candidates (Recruiters)</h2>
+  <p>The AI match result presents candidates ranked by match score (highest first) with a Mistral-generated rationale for each.</p>
+
+  <h3>Reading the Results</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Rank</strong></td><td>Relative position (1 = best fit)</td></tr>
+        <tr><td><strong>Match Score</strong></td><td>Mistral composite score 0–100</td></tr>
+        <tr><td><strong>Rationale</strong></td><td>AI-generated explanation of strengths/gaps</td></tr>
+        <tr><td><strong>Skills Summary</strong></td><td>Candidate's actual score for each required skill</td></tr>
+        <tr><td><strong>CV / Profile link</strong></td><td>Links to full profile and CV document</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Filtering and Shortlisting</h3>
+  <ol class="steps">
+    <li>Use the <strong>minimum match score</strong> slider to narrow the visible list (e.g., show only candidates scoring 80+).</li>
+    <li>Click <strong>Shortlist</strong> on candidates you want to progress with — this marks them for follow-up without affecting their bench status.</li>
+    <li>Click a candidate's name to view their full profile, skills timeline, and CV.</li>
+  </ol>
+
+  <!-- R4 -->
+  <h2 id="rec-placement">R4. Making a Placement (Recruiters)</h2>
+  <p>A placement confirms that a candidate has been assigned to a job. This moves the candidate off the bench and records the placement in the audit tables.</p>
+
+  <h3>Confirm a Placement via API</h3>
+<pre>POST /api/v1/placements
+
+{
+  "candidate_id": "cnd_8a3f2901c",
+  "job_id":       "job_c3f1a8b",
+  "start_date":   "2025-02-01",
+  "notes":        "Confirmed by client — 3 month contract"
+}</pre>
+
+  <h4>Response <code>201 Created</code></h4>
+<pre>{
+  "placement_id":  "plc_f9a1b2c3",
+  "candidate_id":  "cnd_8a3f2901c",
+  "job_id":        "job_c3f1a8b",
+  "status":        "active",
+  "start_date":    "2025-02-01",
+  "created_at":    "2025-01-17T11:30:00Z"
+}</pre>
+
+  <p>Upon successful placement creation, the API automatically:</p>
+  <ul>
+    <li>Sets <code>candidates.bench_status = placed</code></li>
+    <li>Sets <code>bench_status.status = placed</code></li>
+    <li>Inserts a record into <code>placement_history</code></li>
+    <li>Updates <code>jobs.status = filled</code> (if only one placement was needed)</li>
+  </ul>
+
+  <!-- R5 -->
+  <h2 id="rec-feedback">R5. Providing Feedback (Recruiters)</h2>
+  <p>Post-placement feedback is stored in the <code>candidate_feedback</code> table. This data improves future AI match quality by enriching candidate records.</p>
+
+  <h3>Submit Feedback via API</h3>
+<pre>POST /api/v1/feedback
+
+{
+  "placement_id":  "plc_f9a1b2c3",
+  "rating":        5,
+  "performance":   "exceeded_expectations",
+  "comments":      "Amina onboarded quickly and delivered the first pipeline within 2 weeks. Strong Python and data modelling skills in practice.",
+  "would_rehire":  true
+}</pre>
+
+  <h4>Response <code>201 Created</code></h4>
+<pre>{
+  "feedback_id":  "fbk_1a2b3c4d",
+  "placement_id": "plc_f9a1b2c3",
+  "rating":       5,
+  "created_at":   "2025-03-01T08:00:00Z"
+}</pre>
+
+  <div class="callout callout-info">
+    <strong>Feedback and AI matching</strong>
+    High-rated placements increase the effective weight of the matched skills in future Mistral prompts for that candidate. Negative feedback flags the candidate for recruiter review before their next AI match inclusion.
+  </div>
+
+  <!-- DATABASE SCHEMA APPENDIX -->
+  <h2 id="db-schema">Appendix: talent_db Schema Reference</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Table</th><th>Primary Key</th><th>Key Columns</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>candidates</code></td><td>candidate_id</td><td>keycloak_sub, full_name, email, phone, location, source, evalos_passport_id, bench_status</td><td>Master candidate records</td></tr>
+        <tr><td><code>skills</code></td><td>skill_id</td><td>name, category, description</td><td>Skills taxonomy</td></tr>
+        <tr><td><code>candidate_skills</code></td><td>(candidate_id, skill_id)</td><td>score (0–100), source (evalos/manual/self), updated_at</td><td>Candidate-to-skill associations with scores</td></tr>
+        <tr><td><code>assessments</code></td><td>assessment_id</td><td>candidate_id, skill_id, evalos_passport_id, raw_score, normalised_score, assessed_at</td><td>Raw EvalOS assessment records</td></tr>
+        <tr><td><code>jobs</code></td><td>job_id</td><td>title, client, description, skills_req (JSON), status (active/filled/closed), created_by</td><td>Job listings</td></tr>
+        <tr><td><code>placements</code></td><td>placement_id</td><td>candidate_id, job_id, status, start_date, end_date, notes</td><td>Active and completed placements</td></tr>
+        <tr><td><code>placement_history</code></td><td>history_id</td><td>placement_id, event_type, event_at, changed_by</td><td>Audit trail for placement state changes</td></tr>
+        <tr><td><code>bench_status</code></td><td>candidate_id</td><td>status, available_since, placed_at</td><td>Bench availability tracking</td></tr>
+        <tr><td><code>candidate_feedback</code></td><td>feedback_id</td><td>placement_id, rating (1–5), performance, comments, would_rehire</td><td>Post-placement recruiter feedback</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /container -->
+
+<!-- FOOTER -->
+<div class="footer">
+  Made with IBM Bob | Component 11 of 14
+</div>
+
+</body>
+</html>

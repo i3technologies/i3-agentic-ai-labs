@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Component 05: EvalOS — Assessment Platform | Admin &amp; User Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 15px; line-height: 1.7; color: #1f2328; background: #ffffff; }
+
+  /* Layout */
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 24px 60px; }
+
+  /* Cover */
+  .cover {
+    background: linear-gradient(135deg, #cf222e, #f85149);
+    color: #fff;
+    padding: 56px 40px 48px;
+    margin-bottom: 40px;
+  }
+  .cover .badge { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; opacity: .8; margin-bottom: 12px; }
+  .cover h1 { font-size: 2.2rem; font-weight: 700; line-height: 1.2; margin-bottom: 10px; }
+  .cover .sub { font-size: 1rem; opacity: .88; margin-bottom: 20px; }
+  .cover .meta { display: flex; flex-wrap: wrap; gap: 18px; font-size: 13px; opacity: .82; }
+  .cover .meta span::before { content: "▸ "; }
+
+  /* TOC */
+  .toc { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 22px 28px; margin-bottom: 40px; }
+  .toc h2 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #57606a; margin-bottom: 12px; border: none !important; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin: 5px 0; font-size: 14px; }
+  .toc a { color: #cf222e; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc .section-group { font-weight: 600; margin-top: 10px; font-size: 13px; color: #57606a; list-style: none; margin-left: -20px; }
+
+  /* Headings */
+  h2 { font-size: 1.4rem; font-weight: 700; color: #cf222e; border-bottom: 2px solid #cf222e; padding-bottom: 8px; margin: 40px 0 16px; }
+  h3 { font-size: 1.1rem; font-weight: 700; color: #1f2328; margin: 28px 0 10px; }
+  h4 { font-size: .95rem; font-weight: 700; color: #57606a; margin: 20px 0 8px; text-transform: uppercase; letter-spacing: .05em; }
+  p { margin-bottom: 12px; }
+  ul, ol { padding-left: 22px; margin-bottom: 12px; }
+  li { margin: 4px 0; }
+
+  /* Callouts */
+  .note, .warn, .danger {
+    border-radius: 5px; padding: 13px 16px; margin: 18px 0; font-size: 14px;
+    border-left: 4px solid;
+  }
+  .note  { background: #f0f6ff; border-color: #3b82d4; color: #1f2328; }
+  .warn  { background: #fffbea; border-color: #d4a017; color: #1f2328; }
+  .danger{ background: #fff0f0; border-color: #cf222e; color: #7d1a1a; }
+  .note strong, .warn strong, .danger strong { display: block; margin-bottom: 4px; }
+
+  /* Code */
+  code { font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px; background: #fff0f0; border: 1px solid #ffb8b8; border-radius: 3px; padding: 1px 5px; }
+  pre {
+    background: #1e1e2e; color: #cdd6f4;
+    border-radius: 6px; padding: 18px 20px; margin: 14px 0 18px;
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px;
+    overflow-x: auto; line-height: 1.6;
+  }
+  pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+
+  /* Steps */
+  .step {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: #f7f8fa; border: 1px solid #e5e7eb;
+    border-radius: 6px; padding: 14px 16px; margin: 10px 0;
+  }
+  .step .num {
+    background: #cf222e; color: #fff;
+    font-weight: 700; font-size: 13px;
+    min-width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .step .body { flex: 1; font-size: 14px; }
+  .step .body strong { display: block; margin-bottom: 3px; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 22px; font-size: 14px; }
+  thead tr { background: #cf222e; color: #fff; }
+  th { padding: 10px 14px; text-align: left; font-weight: 600; }
+  td { padding: 9px 14px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #f7f8fa; }
+
+  /* Section divider */
+  .section-title {
+    font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+    color: #fff; background: #cf222e;
+    display: inline-block; padding: 3px 10px; border-radius: 3px; margin-bottom: 6px;
+  }
+
+  /* Key-value grid */
+  .kv { display: grid; grid-template-columns: 200px 1fr; gap: 6px 12px; margin: 14px 0; font-size: 14px; }
+  .kv dt { font-weight: 600; color: #57606a; }
+  .kv dd { font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px; word-break: break-all; }
+
+  /* Footer */
+  .footer {
+    text-align: center; font-size: 12px; color: #57606a;
+    border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 60px;
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="badge">Component 05 of 14 · i3 Technologies Platform</div>
+  <h1>EvalOS — Assessment Platform</h1>
+  <p class="sub">Admin &amp; User Guide · AI-powered online examinations, automated grading &amp; certification</p>
+  <div class="meta">
+    <span>https://evalos.i3technologies.co.ke</span>
+    <span>Namespace: i3-evalos</span>
+    <span>Stack: Next.js 14 + LiteLLM (Mistral) + ChromaDB</span>
+    <span>SSO: Keycloak · evalos-spa</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <ol>
+    <li class="section-group">OVERVIEW</li>
+    <li><a href="#overview">Platform Overview</a></li>
+    <li><a href="#config">Admin Credentials &amp; Configuration</a></li>
+    <li class="section-group">ADMIN GUIDE</li>
+    <li><a href="#admin-overview">1 · What EvalOS Does</a></li>
+    <li><a href="#admin-exams">2 · Creating Exams &amp; Assessments</a></li>
+    <li><a href="#admin-candidates">3 · Managing Candidates</a></li>
+    <li><a href="#admin-results">4 · Results &amp; Analytics</a></li>
+    <li><a href="#admin-certs">5 · Certificate Management</a></li>
+    <li><a href="#admin-sit">6 · SIT Work-Center Integration</a></li>
+    <li><a href="#admin-zuri">7 · Zuri AI Coworker</a></li>
+    <li><a href="#admin-ops">8 · Operations</a></li>
+    <li><a href="#admin-trouble">9 · Admin Troubleshooting</a></li>
+    <li class="section-group">USER GUIDE</li>
+    <li><a href="#user-login">1 · Logging In with SSO</a></li>
+    <li><a href="#user-exam">2 · Taking an Exam</a></li>
+    <li><a href="#user-results">3 · Viewing Your Results</a></li>
+    <li><a href="#user-cert">4 · Downloading Your Certificate</a></li>
+    <li><a href="#user-zuri">5 · Using Zuri AI Study Assistant</a></li>
+    <li><a href="#user-trouble">6 · User Troubleshooting</a></li>
+  </ol>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     OVERVIEW
+     ═══════════════════════════════════════════════════ -->
+<div class="section-title">Overview</div>
+<h2 id="overview">Platform Overview</h2>
+<p>
+  <strong>EvalOS</strong> is i3 Technologies' AI-powered assessment and certification platform. It enables
+  instructors and administrators to design examinations, manage candidate enrolments, run proctored or
+  self-paced assessments, auto-grade responses with an LLM back-end, and issue verifiable digital certificates —
+  all within a single, SSO-authenticated web application.
+</p>
+
+<dl class="kv">
+  <dt>Live URL</dt><dd>https://evalos.i3technologies.co.ke</dd>
+  <dt>OpenShift Namespace</dt><dd>i3-evalos</dd>
+  <dt>Frontend</dt><dd>Next.js 14 (App Router, TypeScript)</dd>
+  <dt>AI Grading</dt><dd>LiteLLM proxy → Mistral 7B Instruct (q4_K_M) via Ollama</dd>
+  <dt>Question Bank RAG</dt><dd>ChromaDB vector store</dd>
+  <dt>Authentication</dt><dd>Keycloak SSO — client <code>evalos-spa</code> (public SPA flow)</dd>
+  <dt>Database</dt><dd><code>evalos_db</code> via PGBouncer connection pool</dd>
+  <dt>Observability</dt><dd>Langfuse (LLM traces) — pk-lf-i3evalos-8ed2998c3f68449b</dd>
+  <dt>Coworker service</dt><dd>Zuri AI — https://zuri.i3technologies.co.ke</dd>
+</dl>
+
+<div class="note">
+  <strong>Coworker — Zuri AI</strong>
+  Zuri is a companion AI study assistant deployed alongside EvalOS. Students visit
+  <code>zuri.i3technologies.co.ke</code> to ask questions, get topic explanations, and receive
+  AI-generated practice questions drawn from the same ChromaDB question bank.
+</div>
+
+<!-- CONFIG -->
+<h2 id="config">Admin Credentials &amp; Configuration</h2>
+<div class="warn">
+  <strong>Sensitive — restrict access</strong>
+  The values below are operational secrets. Store them in OpenShift Secrets or a vault. Never commit them to source control.
+</div>
+
+<table>
+  <thead><tr><th>Parameter</th><th>Value / Location</th></tr></thead>
+  <tbody>
+    <tr><td>Admin login</td><td>Via Keycloak SSO — no separate local admin account</td></tr>
+    <tr><td>Keycloak realm</td><td><code>i3</code> at <code>https://sso.i3technologies.co.ke/auth/realms/i3</code></td></tr>
+    <tr><td>Keycloak client</td><td><code>evalos-spa</code> (public SPA — PKCE flow)</td></tr>
+    <tr><td>Database</td><td><code>evalos_db</code> via PGBouncer</td></tr>
+    <tr><td>LITELLM_KEY</td><td><code>sk-litellm-i3-f951c9377163a11275864cb92e90ad13</code></td></tr>
+    <tr><td>Langfuse public key</td><td><code>pk-lf-i3evalos-8ed2998c3f68449b</code></td></tr>
+    <tr><td>NEXTAUTH_SECRET</td><td><code>i3EvalOS-NextAuth-Secret-2026-xK9mPqRvTs</code></td></tr>
+    <tr><td>NEXTAUTH_URL</td><td><code>https://evalos.i3technologies.co.ke</code></td></tr>
+    <tr><td>Ollama model</td><td><code>mistral:7b-instruct-q4_K_M</code></td></tr>
+  </tbody>
+</table>
+
+<p>To view or update these values in OpenShift:</p>
+<pre><code># List all secrets in the namespace
+oc get secrets -n i3-evalos
+
+# View the evalos app secret (base64-encoded values)
+oc get secret evalos-app-secret -n i3-evalos -o yaml
+
+# Update a single key (e.g. rotate LITELLM_KEY)
+oc patch secret evalos-app-secret -n i3-evalos \
+  --type='json' \
+  -p='[{"op":"replace","path":"/data/LITELLM_KEY","value":"'$(echo -n "sk-new-key" | base64)'"}]'
+
+# Restart the deployment to pick up the new secret
+oc rollout restart deployment/evalos -n i3-evalos</code></pre>
+
+
+<!-- ═══════════════════════════════════════════════════
+     ADMIN GUIDE
+     ═══════════════════════════════════════════════════ -->
+<div class="section-title">Admin Guide</div>
+
+<h2 id="admin-overview">1 · What EvalOS Does</h2>
+<p>EvalOS provides the full assessment lifecycle in one platform:</p>
+<ul>
+  <li><strong>Exam authoring</strong> — rich question editor supporting MCQ, short-answer, essay, code, and file-upload question types.</li>
+  <li><strong>Candidate management</strong> — bulk enrolment, group/cohort assignment, and scheduling windows.</li>
+  <li><strong>Live proctoring flags</strong> — tab-switch detection and webcam snapshot triggers (optional per-exam).</li>
+  <li><strong>AI auto-grading</strong> — short-answer and essay responses are scored by Mistral 7B via LiteLLM with a configurable rubric prompt; MCQ is graded instantly on submission.</li>
+  <li><strong>Analytics dashboard</strong> — per-exam statistics: score distribution, average, pass rate, per-question difficulty index.</li>
+  <li><strong>Certificate issuance</strong> — PDF certificates generated server-side with a verifiable QR code; records written back to SIT Work-Centers via <code>sit-api</code>.</li>
+  <li><strong>RAG question bank</strong> — questions are vectorised into ChromaDB enabling semantic search and AI-assisted question generation.</li>
+</ul>
+
+<h2 id="admin-exams">2 · Creating Exams &amp; Assessments</h2>
+
+<h3>2.1 Access the Exam Builder</h3>
+<div class="step"><div class="num">1</div><div class="body"><strong>Sign in</strong> — Navigate to <code>https://evalos.i3technologies.co.ke</code> and authenticate with your Keycloak SSO credentials. You must have the <code>evalos-admin</code> or <code>evalos-instructor</code> realm role assigned in Keycloak.</div></div>
+<div class="step"><div class="num">2</div><div class="body"><strong>Open Admin Dashboard</strong> — Click the grid icon (top-right) → <em>Admin Panel</em>. The sidebar shows: Exams, Candidates, Results, Certificates, Settings.</div></div>
+<div class="step"><div class="num">3</div><div class="body"><strong>New Exam</strong> — Click <em>Exams → Create New Exam</em>. The exam builder opens in a two-pane layout: settings on the left, question canvas on the right.</div></div>
+
+<h3>2.2 Configure Exam Settings</h3>
+<div class="step"><div class="num">4</div><div class="body"><strong>Basic info</strong> — Enter the Exam Title, Description, and optionally a Course Code. These appear on the candidate's exam card and on the issued certificate.</div></div>
+<div class="step"><div class="num">5</div><div class="body"><strong>Scheduling</strong> — Set the <em>Start Date/Time</em> and <em>End Date/Time</em>. Candidates can only access the exam within this window. Enable <em>Allow Late Submission</em> if a grace period is needed.</div></div>
+<div class="step"><div class="num">6</div><div class="body"><strong>Duration &amp; pass mark</strong> — Set the time limit (minutes) and the minimum pass percentage (e.g. <code>60</code>). EvalOS auto-calculates pass/fail on submission.</div></div>
+<div class="step"><div class="num">7</div><div class="body"><strong>Grading mode</strong> — Choose <em>Auto (AI)</em> for essays/short-answer, <em>Auto (MCQ)</em> for objective questions, or <em>Manual</em> to queue responses for human review. Mixed exams can combine all three.</div></div>
+<div class="step"><div class="num">8</div><div class="body"><strong>Proctoring</strong> — Toggle <em>Enable Proctoring</em> to activate tab-switch events and webcam snapshots. Set the maximum allowed tab-switch count before the exam is auto-submitted.</div></div>
+
+<h3>2.3 Adding Questions</h3>
+<div class="step"><div class="num">9</div><div class="body"><strong>Add a question</strong> — Click <em>+ Add Question</em> on the canvas. Select the type: <em>Multiple Choice, True/False, Short Answer, Essay, Code, File Upload</em>.</div></div>
+<div class="step"><div class="num">10</div><div class="body"><strong>MCQ</strong> — Enter the question stem, add 2–6 answer options, and mark the correct answer(s). Assign a point value per question.</div></div>
+<div class="step"><div class="num">11</div><div class="body"><strong>Essay / Short Answer (AI grading)</strong> — Enter the question and the <em>Model Answer / Rubric</em> field. This rubric text is injected into the LiteLLM prompt when grading. Example rubric: <em>"Award 2 points for mentioning X, 2 for Y, 1 for any mention of Z."</em></div></div>
+<div class="step"><div class="num">12</div><div class="body"><strong>Import from question bank</strong> — Click <em>Import from Bank</em> to search ChromaDB semantically. Type a topic or keyword; the RAG layer returns the top-N matching questions. Select and import them directly onto the canvas.</div></div>
+<div class="step"><div class="num">13</div><div class="body"><strong>Save &amp; Publish</strong> — Click <em>Save Draft</em> to preserve work, then <em>Publish</em> when ready. Published exams become visible to enrolled candidates at the scheduled start time.</div></div>
+
+<div class="note">
+  <strong>Tip: Question randomisation</strong>
+  Enable <em>Shuffle Questions</em> and <em>Shuffle Options</em> per exam to reduce collusion risk. Each candidate then receives questions in a different order.
+</div>
+
+<h2 id="admin-candidates">3 · Managing Candidates</h2>
+
+<div class="step"><div class="num">1</div><div class="body"><strong>Candidates list</strong> — Go to <em>Candidates</em> in the sidebar. All users with the <code>evalos-candidate</code> Keycloak role appear here automatically after first login.</div></div>
+<div class="step"><div class="num">2</div><div class="body"><strong>Bulk enrolment</strong> — Click <em>Enrol Candidates → Upload CSV</em>. The CSV must have columns: <code>email, full_name, cohort</code>. The system matches emails to Keycloak users and creates accounts for new ones via the admin API.</div></div>
+<div class="step"><div class="num">3</div><div class="body"><strong>Assign to exam</strong> — Open the target exam → <em>Enrolment</em> tab → <em>Add Candidates</em>. Search by name/email or select an entire cohort. Candidates receive an email notification with the exam link and scheduled time.</div></div>
+<div class="step"><div class="num">4</div><div class="body"><strong>Cohort groups</strong> — Use <em>Candidates → Cohorts → New Cohort</em> to create named groups (e.g. "Batch 2026-Q1"). Assign multiple candidates at once, then enrol the whole cohort to any exam in seconds.</div></div>
+<div class="step"><div class="num">5</div><div class="body"><strong>Deactivate a candidate</strong> — Find the candidate, click <em>⋯ → Deactivate</em>. This revokes their access to all upcoming exams without deleting historical results.</div></div>
+
+<h2 id="admin-results">4 · Viewing Results &amp; Analytics</h2>
+
+<div class="step"><div class="num">1</div><div class="body"><strong>Open Results</strong> — Go to <em>Results</em> in the sidebar and select an exam. The overview shows: total attempts, average score, highest/lowest, pass rate %.</div></div>
+<div class="step"><div class="num">2</div><div class="body"><strong>Individual result</strong> — Click a candidate's row to expand their response sheet. MCQ answers are shown with green (correct) or red (incorrect) highlights. AI-graded responses show the LLM score, reasoning excerpt, and the rubric used.</div></div>
+<div class="step"><div class="num">3</div><div class="body"><strong>Override AI grade</strong> — On any AI-graded response, click the pencil icon to manually adjust the score and add a comment. The system logs the override for audit purposes.</div></div>
+<div class="step"><div class="num">4</div><div class="body"><strong>Analytics charts</strong> — The <em>Analytics</em> tab shows: score distribution histogram, per-question discrimination index, and a cohort comparison chart. Export as CSV via the download button.</div></div>
+<div class="step"><div class="num">5</div><div class="body"><strong>LLM trace inspection</strong> — For AI-graded exams, click <em>View LLM Trace</em> on any response to open the Langfuse session. This shows the exact prompt sent, model response, token count, and latency.</div></div>
+
+<h2 id="admin-certs">5 · Certificate Management</h2>
+
+<div class="step"><div class="num">1</div><div class="body"><strong>Auto-issue</strong> — When an exam is configured with <em>Auto-Issue Certificate: ON</em>, EvalOS generates and dispatches PDF certificates automatically upon grading completion for all passing candidates.</div></div>
+<div class="step"><div class="num">2</div><div class="body"><strong>Manual issue</strong> — Go to <em>Certificates → Pending</em>. This lists passing candidates who have not yet received a certificate. Select and click <em>Issue Selected</em>.</div></div>
+<div class="step"><div class="num">3</div><div class="body"><strong>Certificate template</strong> — Under <em>Settings → Certificate Template</em>, upload a branded PDF template (A4 landscape). Placeholders: <code>{{candidate_name}}</code>, <code>{{exam_title}}</code>, <code>{{score}}</code>, <code>{{date}}</code>, <code>{{cert_id}}</code>. The QR code is auto-embedded.</div></div>
+<div class="step"><div class="num">4</div><div class="body"><strong>Verification URL</strong> — Each certificate contains a QR code linking to <code>https://evalos.i3technologies.co.ke/verify/{cert_id}</code>. Anyone can scan to see the candidate's name, exam, score, and issue date — no login required.</div></div>
+<div class="step"><div class="num">5</div><div class="body"><strong>Revoke a certificate</strong> — Open the issued certificate record, click <em>Revoke</em>, and provide a reason. The verification page will then show "Certificate Revoked" with the date.</div></div>
+
+<h2 id="admin-sit">6 · SIT Work-Center Integration</h2>
+<p>
+  EvalOS writes assessment outcomes back to the SIT (Student Information &amp; Tracking) Work-Centers via
+  the <code>sit-api</code> bridge service. This keeps EvalOS scores and certificates in sync with the
+  main student record system.
+</p>
+
+<h3>How the bridge works</h3>
+<ul>
+  <li>On certificate issuance, EvalOS calls <code>POST /api/sit-bridge/assessment-result</code> on the <code>sit-api</code> service.</li>
+  <li>The payload includes: <code>candidate_email</code>, <code>exam_code</code>, <code>score</code>, <code>pass_fail</code>, <code>cert_id</code>, <code>issued_at</code>.</li>
+  <li>SIT Work-Centers then display the certification record under the student's profile automatically.</li>
+</ul>
+
+<h3>Verify bridge connectivity</h3>
+<pre><code># Confirm sit-api service is reachable from the evalos pod
+oc exec -n i3-evalos deployment/evalos -- \
+  curl -sf http://sit-api.i3-sit.svc.cluster.local/health
+
+# View recent bridge call logs
+oc logs -n i3-evalos deployment/evalos --tail=100 | grep "sit-bridge"
+
+# Check sit-api bridge pod status
+oc get pods -n i3-sit -l app=sit-api</code></pre>
+
+<div class="warn">
+  <strong>Bridge failure handling</strong>
+  If the SIT API is unreachable, EvalOS queues the payload and retries with exponential back-off (max 5 attempts over 30 minutes). Failed payloads appear in <em>Settings → Integration → Pending SIT Sync</em>. You can manually replay them from there.
+</div>
+
+<h2 id="admin-zuri">7 · Zuri AI Coworker</h2>
+<p>
+  <strong>Zuri</strong> (<code>zuri.i3technologies.co.ke</code>) is an AI study assistant that runs
+  alongside EvalOS and is powered by the same Mistral 7B model and ChromaDB question bank.
+</p>
+<ul>
+  <li><strong>Conversational Q&amp;A</strong> — Students ask questions in natural language; Zuri retrieves relevant context from the ChromaDB question bank (RAG) and generates a grounded explanation.</li>
+  <li><strong>Practice questions</strong> — Zuri can generate on-demand practice questions on any topic, mimicking the style of actual exam questions.</li>
+  <li><strong>Exam hints</strong> — If a student is confused about a past result, they can paste the question into Zuri for a detailed worked answer (available only after the exam window closes).</li>
+  <li><strong>Same SSO</strong> — Students log into Zuri with the same Keycloak credentials; no separate account needed.</li>
+</ul>
+
+<h3>Admin tasks for Zuri</h3>
+<pre><code># Check Zuri pod health
+oc get pods -n i3-evalos -l app=zuri
+
+# View Zuri logs
+oc logs -n i3-evalos deployment/zuri --tail=80
+
+# Restart Zuri if unresponsive
+oc rollout restart deployment/zuri -n i3-evalos
+
+# Update ChromaDB with newly authored questions
+# (Run the ingest job after publishing a new exam)
+oc create job --from=cronjob/chroma-ingest chroma-ingest-manual -n i3-evalos</code></pre>
+
+<h2 id="admin-ops">8 · Operations</h2>
+
+<h3>8.1 Pod Health Check</h3>
+<pre><code># All pods in the namespace
+oc get pods -n i3-evalos
+
+# Watch live status
+oc get pods -n i3-evalos -w
+
+# Detailed pod description (events, resource usage)
+oc describe pod -n i3-evalos -l app=evalos</code></pre>
+
+<h3>8.2 Application Logs</h3>
+<pre><code># Stream evalos app logs
+oc logs -n i3-evalos deployment/evalos -f
+
+# Last 200 lines with timestamps
+oc logs -n i3-evalos deployment/evalos --tail=200 --timestamps
+
+# LiteLLM proxy logs
+oc logs -n i3-evalos deployment/litellm --tail=100
+
+# ChromaDB logs
+oc logs -n i3-evalos deployment/chromadb --tail=100</code></pre>
+
+<h3>8.3 Restarting Services</h3>
+<pre><code># Restart the main EvalOS frontend
+oc rollout restart deployment/evalos -n i3-evalos
+
+# Restart LiteLLM proxy
+oc rollout restart deployment/litellm -n i3-evalos
+
+# Restart ChromaDB
+oc rollout restart deployment/chromadb -n i3-evalos
+
+# Monitor rollout progress
+oc rollout status deployment/evalos -n i3-evalos</code></pre>
+
+<h3>8.4 Database Backup</h3>
+<pre><code># One-off pg_dump of evalos_db (run from the postgres pod)
+PGPOD=$(oc get pod -n i3-evalos -l app=postgresql -o jsonpath='{.items[0].metadata.name}')
+
+oc exec -n i3-evalos $PGPOD -- \
+  pg_dump -U evalos evalos_db \
+  > evalos_db_backup_$(date +%Y%m%d_%H%M).sql
+
+# Verify the dump file size
+ls -lh evalos_db_backup_*.sql
+
+# Restore from a backup
+oc exec -i -n i3-evalos $PGPOD -- \
+  psql -U evalos evalos_db \
+  < evalos_db_backup_20260101_0900.sql</code></pre>
+
+<h3>8.5 Scaling</h3>
+<pre><code># Scale EvalOS to 3 replicas during peak exam periods
+oc scale deployment/evalos -n i3-evalos --replicas=3
+
+# Scale back down after the exam window
+oc scale deployment/evalos -n i3-evalos --replicas=1</code></pre>
+
+<h2 id="admin-trouble">9 · Admin Troubleshooting</h2>
+
+<table>
+  <thead>
+    <tr><th>Symptom</th><th>Likely Cause</th><th>Resolution</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Admin/users cannot log in — "Login failed" on SSO page</td>
+      <td>Keycloak realm or client misconfigured; NEXTAUTH_URL mismatch</td>
+      <td>Verify <code>evalos-spa</code> client redirect URIs include <code>https://evalos.i3technologies.co.ke/*</code>. Check <code>NEXTAUTH_URL</code> secret. Run <code>oc logs deployment/evalos | grep "auth"</code>.</td>
+    </tr>
+    <tr>
+      <td>Exam not loading / blank canvas</td>
+      <td>Next.js build error or missing env variable</td>
+      <td>Check pod logs for <code>Error</code> or <code>ECONNREFUSED</code>. Confirm all secrets are mounted: <code>oc describe pod -l app=evalos | grep -A5 Environment</code>. Redeploy: <code>oc rollout restart deployment/evalos -n i3-evalos</code>.</td>
+    </tr>
+    <tr>
+      <td>AI grading not completing / stuck "Grading…"</td>
+      <td>LiteLLM proxy down, Ollama model not loaded, or invalid LITELLM_KEY</td>
+      <td>Check <code>oc get pods -n i3-evalos -l app=litellm</code>. Test model: <code>oc exec deployment/litellm -- curl -s http://localhost:4000/health</code>. Confirm Ollama has <code>mistral:7b-instruct-q4_K_M</code> pulled.</td>
+    </tr>
+    <tr>
+      <td>Certificate generation fails</td>
+      <td>PDF template missing or malformed; disk/storage issue</td>
+      <td>Check <em>Settings → Certificate Template</em> — confirm template is uploaded. Review <code>oc logs deployment/evalos | grep "cert"</code>. Confirm PVC is bound: <code>oc get pvc -n i3-evalos</code>.</td>
+    </tr>
+    <tr>
+      <td>SIT bridge payloads stuck in queue</td>
+      <td>sit-api service unreachable or returning 5xx</td>
+      <td>Run <code>oc get pods -n i3-sit -l app=sit-api</code>. Check network policy: <code>oc get networkpolicy -n i3-evalos</code>. Manually replay from <em>Settings → Integration → Pending SIT Sync</em>.</td>
+    </tr>
+    <tr>
+      <td>ChromaDB / question bank search returns no results</td>
+      <td>Ingest job has not been run after new questions were added</td>
+      <td>Trigger manual ingest: <code>oc create job --from=cronjob/chroma-ingest chroma-ingest-$(date +%s) -n i3-evalos</code>. Check job logs: <code>oc logs job/chroma-ingest-&lt;id&gt; -n i3-evalos</code>.</td>
+    </tr>
+    <tr>
+      <td>Langfuse traces not appearing</td>
+      <td>Incorrect public key or Langfuse service unreachable</td>
+      <td>Confirm <code>LANGFUSE_PUBLIC_KEY</code> secret matches <code>pk-lf-i3evalos-8ed2998c3f68449b</code>. Check network egress to Langfuse host. View LiteLLM logs for flush errors.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════
+     USER GUIDE
+     ═══════════════════════════════════════════════════ -->
+<div class="section-title">User Guide</div>
+
+<h2 id="user-login">1 · Logging In with SSO</h2>
+<p>
+  EvalOS uses your organisation's Single Sign-On (SSO) system. You do not need a separate EvalOS password
+  — use the same username and password you use for all other i3 platforms.
+</p>
+
+<div class="step"><div class="num">1</div><div class="body"><strong>Open the platform</strong> — Go to <a href="https://evalos.i3technologies.co.ke">https://evalos.i3technologies.co.ke</a> in your browser. Chrome, Edge, or Firefox are recommended.</div></div>
+<div class="step"><div class="num">2</div><div class="body"><strong>Click "Sign In"</strong> — You will be redirected to the i3 SSO login page at <code>sso.i3technologies.co.ke</code>.</div></div>
+<div class="step"><div class="num">3</div><div class="body"><strong>Enter your credentials</strong> — Type your i3 username (usually your email address) and password, then click <em>Log In</em>.</div></div>
+<div class="step"><div class="num">4</div><div class="body"><strong>Two-Factor Authentication (if prompted)</strong> — If your account has 2FA enabled, enter the one-time code from your authenticator app when prompted.</div></div>
+<div class="step"><div class="num">5</div><div class="body"><strong>You are redirected back to EvalOS</strong> — After successful authentication, you land on your personal dashboard showing your scheduled exams and past results.</div></div>
+
+<div class="note">
+  <strong>First-time login</strong>
+  On your very first login, EvalOS may ask you to confirm your profile details (full name, department). Fill these in accurately — they appear on your certificate.
+</div>
+
+<h2 id="user-exam">2 · Taking an Exam</h2>
+
+<div class="step"><div class="num">1</div><div class="body"><strong>Find your exam</strong> — Your dashboard shows exam cards. Each card displays the exam name, scheduled date/time, duration, and status (<em>Upcoming, Open, Closed</em>). Only exams with status <em>Open</em> can be started.</div></div>
+<div class="step"><div class="num">2</div><div class="body"><strong>Click "Start Exam"</strong> — A confirmation dialog appears showing the exam rules: duration, number of questions, and whether proctoring is active. Read carefully, then click <em>Begin</em>.</div></div>
+<div class="step"><div class="num">3</div><div class="body"><strong>Allow webcam (if proctored)</strong> — If the exam requires proctoring, your browser will ask permission to access your webcam. Click <em>Allow</em>. You cannot proceed without granting access on proctored exams.</div></div>
+<div class="step"><div class="num">4</div><div class="body"><strong>Read each question carefully</strong> — Questions appear one per page or all on one scrollable page, depending on the exam configuration. For MCQ, click your chosen option. For short-answer and essay, type in the text box provided.</div></div>
+<div class="step"><div class="num">5</div><div class="body"><strong>Use the question navigator</strong> — The right-side panel shows a numbered grid of all questions. <span style="background:#22863a;color:#fff;padding:1px 6px;border-radius:3px;font-size:12px;">Green</span> = answered, <span style="background:#e5e7eb;color:#333;padding:1px 6px;border-radius:3px;font-size:12px;">Grey</span> = unanswered. Click any number to jump to that question.</div></div>
+<div class="step"><div class="num">6</div><div class="body"><strong>Stay on the exam tab</strong> — If proctoring is active, switching to another browser tab triggers a warning. Accumulating more than the allowed number of tab switches will auto-submit your exam.</div></div>
+<div class="step"><div class="num">7</div><div class="body"><strong>Review before submitting</strong> — When you have answered all questions, click <em>Review Answers</em>. This lists every question with your selected answer. Make any final changes.</div></div>
+<div class="step"><div class="num">8</div><div class="body"><strong>Submit</strong> — Click <em>Submit Exam</em> and confirm in the dialog. Once submitted, you cannot make changes. The system records your submission timestamp. The timer auto-submits at zero if you have not done so.</div></div>
+
+<div class="warn">
+  <strong>Do not close the browser tab during an exam</strong>
+  If you accidentally close the tab, reopen EvalOS and click the exam card — your session and answers are preserved for the duration of the exam window. Do not clear browser cookies mid-exam.
+</div>
+
+<h2 id="user-results">3 · Viewing Your Results</h2>
+
+<div class="step"><div class="num">1</div><div class="body"><strong>Navigate to Results</strong> — After submission, you are automatically taken to your result page. You can also access it anytime via <em>Dashboard → My Results</em>.</div></div>
+<div class="step"><div class="num">2</div><div class="body"><strong>Result summary</strong> — The page shows your total score (e.g. <em>74 / 100</em>), percentage, and pass/fail status highlighted in green or red.</div></div>
+<div class="step"><div class="num">3</div><div class="body"><strong>Question breakdown</strong> — Click <em>View Detailed Results</em> to see each question, your answer, the correct answer, and the points awarded. For AI-graded essay responses, a brief AI feedback comment is shown.</div></div>
+<div class="step"><div class="num">4</div><div class="body"><strong>Pending AI grading</strong> — If your exam included essay questions, the result may show <em>"Grading in progress"</em> for those sections. AI grading typically completes within 2–5 minutes after submission. Refresh the page or wait for an email notification.</div></div>
+
+<h2 id="user-cert">4 · Downloading Your Certificate</h2>
+
+<div class="step"><div class="num">1</div><div class="body"><strong>Eligibility</strong> — Certificates are issued automatically to candidates who meet or exceed the pass mark. You will receive an email notification when your certificate is ready.</div></div>
+<div class="step"><div class="num">2</div><div class="body"><strong>Open My Certificates</strong> — From your dashboard, click <em>My Certificates</em> in the top navigation bar. All issued certificates are listed with the exam name, date, and score.</div></div>
+<div class="step"><div class="num">3</div><div class="body"><strong>Download PDF</strong> — Click the <em>Download</em> button (↓ icon) next to the certificate. A branded PDF opens in a new tab. Use your browser's print/save function to save a local copy.</div></div>
+<div class="step"><div class="num">4</div><div class="body"><strong>Verify your certificate</strong> — Every certificate contains a unique QR code. Scan it with any QR reader to open the public verification page — no login required. Share this URL with employers or institutions to verify authenticity.</div></div>
+<div class="step"><div class="num">5</div><div class="body"><strong>Certificate not showing?</strong> — If you passed but your certificate is not yet available, it may still be processing (allow up to 15 minutes). If the issue persists after 30 minutes, contact your exam administrator.</div></div>
+
+<h2 id="user-zuri">5 · Using Zuri AI Study Assistant</h2>
+<p>
+  <strong>Zuri</strong> is your AI-powered study companion. Visit
+  <a href="https://zuri.i3technologies.co.ke">https://zuri.i3technologies.co.ke</a> — same SSO login.
+</p>
+
+<div class="step"><div class="num">1</div><div class="body"><strong>Log in</strong> — Open <code>zuri.i3technologies.co.ke</code> and sign in with your i3 SSO credentials. You will land on the Zuri chat interface.</div></div>
+<div class="step"><div class="num">2</div><div class="body"><strong>Ask a question</strong> — Type any question in the chat box. For example: <em>"Explain the OSI model layers"</em> or <em>"What is the difference between TCP and UDP?"</em> Zuri retrieves relevant material from the question bank and generates a clear explanation.</div></div>
+<div class="step"><div class="num">3</div><div class="body"><strong>Request practice questions</strong> — Type: <em>"Give me 5 practice MCQs on cloud computing"</em>. Zuri generates exam-style questions with answers and explanations.</div></div>
+<div class="step"><div class="num">4</div><div class="body"><strong>Review past exam questions</strong> — After an exam window closes, you can paste a question from your result breakdown into Zuri and ask for a worked solution. Zuri explains the reasoning step by step.</div></div>
+<div class="step"><div class="num">5</div><div class="body"><strong>Study plan</strong> — Ask Zuri: <em>"Create a 2-week study plan for my upcoming Networking exam"</em>. Zuri drafts a structured plan based on common topics in the question bank for that subject.</div></div>
+
+<div class="note">
+  <strong>Zuri is a study aid, not an exam bypass</strong>
+  Zuri does not have access to live exam questions or answers during an open exam window. It is designed to help you learn and prepare, not to give exam answers in real time.
+</div>
+
+<h2 id="user-trouble">6 · User Troubleshooting</h2>
+
+<table>
+  <thead>
+    <tr><th>Problem</th><th>What to Do</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>The exam loads slowly or shows a spinner for a long time</strong></td>
+      <td>Check your internet connection. Try refreshing the page (F5). If it persists, clear browser cache and cookies for <code>evalos.i3technologies.co.ke</code>, then reload. Use a wired connection or stable Wi-Fi during exams.</td>
+    </tr>
+    <tr>
+      <td><strong>"Session Expired" message appears mid-exam</strong></td>
+      <td>Your authentication token has timed out. Click <em>Resume Session</em> on the dialog — you will be re-authenticated silently without losing answers. If that fails, close the tab, re-open EvalOS, and log in again; your answers are auto-saved every 30 seconds.</td>
+    </tr>
+    <tr>
+      <td><strong>Cannot submit the exam — button is greyed out</strong></td>
+      <td>Ensure all mandatory questions are answered. Mandatory questions are marked with a red asterisk (*). Check the question navigator for any unanswered grey squares. Once all mandatory questions are completed, the submit button activates.</td>
+    </tr>
+    <tr>
+      <td><strong>Webcam permission denied — cannot start proctored exam</strong></td>
+      <td>Click the camera icon in your browser address bar and select <em>Allow</em> for camera access. If it is blocked at the OS level, go to System Settings → Privacy → Camera and enable access for your browser. Reload the page after granting permissions.</td>
+    </tr>
+    <tr>
+      <td><strong>My result shows "Grading in progress" even after 30 minutes</strong></td>
+      <td>The AI grading service may be experiencing a delay. Refresh the page. If the status does not change after 1 hour, contact your administrator — they can manually trigger grading or override scores.</td>
+    </tr>
+    <tr>
+      <td><strong>Certificate is not available even though I passed</strong></td>
+      <td>Allow up to 15 minutes for auto-issuance. Check your email for a certificate notification. If neither has arrived after 30 minutes, contact the exam administrator and provide your exam name and submission time.</td>
+    </tr>
+    <tr>
+      <td><strong>I cannot log in — SSO page shows an error</strong></td>
+      <td>Confirm you are using the correct i3 credentials. If you have forgotten your password, use the <em>Forgot Password</em> link on the SSO login page. If the error persists, contact your IT administrator — your account may need to be re-assigned the <code>evalos-candidate</code> role in Keycloak.</td>
+    </tr>
+    <tr>
+      <td><strong>Zuri AI gives incorrect or irrelevant answers</strong></td>
+      <td>Try rephrasing your question with more specific keywords. If the topic is very new and not yet in the question bank, Zuri may have limited context. Report the issue via the thumbs-down button on Zuri's response so the admin team can improve the question bank.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- FOOTER -->
+<div class="footer">
+  Made with IBM Bob &nbsp;|&nbsp; Component 05 of 14 &nbsp;·&nbsp; EvalOS — Assessment Platform
+</div>
+
+</div><!-- /wrap -->
+</body>
+</html>

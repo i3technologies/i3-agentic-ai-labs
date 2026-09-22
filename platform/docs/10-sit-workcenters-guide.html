@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Component 10 — SIT Digital Work-Centers | Admin &amp; User Guide</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.7;color:#1f2328;background:#ffffff}
+  a{color:#0550ae;text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ── Cover ── */
+  .cover{background:linear-gradient(135deg,#0550ae,#1d6fde);color:#fff;padding:56px 40px 48px;text-align:center}
+  .cover .badge{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:20px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:4px 14px;margin-bottom:18px}
+  .cover h1{font-size:2.2rem;font-weight:700;line-height:1.2;margin-bottom:10px}
+  .cover .subtitle{font-size:1.05rem;opacity:.88;margin-bottom:24px}
+  .cover .meta{display:flex;justify-content:center;flex-wrap:wrap;gap:24px;font-size:13px;opacity:.82}
+  .cover .meta span::before{content:"• ";opacity:.6}
+  .cover .meta span:first-child::before{content:""}
+
+  /* ── Layout ── */
+  .container{max-width:860px;margin:0 auto;padding:0 28px}
+  .toc-wrap{background:#f7f8fa;border-bottom:1px solid #e5e7eb;padding:28px 0}
+  .toc-wrap .container{display:grid;grid-template-columns:1fr 1fr;gap:0 40px}
+  .toc-col h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#57606a;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #e5e7eb}
+  .toc-col ol{padding-left:20px;font-size:13.5px;color:#0550ae}
+  .toc-col li{margin-bottom:4px}
+  .toc-col a{color:#0550ae}
+
+  main{padding:40px 0 56px}
+
+  /* ── Typography ── */
+  h2{font-size:1.35rem;font-weight:700;color:#0550ae;border-bottom:2px solid #0550ae;padding-bottom:8px;margin:44px 0 18px}
+  h3{font-size:1.05rem;font-weight:700;color:#1f2328;margin:28px 0 10px}
+  h4{font-size:.95rem;font-weight:700;color:#57606a;margin:20px 0 6px;text-transform:uppercase;letter-spacing:.04em;font-size:12px}
+  p{margin-bottom:12px}
+  ul,ol{padding-left:22px;margin-bottom:12px}
+  li{margin-bottom:4px}
+  strong{font-weight:600}
+
+  /* ── Section label ── */
+  .section-label{display:inline-block;background:#0550ae;color:#fff;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 10px;border-radius:3px;margin-bottom:4px}
+  .section-label.user{background:#7c5cd8}
+
+  /* ── Info boxes ── */
+  .note,.warn,.tip{border-left:4px solid;padding:12px 16px;border-radius:0 6px 6px 0;margin:16px 0;font-size:13.5px}
+  .note{border-color:#3b82d4;background:#eff6ff}
+  .warn{border-color:#d97706;background:#fffbeb}
+  .tip{border-color:#16a34a;background:#f0fdf4}
+
+  /* ── Code ── */
+  pre{background:#f0f6ff;border:1px solid #b6d4fe;border-radius:6px;padding:16px;font-size:12.5px;line-height:1.55;overflow-x:auto;margin:14px 0;white-space:pre-wrap;word-break:break-all}
+  code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:12.5px}
+  p code,li code,td code{background:#f0f6ff;border:1px solid #b6d4fe;border-radius:3px;padding:1px 5px}
+
+  /* ── Tables ── */
+  .table-wrap{overflow-x:auto;margin:16px 0}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{background:#0550ae;color:#fff;text-align:left;padding:9px 12px;font-weight:600;font-size:12.5px}
+  td{padding:8px 12px;border-bottom:1px solid #e5e7eb;vertical-align:top}
+  tr:nth-child(even) td{background:#f7f8fa}
+  td code{word-break:break-all}
+
+  /* ── Engine cards ── */
+  .engine-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:20px 0}
+  .engine-card{border:1px solid #e5e7eb;border-radius:8px;padding:18px;background:#f7f8fa}
+  .engine-card .num{display:inline-block;background:#0550ae;color:#fff;font-size:11px;font-weight:700;border-radius:50%;width:22px;height:22px;text-align:center;line-height:22px;margin-bottom:8px}
+  .engine-card h4{margin:0 0 6px;text-transform:none;font-size:.9rem;letter-spacing:0;color:#0550ae}
+  .engine-card p{font-size:13px;color:#57606a;margin:0}
+
+  /* ── Tier badges ── */
+  .tier{display:inline-block;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;margin:2px}
+  .tier-daily{background:#fef3c7;color:#92400e}
+  .tier-monthly{background:#dbeafe;color:#1e40af}
+  .tier-student{background:#d1fae5;color:#065f46}
+  .tier-corporate{background:#ede9fe;color:#4c1d95}
+
+  /* ── Divider ── */
+  .divider{border:none;border-top:2px solid #e5e7eb;margin:40px 0}
+
+  /* ── URL list ── */
+  .url-grid{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-size:13.5px;margin:14px 0}
+  .url-grid dt{font-weight:600;color:#57606a;white-space:nowrap}
+  .url-grid dd{margin:0}
+
+  /* ── Footer ── */
+  footer{border-top:1px solid #e5e7eb;padding:18px 0;text-align:center;font-size:12px;color:#57606a}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ COVER ═══════════════════ -->
+<div class="cover">
+  <div class="container">
+    <div class="badge">Component 10 of 14 — i3 Technologies Platform</div>
+    <h1>SIT Digital Work-Centers</h1>
+    <div class="subtitle">Admin &amp; User Guide — 4-Engine Campus Platform</div>
+    <div class="meta">
+      <span>Namespace: <strong>i3-sit</strong></span>
+      <span>API: <strong>api.sit.i3technologies.co.ke</strong></span>
+      <span>Stack: FastAPI · PostgreSQL · Keycloak · LiteLLM</span>
+      <span>Region: Kenya</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TOC ═══════════════════ -->
+<div class="toc-wrap">
+  <div class="container">
+    <div class="toc-col">
+      <h3>Admin Guide</h3>
+      <ol>
+        <li><a href="#arch">Platform Architecture &amp; 4-Engine Model</a></li>
+        <li><a href="#urls">URLs &amp; Endpoints Reference</a></li>
+        <li><a href="#learners-admin">Managing Learners</a></li>
+        <li><a href="#courses-admin">Managing Courses</a></li>
+        <li><a href="#enrollment-admin">Enrollment Workflow</a></li>
+        <li><a href="#credentials-admin">Credential Issuance</a></li>
+        <li><a href="#ecitizen-admin">eCitizen Service Cases</a></li>
+        <li><a href="#professional-admin">Professional Bookings &amp; WebRTC</a></li>
+        <li><a href="#cowork-admin">Co-working Memberships</a></li>
+        <li><a href="#tutor-admin">SIT Tutor Agent</a></li>
+        <li><a href="#seaweedfs">SeaweedFS Buckets</a></li>
+        <li><a href="#ops">Operations &amp; Deployment</a></li>
+        <li><a href="#troubleshoot">Troubleshooting</a></li>
+      </ol>
+    </div>
+    <div class="toc-col">
+      <h3>User Guide</h3>
+      <ol>
+        <li><a href="#u-register">Getting Registered</a></li>
+        <li><a href="#u-enroll">Enrolling in a Course</a></li>
+        <li><a href="#u-exam">Booking &amp; Taking an Exam</a></li>
+        <li><a href="#u-cert">Your Certificate &amp; QR Code</a></li>
+        <li><a href="#u-verify">Verifying a Credential</a></li>
+        <li><a href="#u-ecitizen">eCitizen Services</a></li>
+        <li><a href="#u-cowork">Co-working Membership</a></li>
+        <li><a href="#u-professional">Booking a Professional</a></li>
+        <li><a href="#u-tutor">Using the AI Tutor</a></li>
+        <li><a href="#u-trouble">User Troubleshooting</a></li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ MAIN ═══════════════════ -->
+<main>
+<div class="container">
+
+<!-- ──────────── ADMIN SECTION HEADER ──────────── -->
+<p style="margin-top:8px"><span class="section-label">Admin Guide</span></p>
+
+<!-- ═══ 1. ARCHITECTURE ═══ -->
+<h2 id="arch">1. Platform Architecture &amp; 4-Engine Model</h2>
+
+<p>SIT Digital Work-Centers is a multi-purpose campus platform deployed under the <code>i3-sit</code> Kubernetes namespace. It combines four independent service engines behind a single FastAPI backend, shared PostgreSQL database (<code>sit_db</code>), and Keycloak SSO.</p>
+
+<div class="engine-grid">
+  <div class="engine-card">
+    <div class="num">1</div>
+    <h4>TVET Education</h4>
+    <p>Learner enrollment, course management, EvalOS exam bridge, SHA-256 anchored credential issuance, and multilingual AI tutor.</p>
+  </div>
+  <div class="engine-card">
+    <div class="num">2</div>
+    <h4>eCitizen Services</h4>
+    <p>Digital government service delivery — citizens submit service cases that are routed to the appropriate department and tracked to resolution.</p>
+  </div>
+  <div class="engine-card">
+    <div class="num">3</div>
+    <h4>Professional Services Marketplace</h4>
+    <p>Searchable directory of professional consultants with real-time WebRTC video room allocation on booking confirmation.</p>
+  </div>
+  <div class="engine-card">
+    <div class="num">4</div>
+    <h4>Co-working Membership</h4>
+    <p>Physical and digital co-working space access with four subscription tiers: Daily, Monthly, Student, and Corporate.</p>
+  </div>
+</div>
+
+<h3>High-Level Architecture Diagram</h3>
+<pre>
+┌───────────────────────────────────────────────────────────────┐
+│                        i3-sit Namespace                       │
+│                                                               │
+│  Next.js Portal          SIT Tutor Agent                      │
+│  sit.i3technologies.co.ke  tutor.sit.i3technologies.co.ke     │
+│         │                        │ LiteLLM / Mistral          │
+│         ▼                        ▼                            │
+│   ┌─────────────────────────────────────────┐                 │
+│   │        FastAPI  (sit-api Pod)           │                 │
+│   │   api.sit.i3technologies.co.ke          │                 │
+│   └────────────┬────────────────────────────┘                 │
+│                │                                              │
+│   ┌────────────▼───────────┐  ┌──────────────────────────┐   │
+│   │  PostgreSQL  sit_db    │  │  Keycloak SSO            │   │
+│   │  sit_app / port 5432   │  │  sso.i3technologies.co.ke│   │
+│   └────────────────────────┘  └──────────────────────────┘   │
+│                                                               │
+│   ┌──────────────────────┐  ┌─────────────────────────────┐  │
+│   │  SeaweedFS           │  │  EvalOS (Exam Bridge)       │  │
+│   │  4 buckets           │  │  External exam system       │  │
+│   └──────────────────────┘  └─────────────────────────────┘  │
+│                                                               │
+│   ┌──────────────────────────────────────────────────────┐    │
+│   │  talent-api  (credential write-back)                 │    │
+│   └──────────────────────────────────────────────────────┘    │
+└───────────────────────────────────────────────────────────────┘
+</pre>
+
+<h3>Key Integration Points</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>Integration</th><th>Purpose</th><th>Direction</th></tr>
+  <tr><td>EvalOS</td><td>Exam scheduling &amp; result ingestion</td><td>SIT → EvalOS (POST exam-bookings)</td></tr>
+  <tr><td>talent-api</td><td>Credential write-back on issuance</td><td>SIT → talent-api (internal)</td></tr>
+  <tr><td>Keycloak</td><td>SSO token validation, user <code>sub</code> as canonical ID</td><td>Browser → Keycloak → SIT API</td></tr>
+  <tr><td>SeaweedFS</td><td>Binary asset storage for courses, exams, credentials</td><td>SIT API ↔ SeaweedFS</td></tr>
+  <tr><td>WebRTC</td><td>Video room allocation for professional bookings</td><td>SIT API allocates room on booking</td></tr>
+</table>
+</div>
+
+<!-- ═══ 2. URLs ═══ -->
+<h2 id="urls">2. URLs &amp; Endpoints Reference</h2>
+
+<h3>Service URLs</h3>
+<dl class="url-grid">
+  <dt>Web Portal</dt><dd><a href="https://sit.i3technologies.co.ke" target="_blank">https://sit.i3technologies.co.ke</a> (redirects to <code>/docs</code>; full Next.js portal in progress)</dd>
+  <dt>REST API</dt><dd><a href="https://api.sit.i3technologies.co.ke" target="_blank">https://api.sit.i3technologies.co.ke</a></dd>
+  <dt>API Docs</dt><dd><a href="https://api.sit.i3technologies.co.ke/docs" target="_blank">https://api.sit.i3technologies.co.ke/docs</a> (Swagger UI)</dd>
+  <dt>Tutor Agent</dt><dd><a href="https://tutor.sit.i3technologies.co.ke" target="_blank">https://tutor.sit.i3technologies.co.ke</a></dd>
+  <dt>Credential Verify</dt><dd><a href="https://verify.sit.i3technologies.co.ke/api/v1/credentials/verify/" target="_blank">https://verify.sit.i3technologies.co.ke/api/v1/credentials/verify/{qr_token}</a></dd>
+</dl>
+
+<h3>API Endpoints</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>Method</th><th>Path</th><th>Description</th><th>Auth</th></tr>
+  <tr><td><code>GET</code></td><td><code>/health</code></td><td>Service health check</td><td>None</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/v1/learners</code></td><td>Register new learner</td><td>Keycloak JWT</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/v1/enrollments</code></td><td>Enroll learner in course</td><td>Keycloak JWT</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/v1/exam-bookings</code></td><td>Book exam (bridges to EvalOS)</td><td>Keycloak JWT</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/v1/credentials</code></td><td>Issue credential (SHA-256 anchored)</td><td>Admin JWT</td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/v1/credentials/verify/{qr_token}</code></td><td>Public QR verification</td><td>None</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/v1/ecitizen</code></td><td>Create eCitizen service case</td><td>Keycloak JWT</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/v1/memberships</code></td><td>Create co-working membership</td><td>Keycloak JWT</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/v1/professional-bookings</code></td><td>Book professional (allocates WebRTC room)</td><td>Keycloak JWT</td></tr>
+</table>
+</div>
+
+<h3>Keycloak SSO Config</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>Parameter</th><th>Value</th></tr>
+  <tr><td>Issuer</td><td><code>https://sso.i3technologies.co.ke/auth/realms/i3</code></td></tr>
+  <tr><td>Client ID</td><td><code>sit-web</code></td></tr>
+  <tr><td>Client Secret</td><td><code>BWllvjsZyODiAhpeWnyEii1yXK9WmaRh</code></td></tr>
+  <tr><td>Token endpoint</td><td><code>https://sso.i3technologies.co.ke/auth/realms/i3/protocol/openid-connect/token</code></td></tr>
+  <tr><td>JWKS URI</td><td><code>https://sso.i3technologies.co.ke/auth/realms/i3/protocol/openid-connect/certs</code></td></tr>
+</table>
+</div>
+
+<!-- ═══ 3. LEARNERS ═══ -->
+<h2 id="learners-admin">3. Managing Learners</h2>
+
+<h3>Learner Registration Requirements</h3>
+<p>Every learner must provide valid Kenyan identification. Under the <strong>Kenya Data Protection Act 2019</strong>, explicit consent (<code>consent=true</code>) is mandatory before any personal data is stored. The API will return <code>400 Bad Request</code> if <code>consent</code> is omitted or <code>false</code>.</p>
+
+<div class="table-wrap">
+<table>
+  <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+  <tr><td><code>keycloak_sub</code></td><td>string (UUID)</td><td>Yes</td><td>From Keycloak JWT <code>sub</code> claim — canonical identity</td></tr>
+  <tr><td><code>full_name</code></td><td>string</td><td>Yes</td><td>Legal name as on ID</td></tr>
+  <tr><td><code>kenya_id</code></td><td>string</td><td>Yes</td><td>National ID or Alien Certificate number</td></tr>
+  <tr><td><code>phone</code></td><td>string</td><td>Yes</td><td>Kenyan format e.g. <code>+254712345678</code></td></tr>
+  <tr><td><code>email</code></td><td>string</td><td>Yes</td><td>Must be valid email</td></tr>
+  <tr><td><code>ward</code></td><td>string</td><td>Yes</td><td>Sub-county ward — used for regional analytics</td></tr>
+  <tr><td><code>consent</code></td><td>boolean</td><td>Yes</td><td>Must be <code>true</code> (Data Protection Act 2019)</td></tr>
+</table>
+</div>
+
+<h3>Register Learner — API Example</h3>
+<pre>POST https://api.sit.i3technologies.co.ke/api/v1/learners
+Authorization: Bearer &lt;keycloak_access_token&gt;
+Content-Type: application/json
+
+{
+  "keycloak_sub": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "full_name": "Amina Wanjiku Ochieng",
+  "kenya_id": "30012345",
+  "phone": "+254712345678",
+  "email": "amina.ochieng@example.com",
+  "ward": "Westlands",
+  "consent": true
+}
+
+--- Response 201 ---
+{
+  "id": 42,
+  "keycloak_sub": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "full_name": "Amina Wanjiku Ochieng",
+  "ward": "Westlands",
+  "created_at": "2025-07-10T08:23:11Z"
+}</pre>
+
+<h3>Querying the learners Table</h3>
+<pre>-- List all learners with enrollment count
+SELECT l.id, l.full_name, l.email, l.ward, COUNT(e.id) AS enrollments
+FROM learners l
+LEFT JOIN enrollments e ON e.learner_id = l.id
+GROUP BY l.id
+ORDER BY l.created_at DESC
+LIMIT 50;</pre>
+
+<div class="warn">
+  <strong>Data Protection:</strong> The <code>kenya_id</code> and <code>phone</code> columns are considered personal data under the DPA 2019. Do not export or log these values outside approved systems. Learner data deletion requests must be honoured within 72 hours.
+</div>
+
+<!-- ═══ 4. COURSES ═══ -->
+<h2 id="courses-admin">4. Managing Courses</h2>
+
+<p>Courses are the core TVET unit. The <code>courses</code> table stores all programme offerings. Course assets (syllabi, videos, reading materials) are stored in the <code>sit-course-content</code> SeaweedFS bucket and referenced by URL in the <code>content_url</code> column.</p>
+
+<h3>courses Table Schema</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>Column</th><th>Type</th><th>Description</th></tr>
+  <tr><td><code>id</code></td><td>serial PK</td><td>Auto-incrementing course ID</td></tr>
+  <tr><td><code>title</code></td><td>varchar(255)</td><td>Course title</td></tr>
+  <tr><td><code>description</code></td><td>text</td><td>Full course description</td></tr>
+  <tr><td><code>level</code></td><td>varchar(50)</td><td>e.g. <code>Certificate I</code>, <code>Certificate III</code>, <code>Diploma</code></td></tr>
+  <tr><td><code>duration_weeks</code></td><td>integer</td><td>Planned duration in weeks</td></tr>
+  <tr><td><code>content_url</code></td><td>text</td><td>SeaweedFS URL to course package</td></tr>
+  <tr><td><code>evalos_course_id</code></td><td>varchar(100)</td><td>Corresponding EvalOS course identifier for exam bridging</td></tr>
+  <tr><td><code>active</code></td><td>boolean</td><td>Whether course is open for enrollment</td></tr>
+  <tr><td><code>created_at</code></td><td>timestamptz</td><td>Creation timestamp</td></tr>
+</table>
+</div>
+
+<h3>Adding a Course via Direct DB Insert</h3>
+<pre>INSERT INTO courses (title, description, level, duration_weeks, content_url, evalos_course_id, active)
+VALUES (
+  'Electrical Installation Works',
+  'NITA-aligned certificate programme covering domestic and industrial wiring.',
+  'Certificate III',
+  16,
+  'https://seaweedfs.internal/sit-course-content/elec-install-v2.zip',
+  'EVALOS-EIW-2025',
+  true
+)
+RETURNING id, title;</pre>
+
+<h3>Adding a Course via API</h3>
+<pre>POST https://api.sit.i3technologies.co.ke/api/v1/courses
+Authorization: Bearer &lt;admin_access_token&gt;
+Content-Type: application/json
+
+{
+  "title": "Electrical Installation Works",
+  "description": "NITA-aligned certificate programme covering domestic and industrial wiring.",
+  "level": "Certificate III",
+  "duration_weeks": 16,
+  "content_url": "https://seaweedfs.internal/sit-course-content/elec-install-v2.zip",
+  "evalos_course_id": "EVALOS-EIW-2025",
+  "active": true
+}</pre>
+
+<div class="tip">
+  <strong>Course Content Upload:</strong> Upload the course ZIP/PDF to the <code>sit-course-content</code> SeaweedFS bucket first, then use the returned object URL as the <code>content_url</code> value.
+</div>
+
+<!-- ═══ 5. ENROLLMENT ═══ -->
+<h2 id="enrollment-admin">5. Enrollment Workflow</h2>
+
+<p>Enrollment links a learner to a course. After successful enrollment, the learner gains access to course content and becomes eligible to book an exam through the EvalOS bridge.</p>
+
+<h3>Enrollment API Flow</h3>
+<pre>POST https://api.sit.i3technologies.co.ke/api/v1/enrollments
+Authorization: Bearer &lt;keycloak_access_token&gt;
+Content-Type: application/json
+
+{
+  "learner_id": 42,
+  "course_id": 7
+}
+
+--- Response 201 ---
+{
+  "id": 201,
+  "learner_id": 42,
+  "course_id": 7,
+  "status": "active",
+  "enrolled_at": "2025-07-10T09:00:00Z",
+  "evalos_course_id": "EVALOS-EIW-2025"
+}</pre>
+
+<h3>EvalOS Exam Bridge</h3>
+<p>When an exam booking is created, the SIT API passes the <code>evalos_course_id</code> and learner details to EvalOS. EvalOS returns a booking reference and scheduled date.</p>
+
+<pre>POST https://api.sit.i3technologies.co.ke/api/v1/exam-bookings
+Authorization: Bearer &lt;keycloak_access_token&gt;
+Content-Type: application/json
+
+{
+  "enrollment_id": 201,
+  "preferred_date": "2025-08-15",
+  "centre_code": "SIT-NBI-01"
+}
+
+--- Response 201 ---
+{
+  "id": 88,
+  "enrollment_id": 201,
+  "evalos_booking_ref": "EVL-2025-0045231",
+  "scheduled_date": "2025-08-15",
+  "centre": "SIT Nairobi Centre 01",
+  "status": "confirmed",
+  "exam_assets_url": "https://seaweedfs.internal/sit-exam-assets/EVL-2025-0045231/"
+}</pre>
+
+<h3>Enrollment State Machine</h3>
+<pre>
+[registered] → (POST /enrollments) → [active]
+[active]     → (POST /exam-bookings) → [exam_booked]
+[exam_booked] → (EvalOS webhook on pass) → [passed]
+[passed]     → (POST /credentials) → [credentialed]
+</pre>
+
+<!-- ═══ 6. CREDENTIALS ═══ -->
+<h2 id="credentials-admin">6. Credential Issuance</h2>
+
+<p>Credentials are issued after a learner passes their exam. The issuance process computes a SHA-256 hash of the credential payload, stores it in the <code>credentials</code> table, generates a QR token, and writes the record to the <strong>talent-api</strong> for cross-platform visibility.</p>
+
+<h3>Credential Issuance — API Example</h3>
+<pre>POST https://api.sit.i3technologies.co.ke/api/v1/credentials
+Authorization: Bearer &lt;admin_access_token&gt;
+Content-Type: application/json
+
+{
+  "learner_id": 42,
+  "course_id": 7,
+  "exam_booking_id": 88,
+  "grade": "PASS",
+  "issue_date": "2025-08-20"
+}
+
+--- Response 201 ---
+{
+  "id": 15,
+  "learner_id": 42,
+  "course_id": 7,
+  "qr_token": "SIT-CRED-a9f3e2c1b0d847f6",
+  "cert_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "verify_url": "https://verify.sit.i3technologies.co.ke/api/v1/credentials/verify/SIT-CRED-a9f3e2c1b0d847f6",
+  "issued_at": "2025-08-20T10:00:00Z"
+}</pre>
+
+<h3>Public Verification</h3>
+<pre>GET https://verify.sit.i3technologies.co.ke/api/v1/credentials/verify/SIT-CRED-a9f3e2c1b0d847f6
+
+--- Response 200 ---
+{
+  "valid": true,
+  "learner_name": "Amina Wanjiku Ochieng",
+  "course": "Electrical Installation Works",
+  "level": "Certificate III",
+  "grade": "PASS",
+  "issued_at": "2025-08-20T10:00:00Z",
+  "cert_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}</pre>
+
+<div class="note">
+  The <code>cert_hash</code> is computed as <code>SHA-256(learner_id + course_id + issue_date + grade)</code>. The hash is also written to the <strong>talent-api</strong> via an internal service-to-service call, making the credential visible on the talent platform without any additional action.
+</div>
+
+<h3>credentials Table Columns</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>Column</th><th>Type</th><th>Description</th></tr>
+  <tr><td><code>id</code></td><td>serial PK</td><td>Auto ID</td></tr>
+  <tr><td><code>learner_id</code></td><td>int FK</td><td>References <code>learners.id</code></td></tr>
+  <tr><td><code>course_id</code></td><td>int FK</td><td>References <code>courses.id</code></td></tr>
+  <tr><td><code>exam_booking_id</code></td><td>int FK</td><td>References <code>exam_bookings.id</code></td></tr>
+  <tr><td><code>qr_token</code></td><td>varchar unique</td><td>URL-safe token embedded in QR code</td></tr>
+  <tr><td><code>cert_hash</code></td><td>varchar</td><td>SHA-256 hash prefixed with <code>sha256:</code></td></tr>
+  <tr><td><code>grade</code></td><td>varchar</td><td>e.g. <code>PASS</code>, <code>DISTINCTION</code></td></tr>
+  <tr><td><code>issued_at</code></td><td>timestamptz</td><td>Issuance timestamp</td></tr>
+</table>
+</div>
+
+<!-- ═══ 7. ECITIZEN ═══ -->
+<h2 id="ecitizen-admin">7. eCitizen Service Cases Workflow</h2>
+
+<p>The eCitizen engine accepts digital service requests from citizens, routes them to the relevant department, and tracks progress. Cases are stored in the <code>ecitizen_cases</code> table.</p>
+
+<h3>Create a Service Case — Admin/API</h3>
+<pre>POST https://api.sit.i3technologies.co.ke/api/v1/ecitizen
+Authorization: Bearer &lt;keycloak_access_token&gt;
+Content-Type: application/json
+
+{
+  "citizen_keycloak_sub": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "service_type": "business_registration",
+  "description": "Requesting name search and registration for a sole proprietorship.",
+  "attachments": ["https://seaweedfs.internal/sit-professional-docs/id-scan-001.pdf"]
+}
+
+--- Response 201 ---
+{
+  "case_id": "EC-2025-007891",
+  "status": "pending",
+  "service_type": "business_registration",
+  "assigned_department": "Business Registration Unit",
+  "created_at": "2025-07-10T11:00:00Z",
+  "expected_sla_hours": 48
+}</pre>
+
+<h3>Case Status Values</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>Status</th><th>Meaning</th></tr>
+  <tr><td><code>pending</code></td><td>Received, not yet assigned</td></tr>
+  <tr><td><code>in_progress</code></td><td>Assigned to officer, being processed</td></tr>
+  <tr><td><code>awaiting_docs</code></td><td>Citizen required to submit additional documents</td></tr>
+  <tr><td><code>resolved</code></td><td>Service delivered</td></tr>
+  <tr><td><code>rejected</code></td><td>Case rejected with reason</td></tr>
+</table>
+</div>
+
+<!-- ═══ 8. PROFESSIONAL BOOKINGS ═══ -->
+<h2 id="professional-admin">8. Professional Bookings &amp; WebRTC Rooms</h2>
+
+<p>The marketplace allows users to browse registered professionals and book consultations. On booking confirmation, the SIT API allocates a dedicated WebRTC room and returns the join URL to both parties.</p>
+
+<h3>Professional Booking — API</h3>
+<pre>POST https://api.sit.i3technologies.co.ke/api/v1/professional-bookings
+Authorization: Bearer &lt;keycloak_access_token&gt;
+Content-Type: application/json
+
+{
+  "citizen_keycloak_sub": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "professional_id": 9,
+  "service_type": "legal_advice",
+  "preferred_datetime": "2025-07-15T14:00:00Z",
+  "notes": "Need advice on tenancy agreement dispute."
+}
+
+--- Response 201 ---
+{
+  "booking_id": "PRO-2025-000441",
+  "professional_name": "Advocate John Karimi",
+  "service_type": "legal_advice",
+  "scheduled_at": "2025-07-15T14:00:00Z",
+  "webrtc_room_id": "room-sit-pro-8f2a19c3",
+  "join_url": "https://meet.i3technologies.co.ke/room-sit-pro-8f2a19c3",
+  "status": "confirmed"
+}</pre>
+
+<h3>Admin: Registering a Professional</h3>
+<pre>INSERT INTO professionals (full_name, specialty, bio, rate_ksh_per_hour, available, docs_url)
+VALUES (
+  'Advocate John Karimi',
+  'legal_advice',
+  'Advocate of the High Court of Kenya, 12 years experience.',
+  3000,
+  true,
+  'https://seaweedfs.internal/sit-professional-docs/karimi-certs.pdf'
+);</pre>
+
+<!-- ═══ 9. CO-WORKING ═══ -->
+<h2 id="cowork-admin">9. Co-working Memberships &amp; Tiers</h2>
+
+<h3>Membership Tiers</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>Tier</th><th>Access Type</th><th>Typical Duration</th><th>Target User</th></tr>
+  <tr><td><span class="tier tier-daily">daily</span></td><td>Drop-in desk, basic amenities</td><td>1 day</td><td>Visitors, one-off users</td></tr>
+  <tr><td><span class="tier tier-monthly">monthly</span></td><td>Dedicated desk, locker, meeting room credits</td><td>30 days</td><td>Freelancers, SMEs</td></tr>
+  <tr><td><span class="tier tier-student">student</span></td><td>Shared desk, study areas, free Wi-Fi</td><td>Semester/annual</td><td>Students with valid student ID</td></tr>
+  <tr><td><span class="tier tier-corporate">corporate</span></td><td>Private office, dedicated internet line, branding options</td><td>Monthly/annual</td><td>Companies, organisations</td></tr>
+</table>
+</div>
+
+<h3>Create Membership — API</h3>
+<pre>POST https://api.sit.i3technologies.co.ke/api/v1/memberships
+Authorization: Bearer &lt;keycloak_access_token&gt;
+Content-Type: application/json
+
+{
+  "member_keycloak_sub": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "tier": "monthly",
+  "start_date": "2025-08-01",
+  "payment_ref": "MPESA-QB9K2A"
+}
+
+--- Response 201 ---
+{
+  "membership_id": "MEM-2025-003812",
+  "tier": "monthly",
+  "start_date": "2025-08-01",
+  "end_date": "2025-08-31",
+  "access_card_code": "SIT-ACC-9821",
+  "status": "active"
+}</pre>
+
+<!-- ═══ 10. TUTOR AGENT ═══ -->
+<h2 id="tutor-admin">10. SIT Tutor Agent</h2>
+
+<p>The SIT Tutor Agent is a multilingual AI assistant deployed as a separate service at <code>tutor.sit.i3technologies.co.ke</code>. It is powered by <strong>LiteLLM</strong> proxying <strong>Mistral</strong> models and supports English, Swahili, and Sheng.</p>
+
+<h3>Capabilities</h3>
+<ul>
+  <li>Course content explanation and Q&amp;A</li>
+  <li>Exam preparation, practice questions, and past paper walkthrough</li>
+  <li>Vocational and career guidance</li>
+  <li>Multilingual responses (auto-detects user language)</li>
+</ul>
+
+<h3>Health Check</h3>
+<pre>GET https://tutor.sit.i3technologies.co.ke/health
+
+--- Response 200 ---
+{
+  "status": "ok",
+  "model": "mistral-7b-instruct",
+  "litellm_version": "1.43.2",
+  "uptime_seconds": 84302
+}</pre>
+
+<h3>Configuration</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>Parameter</th><th>Value / Location</th></tr>
+  <tr><td>LiteLLM proxy URL</td><td><code>LITELLM_BASE_URL</code> env var on tutor pod</td></tr>
+  <tr><td>Model</td><td><code>mistral-7b-instruct</code> (configurable via <code>TUTOR_MODEL</code>)</td></tr>
+  <tr><td>System prompt path</td><td><code>/app/prompts/sit_tutor_system.md</code> inside pod</td></tr>
+  <tr><td>Max tokens</td><td>2048 (configurable via <code>TUTOR_MAX_TOKENS</code>)</td></tr>
+  <tr><td>Supported languages</td><td>English, Swahili, Sheng (auto-detect)</td></tr>
+</table>
+</div>
+
+<h3>Restarting the Tutor Pod</h3>
+<pre>kubectl rollout restart deployment/sit-tutor -n i3-sit
+kubectl rollout status deployment/sit-tutor -n i3-sit</pre>
+
+<h3>Updating the System Prompt</h3>
+<pre># Edit the ConfigMap that holds the system prompt
+kubectl edit configmap sit-tutor-config -n i3-sit
+
+# Then rolling restart to pick up changes
+kubectl rollout restart deployment/sit-tutor -n i3-sit</pre>
+
+<!-- ═══ 11. SEAWEEDFS ═══ -->
+<h2 id="seaweedfs">11. SeaweedFS Buckets</h2>
+
+<div class="table-wrap">
+<table>
+  <tr><th>Bucket</th><th>Contents</th><th>Access</th></tr>
+  <tr><td><code>sit-course-content</code></td><td>Course syllabi, videos, ZIP packages</td><td>Internal read; admin write</td></tr>
+  <tr><td><code>sit-exam-assets</code></td><td>Exam papers, mark schemes (EvalOS-linked)</td><td>Internal read; EvalOS write</td></tr>
+  <tr><td><code>sit-professional-docs</code></td><td>Professional profiles, certificates, client documents</td><td>Internal read; admin write</td></tr>
+  <tr><td><code>sit-credentials</code></td><td>Issued credential PDFs, QR code images</td><td>Public read (via <code>verify.*</code>); API write</td></tr>
+</table>
+</div>
+
+<h3>Listing Objects in a Bucket</h3>
+<pre># Using s3cmd (configured for SeaweedFS endpoint)
+s3cmd ls s3://sit-course-content/
+
+# Or via kubectl exec
+kubectl exec -n i3-sit deploy/sit-api -- \
+  curl -s "http://seaweedfs-s3.seaweedfs.svc:8333/sit-credentials/?list-type=2"</pre>
+
+<!-- ═══ 12. OPERATIONS ═══ -->
+<h2 id="ops">12. Operations &amp; Deployment</h2>
+
+<h3>Pod Management</h3>
+<pre># List all SIT pods
+kubectl get pods -n i3-sit
+
+# Describe a specific pod
+kubectl describe pod &lt;pod-name&gt; -n i3-sit
+
+# Restart the API deployment
+kubectl rollout restart deployment/sit-api -n i3-sit
+
+# Scale the API
+kubectl scale deployment/sit-api --replicas=3 -n i3-sit</pre>
+
+<h3>Viewing Logs</h3>
+<pre># Tail API logs
+kubectl logs -f deployment/sit-api -n i3-sit
+
+# Tail tutor logs
+kubectl logs -f deployment/sit-tutor -n i3-sit
+
+# Get last 200 lines with timestamps
+kubectl logs deployment/sit-api -n i3-sit --tail=200 --timestamps=true</pre>
+
+<h3>Database Access</h3>
+<pre># Port-forward to sit_db
+kubectl port-forward svc/sit-postgres -n i3-sit 5432:5432
+
+# Connect with psql
+psql -h 127.0.0.1 -U sit_app -d sit_db
+# Password: 9a12b5ece9344b2faeb04577</pre>
+
+<h3>Common Admin DB Queries</h3>
+<pre>-- Count enrollments by course
+SELECT c.title, COUNT(e.id) AS total_enrollments, COUNT(cr.id) AS credentials_issued
+FROM courses c
+LEFT JOIN enrollments e ON e.course_id = c.id
+LEFT JOIN credentials cr ON cr.course_id = c.id
+GROUP BY c.id ORDER BY total_enrollments DESC;
+
+-- Active co-working members
+SELECT tier, COUNT(*) FROM membership_subscriptions
+WHERE status='active' GROUP BY tier;
+
+-- Recent eCitizen cases
+SELECT case_id, service_type, status, created_at
+FROM ecitizen_cases ORDER BY created_at DESC LIMIT 20;</pre>
+
+<h3>Build &amp; Deploy</h3>
+<pre># Build and push the API image
+docker build -t registry.i3technologies.co.ke/sit-api:latest ./sit-api
+docker push registry.i3technologies.co.ke/sit-api:latest
+
+# Apply Kubernetes manifests
+kubectl apply -f k8s/sit/ -n i3-sit
+
+# Force rolling update after new image push
+kubectl rollout restart deployment/sit-api -n i3-sit
+kubectl rollout status deployment/sit-api -n i3-sit</pre>
+
+<!-- ═══ 13. TROUBLESHOOTING ═══ -->
+<h2 id="troubleshoot">13. Troubleshooting</h2>
+<div class="table-wrap">
+<table>
+  <tr><th>Symptom</th><th>Likely Cause</th><th>Resolution</th></tr>
+  <tr><td><code>POST /learners</code> returns <code>400 consent required</code></td><td><code>consent</code> field missing or <code>false</code></td><td>Set <code>"consent": true</code> in request body (DPA 2019 requirement)</td></tr>
+  <tr><td><code>POST /learners</code> returns <code>409 Conflict</code></td><td>Duplicate <code>keycloak_sub</code> or <code>kenya_id</code></td><td>Learner already registered. Use GET to fetch existing record.</td></tr>
+  <tr><td><code>401 Unauthorized</code> on any protected endpoint</td><td>JWT expired or wrong audience</td><td>Re-obtain token from Keycloak. Ensure <code>aud</code> claim includes <code>sit-web</code>.</td></tr>
+  <tr><td>EvalOS exam booking fails with <code>502</code></td><td>EvalOS upstream unavailable</td><td>Check EvalOS service health. Retry after 60 s. Check <code>evalos_course_id</code> is valid.</td></tr>
+  <tr><td>Credential QR scan returns <code>{"valid":false}</code></td><td>Invalid or tampered <code>qr_token</code></td><td>Re-issue credential or verify <code>qr_token</code> matches <code>credentials</code> table entry.</td></tr>
+  <tr><td>Tutor returns <code>503 Service Unavailable</code></td><td>LiteLLM proxy down or Mistral API quota exceeded</td><td>Check <code>LITELLM_BASE_URL</code>. Restart tutor pod. Check upstream model quota.</td></tr>
+  <tr><td>WebRTC room not generated on professional booking</td><td>WebRTC allocation service timeout</td><td>Inspect sit-api logs for <code>webrtc_allocate</code> errors. Restart <code>sit-webrtc</code> service.</td></tr>
+  <tr><td>Membership <code>access_card_code</code> not working at gate</td><td>Access control system sync delay</td><td>Sync access control DB manually. Wait up to 5 minutes for propagation.</td></tr>
+  <tr><td>sit-api pod in <code>CrashLoopBackOff</code></td><td>DB connection failure or missing env var</td><td>Check <code>DATABASE_URL</code> env. Verify sit-postgres pod is running. Check pod describe events.</td></tr>
+  <tr><td>SeaweedFS file not accessible</td><td>Bucket ACL or network policy</td><td>Verify bucket policy. Confirm pod can reach <code>seaweedfs-s3.seaweedfs.svc:8333</code>.</td></tr>
+</table>
+</div>
+
+<!-- ══════════════════ DIVIDER ══════════════════ -->
+<hr class="divider"/>
+<p><span class="section-label user">User Guide</span></p>
+
+<!-- ═══ U1. REGISTER ═══ -->
+<h2 id="u-register">1. Getting Registered</h2>
+
+<p>To use SIT Digital Work-Centers — whether for TVET courses, eCitizen services, or booking a professional — you must first create an account. Registration is quick and requires the following information:</p>
+
+<div class="table-wrap">
+<table>
+  <tr><th>What You Need</th><th>Why It Is Required</th></tr>
+  <tr><td>Kenya National ID or Alien Certificate Number</td><td>Verifies your identity for certification and government services</td></tr>
+  <tr><td>Mobile phone number (Kenyan format)</td><td>SMS notifications for exam dates, membership, and service case updates</td></tr>
+  <tr><td>Email address</td><td>Account login, credential delivery, and booking confirmations</td></tr>
+  <tr><td>Your ward (sub-county administrative ward)</td><td>Required for regional service analytics and eligibility checks</td></tr>
+  <tr><td>Data protection consent</td><td>Required under the Kenya Data Protection Act 2019. You must agree before data is stored.</td></tr>
+</table>
+</div>
+
+<h3>How to Register</h3>
+<ol>
+  <li>Visit <a href="https://sit.i3technologies.co.ke" target="_blank">sit.i3technologies.co.ke</a> and click <strong>"Create Account"</strong>.</li>
+  <li>You will be redirected to the i3 SSO login page (<code>sso.i3technologies.co.ke</code>). Click <strong>"Register"</strong>.</li>
+  <li>Fill in your name, email, and password. Verify your email address via the confirmation link sent to your inbox.</li>
+  <li>Return to the portal. On first login, you will be prompted to complete your learner profile (ID number, phone, ward).</li>
+  <li>Read and accept the Data Protection consent notice. You cannot proceed without this step.</li>
+  <li>Your account is now active and you can access all four engines.</li>
+</ol>
+
+<div class="note">
+  <strong>Note:</strong> Your Kenya ID number is only used for identity verification. It is never shared with third parties and is stored securely in compliance with the Kenya Data Protection Act 2019.
+</div>
+
+<!-- ═══ U2. ENROLL ═══ -->
+<h2 id="u-enroll">2. Enrolling in a Course</h2>
+
+<ol>
+  <li>Log in to the portal and navigate to <strong>TVET Courses</strong>.</li>
+  <li>Browse the course catalogue. Courses show the level (Certificate I–III, Diploma), duration in weeks, and a short description.</li>
+  <li>Click on a course to view full details including the syllabus, assessment structure, and exam centre options.</li>
+  <li>Click <strong>"Enroll Now"</strong>. The system will confirm your enrollment and send a confirmation email.</li>
+  <li>Your course materials will be available immediately in the <strong>My Courses</strong> section.</li>
+  <li>The AI Tutor becomes available for the enrolled course automatically — see <a href="#u-tutor">Section 9</a>.</li>
+</ol>
+
+<div class="tip">
+  <strong>Tip:</strong> Check that the course has an <code>active</code> status before trying to enroll. Inactive courses are not available for new enrollments.
+</div>
+
+<!-- ═══ U3. EXAM ═══ -->
+<h2 id="u-exam">3. Booking &amp; Taking an Exam</h2>
+
+<h3>Booking Your Exam</h3>
+<ol>
+  <li>Once enrolled, navigate to <strong>My Courses → [Course Name] → Book Exam</strong>.</li>
+  <li>Select your preferred exam date and the exam centre closest to you.</li>
+  <li>Confirm the booking. You will receive an SMS and email with your <strong>EvalOS booking reference</strong> and exam centre address.</li>
+  <li>Your exam booking appears under <strong>My Exams</strong> with the status <code>confirmed</code>.</li>
+</ol>
+
+<h3>On Exam Day</h3>
+<ul>
+  <li>Bring your original <strong>Kenya National ID</strong> — no photocopies accepted.</li>
+  <li>Bring your <strong>EvalOS booking reference</strong> (printed or on your phone).</li>
+  <li>Arrive at least 30 minutes before your scheduled time.</li>
+  <li>Exams are conducted on-site at SIT exam centres using the EvalOS digital assessment system.</li>
+</ul>
+
+<div class="warn">
+  <strong>Important:</strong> Exam rescheduling must be done at least 48 hours before the exam date. Contact the centre directly or email <a href="mailto:exams@sit.i3technologies.co.ke">exams@sit.i3technologies.co.ke</a>.
+</div>
+
+<!-- ═══ U4. CERTIFICATE ═══ -->
+<h2 id="u-cert">4. Your Certificate &amp; QR Code</h2>
+
+<p>After passing your exam, your certificate is issued automatically within <strong>2 business days</strong>. You will receive an email notification when your credential is ready.</p>
+
+<h3>Accessing Your Certificate</h3>
+<ol>
+  <li>Log in and go to <strong>My Credentials</strong>.</li>
+  <li>Click <strong>"Download Certificate"</strong> to get your PDF certificate.</li>
+  <li>Your certificate includes a <strong>unique QR code</strong> that can be scanned by any employer or institution to verify your qualification in real time.</li>
+</ol>
+
+<h3>What Is on the Certificate?</h3>
+<ul>
+  <li>Your full name (as registered)</li>
+  <li>Course title and TVET level</li>
+  <li>Date of issue</li>
+  <li>Grade achieved</li>
+  <li>A SHA-256 cryptographic hash ensuring the certificate has not been tampered with</li>
+  <li>QR code linking to the public verification page</li>
+</ul>
+
+<!-- ═══ U5. VERIFY ═══ -->
+<h2 id="u-verify">5. Verifying a Credential</h2>
+
+<p>Anyone — employers, institutions, or government offices — can verify a SIT credential instantly without creating an account.</p>
+
+<h3>How to Verify</h3>
+<ol>
+  <li>Scan the QR code on the certificate using any smartphone camera or QR reader app.</li>
+  <li>Or visit directly: <code>https://verify.sit.i3technologies.co.ke/api/v1/credentials/verify/{qr_token}</code></li>
+  <li>The verification page shows the learner's name, course, grade, issue date, and cryptographic hash.</li>
+  <li>A green <strong>"Valid"</strong> badge confirms the credential is authentic and unmodified.</li>
+</ol>
+
+<pre>Example verification URL:
+https://verify.sit.i3technologies.co.ke/api/v1/credentials/verify/SIT-CRED-a9f3e2c1b0d847f6
+
+Response:
+{
+  "valid": true,
+  "learner_name": "Amina Wanjiku Ochieng",
+  "course": "Electrical Installation Works",
+  "level": "Certificate III",
+  "grade": "PASS",
+  "issued_at": "2025-08-20T10:00:00Z"
+}</pre>
+
+<!-- ═══ U6. ECITIZEN ═══ -->
+<h2 id="u-ecitizen">6. eCitizen Services</h2>
+
+<p>The eCitizen engine lets you request and track digital government services without visiting a government office. Services available through SIT include:</p>
+
+<div class="table-wrap">
+<table>
+  <tr><th>Service Type</th><th>Description</th><th>Typical SLA</th></tr>
+  <tr><td>Business Registration</td><td>Name search and registration for sole proprietorships and partnerships</td><td>48 hours</td></tr>
+  <tr><td>Certificate of Good Conduct</td><td>Application initiation and tracking</td><td>5–10 days</td></tr>
+  <tr><td>Land Search</td><td>Official land registry search request</td><td>3 days</td></tr>
+  <tr><td>Trade Licence Renewal</td><td>County-level trade licence renewal</td><td>2 days</td></tr>
+  <tr><td>NITA Certification Enquiry</td><td>Status queries for NITA trade test applications</td><td>24 hours</td></tr>
+  <tr><td>General Enquiry</td><td>Any other government service enquiry</td><td>48 hours</td></tr>
+</table>
+</div>
+
+<h3>How to Submit a Service Case</h3>
+<ol>
+  <li>Log in and navigate to <strong>eCitizen Services</strong>.</li>
+  <li>Select the service type from the dropdown menu.</li>
+  <li>Fill in the description of your request with as much detail as possible.</li>
+  <li>Upload any supporting documents (ID copies, forms, etc.) — accepted formats: PDF, JPG, PNG.</li>
+  <li>Submit the case. You will receive a <strong>Case ID</strong> (e.g. <code>EC-2025-007891</code>) via email and SMS.</li>
+  <li>Track your case status under <strong>My Cases</strong>. You will be notified when the status changes.</li>
+</ol>
+
+<!-- ═══ U7. COWORK ═══ -->
+<h2 id="u-cowork">7. Co-working Membership</h2>
+
+<p>SIT Digital Work-Centers provides modern physical co-working spaces. You can join on a flexible basis to suit your needs.</p>
+
+<h3>Membership Tiers at a Glance</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>Tier</th><th>Access</th><th>Best For</th></tr>
+  <tr><td><span class="tier tier-daily">Daily</span></td><td>Drop-in hot desk, Wi-Fi, printing allowance</td><td>Occasional visits, travellers</td></tr>
+  <tr><td><span class="tier tier-monthly">Monthly</span></td><td>Reserved desk, locker, 4 meeting room hours/month</td><td>Freelancers, consultants, SME teams</td></tr>
+  <tr><td><span class="tier tier-student">Student</span></td><td>Study zone access, free Wi-Fi, study resources</td><td>University and college students with valid ID</td></tr>
+  <tr><td><span class="tier tier-corporate">Corporate</span></td><td>Private office suite, dedicated fibre, company branding</td><td>Companies needing a professional address</td></tr>
+</table>
+</div>
+
+<h3>How to Join</h3>
+<ol>
+  <li>Navigate to <strong>Co-working</strong> from the portal menu.</li>
+  <li>Select your preferred membership tier and start date.</li>
+  <li>Pay via M-Pesa (Paybill or STK push) or card. Keep your payment reference number.</li>
+  <li>Submit the membership form with your payment reference.</li>
+  <li>You will receive your <strong>access card code</strong> via email within 30 minutes during business hours.</li>
+  <li>Present the access card code at the reception or tap your registered phone at the smart gate.</li>
+</ol>
+
+<!-- ═══ U8. PROFESSIONAL ═══ -->
+<h2 id="u-professional">8. Booking a Professional Consultant</h2>
+
+<p>Need legal, financial, IT, or other professional advice? Browse our verified marketplace of professionals and book a consultation — in person or via video call.</p>
+
+<h3>How to Book</h3>
+<ol>
+  <li>Navigate to <strong>Professionals</strong> from the portal.</li>
+  <li>Filter by specialty (Legal, Finance, Technology, Health, etc.).</li>
+  <li>Read the professional's profile, qualifications, and hourly rate.</li>
+  <li>Select an available time slot and click <strong>"Book Consultation"</strong>.</li>
+  <li>Add a brief description of what you need help with.</li>
+  <li>Confirm the booking. For video consultations, you will receive a <strong>WebRTC video room link</strong> by email.</li>
+  <li>Join the video call at the scheduled time by clicking the link. No additional software required — works in any modern browser.</li>
+</ol>
+
+<div class="note">
+  <strong>Privacy:</strong> All video consultations are encrypted end-to-end. Recordings are not made unless both parties explicitly consent.
+</div>
+
+<!-- ═══ U9. TUTOR ═══ -->
+<h2 id="u-tutor">9. Using the AI Tutor</h2>
+
+<p>The <strong>SIT Tutor Agent</strong> is your personal AI learning assistant, available 24/7 at <a href="https://tutor.sit.i3technologies.co.ke" target="_blank">tutor.sit.i3technologies.co.ke</a>.</p>
+
+<h3>What the Tutor Can Do</h3>
+<ul>
+  <li><strong>Explain course topics</strong> — ask it to break down any section of your course syllabus in simple terms</li>
+  <li><strong>Practice questions</strong> — request sample exam questions and get immediate feedback on your answers</li>
+  <li><strong>Exam tips</strong> — ask for advice on how to approach a specific type of question</li>
+  <li><strong>Career guidance</strong> — ask about career paths related to your qualification</li>
+  <li><strong>Multilingual support</strong> — type in English, Swahili, or Sheng and it responds in the same language</li>
+</ul>
+
+<h3>How to Use the Tutor</h3>
+<ol>
+  <li>Visit <a href="https://tutor.sit.i3technologies.co.ke" target="_blank">tutor.sit.i3technologies.co.ke</a> or click the <strong>"Ask the Tutor"</strong> button on your course page.</li>
+  <li>Log in with your SIT account (same credentials as the main portal).</li>
+  <li>Type your question in the chat box in any supported language.</li>
+  <li>The tutor responds instantly. You can continue the conversation to go deeper on any topic.</li>
+</ol>
+
+<h3>Example Conversations</h3>
+<pre>You: Niambie kuhusu wiring ya single-phase kwa maneno rahisi.
+Tutor: Sawa! Mfumo wa single-phase una nyaya tatu kuu: Live (nyekundu/kahawia),
+       Neutral (bluu/nyeusi), na Earth (kijani/njano). Live inabeba umeme...
+
+---
+
+You: Give me 3 practice questions on domestic electrical safety.
+Tutor: Sure! Here are three practice questions:
+  1. What is the purpose of a residual current device (RCD) in a domestic circuit?
+  2. At what voltage does a shock become dangerous to the human body?
+  3. Name two causes of electrical fires in residential buildings.
+  (Try answering and I'll give you feedback!)</pre>
+
+<!-- ═══ U10. USER TROUBLE ═══ -->
+<h2 id="u-trouble">10. User Troubleshooting</h2>
+<div class="table-wrap">
+<table>
+  <tr><th>Problem</th><th>What to Try</th></tr>
+  <tr><td>Cannot log in to the portal</td><td>Click "Forgot Password" on the SSO login page. Check your spam folder for the reset email. Ensure you are using the email address you registered with.</td></tr>
+  <tr><td>Cannot complete registration — ID number rejected</td><td>Enter only the numeric digits of your ID (no spaces or dashes). Alien Certificate holders: use your full certificate number.</td></tr>
+  <tr><td>Course materials not loading</td><td>Try a different browser (Chrome or Firefox recommended). Check your internet connection. Clear your browser cache and reload.</td></tr>
+  <tr><td>Exam booking confirmation not received</td><td>Check your spam/junk folder. Log in and check <strong>My Exams</strong> — if it shows <code>confirmed</code>, the booking is valid regardless of the email.</td></tr>
+  <tr><td>Certificate not available after passing exam</td><td>Certificates are issued within 2 business days of results being confirmed by EvalOS. If not received after 3 days, email <a href="mailto:exams@sit.i3technologies.co.ke">exams@sit.i3technologies.co.ke</a>.</td></tr>
+  <tr><td>QR code scan shows "Invalid Credential"</td><td>Ensure you are scanning the QR code directly from the PDF — do not scan a photograph of a printout where the QR may be distorted.</td></tr>
+  <tr><td>eCitizen case stuck on "pending" for more than 48 hours</td><td>Use your Case ID to follow up via the portal's <strong>My Cases</strong> section or call the SIT helpdesk.</td></tr>
+  <tr><td>Co-working access card not working</td><td>Show the access card code email to reception. There may be a short sync delay (up to 5 minutes) after registration.</td></tr>
+  <tr><td>Video call link not working for professional booking</td><td>Try a different browser. Ensure you allow camera and microphone access when prompted. If the room is unavailable, contact the professional directly and they can resend the link.</td></tr>
+  <tr><td>AI Tutor is slow to respond or unavailable</td><td>The tutor may be under high load. Wait 30 seconds and try again. If still unavailable, the service may be restarting — try again in 5 minutes.</td></tr>
+  <tr><td>Need more help</td><td>Email <a href="mailto:support@sit.i3technologies.co.ke">support@sit.i3technologies.co.ke</a> or visit the SIT reception desk during business hours (Mon–Fri, 8 am – 5 pm EAT).</td></tr>
+</table>
+</div>
+
+</div><!-- /container -->
+</main>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer>
+  <div class="container">
+    Made with IBM Bob | Component 10 of 14 — SIT Digital Work-Centers &nbsp;·&nbsp; i3 Technologies Platform &nbsp;·&nbsp; Namespace: <code>i3-sit</code>
+  </div>
+</footer>
+
+</body>
+</html>

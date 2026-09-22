@@ -1,0 +1,20 @@
+# flyway.toml — i3 AI Platform schema migration config
+# Reference: STEP-P1-10 / i3-platform-atomic-execution-plan.md
+#
+# Usage:
+#   flyway -url=jdbc:postgresql://${POSTGRES_HOST}:5432/${DB_NAME} \
+#          -user=${DB_USER} -password=$(vault kv get -field=password i3/${SERVICE}/db) \
+#          migrate
+#
+# Environment variable overrides are preferred for credentials.
+# NEVER commit passwords here.
+
+[flyway]
+url              = "${FLYWAY_URL}"          # e.g. jdbc:postgresql://i3-postgres-ha.i3-data.svc:5432/engage_db
+user             = "${FLYWAY_USER}"
+password         = "${FLYWAY_PASSWORD}"     # injected from OpenBao at deploy time
+locations        = ["filesystem:platform/db/migrations"]
+baselineOnMigrate = true
+baselineVersion  = "0"
+validateOnMigrate = true
+outOfOrder       = false

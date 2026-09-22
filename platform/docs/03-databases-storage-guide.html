@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>i3 Platform — Component 03: Databases &amp; Storage</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.7;background:#fff;color:#1f2328}
+.wrap{max-width:860px;margin:0 auto;padding:40px 20px}
+h1{font-size:24px;font-weight:800;margin-bottom:4px;color:#7c5cd8}
+h2{font-size:18px;font-weight:700;margin:36px 0 12px;padding-bottom:6px;border-bottom:2px solid #7c5cd8;color:#7c5cd8}
+h3{font-size:15px;font-weight:700;margin:20px 0 8px}
+h4{font-size:13px;font-weight:700;margin:14px 0 6px;color:#57606a;text-transform:uppercase;letter-spacing:.04em}
+p{margin-bottom:10px}
+ul,ol{padding-left:20px;margin-bottom:10px}
+li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px}
+th{background:#7c5cd8;color:#fff;text-align:left;padding:8px 12px;font-weight:600}
+td{padding:8px 12px;border:1px solid #e5e7eb;vertical-align:top}
+tr:nth-child(even) td{background:#f7f8fa}
+code{font-family:"Consolas","Courier New",monospace;font-size:12px;background:#f0eeff;padding:2px 6px;border-radius:3px;border:1px solid #d2b6ff}
+pre{background:#1f2328;color:#e8f4fd;padding:16px;border-radius:6px;font-size:12px;overflow-x:auto;margin-bottom:14px;line-height:1.6}
+pre code{background:none;border:none;color:inherit;padding:0}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.b-green{background:#dafbe1;color:#1a7f37}
+.b-blue{background:#ddf4ff;color:#0550ae}
+.b-purple{background:#f0eeff;color:#7c5cd8}
+.b-orange{background:#fff3cd;color:#856404}
+.note{background:#f0eeff;border-left:4px solid #7c5cd8;padding:12px 16px;margin:14px 0;border-radius:0 6px 6px 0;font-size:13px}
+.warn{background:#fff8c5;border-left:4px solid #d4a72c;padding:12px 16px;margin:14px 0;border-radius:0 6px 6px 0;font-size:13px}
+.danger{background:#ffebe9;border-left:4px solid #cf222e;padding:12px 16px;margin:14px 0;border-radius:0 6px 6px 0;font-size:13px}
+.cover{background:linear-gradient(135deg,#7c5cd8,#a78bfa);color:#fff;padding:36px 30px;border-radius:8px;margin-bottom:36px}
+.cover h1{color:#fff;font-size:28px}
+.toc{background:#f7f8fa;border:1px solid #e5e7eb;padding:20px;border-radius:6px;margin-bottom:30px}
+.toc h3{margin-top:0;color:#7c5cd8}
+.step{counter-increment:step;display:flex;gap:14px;margin-bottom:18px}
+.step-num{background:#7c5cd8;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;margin-top:2px}
+footer{margin-top:48px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:center;font-size:12px;color:#57606a}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ══════════════════════════════════════════════════ COVER -->
+<div class="cover">
+  <div style="font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">i3 Technologies Ltd — Confidential</div>
+  <h1>i3 Agentic AI Platform</h1>
+  <div style="font-size:18px;font-weight:600;margin-top:6px">Component 03: Databases &amp; Storage</div>
+  <div style="font-size:14px;opacity:.85;margin-top:4px">PostgreSQL HA · PGBouncer · pgBackRest · SeaweedFS · ChromaDB — Admin &amp; User Guide</div>
+  <div style="font-size:12px;opacity:.7;margin-top:14px">Namespaces: i3-data &nbsp;|&nbsp; i3-ott &nbsp;|&nbsp; i3-ai-lab &nbsp;|&nbsp; i3-admissions &nbsp;&nbsp;·&nbsp;&nbsp; Component 03 of 14</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ TOC -->
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <ol>
+    <li><a href="#s1">Overview &amp; Architecture</a></li>
+    <li><a href="#s2">PostgreSQL HA Cluster (Crunchy PGO)</a></li>
+    <li><a href="#s3">Application Databases — Credentials Reference</a></li>
+    <li><a href="#s4">PGBouncer Connection Pooler</a></li>
+    <li><a href="#s5">pgBackRest Backups</a></li>
+    <li><a href="#s6">SeaweedFS Object Storage</a></li>
+    <li><a href="#s7">ChromaDB Vector Database</a></li>
+    <li><a href="#s8">Admin Operations — psql &amp; Database Management</a></li>
+    <li><a href="#s9">Admin Operations — Storage &amp; PVCs</a></li>
+    <li><a href="#s10">Troubleshooting</a></li>
+  </ol>
+</div>
+
+<!-- ══════════════════════════════════════════════════ SECTION 1 -->
+<h2 id="s1">1. Overview &amp; Architecture</h2>
+
+<p>The i3 Platform data layer spans three distinct storage technologies, each serving a specific purpose across multiple Kubernetes namespaces.</p>
+
+<table>
+  <tr><th>Component</th><th>Technology</th><th>Namespace</th><th>Purpose</th></tr>
+  <tr><td>PostgreSQL HA</td><td>Crunchy Data PGO v5</td><td><code>i3-data</code></td><td>Primary relational database for all applications</td></tr>
+  <tr><td>PGBouncer</td><td>Bundled with PGO</td><td><code>i3-data</code></td><td>Connection pooling (transaction mode)</td></tr>
+  <tr><td>pgBackRest</td><td>Bundled with PGO</td><td><code>i3-data</code></td><td>Scheduled backups, PITR, WAL archiving</td></tr>
+  <tr><td>SeaweedFS</td><td>SeaweedFS v3</td><td><code>i3-ott</code></td><td>S3-compatible object storage (files, media, documents)</td></tr>
+  <tr><td>ChromaDB (AI Lab)</td><td>ChromaDB</td><td><code>i3-ai-lab</code></td><td>Vector embeddings for AI/RAG workloads</td></tr>
+  <tr><td>ChromaDB (Admissions)</td><td>ChromaDB</td><td><code>i3-admissions</code></td><td>Vector embeddings for the Admissions agent</td></tr>
+</table>
+
+<div class="note">
+  <strong>Routing rule:</strong> All application database connections MUST go through PGBouncer (<code>i3-postgres-pgbouncer.i3-data.svc:5432</code>), NOT directly to the primary or replicas. Direct connections to replicas are reserved for read-only analytics workloads.
+</div>
+
+<!-- ══════════════════════════════════════════════════ SECTION 2 -->
+<h2 id="s2">2. PostgreSQL HA Cluster (Crunchy PGO)</h2>
+
+<h3>Cluster Overview</h3>
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Cluster name</td><td><code>i3-postgres</code></td></tr>
+  <tr><td>Operator</td><td>Crunchy Data PGO (Postgres Operator) v5</td></tr>
+  <tr><td>Namespace</td><td><code>i3-data</code></td></tr>
+  <tr><td>Topology</td><td>3-replica high-availability (1 primary + 2 standbys via Patroni)</td></tr>
+  <tr><td>Failover</td><td>Automatic — Patroni promotes a standby if the primary fails</td></tr>
+  <tr><td>PostgreSQL version</td><td>14 (PGO default for this deployment)</td></tr>
+</table>
+
+<h3>Kubernetes Services</h3>
+<table>
+  <tr><th>Service Name</th><th>Port</th><th>Purpose</th></tr>
+  <tr><td><code>i3-postgres-ha</code></td><td>5432</td><td>HA-aware service — always resolves to the current primary. Use for direct admin access.</td></tr>
+  <tr><td><code>i3-postgres-pgbouncer</code></td><td>5432</td><td><strong>Application entry point.</strong> PGBouncer pooled connections for all apps.</td></tr>
+  <tr><td><code>i3-postgres-primary</code></td><td>5432</td><td>Headless service — points to primary pod. For PGO internal use / monitoring.</td></tr>
+  <tr><td><code>i3-postgres-replicas</code></td><td>5432</td><td>Load-balanced across standby replicas. Use for read-only reporting queries.</td></tr>
+</table>
+
+<h3>Admin Superuser</h3>
+<div class="danger">
+  <strong>PostgreSQL Admin Credentials — RESTRICTED</strong><br/>
+  Username: <code>i3admin</code><br/>
+  Password: <code>?Z-EfajDpq21=G/5iR21&gt;k8f</code><br/>
+  <em>This user has SUPERUSER and CREATEDB privileges. Never embed in application connection strings. Use the per-application user accounts instead (Section 3).</em>
+</div>
+
+<h3>Connecting as Admin via psql (In-Cluster)</h3>
+<pre><code># Exec into any running pod that has psql available, or run a temporary pod:
+kubectl -n i3-data run psql-admin --rm -it --restart=Never \
+  --image=postgres:14 \
+  -- psql "postgresql://i3admin:'&lt;REDACTED — retrieve from OpenBao: bao kv get i3/postgres/admin-password&gt;'@i3-postgres-ha.i3-data.svc:5432/postgres"</code></pre>
+
+<div class="note">
+  Retrieve the admin password from OpenBao before connecting:<br/>
+  <code>bao kv get -mount=i3 postgres/admin-password</code><br/>
+  Then: <code>PGPASSWORD='&lt;value&gt;' psql -h i3-postgres-ha.i3-data.svc -U i3admin postgres</code><br/>
+  <em>HC-7: Literal credentials are never stored in documentation. Always retrieve from OpenBao.</em>
+</div>
+
+<!-- ══════════════════════════════════════════════════ SECTION 3 -->
+<h2 id="s3">3. Application Databases — Credentials Reference</h2>
+
+<p>Each application has a dedicated database and a least-privilege database user. All applications connect via PGBouncer (Section 4).</p>
+
+<div class="warn">
+  <strong>Security Note:</strong> Passwords marked <em>"in secret"</em> are stored only in the referenced Kubernetes secret and were never written to a configuration file. Retrieve them with:<br/>
+  <code>kubectl -n &lt;namespace&gt; get secret &lt;secret-name&gt; -o jsonpath='{.data.DATABASE_URL}' | base64 -d</code>
+</div>
+
+<table>
+  <tr>
+    <th>Database</th>
+    <th>User</th>
+    <th>Password</th>
+    <th>Application</th>
+    <th>App Namespace</th>
+  </tr>
+  <tr>
+    <td><code>ar_db</code></td>
+    <td><code>ar_app</code></td>
+    <td><code>de0ca0d50fd34c2f8847258f</code></td>
+    <td>MCP Gateway (i3-AR)</td>
+    <td><code>i3-ar</code></td>
+  </tr>
+  <tr>
+    <td><code>talent_db</code></td>
+    <td><code>talent_app</code></td>
+    <td><code>222d37ba48bf45f1b8f05987</code></td>
+    <td>Talent Cloud API</td>
+    <td><code>i3-talent</code></td>
+  </tr>
+  <tr>
+    <td><code>sit_db</code></td>
+    <td><code>sit_app</code></td>
+    <td><code>9a12b5ece9344b2faeb04577</code></td>
+    <td>SIT Work-Centers API</td>
+    <td><code>i3-sit</code></td>
+  </tr>
+  <tr>
+    <td><code>ford_members_db</code></td>
+    <td><code>ford_app</code></td>
+    <td><code>85405f2aa77f4e7c87d183ad</code></td>
+    <td>FORD-Asili API</td>
+    <td><code>i3-ford</code></td>
+  </tr>
+  <tr>
+    <td><code>evalos_db</code></td>
+    <td><code>evalos</code></td>
+    <td><em>URL-encoded — see <code>evalos-web-secrets</code> in <code>i3-evalos</code></em></td>
+    <td>EvalOS Assessment Platform</td>
+    <td><code>i3-evalos</code></td>
+  </tr>
+  <tr>
+    <td><code>engage_db</code></td>
+    <td><code>engage</code></td>
+    <td><code>engage-2026-secure</code></td>
+    <td>Engage Communication Hub</td>
+    <td><code>i3-engage</code></td>
+  </tr>
+  <tr>
+    <td><code>edbridge_db</code></td>
+    <td><code>edbridge</code></td>
+    <td><em>See <code>edbridge-secrets</code> in <code>i3-edbridge</code></em></td>
+    <td>Moodle / EdBridge LMS</td>
+    <td><code>i3-edbridge</code></td>
+  </tr>
+  <tr>
+    <td><code>social_db</code></td>
+    <td><code>socialapp</code></td>
+    <td><code>i3-Social-DB-2026!</code></td>
+    <td>Nextcloud Collaboration</td>
+    <td><code>i3-social</code></td>
+  </tr>
+  <tr>
+    <td><code>pmaas_db</code></td>
+    <td><code>pmaas</code></td>
+    <td><em>Placeholder — must be replaced in <code>pmaas-secrets</code> before first deploy</em></td>
+    <td>PMaaS Project Management</td>
+    <td><code>i3-pmaas</code></td>
+  </tr>
+  <tr>
+    <td><code>n8n_db</code></td>
+    <td><code>n8n</code></td>
+    <td><code>REDACTED-n8n-db</code></td>
+    <td>n8n Workflow Automation</td>
+    <td><code>i3-n8n</code></td>
+  </tr>
+</table>
+
+<h3>Connection String Pattern</h3>
+<p>All applications should build their <code>DATABASE_URL</code> using PGBouncer as the host:</p>
+<pre><code>postgresql://USER:PASSWORD@i3-postgres-pgbouncer.i3-data.svc:5432/DBNAME</code></pre>
+
+<p>Examples:</p>
+<pre><code># MCP Gateway
+DATABASE_URL=postgresql://ar_app:de0ca0d50fd34c2f8847258f@i3-postgres-pgbouncer.i3-data.svc:5432/ar_db
+
+# Talent API
+DATABASE_URL=postgresql://talent_app:222d37ba48bf45f1b8f05987@i3-postgres-pgbouncer.i3-data.svc:5432/talent_db
+
+# n8n
+DATABASE_URL=postgresql://n8n:REDACTED-n8n-db@i3-postgres-pgbouncer.i3-data.svc:5432/n8n_db</code></pre>
+
+<div class="warn">
+  <strong>PMaaS database password:</strong> The <code>pmaas</code> user password is a placeholder (<code>REPLACE</code>) and must be set before deploying PMaaS for the first time. Update <code>pmaas-secrets</code> in <code>i3-pmaas</code> and recreate the DB user with the correct password.
+</div>
+
+<!-- ══════════════════════════════════════════════════ SECTION 4 -->
+<h2 id="s4">4. PGBouncer Connection Pooler</h2>
+
+<h3>Configuration</h3>
+<table>
+  <tr><th>Parameter</th><th>Value</th></tr>
+  <tr><td>Service</td><td><code>i3-postgres-pgbouncer.i3-data.svc.cluster.local:5432</code></td></tr>
+  <tr><td>Pool mode</td><td><strong>Transaction</strong> — a server connection is held only for the duration of a single transaction</td></tr>
+  <tr><td>Managed by</td><td>Crunchy PGO (config lives in the <code>PostgresCluster</code> CR)</td></tr>
+</table>
+
+<h3>Critical: asyncpg / Python Applications</h3>
+<div class="danger">
+  <strong>Prepared statements are NOT supported in PGBouncer transaction mode.</strong><br/><br/>
+  Applications using <strong>asyncpg</strong> (FastAPI, SQLAlchemy async, etc.) MUST disable prepared statement caching. Failure to do this causes cryptic errors like <code>prepared statement "..." does not exist</code>.<br/><br/>
+  Add <code>statement_cache_size=0</code> to the asyncpg connection options:
+</div>
+
+<pre><code># SQLAlchemy async engine (recommended pattern)
+from sqlalchemy.ext.asyncio import create_async_engine
+
+engine = create_async_engine(
+    "postgresql+asyncpg://USER:PASS@i3-postgres-pgbouncer.i3-data.svc:5432/DBNAME",
+    connect_args={"statement_cache_size": 0},
+)
+
+# Raw asyncpg connection pool
+import asyncpg
+
+pool = await asyncpg.create_pool(
+    dsn="postgresql://USER:PASS@i3-postgres-pgbouncer.i3-data.svc:5432/DBNAME",
+    statement_cache_size=0,
+)</code></pre>
+
+<div class="warn">
+  <strong>Do NOT append <code>?pgbouncer=true</code></strong> to connection strings. This parameter is a PgBouncer-specific hint for some ORMs but is not recognised by asyncpg and will cause connection errors. Use <code>statement_cache_size=0</code> in <code>connect_args</code> instead.
+</div>
+
+<h3>Psycopg2 / psycopg3 (Synchronous Python)</h3>
+<pre><code># psycopg2 — no prepared statements by default, PGBouncer-safe as-is
+import psycopg2
+conn = psycopg2.connect("postgresql://USER:PASS@i3-postgres-pgbouncer.i3-data.svc:5432/DBNAME")
+
+# psycopg3 (psycopg) — disable server-side binding
+import psycopg
+conn = psycopg.connect(
+    "postgresql://USER:PASS@i3-postgres-pgbouncer.i3-data.svc:5432/DBNAME",
+    prepare_threshold=None,   # disables prepared statements
+)</code></pre>
+
+<h3>Node.js / TypeScript (pg / Prisma)</h3>
+<pre><code>// node-postgres (pg) — no prepared statements by default, safe as-is
+// Prisma — add ?pgbouncer=true&connection_limit=1 to DATABASE_URL only for Prisma
+DATABASE_URL="postgresql://USER:PASS@i3-postgres-pgbouncer.i3-data.svc:5432/DBNAME?pgbouncer=true&connection_limit=1"</code></pre>
+
+<div class="note">
+  <strong>Note:</strong> The <code>?pgbouncer=true</code> query parameter is Prisma-specific only. It tells Prisma to skip its own prepared-statement logic and is safe to use. Do not add it to non-Prisma connection strings.
+</div>
+
+<!-- ══════════════════════════════════════════════════ SECTION 5 -->
+<h2 id="s5">5. pgBackRest Backups</h2>
+
+<h3>Backup Schedule</h3>
+<table>
+  <tr><th>Backup Type</th><th>Schedule</th><th>Retention</th></tr>
+  <tr><td>Full backup</td><td>Daily at <strong>02:00 UTC</strong></td><td>7 days</td></tr>
+  <tr><td>Differential backup</td><td>Every <strong>6 hours</strong></td><td>7 days</td></tr>
+  <tr><td>WAL archiving</td><td>Continuous (streaming)</td><td>Until full backup purge</td></tr>
+</table>
+
+<h3>Backup Storage</h3>
+<p>pgBackRest stores backups in a PVC within <code>i3-data</code>. Backup repository details are managed by PGO in the <code>PostgresCluster</code> custom resource.</p>
+
+<h3>Known Issue: Port 8432 Timeout</h3>
+<div class="warn">
+  <strong>Known issue:</strong> pgBackRest backup jobs may fail with a <code>connection timeout on port 8432</code> error. This is a known PGO networking issue.<br/>
+  <strong>Status:</strong> NetworkPolicy (NP) fix has been applied. Monitor backup job logs after any cluster upgrade or pod restart.
+</div>
+<pre><code># Check status of recent backup jobs
+kubectl -n i3-data get pods --selector=postgres-operator.crunchydata.com/pgbackrest
+
+# View logs from the most recent backup job
+kubectl -n i3-data logs -l postgres-operator.crunchydata.com/pgbackrest --tail=100</code></pre>
+
+<h3>Running a Manual Full Backup</h3>
+<pre><code># Trigger a manual full backup via the PostgresCluster annotation
+kubectl -n i3-data annotate postgrescluster i3-postgres \
+  postgres-operator.crunchydata.com/pgbackrest-backup="$(date +%s)" \
+  --overwrite
+
+# Watch the backup pod come up and complete
+kubectl -n i3-data get pods -w --selector=postgres-operator.crunchydata.com/pgbackrest</code></pre>
+
+<h3>Verifying Backup Integrity</h3>
+<pre><code># Exec into the pgbackrest pod and run info
+kubectl -n i3-data exec -it \
+  $(kubectl -n i3-data get pods -l postgres-operator.crunchydata.com/pgbackrest -o name | head -1) \
+  -- pgbackrest info</code></pre>
+
+<!-- ══════════════════════════════════════════════════ SECTION 6 -->
+<h2 id="s6">6. SeaweedFS Object Storage</h2>
+
+<h3>Overview</h3>
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Namespace</td><td><code>i3-ott</code></td></tr>
+  <tr><td>S3 endpoint (in-cluster)</td><td><code>seaweedfs-s3.i3-ott.svc.cluster.local:8333</code></td></tr>
+  <tr><td>Public S3 URL</td><td><strong>None</strong> — internal cluster access only</td></tr>
+  <tr><td>Protocol</td><td>S3-compatible API (AWS SDK compatible)</td></tr>
+  <tr><td>Total raw capacity</td><td>~1.5 TiB (3 × 500 GiB volume PVCs)</td></tr>
+</table>
+
+<h3>Persistent Volume Claims</h3>
+<table>
+  <tr><th>PVC Name</th><th>Size</th><th>Purpose</th></tr>
+  <tr><td><code>data-seaweedfs-volume-0</code></td><td>500 GiB</td><td>Volume server node 0 — object data shards</td></tr>
+  <tr><td><code>data-seaweedfs-volume-1</code></td><td>500 GiB</td><td>Volume server node 1 — object data shards</td></tr>
+  <tr><td><code>data-seaweedfs-volume-2</code></td><td>500 GiB</td><td>Volume server node 2 — object data shards</td></tr>
+  <tr><td><code>data-seaweedfs-master-0</code></td><td>10 GiB</td><td>Master server metadata and topology</td></tr>
+</table>
+
+<h3>HMAC Credentials</h3>
+<div class="danger">
+  <strong>SeaweedFS S3 HMAC Credentials — RESTRICTED</strong><br/>
+  Stored in Kubernetes secret <code>seaweedfs-hmac</code> in namespace <code>i3-ott</code>.<br/><br/>
+  <code>ACCESS_KEY_ID</code>: <code>REPLACE_WITH_SEAWEEDFS_HMAC_ACCESS</code><br/>
+  <code>SECRET_ACCESS_KEY</code>: <code>REPLACE_WITH_SEAWEEDFS_HMAC_SECRET</code><br/><br/>
+  <em>These are placeholders. The actual values must be retrieved from the secret before use:</em>
+</div>
+
+<pre><code># Retrieve HMAC credentials
+kubectl -n i3-ott get secret seaweedfs-hmac -o jsonpath='{.data.ACCESS_KEY_ID}' | base64 -d
+kubectl -n i3-ott get secret seaweedfs-hmac -o jsonpath='{.data.SECRET_ACCESS_KEY}' | base64 -d</code></pre>
+
+<h3>Configured Buckets</h3>
+<table>
+  <tr><th>Bucket Name</th><th>Application</th><th>Content</th></tr>
+  <tr><td><code>talent-cvs</code></td><td>Talent Cloud</td><td>Uploaded candidate CVs / resumes</td></tr>
+  <tr><td><code>talent-certs</code></td><td>Talent Cloud</td><td>Candidate professional certificates</td></tr>
+  <tr><td><code>talent-reports</code></td><td>Talent Cloud</td><td>Generated talent assessment reports</td></tr>
+  <tr><td><code>sit-course-content</code></td><td>SIT Work-Centers</td><td>Course materials and e-learning content</td></tr>
+  <tr><td><code>sit-exam-assets</code></td><td>SIT Work-Centers</td><td>Exam media assets (images, audio)</td></tr>
+  <tr><td><code>sit-professional-docs</code></td><td>SIT Work-Centers</td><td>Professional development documentation</td></tr>
+  <tr><td><code>sit-credentials</code></td><td>SIT Work-Centers</td><td>Issued digital credentials and badges</td></tr>
+  <tr><td><code>ar-context</code></td><td>MCP Gateway (i3-AR)</td><td>AR context files and AI knowledge assets</td></tr>
+  <tr><td><code>ford-evidence</code></td><td>FORD-Asili</td><td>Member compliance evidence and documents</td></tr>
+</table>
+
+<h3>Connecting via AWS SDK (Python boto3)</h3>
+<pre><code>import boto3
+
+s3 = boto3.client(
+    "s3",
+    endpoint_url="http://seaweedfs-s3.i3-ott.svc.cluster.local:8333",
+    aws_access_key_id="&lt;ACCESS_KEY_ID from secret&gt;",
+    aws_secret_access_key="&lt;SECRET_ACCESS_KEY from secret&gt;",
+    region_name="us-east-1",  # SeaweedFS ignores region but boto3 requires it
+)
+
+# List buckets
+response = s3.list_buckets()
+
+# Upload a file
+s3.upload_file("/tmp/cv.pdf", "talent-cvs", "candidates/12345/cv.pdf")
+
+# Generate a pre-signed URL (in-cluster only — not publicly accessible)
+url = s3.generate_presigned_url("get_object", Params={"Bucket": "talent-cvs", "Key": "candidates/12345/cv.pdf"}, ExpiresIn=3600)</code></pre>
+
+<h3>Checking SeaweedFS Health</h3>
+<pre><code># Check pods
+kubectl -n i3-ott get pods -l app.kubernetes.io/name=seaweedfs
+
+# Check PVC usage
+kubectl -n i3-ott get pvc | grep seaweedfs
+
+# Port-forward the master UI for diagnostics (run locally)
+kubectl -n i3-ott port-forward svc/seaweedfs-master 9333:9333
+# Then open http://localhost:9333 in a browser</code></pre>
+
+<!-- ══════════════════════════════════════════════════ SECTION 7 -->
+<h2 id="s7">7. ChromaDB Vector Database</h2>
+
+<h3>Instances</h3>
+<table>
+  <tr><th>Instance</th><th>In-Cluster Endpoint</th><th>Port</th><th>Purpose</th></tr>
+  <tr><td>AI Lab</td><td><code>chromadb.i3-ai-lab.svc.cluster.local</code></td><td>8000</td><td>Vector embeddings for AI Lab, Sage, RAG pipelines, Open WebUI</td></tr>
+  <tr><td>Admissions</td><td><code>chromadb.i3-admissions.svc.cluster.local</code></td><td>8000</td><td>Vector embeddings for the Admissions AI agent</td></tr>
+</table>
+
+<h3>Authentication Token</h3>
+<div class="danger">
+  <strong>ChromaDB Bearer Token — RESTRICTED</strong><br/>
+  <code>fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c</code><br/>
+  <em>Used as <code>Authorization: Bearer &lt;token&gt;</code> for all ChromaDB HTTP API requests. Both instances share the same token.</em>
+</div>
+
+<h3>Python Client Usage</h3>
+<pre><code">import chromadb
+from chromadb.config import Settings
+
+# Connect to AI Lab instance
+client = chromadb.HttpClient(
+    host="chromadb.i3-ai-lab.svc.cluster.local",
+    port=8000,
+    settings=Settings(
+        chroma_client_auth_provider="chromadb.auth.token.TokenAuthClientProvider",
+        chroma_client_auth_credentials="fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c",
+    ),
+)
+
+# List collections
+collections = client.list_collections()
+
+# Create or get a collection
+collection = client.get_or_create_collection("my_knowledge_base")
+
+# Add documents
+collection.add(
+    documents=["Document text here"],
+    ids=["doc_001"],
+)
+
+# Query
+results = collection.query(query_texts=["search query"], n_results=5)</code></pre>
+
+<h3>Health Check</h3>
+<pre><code># Check ChromaDB pods in AI Lab
+kubectl -n i3-ai-lab get pods -l app=chromadb
+
+# Check ChromaDB pods in Admissions
+kubectl -n i3-admissions get pods -l app=chromadb
+
+# Test API health (from within the cluster)
+curl -s http://chromadb.i3-ai-lab.svc.cluster.local:8000/api/v1/heartbeat</code></pre>
+
+<!-- ══════════════════════════════════════════════════ SECTION 8 -->
+<h2 id="s8">8. Admin Operations — psql &amp; Database Management</h2>
+
+<h3>Connecting to psql (Interactive Shell)</h3>
+<p>The recommended approach is to run a temporary pod with the postgres client image:</p>
+<pre><code># Option A: Temporary pod (recommended — no persistent residue)
+kubectl -n i3-data run psql-shell --rm -it --restart=Never \
+  --image=postgres:14 \
+  --env="PGPASSWORD=?Z-EfajDpq21=G/5iR21>k8f" \
+  -- psql -h i3-postgres-ha.i3-data.svc -U i3admin postgres
+
+# Option B: Exec into an existing postgres pod
+kubectl -n i3-data get pods
+kubectl -n i3-data exec -it i3-postgres-&lt;pod-suffix&gt; -c database -- bash
+# Then inside the pod:
+PGPASSWORD='?Z-EfajDpq21=G/5iR21>k8f' psql -U i3admin postgres</code></pre>
+
+<h3>Listing All Databases</h3>
+<pre><code">-- Inside psql:
+\l
+
+-- Or with SQL:
+SELECT datname, pg_size_pretty(pg_database_size(datname)) AS size
+FROM pg_database
+ORDER BY pg_database_size(datname) DESC;</code></pre>
+
+<h3>Creating a New Database and User</h3>
+<pre><code>-- 1. Create the user with a secure password
+CREATE USER new_app WITH PASSWORD 'strong-random-password-here';
+
+-- 2. Create the database owned by the new user
+CREATE DATABASE new_app_db OWNER new_app;
+
+-- 3. Grant all privileges (connect as superuser i3admin first)
+GRANT ALL PRIVILEGES ON DATABASE new_app_db TO new_app;
+
+-- 4. Connect to the new database and set schema ownership
+\c new_app_db
+GRANT ALL ON SCHEMA public TO new_app;
+ALTER SCHEMA public OWNER TO new_app;</code></pre>
+
+<div class="note">
+  After creating the database, add it to the <code>PostgresCluster</code> custom resource (<code>spec.databases</code>) so PGO manages it. Also create the corresponding Kubernetes secret in the application namespace with the connection string.
+</div>
+
+<h3>Checking Active Connections</h3>
+<pre><code>-- Show all active connections grouped by database
+SELECT datname, count(*) AS connections
+FROM pg_stat_activity
+GROUP BY datname
+ORDER BY connections DESC;
+
+-- Show connections via PGBouncer (from pgbouncer admin console)
+-- Run as pgbouncer admin:
+SHOW POOLS;
+SHOW STATS;</code></pre>
+
+<h3>Rotating a Database Password</h3>
+<pre><code>-- Step 1: Change password in PostgreSQL
+ALTER USER app_user WITH PASSWORD 'new-secure-password';
+
+-- Step 2: Update the Kubernetes secret in the application namespace
+kubectl -n &lt;app-namespace&gt; create secret generic &lt;app-secrets&gt; \
+  --from-literal=DATABASE_URL="postgresql://app_user:new-secure-password@i3-postgres-pgbouncer.i3-data.svc:5432/app_db" \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+-- Step 3: Restart the application deployment to pick up the new secret
+kubectl -n &lt;app-namespace&gt; rollout restart deployment &lt;app-deployment&gt;</code></pre>
+
+<!-- ══════════════════════════════════════════════════ SECTION 9 -->
+<h2 id="s9">9. Admin Operations — Storage &amp; PVCs</h2>
+
+<h3>Checking PVC Usage</h3>
+<pre><code># List all PVCs in i3-data namespace
+kubectl -n i3-data get pvc
+
+# List all PVCs in i3-ott namespace (SeaweedFS)
+kubectl -n i3-ott get pvc
+
+# Get detailed PVC information
+kubectl -n i3-data describe pvc &lt;pvc-name&gt;
+
+# Check actual disk usage from inside a pod (exec into postgres pod)
+kubectl -n i3-data exec -it i3-postgres-&lt;pod-suffix&gt; -c database -- df -h /pgdata</code></pre>
+
+<h3>Expanding a PVC (StorageClass must support expansion)</h3>
+<pre><code># Edit the PVC to increase storage
+kubectl -n i3-data patch pvc &lt;pvc-name&gt; \
+  -p '{"spec":{"resources":{"requests":{"storage":"200Gi"}}}}'
+
+# The PV will expand online if the CSI driver supports it
+kubectl -n i3-data get pvc &lt;pvc-name&gt; -w   # watch for resize to complete</code></pre>
+
+<div class="warn">
+  <strong>PVC expansion requires the StorageClass to have <code>allowVolumeExpansion: true</code>.</strong> Check with:<br/>
+  <code>kubectl get storageclass &lt;class-name&gt; -o yaml | grep allowVolumeExpansion</code>
+</div>
+
+<h3>Database Disk Usage (Top tables)</h3>
+<pre><code>-- Connect as i3admin and run per-database:
+SELECT
+  schemaname,
+  tablename,
+  pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS total_size
+FROM pg_tables
+WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
+ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC
+LIMIT 20;</code></pre>
+
+<!-- ══════════════════════════════════════════════════ SECTION 10 -->
+<h2 id="s10">10. Troubleshooting</h2>
+
+<h3>Connection Refused to PostgreSQL</h3>
+<div class="note">
+  <strong>Symptom:</strong> Application logs show <code>connection refused</code> or <code>could not connect to server</code>.
+</div>
+<ol>
+  <li>Verify you are using the PGBouncer service, not the primary directly: <code>i3-postgres-pgbouncer.i3-data.svc:5432</code></li>
+  <li>Check PGBouncer pods are running:<br/><code>kubectl -n i3-data get pods -l postgres-operator.crunchydata.com/role=pgbouncer</code></li>
+  <li>Check PostgreSQL cluster health:<br/><code>kubectl -n i3-data get postgrescluster i3-postgres</code></li>
+  <li>Check pod events for crash loops or image pull errors:<br/><code>kubectl -n i3-data describe pod &lt;pod-name&gt;</code></li>
+  <li>Check if a failover is in progress (the primary may be re-electing):<br/><code>kubectl -n i3-data get pods -l postgres-operator.crunchydata.com/instance</code></li>
+</ol>
+
+<h3>Too Many Connections</h3>
+<div class="warn">
+  <strong>Symptom:</strong> <code>FATAL: remaining connection slots are reserved for non-replication superuser connections</code> or PGBouncer <code>no more connections allowed</code>.
+</div>
+<ol>
+  <li>Check current connection count:<br/>
+    <pre><code>SELECT count(*) FROM pg_stat_activity;</code></pre>
+  </li>
+  <li>Identify which databases / applications are holding excess connections:<br/>
+    <pre><code>SELECT datname, usename, count(*) FROM pg_stat_activity GROUP BY datname, usename ORDER BY 3 DESC;</code></pre>
+  </li>
+  <li>Terminate idle connections that have been open too long:<br/>
+    <pre><code>SELECT pg_terminate_backend(pid)
+FROM pg_stat_activity
+WHERE state = 'idle'
+  AND query_start &lt; now() - interval '10 minutes'
+  AND usename != 'i3admin';</code></pre>
+  </li>
+  <li>Check if an application is not using PGBouncer (connecting directly to the primary). All apps must use the PGBouncer service.</li>
+  <li>If persistent, review the <code>max_client_conn</code> and <code>pool_size</code> settings in the PGBouncer configuration within the <code>PostgresCluster</code> CR.</li>
+</ol>
+
+<h3>PVC Full / Disk Pressure</h3>
+<div class="danger">
+  <strong>Symptom:</strong> PostgreSQL pods in <code>OOMKilled</code> or pods crash with <code>No space left on device</code>. Database writes fail.
+</div>
+<ol>
+  <li>Confirm disk usage:<br/><code>kubectl -n i3-data exec -it i3-postgres-&lt;pod&gt; -c database -- df -h /pgdata</code></li>
+  <li>Identify large tables or databases (see Section 9 SQL queries above).</li>
+  <li>Check if old WAL files are not being cleaned up — trigger a manual backup and confirm pgBackRest purges old WAL:<br/><code>kubectl -n i3-data annotate postgrescluster i3-postgres postgres-operator.crunchydata.com/pgbackrest-backup="$(date +%s)" --overwrite</code></li>
+  <li>Expand the affected PVC (see Section 9 — PVC expansion).</li>
+  <li>If the backup PVC is full, check for stale backup sets and increase retention only as a temporary measure while adding storage.</li>
+</ol>
+
+<h3>Prepared Statement Errors (asyncpg / PGBouncer)</h3>
+<div class="warn">
+  <strong>Symptom:</strong> <code>prepared statement "..." already exists</code> or <code>prepared statement "..." does not exist</code> in application logs.
+</div>
+<p>This means the application is using asyncpg without disabling prepared statement caching. Fix: add <code>statement_cache_size=0</code> to the asyncpg connection arguments. See Section 4 for code examples.</p>
+
+<h3>SeaweedFS S3 Upload Failures</h3>
+<div class="note">
+  <strong>Symptom:</strong> <code>AccessDenied</code> or <code>SignatureDoesNotMatch</code> when uploading to SeaweedFS.
+</div>
+<ol>
+  <li>Verify the HMAC credentials are correct — retrieve fresh values from the <code>seaweedfs-hmac</code> secret (see Section 6).</li>
+  <li>Ensure the S3 endpoint does NOT use HTTPS — SeaweedFS in this cluster uses plain HTTP on port 8333:<br/><code>endpoint_url="http://seaweedfs-s3.i3-ott.svc.cluster.local:8333"</code></li>
+  <li>Check SeaweedFS S3 pod logs:<br/><code>kubectl -n i3-ott logs -l app.kubernetes.io/component=s3 --tail=100</code></li>
+  <li>Confirm the target bucket exists. SeaweedFS does not auto-create buckets:<br/><code>aws s3 ls --endpoint-url http://seaweedfs-s3.i3-ott.svc.cluster.local:8333</code></li>
+</ol>
+
+<h3>ChromaDB Authentication Failures</h3>
+<div class="note">
+  <strong>Symptom:</strong> <code>401 Unauthorized</code> from ChromaDB API.
+</div>
+<p>Ensure the Bearer token is being sent correctly. The token value is:</p>
+<pre><code>Authorization: Bearer fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c</code></pre>
+<p>Check that the ChromaDB pods are running and healthy:</p>
+<pre><code>kubectl -n i3-ai-lab get pods -l app=chromadb
+kubectl -n i3-ai-lab logs -l app=chromadb --tail=50</code></pre>
+
+<footer>
+  <p>i3 Technologies Ltd &mdash; i3 Agentic AI Platform Documentation &mdash; Component 03 of 14 &mdash; Confidential</p>
+  <p style="margin-top:4px">Made with IBM Bob</p>
+</footer>
+
+</div>
+</body>
+</html>

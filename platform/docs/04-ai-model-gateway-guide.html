@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Component 04: AI &amp; Model Gateway — Admin &amp; User Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1f2328;
+    background: #ffffff;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px 48px;
+  }
+
+  /* Cover */
+  .cover {
+    background: linear-gradient(135deg, #1a7f37, #34d058);
+    color: #ffffff;
+    padding: 48px 40px;
+    margin: 0 -24px 40px;
+    border-radius: 0 0 8px 8px;
+  }
+  .cover .badge {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    opacity: .85;
+    margin-bottom: 12px;
+  }
+  .cover h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .cover p  { font-size: 14px; opacity: .9; max-width: 580px; margin-top: 6px; }
+  .cover .meta { margin-top: 24px; display: flex; gap: 24px; flex-wrap: wrap; }
+  .cover .meta span {
+    font-size: 12px;
+    background: rgba(255,255,255,.2);
+    border: 1px solid rgba(255,255,255,.3);
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  /* TOC */
+  .toc {
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin-bottom: 36px;
+  }
+  .toc h3 { font-size: 13px; font-weight: 600; color: #57606a; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 12px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin: 4px 0; }
+  .toc a { color: #1a7f37; text-decoration: none; font-size: 13px; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* Headings */
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    border-bottom: 2px solid #1a7f37;
+    color: #1a7f37;
+    padding-bottom: 6px;
+    margin: 40px 0 16px;
+  }
+  h3 { font-size: 16px; font-weight: 600; color: #1f2328; margin: 24px 0 10px; }
+  h4 { font-size: 14px; font-weight: 600; color: #57606a; margin: 18px 0 8px; }
+
+  /* Callouts */
+  .note, .warn, .danger {
+    padding: 12px 16px;
+    border-radius: 5px;
+    margin: 16px 0;
+    font-size: 13px;
+    border-left: 4px solid;
+  }
+  .note   { background: #f0fff4; border-color: #1a7f37; color: #1f2328; }
+  .warn   { background: #fff8c5; border-color: #d4a017; color: #3b2300; }
+  .danger { background: #fff0f0; border-color: #d1242f; color: #3b0000; }
+  .note strong, .warn strong, .danger strong { display: block; margin-bottom: 2px; }
+
+  /* Code */
+  code {
+    background: #f0fff4;
+    border: 1px solid #9be9a8;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12px;
+  }
+  pre {
+    background: #f0fff4;
+    border: 1px solid #9be9a8;
+    border-radius: 6px;
+    padding: 16px;
+    overflow-x: auto;
+    margin: 12px 0;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.7;
+  }
+  pre code { background: none; border: none; padding: 0; font-size: inherit; }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+  thead th {
+    background: #1a7f37;
+    color: #ffffff;
+    text-align: left;
+    padding: 10px 14px;
+    font-weight: 600;
+  }
+  tbody tr:nth-child(even) { background: #f7f8fa; }
+  tbody td { padding: 9px 14px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+
+  /* Steps */
+  .step {
+    display: flex;
+    gap: 14px;
+    margin: 12px 0;
+    align-items: flex-start;
+  }
+  .step .num {
+    min-width: 26px;
+    height: 26px;
+    background: #1a7f37;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step .body { flex: 1; }
+
+  /* Misc */
+  p { margin: 10px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 32px 0; }
+
+  .service-card {
+    border: 1px solid #e5e7eb;
+    border-top: 3px solid #1a7f37;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    background: #fafafa;
+  }
+  .service-card h3 { margin-top: 0; color: #1a7f37; }
+  .kv { display: flex; gap: 8px; margin: 4px 0; font-size: 13px; }
+  .kv .k { color: #57606a; min-width: 130px; font-weight: 500; }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: #57606a;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 18px;
+    margin-top: 48px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ COVER ═══════════════════════════════════ -->
+<div class="cover">
+  <div class="badge">i3 Technologies Platform — Admin &amp; User Guide</div>
+  <h1>Component 04: AI &amp; Model Gateway</h1>
+  <p>Complete reference for the AI inference layer: model routing, chat interfaces, notebook environments, LLM observability, and vector storage.</p>
+  <div class="meta">
+    <span>Component 04 of 14</span>
+    <span>Namespaces: i3-model-gateway · i3-ai-lab · i3-ott</span>
+    <span>Audience: Admins &amp; Users</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ TOC ════════════════════════════════════ -->
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <ol>
+    <li><a href="#overview">Overview &amp; Architecture</a></li>
+    <li><a href="#litellm">LiteLLM Multi-Model Proxy Gateway</a></li>
+    <li><a href="#ollama">Ollama Local LLM Server</a></li>
+    <li><a href="#sage">Sage — Open WebUI</a></li>
+    <li><a href="#jupyter">JupyterHub</a></li>
+    <li><a href="#langfuse">Langfuse LLM Observability</a></li>
+    <li><a href="#chromadb">ChromaDB Vector Database</a></li>
+    <li><a href="#quickref">Quick Reference</a></li>
+  </ol>
+</div>
+
+<!-- ═══════════════════════════════════ 1. OVERVIEW ═══════════════════════════ -->
+<h2 id="overview">1. Overview &amp; Architecture</h2>
+
+<p>The AI &amp; Model Gateway layer provides a unified, observable, and cost-tracked pathway to all AI inference. No application in the platform calls a model API directly — every request flows through <strong>LiteLLM</strong>, which routes to the correct backend (cloud providers or the local <strong>Ollama</strong> server) and records telemetry in <strong>Langfuse</strong>. Staff access AI via <strong>Sage</strong> (chat UI) or <strong>JupyterHub</strong> (notebooks). Embeddings and RAG data are stored in <strong>ChromaDB</strong>.</p>
+
+<table>
+  <thead><tr><th>Service</th><th>Role</th><th>Public URL</th><th>Namespace</th></tr></thead>
+  <tbody>
+    <tr><td>LiteLLM</td><td>Model proxy / router</td><td>https://litellm.i3technologies.co.ke</td><td>i3-model-gateway</td></tr>
+    <tr><td>Ollama</td><td>Local LLM runtime</td><td>Internal only</td><td>i3-model-gateway</td></tr>
+    <tr><td>Sage (Open WebUI)</td><td>Chat interface</td><td>https://sage.i3technologies.co.ke</td><td>i3-ai-lab</td></tr>
+    <tr><td>JupyterHub</td><td>Notebook environment</td><td>https://jupyter.i3technologies.co.ke</td><td>i3-ai-lab</td></tr>
+    <tr><td>Langfuse</td><td>LLM observability</td><td>https://langfuse.i3technologies.co.ke</td><td>i3-ott</td></tr>
+    <tr><td>ChromaDB</td><td>Vector database (RAG)</td><td>Internal only</td><td>i3-ai-lab</td></tr>
+  </tbody>
+</table>
+
+<div class="note"><strong>Design principle</strong> All applications use LiteLLM's OpenAI-compatible endpoint. Swapping or adding models requires no application-level code changes — only LiteLLM configuration changes.</div>
+
+<!-- ═══════════════════════════════════ 2. LITELLM ════════════════════════════ -->
+<h2 id="litellm">2. LiteLLM Multi-Model Proxy Gateway</h2>
+
+<div class="service-card">
+  <h3>Connection Details</h3>
+  <div class="kv"><span class="k">Public URL</span><code>https://litellm.i3technologies.co.ke</code></div>
+  <div class="kv"><span class="k">Internal (in-cluster)</span><code>litellm-proxy.i3-model-gateway.svc.cluster.local:4000</code></div>
+  <div class="kv"><span class="k">Namespace</span><code>i3-model-gateway</code></div>
+  <div class="kv"><span class="k">Master Key</span><code>sk-litellm-i3-f951c9377163a11275864cb92e90ad13</code></div>
+</div>
+
+<div class="danger"><strong>Secret — Master Key</strong> The master key grants full admin access to the proxy, including the ability to create and delete model configurations. Store it in a Kubernetes Secret or your password manager. Never commit it to source control.</div>
+
+<h3>2.1 Admin Guide</h3>
+
+<h4>Accessing the Admin Dashboard</h4>
+<div class="step"><div class="num">1</div><div class="body">Open <code>https://litellm.i3technologies.co.ke/ui</code> in your browser.</div></div>
+<div class="step"><div class="num">2</div><div class="body">When prompted for an API key, enter the master key: <code>sk-litellm-i3-f951c9377163a11275864cb92e90ad13</code></div></div>
+<div class="step"><div class="num">3</div><div class="body">The dashboard shows live request counts, model usage breakdown, latency percentiles, and error rates.</div></div>
+
+<h4>Adding a New Model</h4>
+<p>Models can be added via the dashboard UI (<strong>Models → Add Model</strong>) or via the API:</p>
+<pre><code># Add an Ollama-hosted model through the API
+curl -X POST https://litellm.i3technologies.co.ke/model/new \
+  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model_name": "mistral-7b",
+    "litellm_params": {
+      "model": "ollama/mistral:7b-instruct-q4_K_M",
+      "api_base": "http://ollama.i3-ott.svc.cluster.local:11434"
+    },
+    "model_info": {
+      "description": "Mistral 7B Instruct Q4 — local inference"
+    }
+  }'</code></pre>
+
+<pre><code># Add an OpenAI model (requires OPENAI_API_KEY in env)
+curl -X POST https://litellm.i3technologies.co.ke/model/new \
+  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model_name": "gpt-4o",
+    "litellm_params": {
+      "model": "gpt-4o",
+      "api_key": "os.environ/OPENAI_API_KEY"
+    }
+  }'</code></pre>
+
+<h4>Listing Configured Models</h4>
+<pre><code>curl https://litellm.i3technologies.co.ke/model/info \
+  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" | jq .
+</code></pre>
+
+<h4>Creating User-Specific Keys</h4>
+<p>Issue per-user or per-application keys with spend limits to avoid sharing the master key:</p>
+<pre><code>curl -X POST https://litellm.i3technologies.co.ke/key/generate \
+  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key_alias": "data-team-notebook",
+    "models": ["mistral-7b", "gpt-4o"],
+    "max_budget": 20.00,
+    "budget_duration": "30d",
+    "metadata": {"team": "data-science"}
+  }'</code></pre>
+
+<h4>Checking Usage &amp; Spend</h4>
+<pre><code># Overall spend summary
+curl https://litellm.i3technologies.co.ke/spend/logs \
+  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13"
+
+# Per-key spend
+curl "https://litellm.i3technologies.co.ke/spend/keys?key=sk-..." \
+  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13"</code></pre>
+
+<h4>Deleting a Model</h4>
+<pre><code>curl -X POST https://litellm.i3technologies.co.ke/model/delete \
+  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  -H "Content-Type: application/json" \
+  -d '{"id": "&lt;model_id_from_model_info&gt;"}'</code></pre>
+
+<h3>2.2 User Guide</h3>
+
+<p>LiteLLM exposes a fully OpenAI-compatible API. Any application or library written for OpenAI works unchanged — just change the <code>base_url</code> and use your LiteLLM key.</p>
+
+<h4>Chat Completions — cURL</h4>
+<pre><code>curl https://litellm.i3technologies.co.ke/v1/chat/completions \
+  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "mistral-7b",
+    "messages": [
+      {"role": "system", "content": "You are a helpful assistant."},
+      {"role": "user",   "content": "Summarise the benefits of RAG in 3 bullet points."}
+    ],
+    "temperature": 0.7,
+    "max_tokens": 512
+  }'</code></pre>
+
+<h4>Chat Completions — Python (OpenAI SDK)</h4>
+<pre><code>from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://litellm.i3technologies.co.ke/v1",
+    api_key="sk-litellm-i3-f951c9377163a11275864cb92e90ad13",
+)
+
+response = client.chat.completions.create(
+    model="mistral-7b",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user",   "content": "What is retrieval-augmented generation?"},
+    ],
+    temperature=0.7,
+)
+print(response.choices[0].message.content)</code></pre>
+
+<h4>Embeddings</h4>
+<pre><code>curl https://litellm.i3technologies.co.ke/v1/embeddings \
+  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "text-embedding-3-small",
+    "input": "The quick brown fox"
+  }'</code></pre>
+
+<h4>Listing Available Models (User-facing)</h4>
+<pre><code>curl https://litellm.i3technologies.co.ke/v1/models \
+  -H "Authorization: Bearer &lt;your-key&gt;" | jq '.data[].id'</code></pre>
+
+<div class="note"><strong>Internal service calls</strong> Applications running inside the cluster should use the internal address <code>http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000</code> to avoid internet round-trips and reduce latency.</div>
+
+<!-- ═══════════════════════════════════ 3. OLLAMA ═════════════════════════════ -->
+<h2 id="ollama">3. Ollama Local LLM Server</h2>
+
+<div class="service-card">
+  <h3>Connection Details</h3>
+  <div class="kv"><span class="k">Internal address</span><code>ollama.i3-ott.svc.cluster.local:11434</code></div>
+  <div class="kv"><span class="k">Namespace</span><code>i3-model-gateway</code></div>
+  <div class="kv"><span class="k">Pod</span><code>ollama-0</code> (StatefulSet)</div>
+  <div class="kv"><span class="k">Storage</span><code>ollama-data-ollama-0</code> — 80 GiB PVC</div>
+  <div class="kv"><span class="k">Primary model</span><code>mistral:7b-instruct-q4_K_M</code></div>
+</div>
+
+<div class="note"><strong>No public exposure</strong> Ollama has no external ingress. All requests must go through LiteLLM or via <code>oc exec</code> / in-cluster clients.</div>
+
+<h3>3.1 Admin Guide</h3>
+
+<h4>Listing Loaded Models</h4>
+<pre><code># Via Ollama API (from inside the cluster or oc port-forward)
+curl http://ollama.i3-ott.svc.cluster.local:11434/api/tags | jq .
+
+# Via oc exec
+oc exec -n i3-model-gateway ollama-0 -- ollama list</code></pre>
+
+<h4>Pulling (Loading) a New Model</h4>
+<pre><code># General syntax
+oc exec -n i3-model-gateway ollama-0 -- ollama pull MODEL_NAME
+
+# Examples
+oc exec -n i3-model-gateway ollama-0 -- ollama pull llama3:8b
+oc exec -n i3-model-gateway ollama-0 -- ollama pull phi3:mini
+oc exec -n i3-model-gateway ollama-0 -- ollama pull nomic-embed-text   # embedding model</code></pre>
+
+<div class="warn"><strong>Storage check before pulling</strong> The PVC is 80 GiB. Check available space with <code>oc exec -n i3-model-gateway ollama-0 -- df -h /root/.ollama</code> before pulling large models. A 13B Q4 model is ~8 GB; a 70B model is ~40 GB.</div>
+
+<h4>Removing a Model</h4>
+<pre><code>oc exec -n i3-model-gateway ollama-0 -- ollama rm MODEL_NAME</code></pre>
+
+<h4>Running an Ad-hoc Prompt (Testing)</h4>
+<pre><code>oc exec -it -n i3-model-gateway ollama-0 -- \
+  ollama run mistral:7b-instruct-q4_K_M "Explain Kubernetes in one sentence."</code></pre>
+
+<h4>Checking Ollama Service Logs</h4>
+<pre><code>oc logs -n i3-model-gateway ollama-0 --tail=100 -f</code></pre>
+
+<h4>After Pulling a New Model — Register it in LiteLLM</h4>
+<p>Once a model is pulled into Ollama, add it to LiteLLM so apps can use it (see <a href="#litellm">Section 2.1, Adding a New Model</a>).</p>
+
+<h3>3.2 User Guide</h3>
+
+<p>End users do not call Ollama directly. Use LiteLLM (Section 2) or Sage (Section 4). The model <code>mistral-7b</code> in LiteLLM maps to <code>mistral:7b-instruct-q4_K_M</code> on Ollama.</p>
+
+<p>For developers who need direct access during testing, forward the port:</p>
+<pre><code>oc port-forward -n i3-model-gateway svc/ollama 11434:11434 &amp;
+
+# Then call the Ollama API directly
+curl http://localhost:11434/api/generate \
+  -d '{
+    "model": "mistral:7b-instruct-q4_K_M",
+    "prompt": "What is the capital of Kenya?",
+    "stream": false
+  }' | jq .response</code></pre>
+
+<!-- ═══════════════════════════════════ 4. SAGE ═══════════════════════════════ -->
+<h2 id="sage">4. Sage — Open WebUI</h2>
+
+<div class="service-card">
+  <h3>Connection Details</h3>
+  <div class="kv"><span class="k">Public URL</span><code>https://sage.i3technologies.co.ke</code></div>
+  <div class="kv"><span class="k">Namespace</span><code>i3-ai-lab</code></div>
+  <div class="kv"><span class="k">Purpose</span>Chat interface for all AI models — primary staff tool for AI conversations and document Q&amp;A</div>
+</div>
+
+<h3>4.1 User Guide</h3>
+
+<h4>Logging In</h4>
+<div class="step"><div class="num">1</div><div class="body">Navigate to <code>https://sage.i3technologies.co.ke</code>.</div></div>
+<div class="step"><div class="num">2</div><div class="body">Sign in using your i3 SSO credentials (same username/password as other platform services). On first login, your account is created automatically.</div></div>
+<div class="step"><div class="num">3</div><div class="body">You will land on the main chat screen.</div></div>
+
+<h4>Selecting a Model</h4>
+<div class="step"><div class="num">1</div><div class="body">Click the model selector at the top of the chat window (shows the current model name).</div></div>
+<div class="step"><div class="num">2</div><div class="body">All models registered in LiteLLM appear in the list. Choose the model appropriate for your task:
+  <ul>
+    <li><strong>mistral-7b</strong> — fast, local, no data leaves the cluster. Use for internal documents.</li>
+    <li><strong>gpt-4o</strong> — highest capability, uses OpenAI API (data leaves cluster).</li>
+  </ul>
+</div></div>
+
+<h4>Creating and Managing Conversations</h4>
+<ul>
+  <li>Click <strong>New Chat</strong> (pencil icon) to start a fresh conversation.</li>
+  <li>Conversations are saved automatically and appear in the left sidebar.</li>
+  <li>Right-click a conversation to rename, pin, or delete it.</li>
+  <li>Use the search bar at the top of the sidebar to find past conversations.</li>
+</ul>
+
+<h4>Uploading Documents for RAG (Document Q&amp;A)</h4>
+<div class="step"><div class="num">1</div><div class="body">Click the paperclip icon in the message input area.</div></div>
+<div class="step"><div class="num">2</div><div class="body">Upload a PDF, DOCX, TXT, or CSV file (max 50 MB per file).</div></div>
+<div class="step"><div class="num">3</div><div class="body">Sage chunks the document, embeds it via ChromaDB, and makes it available as context for your conversation.</div></div>
+<div class="step"><div class="num">4</div><div class="body">Ask questions about the document content — the model retrieves relevant chunks before generating its answer.</div></div>
+
+<div class="note"><strong>Document privacy</strong> Uploaded documents are stored in ChromaDB within the cluster. If you are using a cloud model (e.g. gpt-4o), relevant chunks are sent to the external API. Use a local model (mistral-7b) for confidential documents.</div>
+
+<h4>Using System Prompts</h4>
+<p>Click the settings icon (⚙) on a conversation to set a custom system prompt. This is useful for persona-based interactions (e.g. "You are an HR assistant for i3 Technologies…").</p>
+
+<h3>4.2 Admin Guide</h3>
+
+<h4>Adding a Model Connection</h4>
+<div class="step"><div class="num">1</div><div class="body">Log in with an admin account and go to <strong>Admin Panel → Settings → Connections</strong>.</div></div>
+<div class="step"><div class="num">2</div><div class="body">Under <strong>OpenAI API</strong>, set the base URL to <code>https://litellm.i3technologies.co.ke/v1</code> and the key to the LiteLLM master key (or a dedicated Sage key).</div></div>
+<div class="step"><div class="num">3</div><div class="body">Click <strong>Verify Connection</strong> — Sage will fetch the model list from LiteLLM automatically.</div></div>
+<div class="step"><div class="num">4</div><div class="body">New models pulled into Ollama and registered in LiteLLM will appear in Sage automatically after a page refresh.</div></div>
+
+<h4>Managing Users</h4>
+<ul>
+  <li>Navigate to <strong>Admin Panel → Users</strong> to see all registered users.</li>
+  <li>Change a user's role (User / Admin) by clicking their name.</li>
+  <li>Disable an account by toggling the <strong>Active</strong> switch (account is not deleted, conversation history is preserved).</li>
+  <li>Use <strong>Admin Panel → Settings → Sign Up</strong> to control whether self-registration is allowed or invite-only.</li>
+</ul>
+
+<h4>Managing Knowledge Bases</h4>
+<p>Shared document collections (knowledge bases) can be created under <strong>Workspace → Knowledge</strong> and made available to all users or specific groups. This is useful for company policies, technical docs, and SOPs.</p>
+
+<!-- ═══════════════════════════════════ 5. JUPYTER ════════════════════════════ -->
+<h2 id="jupyter">5. JupyterHub</h2>
+
+<div class="service-card">
+  <h3>Connection Details</h3>
+  <div class="kv"><span class="k">Public URL</span><code>https://jupyter.i3technologies.co.ke</code></div>
+  <div class="kv"><span class="k">Namespace</span><code>i3-ai-lab</code></div>
+  <div class="kv"><span class="k">Purpose</span>Python notebook environment for data science and AI development</div>
+</div>
+
+<h3>5.1 User Guide</h3>
+
+<h4>Logging In</h4>
+<div class="step"><div class="num">1</div><div class="body">Go to <code>https://jupyter.i3technologies.co.ke</code> and click <strong>Sign in with SSO</strong>.</div></div>
+<div class="step"><div class="num">2</div><div class="body">After authentication you will be placed in a server-start queue. Your personal server starts within ~30 seconds.</div></div>
+<div class="step"><div class="num">3</div><div class="body">The JupyterLab interface opens. Your home directory (<code>/home/jovyan</code>) is persisted on a PVC across sessions.</div></div>
+
+<h4>Creating and Running Notebooks</h4>
+<ul>
+  <li>Click <strong>File → New → Notebook</strong> and select a kernel (default: <strong>Python 3 (ipykernel)</strong>).</li>
+  <li>Use <code>Shift+Enter</code> to run a cell and advance; <code>Ctrl+Enter</code> to run in place.</li>
+  <li>Save with <code>Ctrl+S</code>. Notebooks auto-save every 2 minutes.</li>
+</ul>
+
+<h4>Pre-installed Libraries</h4>
+<table>
+  <thead><tr><th>Library</th><th>Use Case</th><th>Import Example</th></tr></thead>
+  <tbody>
+    <tr><td>pandas</td><td>Data manipulation &amp; analysis</td><td><code>import pandas as pd</code></td></tr>
+    <tr><td>numpy</td><td>Numerical computing</td><td><code>import numpy as np</code></td></tr>
+    <tr><td>scikit-learn</td><td>Classical ML models</td><td><code>from sklearn.ensemble import RandomForestClassifier</code></td></tr>
+    <tr><td>langchain</td><td>LLM chains, agents, RAG pipelines</td><td><code>from langchain_openai import ChatOpenAI</code></td></tr>
+    <tr><td>transformers</td><td>HuggingFace model loading</td><td><code>from transformers import pipeline</code></td></tr>
+    <tr><td>chromadb</td><td>Vector store client</td><td><code>import chromadb</code></td></tr>
+    <tr><td>openai</td><td>OpenAI / LiteLLM client</td><td><code>from openai import OpenAI</code></td></tr>
+  </tbody>
+</table>
+
+<h4>Calling LiteLLM from a Notebook</h4>
+<pre><code>from openai import OpenAI
+
+llm = OpenAI(
+    base_url="http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1",
+    api_key="sk-litellm-i3-f951c9377163a11275864cb92e90ad13",
+)
+
+resp = llm.chat.completions.create(
+    model="mistral-7b",
+    messages=[{"role": "user", "content": "Explain gradient descent."}],
+)
+print(resp.choices[0].message.content)</code></pre>
+
+<h4>Building a Simple RAG Pipeline</h4>
+<pre><code>import chromadb
+from openai import OpenAI
+
+# Connect to ChromaDB
+chroma = chromadb.HttpClient(
+    host="chromadb.i3-ai-lab.svc.cluster.local",
+    port=8000,
+    headers={"Authorization": "Bearer fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c"},
+)
+collection = chroma.get_or_create_collection("my-docs")
+
+# Query for relevant context
+results = collection.query(query_texts=["kubernetes networking"], n_results=3)
+context = "\n".join(results["documents"][0])
+
+# Ask the LLM with context
+llm = OpenAI(
+    base_url="http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1",
+    api_key="sk-litellm-i3-f951c9377163a11275864cb92e90ad13",
+)
+resp = llm.chat.completions.create(
+    model="mistral-7b",
+    messages=[
+        {"role": "system", "content": f"Answer using this context:\n{context}"},
+        {"role": "user",   "content": "How does Kubernetes handle pod networking?"},
+    ],
+)
+print(resp.choices[0].message.content)</code></pre>
+
+<h4>Installing Additional Packages</h4>
+<pre><code># In a notebook cell — persists only for the current session
+!pip install sentence-transformers
+
+# To persist across sessions, ask an admin to add to the base image</code></pre>
+
+<h3>5.2 Admin Guide</h3>
+
+<h4>Managing User Quotas</h4>
+<div class="step"><div class="num">1</div><div class="body">Log in to JupyterHub as admin and navigate to <strong>Admin → User list</strong>.</div></div>
+<div class="step"><div class="num">2</div><div class="body">Click a user's name to view their server status, and <strong>Stop Server</strong> to reclaim resources.</div></div>
+<div class="step"><div class="num">3</div><div class="body">Resource limits (CPU/RAM) are configured in the JupyterHub <code>config.yaml</code> in the <code>i3-ai-lab</code> namespace. Edit the ConfigMap and restart the hub pod to apply changes:
+<pre><code>oc edit configmap jupyterhub-config -n i3-ai-lab
+oc rollout restart deployment/hub -n i3-ai-lab</code></pre>
+</div></div>
+
+<h4>Adding Persistent Storage for a User</h4>
+<pre><code># List user PVCs
+oc get pvc -n i3-ai-lab -l app=jupyterhub
+
+# Resize an existing PVC (requires StorageClass to support expansion)
+oc patch pvc claim-username -n i3-ai-lab \
+  -p '{"spec":{"resources":{"requests":{"storage":"20Gi"}}}}'</code></pre>
+
+<h4>Kernel Management</h4>
+<ul>
+  <li>List running kernels: <strong>Admin → Running Servers</strong></li>
+  <li>Kernels idle for more than 1 hour are culled automatically (configurable via <code>cull_idle_servers</code> in hub config).</li>
+  <li>To add a new kernel (e.g. R, Julia): update the JupyterHub singleuser image and redeploy.</li>
+</ul>
+
+<h4>Checking Hub Logs</h4>
+<pre><code>oc logs -n i3-ai-lab deployment/hub --tail=200 -f</code></pre>
+
+<!-- ═══════════════════════════════════ 6. LANGFUSE ══════════════════════════ -->
+<h2 id="langfuse">6. Langfuse — LLM Observability</h2>
+
+<div class="service-card">
+  <h3>Connection Details</h3>
+  <div class="kv"><span class="k">Public URL</span><code>https://langfuse.i3technologies.co.ke</code></div>
+  <div class="kv"><span class="k">Internal address</span><code>langfuse.i3-ott.svc:3000</code></div>
+  <div class="kv"><span class="k">Namespace</span><code>i3-ott</code></div>
+  <div class="kv"><span class="k">EvalOS Public Key</span><code>pk-lf-i3evalos-8ed2998c3f68449b</code></div>
+  <div class="kv"><span class="k">EvalOS Secret Key</span><code>sk-lf-i3evalos-b7905eaf49904cc5</code></div>
+</div>
+
+<div class="danger"><strong>Secret — NEXTAUTH_SECRET</strong> The value <code>XY/DP1FB2BkupdvsOFdevCbMmymZVj8hh4vjliaSJio=</code> is the NextAuth signing secret. It must remain in the Kubernetes Secret and must never be rotated without a coordinated redeploy of the Langfuse pod.</div>
+
+<h3>6.1 User Guide</h3>
+
+<h4>Viewing Traces</h4>
+<div class="step"><div class="num">1</div><div class="body">Log in at <code>https://langfuse.i3technologies.co.ke</code> with your platform credentials.</div></div>
+<div class="step"><div class="num">2</div><div class="body">Select your project from the project dropdown at the top-left.</div></div>
+<div class="step"><div class="num">3</div><div class="body">Navigate to <strong>Traces</strong>. Each row is one LLM interaction, showing: timestamp, model, latency, token count, cost, and status.</div></div>
+<div class="step"><div class="num">4</div><div class="body">Click any trace to drill into spans — see the exact prompt sent, the completion returned, and any intermediate tool calls.</div></div>
+
+<h4>Filtering Traces by Application</h4>
+<ul>
+  <li>Use the <strong>Filter</strong> bar to filter by <code>tags</code>, <code>userId</code>, <code>sessionId</code>, or date range.</li>
+  <li>Applications should tag traces with their name (e.g. <code>app=evalos</code>) when initialising the Langfuse client — see the instrumentation guide below.</li>
+</ul>
+
+<h4>Cost Reports</h4>
+<ul>
+  <li>Go to <strong>Analytics → Costs</strong> to see spend broken down by model, day, and project.</li>
+  <li>Export as CSV with the <strong>Export</strong> button for budget reporting.</li>
+  <li>Token usage trends are available under <strong>Analytics → Usage</strong>.</li>
+</ul>
+
+<h3>6.2 Admin Guide</h3>
+
+<h4>Creating a New Project</h4>
+<div class="step"><div class="num">1</div><div class="body">Log in as an admin user and go to <strong>Settings → Projects → New Project</strong>.</div></div>
+<div class="step"><div class="num">2</div><div class="body">Name the project after the application (e.g. <code>evalos</code>, <code>sage</code>, <code>data-pipeline</code>).</div></div>
+<div class="step"><div class="num">3</div><div class="body">Note the generated Public Key and Secret Key — provide these to the application team.</div></div>
+
+<h4>Adding API Keys to a Project</h4>
+<p>Navigate to <strong>Project Settings → API Keys → Create new API key</strong>. Give it a descriptive name (e.g. <code>evalos-prod</code>) and store both keys securely.</p>
+
+<h4>Setting Up Alerts</h4>
+<ul>
+  <li>Go to <strong>Project Settings → Alerts → New Alert</strong>.</li>
+  <li>Alert types: error rate spike, latency &gt; threshold, spend &gt; budget.</li>
+  <li>Delivery: Email, Slack webhook, or PagerDuty integration.</li>
+</ul>
+
+<h4>Instrumenting an Application (Python)</h4>
+<pre><code>from langfuse import Langfuse
+from langfuse.openai import openai  # drop-in replacement
+
+# Configure the client
+langfuse = Langfuse(
+    public_key="pk-lf-i3evalos-8ed2998c3f68449b",
+    secret_key="sk-lf-i3evalos-b7905eaf49904cc5",
+    host="https://langfuse.i3technologies.co.ke",
+)
+
+# Use the patched openai client — all calls are traced automatically
+response = openai.chat.completions.create(
+    model="mistral-7b",
+    messages=[{"role": "user", "content": "Hello!"}],
+    # Pass metadata to Langfuse
+    name="greeting-test",
+    user_id="user-123",
+    tags=["app=evalos", "env=prod"],
+)</code></pre>
+
+<h4>Flushing Traces Before Process Exit</h4>
+<pre><code># In a batch script or short-lived process
+langfuse.flush()  # ensure all queued traces are sent</code></pre>
+
+<!-- ═══════════════════════════════════ 7. CHROMADB ══════════════════════════ -->
+<h2 id="chromadb">7. ChromaDB Vector Database</h2>
+
+<div class="service-card">
+  <h3>Connection Details</h3>
+  <div class="kv"><span class="k">Internal address</span><code>chromadb.i3-ai-lab.svc.cluster.local:8000</code></div>
+  <div class="kv"><span class="k">Namespace</span><code>i3-ai-lab</code></div>
+  <div class="kv"><span class="k">Auth token</span><code>fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c</code></div>
+  <div class="kv"><span class="k">Purpose</span>Stores embeddings for RAG pipelines used by Sage and custom applications</div>
+</div>
+
+<div class="note"><strong>Internal only</strong> ChromaDB has no external ingress. Access is only possible from inside the cluster (pods, Jupyter notebooks, or via <code>oc port-forward</code>).</div>
+
+<h3>7.1 Admin Guide</h3>
+
+<h4>Connecting to ChromaDB</h4>
+<pre><code>import chromadb
+from chromadb.config import Settings
+
+client = chromadb.HttpClient(
+    host="chromadb.i3-ai-lab.svc.cluster.local",
+    port=8000,
+    settings=Settings(
+        chroma_client_auth_provider="chromadb.auth.token.TokenAuthClientProvider",
+        chroma_client_auth_credentials="fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c",
+    ),
+)</code></pre>
+
+<h4>Listing All Collections</h4>
+<pre><code>collections = client.list_collections()
+for col in collections:
+    print(col.name, "—", col.count(), "documents")</code></pre>
+
+<h4>Creating a Collection</h4>
+<pre><code># With cosine distance (recommended for text embeddings)
+collection = client.create_collection(
+    name="company-policies",
+    metadata={"hnsw:space": "cosine"},
+)</code></pre>
+
+<h4>Adding Documents</h4>
+<pre><code>collection.add(
+    documents=[
+        "All employees must complete security awareness training annually.",
+        "Remote work requests must be approved by the line manager.",
+    ],
+    metadatas=[
+        {"source": "hr-policy-v3.pdf", "page": 4},
+        {"source": "hr-policy-v3.pdf", "page": 7},
+    ],
+    ids=["doc-001", "doc-002"],
+)</code></pre>
+
+<h4>Querying a Collection</h4>
+<pre><code>results = collection.query(
+    query_texts=["What is the remote work policy?"],
+    n_results=3,
+    include=["documents", "metadatas", "distances"],
+)
+for doc, meta, dist in zip(
+    results["documents"][0],
+    results["metadatas"][0],
+    results["distances"][0],
+):
+    print(f"[{dist:.3f}] {meta['source']} — {doc[:80]}…")</code></pre>
+
+<h4>Deleting a Collection</h4>
+<pre><code># Warning: permanent and irreversible
+client.delete_collection("collection-name")</code></pre>
+
+<h4>Checking Storage Usage</h4>
+<pre><code># From inside the cluster
+oc exec -n i3-ai-lab deployment/chromadb -- df -h /chroma/chroma
+
+# Count documents across all collections
+for col in client.list_collections():
+    print(f"{col.name}: {col.count()} vectors")</code></pre>
+
+<h4>Deleting Specific Documents</h4>
+<pre><code># Delete by IDs
+collection.delete(ids=["doc-001", "doc-002"])
+
+# Delete by metadata filter
+collection.delete(where={"source": "outdated-policy-v1.pdf"})</code></pre>
+
+<!-- ═══════════════════════════════════ 8. QUICK REF ═════════════════════════ -->
+<h2 id="quickref">8. Quick Reference</h2>
+
+<h3>Service URLs &amp; Keys</h3>
+<table>
+  <thead><tr><th>Service</th><th>Public URL</th><th>Internal URL</th><th>Key / Token</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>LiteLLM</td>
+      <td>https://litellm.i3technologies.co.ke</td>
+      <td>litellm-proxy.i3-model-gateway.svc.cluster.local:4000</td>
+      <td><code>sk-litellm-i3-f951c9377163a11275864cb92e90ad13</code></td>
+    </tr>
+    <tr>
+      <td>Ollama</td>
+      <td>—</td>
+      <td>ollama.i3-ott.svc.cluster.local:11434</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>Sage</td>
+      <td>https://sage.i3technologies.co.ke</td>
+      <td>—</td>
+      <td>SSO login</td>
+    </tr>
+    <tr>
+      <td>JupyterHub</td>
+      <td>https://jupyter.i3technologies.co.ke</td>
+      <td>—</td>
+      <td>SSO login</td>
+    </tr>
+    <tr>
+      <td>Langfuse</td>
+      <td>https://langfuse.i3technologies.co.ke</td>
+      <td>langfuse.i3-ott.svc:3000</td>
+      <td>Per-project keys</td>
+    </tr>
+    <tr>
+      <td>ChromaDB</td>
+      <td>—</td>
+      <td>chromadb.i3-ai-lab.svc.cluster.local:8000</td>
+      <td><code>fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Common Admin Commands</h3>
+<table>
+  <thead><tr><th>Task</th><th>Command</th></tr></thead>
+  <tbody>
+    <tr><td>List Ollama models</td><td><code>oc exec -n i3-model-gateway ollama-0 -- ollama list</code></td></tr>
+    <tr><td>Pull a new Ollama model</td><td><code>oc exec -n i3-model-gateway ollama-0 -- ollama pull &lt;model&gt;</code></td></tr>
+    <tr><td>Check Ollama disk usage</td><td><code>oc exec -n i3-model-gateway ollama-0 -- df -h /root/.ollama</code></td></tr>
+    <tr><td>Restart LiteLLM</td><td><code>oc rollout restart deployment/litellm-proxy -n i3-model-gateway</code></td></tr>
+    <tr><td>Restart Langfuse</td><td><code>oc rollout restart deployment/langfuse -n i3-ott</code></td></tr>
+    <tr><td>Check ChromaDB storage</td><td><code>oc exec -n i3-ai-lab deployment/chromadb -- df -h /chroma/chroma</code></td></tr>
+    <tr><td>JupyterHub logs</td><td><code>oc logs -n i3-ai-lab deployment/hub --tail=200</code></td></tr>
+    <tr><td>Port-forward Ollama</td><td><code>oc port-forward -n i3-model-gateway svc/ollama 11434:11434</code></td></tr>
+  </tbody>
+</table>
+
+<h3>Decision Guide — Which Service to Use?</h3>
+<table>
+  <thead><tr><th>I want to…</th><th>Use</th></tr></thead>
+  <tbody>
+    <tr><td>Chat with an AI model (no code)</td><td>Sage — https://sage.i3technologies.co.ke</td></tr>
+    <tr><td>Ask questions about a document (no code)</td><td>Sage — upload file, use RAG chat</td></tr>
+    <tr><td>Write Python code to call an LLM</td><td>LiteLLM API via OpenAI SDK</td></tr>
+    <tr><td>Do data science / build ML models</td><td>JupyterHub</td></tr>
+    <tr><td>Track LLM cost and errors for my app</td><td>Langfuse — instrument with SDK</td></tr>
+    <tr><td>Store/search document embeddings</td><td>ChromaDB</td></tr>
+    <tr><td>Add a new AI model to the platform</td><td>Pull via Ollama, register in LiteLLM</td></tr>
+    <tr><td>Keep data inside the cluster</td><td>Use mistral-7b (routes to Ollama)</td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+<footer>
+  Made with IBM Bob &nbsp;|&nbsp; Component 04 of 14 &nbsp;|&nbsp; i3 Technologies Platform — AI &amp; Model Gateway
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Component 13: MCP Gateway — i3 Agentic Runtime (i3-AR)</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: #1f2328;
+    background: #f7f8fa;
+  }
+
+  .cover {
+    background: linear-gradient(135deg, #1f2328, #57606a);
+    color: #fff;
+    padding: 56px 40px 48px;
+    text-align: center;
+  }
+  .cover .badge {
+    display: inline-block;
+    background: rgba(59,130,212,0.85);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 3px 12px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+  }
+  .cover h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+  .cover .subtitle {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.72);
+    margin-bottom: 24px;
+  }
+  .cover .meta-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-top: 20px;
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.6);
+  }
+  .cover .meta-row span { white-space: nowrap; }
+  .cover .meta-row strong { color: rgba(255,255,255,0.88); }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+  }
+
+  .toc {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 28px 32px;
+    margin: 32px 0;
+  }
+  .toc h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1f2328;
+    margin-bottom: 14px;
+    border: none;
+    padding: 0;
+  }
+  .toc ol {
+    column-count: 2;
+    column-gap: 32px;
+    padding-left: 18px;
+  }
+  .toc li {
+    font-size: 13px;
+    margin-bottom: 5px;
+  }
+  .toc a { color: #3b82d4; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  h2 {
+    color: #1f2328;
+    font-size: 1.25rem;
+    font-weight: 700;
+    border-bottom: 2px solid #3b82d4;
+    padding-bottom: 7px;
+    margin: 40px 0 18px;
+  }
+  h3 {
+    color: #1f2328;
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 24px 0 10px;
+  }
+  h4 {
+    color: #57606a;
+    font-size: 13.5px;
+    font-weight: 700;
+    margin: 18px 0 8px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  p { margin-bottom: 12px; }
+  ul, ol { padding-left: 22px; margin-bottom: 12px; }
+  li { margin-bottom: 4px; }
+
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12.5px;
+    background: #f0f6ff;
+    border: 1px solid #b6d4fe;
+    border-radius: 4px;
+    padding: 1px 5px;
+  }
+
+  pre {
+    background: #f0f6ff;
+    border: 1px solid #b6d4fe;
+    border-radius: 6px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    margin: 12px 0 18px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12.5px;
+    line-height: 1.6;
+    white-space: pre;
+  }
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin: 16px 0 24px;
+  }
+  .info-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 7px;
+    padding: 14px 16px;
+  }
+  .info-card .label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: #57606a;
+    margin-bottom: 4px;
+  }
+  .info-card .value {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #1f2328;
+    word-break: break-all;
+  }
+  .info-card .value a { color: #3b82d4; text-decoration: none; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 20px;
+    font-size: 13px;
+  }
+  thead tr { background: #1f2328; color: #fff; }
+  thead th {
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: .04em;
+  }
+  tbody tr { border-bottom: 1px solid #e5e7eb; }
+  tbody tr:nth-child(even) { background: #f7f8fa; }
+  tbody td { padding: 9px 12px; vertical-align: top; }
+
+  .step {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    background: #3b82d4;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+  .step-body { flex: 1; }
+
+  .tier-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 12px;
+    letter-spacing: .05em;
+  }
+  .tier-1 { background: #d1fae5; color: #065f46; }
+  .tier-2 { background: #dbeafe; color: #1e40af; }
+  .tier-3 { background: #fef3c7; color: #92400e; }
+  .tier-4 { background: #fee2e2; color: #7f1d1d; }
+
+  .callout {
+    border-left: 3px solid #3b82d4;
+    background: #eff6ff;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 13.5px;
+  }
+  .callout.warn {
+    border-color: #f59e0b;
+    background: #fffbeb;
+  }
+  .callout.danger {
+    border-color: #ef4444;
+    background: #fef2f2;
+  }
+
+  .endpoint {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 7px;
+    margin-bottom: 22px;
+    overflow: hidden;
+  }
+  .endpoint-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: #f7f8fa;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .method {
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: .05em;
+  }
+  .get { background: #d1fae5; color: #065f46; }
+  .post { background: #dbeafe; color: #1e40af; }
+  .patch { background: #fef3c7; color: #92400e; }
+  .delete { background: #fee2e2; color: #7f1d1d; }
+  .endpoint-path {
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2328;
+  }
+  .endpoint-body { padding: 14px 16px; }
+
+  .section-divider {
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    margin: 36px 0;
+  }
+
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: #57606a;
+    border-top: 1px solid #e5e7eb;
+    padding: 20px 0 10px;
+    margin-top: 48px;
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="badge">Admin Guide · Component 13 of 14</div>
+  <h1>MCP Gateway — i3 Agentic Runtime</h1>
+  <p class="subtitle">Model Context Protocol Gateway · Sandboxed Tool Execution · Human-in-the-Loop Approvals</p>
+  <div class="meta-row">
+    <span><strong>Namespace:</strong> i3-ar</span>
+    <span><strong>URL:</strong> https://ar.i3technologies.co.ke</span>
+    <span><strong>Runtime:</strong> FastAPI (Python)</span>
+    <span><strong>Replicas:</strong> 2</span>
+    <span><strong>Database:</strong> ar_db</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- INFO CARDS -->
+<div class="info-grid" style="margin-top:28px;">
+  <div class="info-card">
+    <div class="label">Public URL</div>
+    <div class="value"><a href="https://ar.i3technologies.co.ke">ar.i3technologies.co.ke</a></div>
+  </div>
+  <div class="info-card">
+    <div class="label">Namespace</div>
+    <div class="value">i3-ar</div>
+  </div>
+  <div class="info-card">
+    <div class="label">Deployment</div>
+    <div class="value">2 replicas · FastAPI</div>
+  </div>
+  <div class="info-card">
+    <div class="label">DB / User</div>
+    <div class="value">ar_db / ar_app</div>
+  </div>
+  <div class="info-card">
+    <div class="label">Keycloak Client</div>
+    <div class="value">i3-ar-server (confidential)</div>
+  </div>
+  <div class="info-card">
+    <div class="label">MCP Tools</div>
+    <div class="value">4 tools + approval queue</div>
+  </div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <ol>
+    <li><a href="#architecture">Architecture Overview</a></li>
+    <li><a href="#tier-model">Tier Model &amp; Trust Levels</a></li>
+    <li><a href="#mcp-tools">MCP Tool Endpoints</a></li>
+    <li><a href="#approval-workflow">Approval Workflow</a></li>
+    <li><a href="#action-registry">Action Registry (ar_tools)</a></li>
+    <li><a href="#execution-log">Execution Log (ar_executions)</a></li>
+    <li><a href="#vault-integration">OpenBao/Vault Integration</a></li>
+    <li><a href="#chromadb-integration">ChromaDB Integration</a></li>
+    <li><a href="#adding-tools">Adding a New MCP Tool</a></li>
+    <li><a href="#keycloak-auth">Keycloak Authentication</a></li>
+    <li><a href="#guardian">Guardian Middleware</a></li>
+    <li><a href="#operations">Operations &amp; Health</a></li>
+    <li><a href="#troubleshooting">Troubleshooting</a></li>
+    <li><a href="#i3-code-cli">i3-Code CLI Developer Tool</a></li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<!-- 1. ARCHITECTURE -->
+<!-- ============================================================ -->
+<h2 id="architecture">1. Architecture Overview</h2>
+
+<p>The <strong>i3 Agentic Runtime (i3-AR)</strong> is the central MCP (Model Context Protocol) Gateway for the i3 platform. It is the single authoritative broker through which all AI agents invoke platform capabilities — database introspection, sandboxed code execution, semantic search, and secrets retrieval — without ever having direct access to raw infrastructure.</p>
+
+<h3>What is an MCP Gateway?</h3>
+<p>Model Context Protocol defines a standardised JSON-RPC-like interface for AI agents to discover and call tools. Rather than each agent embedding SDK calls to databases or vaults directly, agents send structured <code>tools/call</code> requests to i3-AR. The gateway validates the caller's identity, checks the tier policy, executes the tool in a controlled context, writes an audit record, and returns the result. This architecture means:</p>
+<ul>
+  <li>No agent ever holds raw database credentials.</li>
+  <li>All tool invocations are logged, and sensitive ones require human approval.</li>
+  <li>Input/output is filtered by Guardian middleware before agents see results.</li>
+  <li>Tools can be added or removed centrally without redeploying agent models.</li>
+</ul>
+
+<h3>How Agents Connect</h3>
+<p>Agent clients (LLM orchestrators, the i3-code CLI, workflow engines) connect via HTTP/HTTPS to <code>https://ar.i3technologies.co.ke</code>. Every request must carry a Bearer token issued by Keycloak. The gateway validates the token, extracts the agent's identity and roles, and routes to the appropriate tool handler.</p>
+
+<pre><code>┌───────────────────┐        HTTPS + Bearer JWT
+│  Agent Client     │ ──────────────────────────────────────────┐
+│  (LLM / i3-code)  │                                            │
+└───────────────────┘                                            ▼
+                                                   ┌────────────────────────┐
+                                                   │   i3-AR MCP Gateway    │
+                                                   │   FastAPI · 2 replicas │
+                                                   │   namespace: i3-ar     │
+                                                   │                        │
+                                                   │  ┌──────────────────┐  │
+                                                   │  │ Guardian Middleware│  │
+                                                   │  │ (input/output filter)│
+                                                   │  └──────────────────┘  │
+                                                   │  ┌──────────────────┐  │
+                                                   │  │ Tier Policy Engine│  │
+                                                   │  └──────────────────┘  │
+                                                   │  ┌──────────────────┐  │
+                                                   │  │ Tool Dispatcher   │  │
+                                                   │  └──────────────────┘  │
+                                                   └─────┬───────┬──────────┘
+                                                         │       │
+                        ┌────────────────────────────────┘       │
+                        ▼                                         ▼
+              ┌──────────────────┐                    ┌──────────────────────┐
+              │  ar_db (Postgres) │                    │  External Services   │
+              │  ar_tools         │                    │  ChromaDB (vectors)  │
+              │  ar_executions    │                    │  OpenBao/Vault       │
+              │  ar_approvals     │                    │  Sandboxed Executor  │
+              └──────────────────┘                    └──────────────────────┘</code></pre>
+
+<h3>Tool Execution Flow</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body">Agent sends <code>POST /tools/call</code> with JWT and tool name + arguments.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body">Keycloak middleware validates token; rejects with 401 if invalid or expired.</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body">Guardian middleware scans input for policy violations (PII, prompt injection, disallowed content).</div>
+</div>
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body">Tier policy engine checks the tool's tier. Tier 1/2 proceeds immediately; Tier 3/4 creates an <code>ar_approvals</code> record and returns a <code>202 Accepted</code> with an approval ID.</div>
+</div>
+<div class="step">
+  <div class="step-num">5</div>
+  <div class="step-body">Tool handler executes; result is written to <code>ar_executions</code>.</div>
+</div>
+<div class="step">
+  <div class="step-num">6</div>
+  <div class="step-body">Guardian middleware scans output before it is returned to the agent.</div>
+</div>
+<div class="step">
+  <div class="step-num">7</div>
+  <div class="step-body">Structured JSON result is returned to the agent.</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 2. TIER MODEL -->
+<!-- ============================================================ -->
+<h2 id="tier-model">2. Tier Model &amp; Trust Levels</h2>
+
+<p>Every tool registered in <code>ar_tools</code> is assigned a tier (1–4). The tier determines the execution policy: automatic, audited, human-approved, or senior-approved.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Tier</th>
+      <th>Label</th>
+      <th>Policy</th>
+      <th>Tools</th>
+      <th>Response</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="tier-badge tier-1">Tier 1</span></td>
+      <td>Auto-Execute</td>
+      <td>Execute immediately, minimal audit</td>
+      <td><code>read_db_schema</code>, <code>query_curriculum_vector</code></td>
+      <td>200 OK — result</td>
+    </tr>
+    <tr>
+      <td><span class="tier-badge tier-2">Tier 2</span></td>
+      <td>Audited Execute</td>
+      <td>Execute immediately, full audit log with caller identity</td>
+      <td><code>execute_sandboxed_code</code> (limited permissions)</td>
+      <td>200 OK — result + execution_id</td>
+    </tr>
+    <tr>
+      <td><span class="tier-badge tier-3">Tier 3</span></td>
+      <td>Human Approval</td>
+      <td>Queued; IT staff must approve via approval API</td>
+      <td><code>vault_get_secret</code> (sensitive paths), bulk DB ops</td>
+      <td>202 Accepted — approval_id</td>
+    </tr>
+    <tr>
+      <td><span class="tier-badge tier-4">Tier 4</span></td>
+      <td>Senior IT Approval</td>
+      <td>Queued; Senior IT admin must approve</td>
+      <td>Production DB writes, external API calls with PII</td>
+      <td>202 Accepted — approval_id</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <strong>Tier 3/4 blocking:</strong> The agent call returns a <code>202</code> immediately. The actual tool result is only available after a reviewer approves it via <code>PATCH /approvals/{id}</code>. Agents must poll or use a callback mechanism to retrieve the final result.
+</div>
+
+<h3>Tier Override</h3>
+<p>Admins can temporarily override a tool's tier by updating the <code>tier</code> column in <code>ar_tools</code>. Always revert after the maintenance window and document the change in the audit log.</p>
+
+<!-- ============================================================ -->
+<!-- 3. MCP TOOL ENDPOINTS -->
+<!-- ============================================================ -->
+<h2 id="mcp-tools">3. MCP Tool Endpoints</h2>
+
+<p>All tool calls go through a single dispatch endpoint. The tool name selects the handler; arguments are passed in the <code>arguments</code> object. All requests require a valid Bearer JWT.</p>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/tools/list</span>
+  </div>
+  <div class="endpoint-body">
+    <p>Returns all registered MCP tools with their schemas. Used by agents for capability discovery.</p>
+    <pre><code>curl -s https://ar.i3technologies.co.ke/tools/list \
+  -H "Authorization: Bearer $TOKEN" | jq .</code></pre>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<h3>Tool 1 — <code>read_db_schema</code> <span class="tier-badge tier-1">Tier 1</span></h3>
+<p>Returns table and column metadata from any platform database. Agents use this to understand schema structure before formulating queries. <strong>No data rows are ever returned.</strong></p>
+
+<table>
+  <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>database</code></td><td>str</td><td>required</td><td>Target database name (e.g. <code>auth_db</code>, <code>lms_db</code>)</td></tr>
+    <tr><td><code>schema</code></td><td>str</td><td><code>public</code></td><td>Postgres schema to introspect</td></tr>
+  </tbody>
+</table>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/tools/call</span>
+    <span style="font-size:12px;color:#57606a;margin-left:auto;">read_db_schema</span>
+  </div>
+  <div class="endpoint-body">
+    <h4>Request</h4>
+    <pre><code>curl -s -X POST https://ar.i3technologies.co.ke/tools/call \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "read_db_schema",
+    "arguments": {
+      "database": "lms_db",
+      "schema": "public"
+    }
+  }' | jq .</code></pre>
+    <h4>Response (200 OK)</h4>
+    <pre><code>{
+  "tool": "read_db_schema",
+  "execution_id": "exec_7f3a1c",
+  "result": [
+    {
+      "table_name": "courses",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "courses",
+      "column_name": "title",
+      "data_type": "character varying",
+      "is_nullable": "NO"
+    }
+  ]
+}</code></pre>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<h3>Tool 2 — <code>execute_sandboxed_code</code> <span class="tier-badge tier-2">Tier 2</span></h3>
+<p>Runs arbitrary Python code in an isolated execution environment (gVisor/nsjail sandbox). Network access is disabled. Filesystem writes are ephemeral. Used by code-generation agents to validate logic or run data transformations.</p>
+
+<table>
+  <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>code</code></td><td>str</td><td>required</td><td>Python source code to execute</td></tr>
+    <tr><td><code>timeout_seconds</code></td><td>int</td><td>30</td><td>Max execution time; process killed after timeout</td></tr>
+  </tbody>
+</table>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/tools/call</span>
+    <span style="font-size:12px;color:#57606a;margin-left:auto;">execute_sandboxed_code</span>
+  </div>
+  <div class="endpoint-body">
+    <h4>Request</h4>
+    <pre><code>curl -s -X POST https://ar.i3technologies.co.ke/tools/call \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "execute_sandboxed_code",
+    "arguments": {
+      "code": "total = sum(range(1, 101))\nprint(f\"Sum 1-100: {total}\")",
+      "timeout_seconds": 10
+    }
+  }' | jq .</code></pre>
+    <h4>Response (200 OK)</h4>
+    <pre><code>{
+  "tool": "execute_sandboxed_code",
+  "execution_id": "exec_9b2e44",
+  "result": {
+    "stdout": "Sum 1-100: 5050\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  "tier": 2,
+  "caller": "agent:code-agent-01"
+}</code></pre>
+  </div>
+</div>
+
+<div class="callout warn">
+  <strong>Sandbox restrictions:</strong> Network sockets, <code>os.system()</code>, <code>subprocess</code>, and filesystem writes outside <code>/tmp</code> are blocked. Violations are logged as <code>POLICY_VIOLATION</code> in <code>ar_executions</code>.
+</div>
+
+<hr class="section-divider">
+
+<h3>Tool 3 — <code>query_curriculum_vector</code> <span class="tier-badge tier-1">Tier 1</span></h3>
+<p>Performs semantic similarity search against the ChromaDB collection containing curriculum embeddings. Returns the top-N most relevant curriculum chunks for the agent's query.</p>
+
+<table>
+  <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>query</code></td><td>str</td><td>required</td><td>Natural-language search query</td></tr>
+    <tr><td><code>n_results</code></td><td>int</td><td>5</td><td>Number of top results to return (max 20)</td></tr>
+  </tbody>
+</table>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/tools/call</span>
+    <span style="font-size:12px;color:#57606a;margin-left:auto;">query_curriculum_vector</span>
+  </div>
+  <div class="endpoint-body">
+    <h4>Request</h4>
+    <pre><code>curl -s -X POST https://ar.i3technologies.co.ke/tools/call \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "query_curriculum_vector",
+    "arguments": {
+      "query": "introduction to networking and OSI model",
+      "n_results": 3
+    }
+  }' | jq .</code></pre>
+    <h4>Response (200 OK)</h4>
+    <pre><code>{
+  "tool": "query_curriculum_vector",
+  "execution_id": "exec_2c7d90",
+  "result": [
+    {
+      "id": "chunk_0421",
+      "text": "The OSI model defines seven layers of network communication...",
+      "metadata": { "course": "NET101", "unit": 2, "page": 14 },
+      "distance": 0.112
+    },
+    {
+      "id": "chunk_0422",
+      "text": "Layer 3 (Network) is responsible for logical addressing...",
+      "metadata": { "course": "NET101", "unit": 2, "page": 15 },
+      "distance": 0.189
+    }
+  ]
+}</code></pre>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<h3>Tool 4 — <code>vault_get_secret</code> <span class="tier-badge tier-3">Tier 3</span></h3>
+<p>Retrieves a named secret from OpenBao (Vault-compatible). Requires the full KV path. Because secrets may contain credentials, this tool is <strong>Tier 3</strong> by default — every invocation creates a pending approval record.</p>
+
+<table>
+  <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>path</code></td><td>str</td><td>required</td><td>Vault KV path (e.g. <code>secret/data/i3-ar/db-password</code>)</td></tr>
+  </tbody>
+</table>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/tools/call</span>
+    <span style="font-size:12px;color:#57606a;margin-left:auto;">vault_get_secret · Tier 3</span>
+  </div>
+  <div class="endpoint-body">
+    <h4>Request</h4>
+    <pre><code>curl -s -X POST https://ar.i3technologies.co.ke/tools/call \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "vault_get_secret",
+    "arguments": {
+      "path": "secret/data/i3-ar/smtp-password"
+    }
+  }' | jq .</code></pre>
+    <h4>Response (202 Accepted — awaiting human approval)</h4>
+    <pre><code>{
+  "status": "pending_approval",
+  "approval_id": "apr_5e1f22",
+  "tier": 3,
+  "message": "Tool vault_get_secret requires human approval. Poll GET /approvals/apr_5e1f22 for status.",
+  "trace_id": "trace_8a4b01"
+}</code></pre>
+    <h4>Response after approval (200 OK)</h4>
+    <pre><code>{
+  "tool": "vault_get_secret",
+  "execution_id": "exec_6d3a11",
+  "result": {
+    "value": "s3cr3t_smtp_p@ss"
+  }
+}</code></pre>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 4. APPROVAL WORKFLOW -->
+<!-- ============================================================ -->
+<h2 id="approval-workflow">4. Approval Workflow (Tier 3/4 Human-in-the-Loop)</h2>
+
+<p>When a Tier 3 or Tier 4 tool is invoked, the gateway does not execute it immediately. Instead, a record is inserted into <code>ar_approvals</code> with status <code>pending</code>. A designated reviewer must inspect the request and approve or reject it.</p>
+
+<h3>Listing Pending Approvals</h3>
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/approvals/pending</span>
+  </div>
+  <div class="endpoint-body">
+    <p>Returns all approval records with status <code>pending</code>. Reviewers should check this regularly (or configure alerting).</p>
+    <pre><code>curl -s https://ar.i3technologies.co.ke/approvals/pending \
+  -H "Authorization: Bearer $ADMIN_TOKEN" | jq .</code></pre>
+    <h4>Response (200 OK)</h4>
+    <pre><code>[
+  {
+    "id": "apr_5e1f22",
+    "tool": "vault_get_secret",
+    "arguments": { "path": "secret/data/i3-ar/smtp-password" },
+    "caller": "agent:workflow-engine-03",
+    "tier": 3,
+    "status": "pending",
+    "created_at": "2025-01-15T10:32:00Z",
+    "trace_id": "trace_8a4b01"
+  }
+]</code></pre>
+  </div>
+</div>
+
+<h3>Approving or Rejecting an Action</h3>
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method patch">PATCH</span>
+    <span class="endpoint-path">/approvals/{id}</span>
+  </div>
+  <div class="endpoint-body">
+    <table>
+      <thead><tr><th>Field</th><th>Required</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>status</code></td><td>Yes</td><td><code>approved</code> or <code>rejected</code></td></tr>
+        <tr><td><code>reviewer</code></td><td>Yes</td><td>Reviewer's username or employee ID</td></tr>
+        <tr><td><code>trace_id</code></td><td>Yes</td><td>The trace_id from the pending record (for correlation)</td></tr>
+        <tr><td><code>rejection_reason</code></td><td>No</td><td>Free-text reason when status is <code>rejected</code></td></tr>
+      </tbody>
+    </table>
+    <h4>Approve</h4>
+    <pre><code>curl -s -X PATCH https://ar.i3technologies.co.ke/approvals/apr_5e1f22 \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "approved",
+    "reviewer": "john.kamau",
+    "trace_id": "trace_8a4b01"
+  }' | jq .</code></pre>
+    <h4>Reject</h4>
+    <pre><code>curl -s -X PATCH https://ar.i3technologies.co.ke/approvals/apr_5e1f22 \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "rejected",
+    "reviewer": "john.kamau",
+    "trace_id": "trace_8a4b01",
+    "rejection_reason": "Secret path not in approved list for this agent"
+  }' | jq .</code></pre>
+    <h4>Response (200 OK)</h4>
+    <pre><code>{
+  "id": "apr_5e1f22",
+  "status": "approved",
+  "reviewed_at": "2025-01-15T10:45:12Z",
+  "reviewer": "john.kamau",
+  "execution_id": "exec_6d3a11"
+}</code></pre>
+  </div>
+</div>
+
+<div class="callout">
+  <strong>SLA guidance:</strong> Tier 3 approvals should be reviewed within 30 minutes. Tier 4 approvals require a senior IT admin and should be reviewed within 2 hours. Configure PagerDuty or Slack alerts on new <code>pending</code> records in <code>ar_approvals</code>.
+</div>
+
+<h3>Approval Escalation Flow</h3>
+<pre><code>Agent invokes Tier 3/4 tool
+        │
+        ▼
+  Gateway inserts ar_approvals record (status=pending)
+        │
+        ├── Notifies reviewer via alert channel
+        │
+        ▼
+  Reviewer calls PATCH /approvals/{id}
+        │
+        ├── status=approved → Tool executes → result stored in ar_executions
+        │                                    → agent notified
+        │
+        └── status=rejected → ar_approvals.status=rejected
+                             → agent receives rejection notice with reason</code></pre>
+
+<!-- ============================================================ -->
+<!-- 5. ACTION REGISTRY -->
+<!-- ============================================================ -->
+<h2 id="action-registry">5. Action Registry — <code>ar_tools</code> Table</h2>
+
+<p>All tools exposed by the gateway are stored in the <code>ar_tools</code> table in <code>ar_db</code>. This is the single source of truth for what tools exist, their tier, and their schema.</p>
+
+<h3>Schema</h3>
+<table>
+  <thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>id</code></td><td>UUID</td><td>Primary key</td></tr>
+    <tr><td><code>name</code></td><td>VARCHAR</td><td>Tool name (unique, matches MCP tool name)</td></tr>
+    <tr><td><code>description</code></td><td>TEXT</td><td>Human-readable description surfaced to agents</td></tr>
+    <tr><td><code>input_schema</code></td><td>JSONB</td><td>JSON Schema for input validation</td></tr>
+    <tr><td><code>tier</code></td><td>INT</td><td>Execution tier (1–4)</td></tr>
+    <tr><td><code>handler</code></td><td>VARCHAR</td><td>Python module path for the handler function</td></tr>
+    <tr><td><code>enabled</code></td><td>BOOLEAN</td><td>Whether the tool is active</td></tr>
+    <tr><td><code>created_at</code></td><td>TIMESTAMPTZ</td><td>Creation timestamp</td></tr>
+    <tr><td><code>updated_at</code></td><td>TIMESTAMPTZ</td><td>Last update timestamp</td></tr>
+  </tbody>
+</table>
+
+<h3>Querying the Registry</h3>
+<pre><code># Connect to ar_db
+kubectl exec -n i3-ar -it \
+  $(kubectl get pod -n i3-ar -l app=ar -o jsonpath='{.items[0].metadata.name}') \
+  -- psql -U ar_app -d ar_db
+
+-- List all registered tools
+SELECT name, tier, enabled, description FROM ar_tools ORDER BY tier, name;
+
+-- Disable a tool temporarily
+UPDATE ar_tools SET enabled = false WHERE name = 'execute_sandboxed_code';
+
+-- Re-enable
+UPDATE ar_tools SET enabled = true WHERE name = 'execute_sandboxed_code';</code></pre>
+
+<!-- ============================================================ -->
+<!-- 6. EXECUTION LOG -->
+<!-- ============================================================ -->
+<h2 id="execution-log">6. Execution Log — <code>ar_executions</code> Table</h2>
+
+<p>Every tool invocation (successful or failed) is written to <code>ar_executions</code>. This is the primary audit trail for all agent actions on the platform.</p>
+
+<h3>Schema</h3>
+<table>
+  <thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>id</code></td><td>UUID</td><td>Execution ID (returned to caller)</td></tr>
+    <tr><td><code>tool_name</code></td><td>VARCHAR</td><td>Name of the tool invoked</td></tr>
+    <tr><td><code>caller</code></td><td>VARCHAR</td><td>Agent/user identity from JWT sub claim</td></tr>
+    <tr><td><code>arguments</code></td><td>JSONB</td><td>Sanitised input arguments (secrets redacted)</td></tr>
+    <tr><td><code>result</code></td><td>JSONB</td><td>Tool output (sensitive values redacted)</td></tr>
+    <tr><td><code>status</code></td><td>VARCHAR</td><td><code>success</code>, <code>error</code>, <code>timeout</code>, <code>policy_violation</code></td></tr>
+    <tr><td><code>tier</code></td><td>INT</td><td>Tier at time of execution</td></tr>
+    <tr><td><code>duration_ms</code></td><td>INT</td><td>Execution duration in milliseconds</td></tr>
+    <tr><td><code>trace_id</code></td><td>VARCHAR</td><td>Distributed trace ID for correlation</td></tr>
+    <tr><td><code>created_at</code></td><td>TIMESTAMPTZ</td><td>When execution occurred</td></tr>
+  </tbody>
+</table>
+
+<h3>Common Audit Queries</h3>
+<pre><code>-- All executions in the last 24 hours
+SELECT tool_name, caller, status, duration_ms, created_at
+FROM ar_executions
+WHERE created_at > NOW() - INTERVAL '24 hours'
+ORDER BY created_at DESC;
+
+-- Policy violations
+SELECT * FROM ar_executions WHERE status = 'policy_violation';
+
+-- Executions by a specific agent
+SELECT * FROM ar_executions
+WHERE caller = 'agent:code-agent-01'
+ORDER BY created_at DESC LIMIT 50;
+
+-- Slowest executions (over 5 seconds)
+SELECT tool_name, caller, duration_ms, created_at
+FROM ar_executions
+WHERE duration_ms > 5000
+ORDER BY duration_ms DESC;</code></pre>
+
+<!-- ============================================================ -->
+<!-- 7. VAULT INTEGRATION -->
+<!-- ============================================================ -->
+<h2 id="vault-integration">7. OpenBao/Vault Integration</h2>
+
+<p>The <code>vault_get_secret</code> tool communicates with OpenBao (an open-source Vault-compatible secrets manager) running in the cluster. The gateway authenticates to OpenBao using a Kubernetes service account token (Kubernetes Auth method).</p>
+
+<h3>How It Works</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body">The agent request arrives with a <code>path</code> argument (e.g. <code>secret/data/i3-ar/smtp-password</code>).</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body">Tier policy engine creates an <code>ar_approvals</code> record; returns 202 to the agent.</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body">After approval, the gateway POSTs a <code>GET</code> to OpenBao's KV API using its own service token: <code>GET {VAULT_ADDR}/v1/{path}</code>.</div>
+</div>
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body">OpenBao returns the secret. The value is passed to the agent; it is <strong>never</strong> stored in <code>ar_executions</code>.</div>
+</div>
+
+<h3>Vault Configuration (in i3-ar-secrets)</h3>
+<pre><code>kubectl get secret i3-ar-secrets -n i3-ar -o jsonpath='{.data}' | \
+  jq 'to_entries[] | {key: .key, value: (.value | @base64d)}'
+
+# Key environment variables consumed by i3-AR:
+# VAULT_ADDR     — OpenBao API address (e.g. http://openbao.i3-vault:8200)
+# VAULT_TOKEN    — Service token with read-only policy on secret/data/i3-ar/*
+# VAULT_ROLE     — Kubernetes auth role name</code></pre>
+
+<h3>Checking Vault Connectivity</h3>
+<pre><code># From within the pod
+kubectl exec -n i3-ar -it \
+  $(kubectl get pod -n i3-ar -l app=ar -o jsonpath='{.items[0].metadata.name}') \
+  -- curl -s -H "X-Vault-Token: $VAULT_TOKEN" \
+     $VAULT_ADDR/v1/sys/health | jq .</code></pre>
+
+<div class="callout warn">
+  <strong>Path whitelist:</strong> The gateway enforces a configurable allowlist of Vault paths that agents may request. Requests to paths outside the allowlist are rejected at the tier policy stage with a 403 — no approval record is created.
+</div>
+
+<!-- ============================================================ -->
+<!-- 8. CHROMADB INTEGRATION -->
+<!-- ============================================================ -->
+<h2 id="chromadb-integration">8. ChromaDB Integration</h2>
+
+<p>The <code>query_curriculum_vector</code> tool queries a ChromaDB instance that holds embeddings of all i3 platform curriculum content. Embeddings are generated using a sentence-transformer model and stored with metadata (course, unit, page).</p>
+
+<h3>Collection Details</h3>
+<table>
+  <thead><tr><th>Property</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr><td>Collection name</td><td><code>i3_curriculum</code></td></tr>
+    <tr><td>Embedding model</td><td><code>sentence-transformers/all-MiniLM-L6-v2</code></td></tr>
+    <tr><td>Distance metric</td><td>Cosine</td></tr>
+    <tr><td>ChromaDB endpoint</td><td>Configured in <code>CHROMADB_URL</code> env var</td></tr>
+  </tbody>
+</table>
+
+<h3>How It Works</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body">The agent's <code>query</code> string is embedded using the same model as the collection.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body">ChromaDB performs an approximate nearest-neighbour search.</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body">Top-N chunks with their metadata and cosine distances are returned.</div>
+</div>
+
+<h3>Checking ChromaDB Health</h3>
+<pre><code>kubectl exec -n i3-ar -it \
+  $(kubectl get pod -n i3-ar -l app=ar -o jsonpath='{.items[0].metadata.name}') \
+  -- curl -s $CHROMADB_URL/api/v1/heartbeat | jq .
+
+# List collections
+kubectl exec -n i3-ar -it \
+  $(kubectl get pod -n i3-ar -l app=ar -o jsonpath='{.items[0].metadata.name}') \
+  -- curl -s $CHROMADB_URL/api/v1/collections | jq .</code></pre>
+
+<h3>Re-indexing Curriculum</h3>
+<pre><code># Run the indexing job (triggers the curriculum-indexer CronJob manually)
+kubectl create job --from=cronjob/curriculum-indexer \
+  curriculum-reindex-manual -n i3-ar
+
+# Watch job logs
+kubectl logs -n i3-ar -l job-name=curriculum-reindex-manual -f</code></pre>
+
+<!-- ============================================================ -->
+<!-- 9. ADDING A NEW MCP TOOL -->
+<!-- ============================================================ -->
+<h2 id="adding-tools">9. Adding a New MCP Tool (Developer Guide)</h2>
+
+<p>New tools can be added to the gateway by registering them in <code>ar_tools</code> and implementing a handler in the FastAPI application. Follow this procedure:</p>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body">
+    <strong>Define the handler</strong> — Create a Python async function in <code>app/tools/</code>:
+    <pre><code># app/tools/send_notification.py
+from app.models import ToolResult
+
+async def send_notification(recipient: str, message: str) -> ToolResult:
+    """Send a notification via the platform notification service."""
+    # ... implementation ...
+    return ToolResult(output={"sent": True, "recipient": recipient})</code></pre>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body">
+    <strong>Register in ar_tools</strong>:
+    <pre><code>INSERT INTO ar_tools (id, name, description, input_schema, tier, handler, enabled)
+VALUES (
+  gen_random_uuid(),
+  'send_notification',
+  'Send a notification to a user via the platform notification service.',
+  '{
+    "type": "object",
+    "properties": {
+      "recipient": {"type": "string"},
+      "message":   {"type": "string"}
+    },
+    "required": ["recipient", "message"]
+  }',
+  2,
+  'app.tools.send_notification.send_notification',
+  true
+);</code></pre>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body">
+    <strong>Reload the tool registry</strong> — The gateway caches the registry at startup. Trigger a rolling restart:
+    <pre><code>kubectl rollout restart deployment/ar -n i3-ar</code></pre>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body">
+    <strong>Verify registration</strong>:
+    <pre><code>curl -s https://ar.i3technologies.co.ke/tools/list \
+  -H "Authorization: Bearer $TOKEN" | \
+  jq '.tools[] | select(.name=="send_notification")'</code></pre>
+  </div>
+</div>
+
+<div class="callout">
+  <strong>Tier assignment guidance:</strong> Read-only, non-sensitive tools → Tier 1. Tools that mutate state or run code → Tier 2. Tools that access secrets or PII → Tier 3. Tools that write to production systems → Tier 4.
+</div>
+
+<!-- ============================================================ -->
+<!-- 10. KEYCLOAK AUTH -->
+<!-- ============================================================ -->
+<h2 id="keycloak-auth">10. Keycloak Authentication for Agent Clients</h2>
+
+<p>All callers (agents, CLI tools, workflow engines) must obtain a JWT from Keycloak before calling i3-AR. The gateway validates every request against the Keycloak JWKS endpoint.</p>
+
+<h3>Client Configuration</h3>
+<table>
+  <thead><tr><th>Property</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr><td>Client ID</td><td><code>i3-ar-server</code></td></tr>
+    <tr><td>Access type</td><td>Confidential (server-to-server agents)</td></tr>
+    <tr><td>Secret location</td><td><code>i3-ar-secrets</code> Secret · key <code>KEYCLOAK_CLIENT_SECRET</code></td></tr>
+    <tr><td>Grant type</td><td>Client Credentials (for automated agents)</td></tr>
+    <tr><td>Token endpoint</td><td><code>https://auth.i3technologies.co.ke/realms/i3/protocol/openid-connect/token</code></td></tr>
+  </tbody>
+</table>
+
+<h3>Obtaining a Token (Client Credentials — for agents)</h3>
+<pre><code>export TOKEN=$(curl -s -X POST \
+  https://auth.i3technologies.co.ke/realms/i3/protocol/openid-connect/token \
+  -d "client_id=i3-ar-server" \
+  -d "client_secret=$KEYCLOAK_CLIENT_SECRET" \
+  -d "grant_type=client_credentials" \
+  | jq -r '.access_token')
+
+echo $TOKEN | cut -d. -f2 | base64 -d 2>/dev/null | jq .  # inspect claims</code></pre>
+
+<h3>Token Validation</h3>
+<p>The gateway uses FastAPI's dependency injection with <code>python-jose</code> to validate tokens. It checks:</p>
+<ul>
+  <li>Signature against Keycloak's JWKS (<code>/realms/i3/protocol/openid-connect/certs</code>)</li>
+  <li>Audience (<code>aud</code> must include <code>i3-ar-server</code>)</li>
+  <li>Expiry (<code>exp</code> claim)</li>
+  <li>Required roles in <code>realm_access.roles</code></li>
+</ul>
+
+<h3>Required Roles</h3>
+<table>
+  <thead><tr><th>Role</th><th>Permissions</th></tr></thead>
+  <tbody>
+    <tr><td><code>ar-agent</code></td><td>Call Tier 1 and Tier 2 tools</td></tr>
+    <tr><td><code>ar-agent-elevated</code></td><td>Submit Tier 3/4 requests (still requires human approval)</td></tr>
+    <tr><td><code>ar-reviewer</code></td><td>Access <code>GET /approvals/pending</code> and <code>PATCH /approvals/{id}</code></td></tr>
+    <tr><td><code>ar-admin</code></td><td>Full access including tool registry management</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ -->
+<!-- 11. GUARDIAN MIDDLEWARE -->
+<!-- ============================================================ -->
+<h2 id="guardian">11. Guardian Middleware</h2>
+
+<p>Every request through i3-AR passes through the <strong>Guardian middleware layer</strong> before reaching the tool handler and again before the response is returned to the agent. Guardian uses IBM Granite Guardian (a safety/policy model) to filter both inputs and outputs.</p>
+
+<h3>What Guardian Checks</h3>
+<table>
+  <thead><tr><th>Check</th><th>Direction</th><th>Action on Violation</th></tr></thead>
+  <tbody>
+    <tr><td>Prompt injection patterns</td><td>Inbound</td><td>Reject 400 + log <code>POLICY_VIOLATION</code></td></tr>
+    <tr><td>PII in tool arguments</td><td>Inbound</td><td>Redact and warn, or reject (configurable)</td></tr>
+    <tr><td>Disallowed content categories</td><td>Inbound</td><td>Reject 400</td></tr>
+    <tr><td>PII in tool results</td><td>Outbound</td><td>Redact before returning to agent</td></tr>
+    <tr><td>Sensitive data patterns (keys, passwords in stdout)</td><td>Outbound</td><td>Redact before returning</td></tr>
+    <tr><td>Hallucinated tool names</td><td>Inbound</td><td>Reject 404</td></tr>
+  </tbody>
+</table>
+
+<h3>Configuration</h3>
+<pre><code># Guardian config is in the i3-ar ConfigMap
+kubectl get configmap ar-config -n i3-ar -o yaml
+
+# Key settings:
+# GUARDIAN_ENABLED: "true"
+# GUARDIAN_MODEL: "ibm/granite-guardian-3-2b"
+# GUARDIAN_PII_REDACT: "true"
+# GUARDIAN_INJECT_BLOCK: "true"
+# GUARDIAN_ENDPOINT: "http://guardian-svc.i3-guardian:8080"</code></pre>
+
+<h3>Viewing Guardian Decisions</h3>
+<pre><code># Guardian violations appear in ar_executions with status=policy_violation
+SELECT
+  id, tool_name, caller, arguments,
+  result->>'guardian_reason' AS guardian_reason,
+  created_at
+FROM ar_executions
+WHERE status = 'policy_violation'
+ORDER BY created_at DESC LIMIT 20;</code></pre>
+
+<!-- ============================================================ -->
+<!-- 12. OPERATIONS -->
+<!-- ============================================================ -->
+<h2 id="operations">12. Operations &amp; Health</h2>
+
+<h3>Pod Health</h3>
+<pre><code># List pods
+kubectl get pods -n i3-ar -l app=ar
+
+# Describe a pod
+kubectl describe pod -n i3-ar \
+  $(kubectl get pod -n i3-ar -l app=ar -o jsonpath='{.items[0].metadata.name}')
+
+# Health check endpoints
+curl -s https://ar.i3technologies.co.ke/health | jq .
+curl -s https://ar.i3technologies.co.ke/health/ready | jq .
+curl -s https://ar.i3technologies.co.ke/health/live | jq .</code></pre>
+
+<h3>Logs</h3>
+<pre><code># Stream logs from both replicas
+kubectl logs -n i3-ar -l app=ar -f --max-log-requests=2
+
+# Logs from a specific pod
+kubectl logs -n i3-ar \
+  $(kubectl get pod -n i3-ar -l app=ar -o jsonpath='{.items[0].metadata.name}') \
+  --tail=200
+
+# Filter for errors
+kubectl logs -n i3-ar -l app=ar --tail=500 | grep -i "error\|exception\|CRITICAL"</code></pre>
+
+<h3>Restart</h3>
+<pre><code># Rolling restart (zero-downtime with 2 replicas)
+kubectl rollout restart deployment/ar -n i3-ar
+
+# Watch rollout progress
+kubectl rollout status deployment/ar -n i3-ar</code></pre>
+
+<h3>Scaling</h3>
+<pre><code># Scale up for high load periods
+kubectl scale deployment/ar -n i3-ar --replicas=4
+
+# Scale back to baseline
+kubectl scale deployment/ar -n i3-ar --replicas=2
+
+# Check HPA (if configured)
+kubectl get hpa -n i3-ar</code></pre>
+
+<h3>Database Connection Check</h3>
+<pre><code>kubectl exec -n i3-ar -it \
+  $(kubectl get pod -n i3-ar -l app=ar -o jsonpath='{.items[0].metadata.name}') \
+  -- psql postgresql://ar_app:de0ca0d50fd34c2f8847258f@ar-db-svc/ar_db \
+  -c "SELECT COUNT(*) FROM ar_executions WHERE created_at > NOW() - INTERVAL '1 hour';"</code></pre>
+
+<h3>Secrets</h3>
+<pre><code># View secret keys (not values)
+kubectl get secret i3-ar-secrets -n i3-ar -o jsonpath='{.data}' | jq 'keys'
+
+# Decode a specific secret
+kubectl get secret i3-ar-secrets -n i3-ar \
+  -o jsonpath='{.data.KEYCLOAK_CLIENT_SECRET}' | base64 -d</code></pre>
+
+<!-- ============================================================ -->
+<!-- 13. TROUBLESHOOTING -->
+<!-- ============================================================ -->
+<h2 id="troubleshooting">13. Troubleshooting</h2>
+
+<h3>Tool Not Found (404)</h3>
+<table>
+  <thead><tr><th>Symptom</th><th>Cause</th><th>Resolution</th></tr></thead>
+  <tbody>
+    <tr><td><code>{"error": "tool_not_found", "tool": "my_tool"}</code></td><td>Tool not registered in <code>ar_tools</code> or <code>enabled=false</code></td><td>Check <code>SELECT name, enabled FROM ar_tools;</code> — insert or enable the tool, then restart pods.</td></tr>
+    <tr><td>Tool exists in DB but not returned by <code>/tools/list</code></td><td>Registry cache not refreshed</td><td><code>kubectl rollout restart deployment/ar -n i3-ar</code></td></tr>
+    <tr><td>Handler import error at startup</td><td>Python module path wrong in <code>handler</code> column</td><td>Check pod logs for <code>ImportError</code>; correct the <code>handler</code> path in <code>ar_tools</code>.</td></tr>
+  </tbody>
+</table>
+
+<h3>Approval Queue Stuck</h3>
+<table>
+  <thead><tr><th>Symptom</th><th>Cause</th><th>Resolution</th></tr></thead>
+  <tbody>
+    <tr><td>Records stuck in <code>pending</code> for hours</td><td>No reviewer assigned or alert not firing</td><td>Check <code>SELECT * FROM ar_approvals WHERE status='pending';</code>. Verify alerting webhook is active. Manually review via <code>PATCH /approvals/{id}</code>.</td></tr>
+    <tr><td><code>PATCH /approvals/{id}</code> returns 404</td><td>Wrong approval ID or record already resolved</td><td><code>SELECT id, status FROM ar_approvals WHERE id='apr_...';</code></td></tr>
+    <tr><td>Approved but tool never executes</td><td>Gateway pod restarted during approval window</td><td>Check <code>ar_executions</code> for the trace_id. If missing, re-trigger the original agent request.</td></tr>
+  </tbody>
+</table>
+
+<h3>Vault Timeout</h3>
+<table>
+  <thead><tr><th>Symptom</th><th>Cause</th><th>Resolution</th></tr></thead>
+  <tbody>
+    <tr><td><code>vault_get_secret</code> returns timeout after approval</td><td>OpenBao pod unreachable or sealed</td><td>Check OpenBao: <code>kubectl get pods -n i3-vault</code>. If sealed: <code>kubectl exec -n i3-vault openbao-0 -- vault operator unseal</code>.</td></tr>
+    <tr><td>403 from Vault</td><td>Service token expired or insufficient policy</td><td>Rotate vault token in <code>i3-ar-secrets</code>; verify policy allows read on <code>secret/data/i3-ar/*</code>.</td></tr>
+    <tr><td>Path not in allowlist</td><td>Agent requested a path outside approved set</td><td>Add path to <code>VAULT_PATH_ALLOWLIST</code> in ConfigMap <code>ar-config</code> or reject the request if illegitimate.</td></tr>
+  </tbody>
+</table>
+
+<h3>ChromaDB Errors</h3>
+<table>
+  <thead><tr><th>Symptom</th><th>Cause</th><th>Resolution</th></tr></thead>
+  <tbody>
+    <tr><td><code>query_curriculum_vector</code> returns empty results</td><td>Collection not indexed or embedding mismatch</td><td>Check collection count: <code>curl $CHROMADB_URL/api/v1/collections/i3_curriculum</code>. Re-run indexer job if count is 0.</td></tr>
+    <tr><td>Connection refused to ChromaDB</td><td>ChromaDB pod down</td><td><code>kubectl get pods -n i3-chromadb</code>. Restart if CrashLoopBackOff.</td></tr>
+    <tr><td>Embedding model error</td><td>Model not downloaded or GPU unavailable</td><td>Check i3-AR pod logs for <code>SentenceTransformer</code> errors. Ensure model volume is mounted.</td></tr>
+  </tbody>
+</table>
+
+<h3>Authentication Errors</h3>
+<table>
+  <thead><tr><th>HTTP Status</th><th>Cause</th><th>Resolution</th></tr></thead>
+  <tbody>
+    <tr><td>401 Unauthorized</td><td>Missing or expired JWT</td><td>Re-obtain token from Keycloak. Check token expiry: <code>echo $TOKEN | cut -d. -f2 | base64 -d | jq .exp</code></td></tr>
+    <tr><td>403 Forbidden</td><td>Token valid but missing required role</td><td>Assign <code>ar-agent</code> or <code>ar-reviewer</code> role in Keycloak admin console under the caller's account.</td></tr>
+    <tr><td>JWKS fetch failure at startup</td><td>Keycloak unreachable</td><td>Check <code>kubectl get pods -n i3-keycloak</code>. Verify <code>KEYCLOAK_URL</code> in <code>ar-config</code>.</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ -->
+<!-- 14. i3-CODE CLI -->
+<!-- ============================================================ -->
+<h2 id="i3-code-cli">14. i3-Code CLI Developer Tool</h2>
+
+<p>The <strong>i3-code CLI</strong> is a companion terminal tool for developers that connects to the i3-AR MCP Gateway. It provides three interaction modes and authenticates via OIDC device flow — no stored passwords.</p>
+
+<h3>Client Configuration</h3>
+<table>
+  <thead><tr><th>Property</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr><td>Keycloak Client ID</td><td><code>i3-code-cli</code></td></tr>
+    <tr><td>Access type</td><td>Public (no client secret)</td></tr>
+    <tr><td>Grant type</td><td>Device Authorization Flow (RFC 8628)</td></tr>
+    <tr><td>MCP Gateway</td><td><code>https://ar.i3technologies.co.ke</code></td></tr>
+  </tbody>
+</table>
+
+<h3>Authentication — OIDC Device Flow</h3>
+<p>The CLI uses the OAuth 2.0 Device Authorization Grant. No password is entered in the terminal; the developer authenticates in a browser:</p>
+<pre><code># First login — opens browser for device auth
+i3-code login
+
+# Output:
+# → Open https://auth.i3technologies.co.ke/activate
+# → Enter code: WXYZ-1234
+# → Waiting for authorization...
+# ✓ Authenticated as: dev@i3technologies.co.ke
+# Token stored in ~/.i3/credentials.json</code></pre>
+
+<h3>CLI Modes</h3>
+<table>
+  <thead><tr><th>Mode</th><th>Command</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Ask</strong></td><td><code>i3-code ask "explain the OSI model"</code></td><td>Single-turn Q&amp;A. Calls <code>query_curriculum_vector</code> for context, then LLM completion. No code execution.</td></tr>
+    <tr><td><strong>Plan</strong></td><td><code>i3-code plan "add a new API endpoint for course exports"</code></td><td>Multi-step planning mode. Calls <code>read_db_schema</code> to understand data model, generates a structured implementation plan. Does not execute changes.</td></tr>
+    <tr><td><strong>Agent</strong></td><td><code>i3-code agent "fix the failing test in billing module"</code></td><td>Agentic mode. Can call all MCP tools, execute sandboxed code, iterate on results. Prompts for confirmation on Tier 3/4 actions.</td></tr>
+  </tbody>
+</table>
+
+<h3>Common CLI Workflows</h3>
+<pre><code># Ask a question backed by curriculum search
+i3-code ask "what are the prerequisites for CCNA certification?"
+
+# Plan a database change
+i3-code plan "add an audit log table to lms_db"
+
+# Agent mode: write and test a Python function
+i3-code agent "write a function to validate Kenya phone numbers and run its tests"
+
+# Check what tools are available
+i3-code tools list
+
+# View token info
+i3-code auth whoami
+
+# Logout (clears stored token)
+i3-code logout</code></pre>
+
+<h3>CLI Configuration File</h3>
+<pre><code># ~/.i3/config.yaml
+mcp_gateway: https://ar.i3technologies.co.ke
+keycloak_url: https://auth.i3technologies.co.ke
+realm: i3
+client_id: i3-code-cli
+default_model: ibm/granite-3-8b-instruct
+agent_mode_confirm_tier3: true   # prompt before submitting Tier 3/4 actions</code></pre>
+
+<h3>CLI Token Refresh</h3>
+<p>The CLI automatically refreshes the access token using the stored refresh token. If the refresh token expires (default: 30 days), the developer must re-run <code>i3-code login</code>.</p>
+
+<div class="callout">
+  <strong>For admins:</strong> The <code>i3-code-cli</code> client in Keycloak is configured with the <code>ar-agent</code> realm role by default. Grant <code>ar-agent-elevated</code> to developers who need to invoke Tier 3 tools directly from their terminals.
+</div>
+
+<hr class="section-divider">
+
+<!-- QUICK REFERENCE -->
+<h2 id="quick-ref" style="border-bottom-color:#7c5cd8;">Quick Reference</h2>
+
+<table>
+  <thead><tr><th>Task</th><th>Command / Endpoint</th></tr></thead>
+  <tbody>
+    <tr><td>List pending approvals</td><td><code>GET /approvals/pending</code></td></tr>
+    <tr><td>Approve an action</td><td><code>PATCH /approvals/{id}</code> with <code>status: approved</code></td></tr>
+    <tr><td>List all tools</td><td><code>GET /tools/list</code></td></tr>
+    <tr><td>Health check</td><td><code>GET /health</code></td></tr>
+    <tr><td>Restart pods</td><td><code>kubectl rollout restart deployment/ar -n i3-ar</code></td></tr>
+    <tr><td>Stream logs</td><td><code>kubectl logs -n i3-ar -l app=ar -f</code></td></tr>
+    <tr><td>Connect to ar_db</td><td><code>psql -U ar_app -d ar_db</code> (from pod)</td></tr>
+    <tr><td>Audit executions</td><td><code>SELECT * FROM ar_executions ORDER BY created_at DESC LIMIT 50;</code></td></tr>
+    <tr><td>Disable a tool</td><td><code>UPDATE ar_tools SET enabled=false WHERE name='...';</code></td></tr>
+    <tr><td>Scale replicas</td><td><code>kubectl scale deployment/ar -n i3-ar --replicas=4</code></td></tr>
+  </tbody>
+</table>
+
+<footer>Made with IBM Bob | Component 13 of 14</footer>
+
+</div>
+</body>
+</html>

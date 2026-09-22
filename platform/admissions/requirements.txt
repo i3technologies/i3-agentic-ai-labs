@@ -6,7 +6,7 @@ pydantic==2.7.4
 # RAG
 llama-index-core==0.10.52
 llama-index-vector-stores-chroma==0.1.10
-chromadb==0.5.7
+chromadb==0.4.24
 
 # LlamaIndex LLM integration
 llama-index-llms-openai-like==0.1.4

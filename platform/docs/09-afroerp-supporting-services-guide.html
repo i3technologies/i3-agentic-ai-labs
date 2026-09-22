@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Component 09 — AfroERP &amp; Supporting Services Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1f2328;
+    background: #ffffff;
+  }
+  /* ── Cover ────────────────────────────────────────────── */
+  .cover {
+    background: linear-gradient(135deg,#0550ae,#7c5cd8);
+    color: #fff;
+    padding: 56px 40px 48px;
+    text-align: center;
+  }
+  .cover .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 11px;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .cover h1 { font-size: 32px; font-weight: 700; margin-bottom: 10px; }
+  .cover p  { font-size: 15px; opacity: .88; max-width: 680px; margin: 0 auto 20px; }
+  .cover .meta { font-size: 12px; opacity: .65; }
+  /* ── Layout ───────────────────────────────────────────── */
+  .container { max-width: 900px; margin: 0 auto; padding: 40px 24px; }
+  /* ── Section header ───────────────────────────────────── */
+  .section-banner {
+    background: linear-gradient(135deg,#0550ae,#7c5cd8);
+    color: #fff;
+    border-radius: 6px;
+    padding: 18px 24px;
+    margin: 48px 0 24px;
+  }
+  .section-banner h2 { font-size: 20px; font-weight: 700; border: none !important; }
+  .section-banner .sub { font-size: 13px; opacity: .82; margin-top: 4px; }
+  /* ── Headings ─────────────────────────────────────────── */
+  h2 {
+    color: #0550ae;
+    font-size: 18px;
+    font-weight: 700;
+    border-bottom: 2px solid #0550ae;
+    padding-bottom: 6px;
+    margin: 36px 0 14px;
+  }
+  h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1f2328;
+    margin: 22px 0 8px;
+  }
+  h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #57606a;
+    margin: 16px 0 6px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  p { margin-bottom: 10px; }
+  ul, ol { padding-left: 22px; margin-bottom: 10px; }
+  li { margin-bottom: 4px; }
+  /* ── Code ─────────────────────────────────────────────── */
+  code {
+    background: #f0f6ff;
+    border: 1px solid #b6d4fe;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12px;
+    color: #0550ae;
+  }
+  pre {
+    background: #f0f6ff;
+    border: 1px solid #b6d4fe;
+    border-radius: 6px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12px;
+    color: #0550ae;
+    margin: 10px 0 14px;
+    line-height: 1.7;
+  }
+  /* ── Tables ───────────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13px; }
+  thead tr { background: #0550ae; color: #fff; }
+  thead th { padding: 9px 12px; text-align: left; font-weight: 600; }
+  tbody tr:nth-child(even) { background: #f7f8fa; }
+  tbody td { padding: 8px 12px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+  /* ── Step divs ────────────────────────────────────────── */
+  .step {
+    display: flex;
+    gap: 14px;
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    align-items: flex-start;
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    background: #0550ae;
+    color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+  }
+  .step-body { flex: 1; }
+  .step-body strong { display: block; margin-bottom: 4px; }
+  /* ── Alert / info boxes ───────────────────────────────── */
+  .alert {
+    border-left: 4px solid #0550ae;
+    background: #f0f6ff;
+    border-radius: 0 6px 6px 0;
+    padding: 10px 14px;
+    margin: 12px 0;
+    font-size: 13px;
+  }
+  .alert.warn  { border-color: #d97706; background: #fffbeb; }
+  .alert.danger{ border-color: #dc2626; background: #fff5f5; }
+  .alert strong { font-weight: 700; }
+  /* ── Credential card ──────────────────────────────────── */
+  .cred-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .cred-card {
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .cred-card .label { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: #57606a; margin-bottom: 3px; }
+  .cred-card .value { font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; color: #0550ae; word-break: break-all; }
+  /* ── Divider ──────────────────────────────────────────── */
+  .divider { border: none; border-top: 1px solid #e5e7eb; margin: 32px 0; }
+  /* ── TOC ──────────────────────────────────────────────── */
+  .toc { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 8px; padding: 18px 22px; margin-bottom: 32px; }
+  .toc h3 { margin-top: 0; }
+  .toc ol { margin: 0; }
+  .toc li { margin-bottom: 3px; }
+  .toc a { color: #0550ae; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  /* ── Footer ───────────────────────────────────────────── */
+  .footer {
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+    padding: 20px 0 28px;
+    font-size: 12px;
+    color: #57606a;
+    margin-top: 48px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════  COVER  ═══════════════ -->
+<div class="cover">
+  <div class="badge">Component 09 of 14 — i3 Technologies Platform</div>
+  <h1>AfroERP &amp; Supporting Services</h1>
+  <p>Admin &amp; User Guide for AfroERP (ERPNext), Nextcloud, Directus CMS, and n8n Workflow Automation</p>
+  <div class="meta">Namespaces: i3-afroerp · i3-social · i3-ott &nbsp;|&nbsp; Last updated: 2026</div>
+</div>
+
+<div class="container">
+
+<!-- ═══════════════  TOC  ═══════════════ -->
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <ol>
+    <li><a href="#sec-a">Section A — AfroERP (ERPNext)</a>
+      <ol>
+        <li><a href="#a-admin">Admin Guide</a></li>
+        <li><a href="#a-user">User Guide</a></li>
+      </ol>
+    </li>
+    <li><a href="#sec-b">Section B — Nextcloud</a>
+      <ol>
+        <li><a href="#b-admin">Admin Guide</a></li>
+        <li><a href="#b-user">User Guide</a></li>
+      </ol>
+    </li>
+    <li><a href="#sec-c">Section C — Directus CMS</a>
+      <ol>
+        <li><a href="#c-admin">Admin Guide</a></li>
+        <li><a href="#c-user">User Guide</a></li>
+      </ol>
+    </li>
+    <li><a href="#sec-d">Section D — n8n Workflow Automation</a>
+      <ol>
+        <li><a href="#d-admin">Admin Guide</a></li>
+        <li><a href="#d-user">User Guide</a></li>
+      </ol>
+    </li>
+  </ol>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     SECTION A — AfroERP
+═════════════════════════════════════════════════════════ -->
+<div class="section-banner" id="sec-a">
+  <h2>Section A — AfroERP (ERPNext)</h2>
+  <div class="sub">Full Enterprise ERP — HR · Accounting · Procurement · Inventory · CRM · KRA eTIMS</div>
+</div>
+
+<h3>Service Overview</h3>
+<table>
+  <thead><tr><th>Item</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td>URL</td><td><code>https://afroerp.i3technologies.co.ke</code></td></tr>
+    <tr><td>Namespace</td><td><code>i3-afroerp</code></td></tr>
+    <tr><td>Framework</td><td>ERPNext 14 / Frappe Framework on MariaDB</td></tr>
+    <tr><td>MariaDB PVC</td><td><code>mariadb-data</code> — 50 GiB</td></tr>
+    <tr><td>ERPNext Sites PVC</td><td>20 GiB</td></tr>
+    <tr><td>AI Coworker</td><td>Mfumo AI — <code>https://mfumo.i3technologies.co.ke</code></td></tr>
+  </tbody>
+</table>
+
+<div class="cred-grid">
+  <div class="cred-card"><div class="label">Admin URL</div><div class="value">https://afroerp.i3technologies.co.ke</div></div>
+  <div class="cred-card"><div class="label">Admin Password</div><div class="value">REDACTED-erp-admin</div></div>
+  <div class="cred-card"><div class="label">LiteLLM Key</div><div class="value">sk-litellm-i3-f951c9377163a11275864cb92e90ad13</div></div>
+  <div class="cred-card"><div class="label">KRA eTIMS API</div><div class="value">https://etims-api.kra.go.ke</div></div>
+</div>
+
+<div class="alert danger"><strong>Action Required:</strong> KRA eTIMS (<code>KRA_CLIENT_ID</code>, <code>KRA_CLIENT_SECRET</code>, <code>KRA_PIN</code>) and M-Pesa keys (<code>MPESA_CONSUMER_KEY</code>, <code>MPESA_CONSUMER_SECRET</code>, <code>MPESA_PASSKEY</code>) are currently set to placeholder <code>REPLACE</code>. These must be configured before going live.</div>
+
+<hr class="divider" />
+
+<!-- ─── A: ADMIN GUIDE ─── -->
+<h2 id="a-admin">A — Admin Guide</h2>
+
+<h3>A1. ERPNext Modules Overview</h3>
+<p>AfroERP is a full-stack enterprise resource planning suite built on the Frappe/ERPNext platform. The following core modules are deployed:</p>
+<table>
+  <thead><tr><th>Module</th><th>Key Features</th></tr></thead>
+  <tbody>
+    <tr><td><strong>HR &amp; Payroll</strong></td><td>Employee records, leave management, attendance, payroll runs, salary structures, appraisals</td></tr>
+    <tr><td><strong>Accounts</strong></td><td>General ledger, chart of accounts, sales/purchase invoices, payments, bank reconciliation, financial statements</td></tr>
+    <tr><td><strong>Procurement</strong></td><td>Purchase requests, purchase orders, supplier management, goods receipt notes, landed cost vouchers</td></tr>
+    <tr><td><strong>Inventory / Stock</strong></td><td>Item master, warehouses, stock entries, stock ledger, inventory valuation, reorder levels</td></tr>
+    <tr><td><strong>CRM</strong></td><td>Leads, opportunities, customers, quotations, sales orders, territories, campaigns</td></tr>
+    <tr><td><strong>Projects</strong></td><td>Project planning, task management, timesheets, project costing</td></tr>
+    <tr><td><strong>KRA eTIMS</strong></td><td>Kenya Revenue Authority Electronic Tax Invoice Management System — real-time invoice reporting</td></tr>
+    <tr><td><strong>M-Pesa</strong></td><td>Safaricom M-Pesa STK push and C2B payment reconciliation</td></tr>
+  </tbody>
+</table>
+
+<h3>A2. Initial Setup Wizard</h3>
+<p>On first deployment, complete the ERPNext setup wizard to configure the company and modules.</p>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Open the setup wizard</strong>
+    Navigate to <code>https://afroerp.i3technologies.co.ke</code> and log in as <code>Administrator</code> with password <code>REDACTED-erp-admin</code>. The setup wizard launches automatically on a fresh install.
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Company information</strong>
+    Enter your company name, abbreviation, country (<strong>Kenya</strong>), default currency (<strong>KES</strong>), fiscal year start (typically July 1 for Kenya), and industry.
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Chart of accounts</strong>
+    Choose <em>Standard</em> or import a pre-existing chart. For Kenya, select the standard chart and adjust tax accounts to match KRA requirements (16% VAT, withholding tax accounts).
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body"><strong>Select modules</strong>
+    Tick all required modules: Accounts, HR, Payroll, Stock, CRM, Buying, Selling, Projects. Unticked modules can be enabled later from <em>Settings → Module Settings</em>.
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">5</div>
+  <div class="step-body"><strong>Complete and reload</strong>
+    Click <em>Complete Setup</em>. ERPNext will provision the database schema. Wait for the reload confirmation before proceeding.
+  </div>
+</div>
+
+<h3>A3. User and Role Management</h3>
+<h4>Creating a user</h4>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Navigate to User List</strong>
+    Go to <em>Settings → User List</em> or search "User" in the search bar. Click <strong>+ New</strong>.
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Fill user details</strong>
+    Enter First Name, Last Name, Email (used as login), and select a <em>Send Welcome Email</em> checkbox to auto-send a password reset link.
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Assign roles</strong>
+    In the <em>Roles</em> table, add one or more roles (e.g., <em>Accounts User</em>, <em>HR User</em>, <em>Purchase Manager</em>). Roles control document-level permissions across all modules.
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body"><strong>Save and notify</strong>
+    Click <strong>Save</strong>. The user receives a welcome email with a link to set their own password.
+  </div>
+</div>
+
+<h4>Key standard roles</h4>
+<table>
+  <thead><tr><th>Role</th><th>Access Level</th></tr></thead>
+  <tbody>
+    <tr><td>System Manager</td><td>Full administrative access</td></tr>
+    <tr><td>Accounts Manager</td><td>All accounting documents, settings</td></tr>
+    <tr><td>Accounts User</td><td>Create/edit invoices, journals — cannot configure accounts</td></tr>
+    <tr><td>HR Manager</td><td>Employee records, payroll, leave approvals</td></tr>
+    <tr><td>HR User</td><td>Self-service leave, attendance, profile</td></tr>
+    <tr><td>Purchase Manager</td><td>Purchase orders, supplier management</td></tr>
+    <tr><td>Sales Manager</td><td>CRM, quotations, sales orders</td></tr>
+    <tr><td>Stock Manager</td><td>Inventory, warehouses, stock entries</td></tr>
+  </tbody>
+</table>
+
+<h3>A4. KRA eTIMS Setup</h3>
+<div class="alert danger"><strong>Action Required:</strong> The KRA eTIMS secret currently contains placeholder values. Follow these steps to configure it before processing any invoices.</div>
+
+<h4>Step 1 — Update the Kubernetes secret</h4>
+<pre>oc project i3-afroerp
+
+# Edit the eTIMS secret directly
+oc edit secret afroerp-etims-secret
+
+# Or patch individual values (base64-encode your values first)
+echo -n "YOUR_KRA_CLIENT_ID"     | base64
+echo -n "YOUR_KRA_CLIENT_SECRET" | base64
+echo -n "YOUR_KRA_PIN"           | base64
+
+oc patch secret afroerp-etims-secret \
+  --type='json' \
+  -p='[
+    {"op":"replace","path":"/data/KRA_CLIENT_ID",     "value":"BASE64_CLIENT_ID"},
+    {"op":"replace","path":"/data/KRA_CLIENT_SECRET",  "value":"BASE64_CLIENT_SECRET"},
+    {"op":"replace","path":"/data/KRA_PIN",            "value":"BASE64_KRA_PIN"}
+  ]'</pre>
+
+<h4>Step 2 — Restart the ERPNext pod to pick up new env vars</h4>
+<pre>oc rollout restart deployment/afroerp -n i3-afroerp
+oc rollout status deployment/afroerp -n i3-afroerp</pre>
+
+<h4>Step 3 — Configure eTIMS in ERPNext UI</h4>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Open eTIMS Settings</strong>
+    Navigate to <em>Accounts → Settings → KRA eTIMS Settings</em> (or search "eTIMS"). Enter the API URL: <code>https://etims-api.kra.go.ke</code>.
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Enter credentials</strong>
+    Paste the Client ID, Client Secret, and KRA PIN obtained from the KRA eTIMS portal. Click <strong>Save</strong>.
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Enable auto-submission</strong>
+    Tick <em>Auto Submit Invoices to eTIMS on Submit</em>. This triggers the eTIMS API call each time a Sales Invoice is submitted in ERPNext.
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body"><strong>Test the connection</strong>
+    Click <strong>Test Connection</strong>. A success toast confirms the credentials are valid. If it fails, re-check the KRA_PIN format and that your IP is whitelisted by KRA.
+  </div>
+</div>
+
+<h3>A5. M-Pesa Integration Setup</h3>
+<div class="alert danger"><strong>Action Required:</strong> M-Pesa keys are set to <code>REPLACE</code>. Complete the following before enabling mobile payments.</div>
+
+<h4>Update the M-Pesa secret</h4>
+<pre>echo -n "YOUR_CONSUMER_KEY"    | base64
+echo -n "YOUR_CONSUMER_SECRET" | base64
+echo -n "YOUR_PASSKEY"         | base64
+
+oc patch secret afroerp-mpesa-secret -n i3-afroerp \
+  --type='json' \
+  -p='[
+    {"op":"replace","path":"/data/MPESA_CONSUMER_KEY",    "value":"BASE64_CONSUMER_KEY"},
+    {"op":"replace","path":"/data/MPESA_CONSUMER_SECRET", "value":"BASE64_CONSUMER_SECRET"},
+    {"op":"replace","path":"/data/MPESA_PASSKEY",         "value":"BASE64_PASSKEY"}
+  ]'
+
+oc rollout restart deployment/afroerp -n i3-afroerp</pre>
+
+<h4>Configure M-Pesa in ERPNext</h4>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>M-Pesa Settings doctype</strong>
+    Go to <em>Accounts → Integrations → M-Pesa Settings</em>. Enter Business Shortcode, Consumer Key, Consumer Secret, and Passkey.
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Set callback URL</strong>
+    Callback URL: <code>https://afroerp.i3technologies.co.ke/api/method/erpnext.erpnext_integrations.doctype.mpesa_settings.mpesa_settings.verify_transaction</code>. Register this URL with Safaricom Daraja.
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Enable live mode</strong>
+    Toggle from <em>Sandbox</em> to <em>Live</em> only after successful sandbox testing. Save.
+  </div>
+</div>
+
+<h3>A6. Mfumo AI Coworker</h3>
+<p>Mfumo AI is the ERPNext-integrated AI assistant available at <code>https://mfumo.i3technologies.co.ke</code>. It connects to LiteLLM for large-language-model inference.</p>
+<table>
+  <thead><tr><th>Item</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr><td>URL</td><td><code>https://mfumo.i3technologies.co.ke</code></td></tr>
+    <tr><td>LiteLLM Key</td><td><code>sk-litellm-i3-f951c9377163a11275864cb92e90ad13</code></td></tr>
+    <tr><td>Integration</td><td>ERPNext Frappe AI / LiteLLM proxy</td></tr>
+  </tbody>
+</table>
+<p>Mfumo AI can answer HR policy questions, draft purchase order justifications, explain financial reports, and assist users with ERPNext workflows in natural language.</p>
+<div class="alert"><strong>Config:</strong> To update the LiteLLM key, edit the <code>afroerp-litellm-secret</code> secret in the <code>i3-afroerp</code> namespace and restart the afroerp deployment.</div>
+
+<h3>A7. Operations &amp; Restart Commands</h3>
+<pre># Switch to namespace
+oc project i3-afroerp
+
+# List all pods
+oc get pods -n i3-afroerp
+
+# View ERPNext logs (live tail)
+oc logs -f deployment/afroerp -n i3-afroerp
+
+# View MariaDB logs
+oc logs -f deployment/mariadb -n i3-afroerp
+
+# Restart ERPNext application
+oc rollout restart deployment/afroerp -n i3-afroerp
+
+# Restart MariaDB (caution — brief downtime)
+oc rollout restart deployment/mariadb -n i3-afroerp
+
+# Check PVC usage
+oc get pvc -n i3-afroerp
+
+# Execute a bench command inside the ERPNext pod
+oc exec -it deployment/afroerp -n i3-afroerp -- bench --site afroerp.i3technologies.co.ke migrate
+
+# Run a manual backup
+oc exec -it deployment/afroerp -n i3-afroerp -- bench --site afroerp.i3technologies.co.ke backup
+
+# Scale down for maintenance
+oc scale deployment/afroerp --replicas=0 -n i3-afroerp
+
+# Scale back up
+oc scale deployment/afroerp --replicas=1 -n i3-afroerp</pre>
+
+<h3>A8. Troubleshooting</h3>
+<table>
+  <thead><tr><th>Symptom</th><th>Likely Cause</th><th>Resolution</th></tr></thead>
+  <tbody>
+    <tr><td>Login returns 502 Bad Gateway</td><td>ERPNext pod not running</td><td><code>oc get pods -n i3-afroerp</code>; if CrashLoopBackOff, check logs: <code>oc logs deployment/afroerp -n i3-afroerp --previous</code></td></tr>
+    <tr><td>Database connection error on startup</td><td>MariaDB pod not ready or password mismatch</td><td>Verify MariaDB pod status; confirm <code>DB_HOST</code>, <code>DB_PASSWORD</code> env vars in the afroerp deployment</td></tr>
+    <tr><td>eTIMS submission fails</td><td>Invalid credentials or IP not whitelisted</td><td>Re-verify KRA credentials; check KRA portal for IP whitelist; inspect ERPNext error log under <em>Logs → Error Log</em></td></tr>
+    <tr><td>M-Pesa STK push not arriving</td><td>Callback URL not registered or incorrect shortcode</td><td>Re-register callback on Daraja; confirm shortcode matches live env</td></tr>
+    <tr><td>Slow performance</td><td>MariaDB PVC nearing capacity or missing indexes</td><td>Check PVC usage (<code>oc get pvc</code>); run <code>bench --site ... optimize</code>; consider resizing PVC</td></tr>
+    <tr><td>Migration errors after upgrade</td><td>Schema mismatch</td><td>Run <code>bench migrate</code> inside the pod; review bench error logs at <code>/home/frappe/frappe-bench/logs/</code></td></tr>
+  </tbody>
+</table>
+
+<hr class="divider" />
+
+<!-- ─── A: USER GUIDE ─── -->
+<h2 id="a-user">A — User Guide</h2>
+
+<h3>A-U1. Logging In</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Open the browser</strong>
+    Navigate to <code>https://afroerp.i3technologies.co.ke</code>.
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Enter credentials</strong>
+    Type your Email and Password. Click <strong>Login</strong>. First-time users should use the link in their welcome email to set a password.
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Select workspace</strong>
+    After login you land on <em>Home</em>. Use the top navigation or the module tiles to reach your workspace (e.g., Accounts, HR, CRM).
+  </div>
+</div>
+
+<h3>A-U2. Dashboard Navigation</h3>
+<p>The ERPNext interface is structured as follows:</p>
+<ul>
+  <li><strong>Awesomebar (top centre):</strong> Search for any document, module, or setting by typing its name. The fastest way to navigate.</li>
+  <li><strong>Module menu (left sidebar):</strong> Listed modules based on your assigned roles.</li>
+  <li><strong>Desk / Home:</strong> Quick access tiles to frequently used doctypes and saved reports.</li>
+  <li><strong>Notifications (bell icon):</strong> Workflow alerts, task assignments, approval requests.</li>
+  <li><strong>Profile (top right):</strong> Change password, preferences, and view your user profile.</li>
+</ul>
+
+<h3>A-U3. Common Tasks</h3>
+<h4>Creating a Sales Invoice</h4>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Navigate</strong> — Go to <em>Accounts → Sales Invoice → + New</em>.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Select customer</strong> — Type the customer name in the <em>Customer</em> field. The address and payment terms auto-fill.</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Add items</strong> — In the <em>Items</em> table, click <em>Add Row</em>. Search for the item code, enter quantity and rate. Tax is applied automatically based on the item's tax template.</div>
+</div>
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body"><strong>Save &amp; Submit</strong> — Click <strong>Save</strong> to create a draft, then <strong>Submit</strong> to post it to the ledger. Submission triggers the KRA eTIMS API call automatically.</div>
+</div>
+
+<h4>Submitting a Leave Request</h4>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Navigate</strong> — Go to <em>HR → Leave Application → + New</em>.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Fill details</strong> — Select Leave Type, From Date, To Date, and add a reason. Your available balance is shown.</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Save</strong> — Click <strong>Save</strong>. The application is sent to your HR Manager for approval. You will be notified on approval or rejection.</div>
+</div>
+
+<h4>Raising a Purchase Order</h4>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Navigate</strong> — Go to <em>Buying → Purchase Order → + New</em>.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Select supplier</strong> — Enter the supplier name; delivery date and payment terms auto-populate.</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Add items</strong> — Add items with quantity, rate, and expected delivery date per item.</div>
+</div>
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body"><strong>Save &amp; Submit</strong> — Save for review, then Submit to send the official PO. Use the <em>Print</em> button to generate a PDF for the supplier.</div>
+</div>
+
+<h3>A-U4. Using Mfumo AI Assistant</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Access Mfumo</strong> — Visit <code>https://mfumo.i3technologies.co.ke</code> or click the <em>AI Assistant</em> button within ERPNext (if the Frappe AI plugin is installed).</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Ask questions</strong> — Type natural-language questions: "How do I reconcile a bank statement?", "Show me this month's outstanding invoices", or "Draft a justification for purchasing 10 laptops."</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Act on responses</strong> — Mfumo can generate ERPNext document links, run reports, and provide step-by-step guidance. Click suggested links to open the relevant document directly.</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     SECTION B — NEXTCLOUD
+═════════════════════════════════════════════════════════ -->
+<div class="section-banner" id="sec-b">
+  <h2>Section B — Nextcloud</h2>
+  <div class="sub">File Storage · Document Collaboration · Calendar · Contacts</div>
+</div>
+
+<h3>Service Overview</h3>
+<table>
+  <thead><tr><th>Item</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td>URL</td><td><code>https://nextcloud.i3technologies.co.ke</code></td></tr>
+    <tr><td>Namespace</td><td><code>i3-social</code></td></tr>
+    <tr><td>Database name</td><td><code>social_db</code></td></tr>
+    <tr><td>Database user</td><td><code>socialapp</code></td></tr>
+    <tr><td>Purpose</td><td>Org-wide file storage, document collaboration, team calendar, contacts sync</td></tr>
+  </tbody>
+</table>
+
+<div class="cred-grid">
+  <div class="cred-card"><div class="label">Admin User</div><div class="value">i3admin</div></div>
+  <div class="cred-card"><div class="label">Admin Password</div><div class="value">i3-Social-Admin-2026!</div></div>
+  <div class="cred-card"><div class="label">DB Password</div><div class="value">i3-Social-DB-2026!</div></div>
+</div>
+
+<hr class="divider" />
+
+<!-- ─── B: ADMIN GUIDE ─── -->
+<h2 id="b-admin">B — Admin Guide</h2>
+
+<h3>B1. User Quotas</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Open User Management</strong>
+    Log in as <code>i3admin</code>. Go to <em>Settings (top-right gear) → Users</em>.
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Edit a user's quota</strong>
+    Click a user → <em>Storage quota</em>. Enter a value (e.g., <code>10 GB</code>) or leave blank for the global default.
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Set default quota</strong>
+    Go to <em>Settings → Administration → Storage</em>. Set <em>Default quota for new users</em> (recommended: 5 GB per staff user).
+  </div>
+</div>
+
+<h3>B2. File Access Control</h3>
+<p>Nextcloud provides two layers of file access control:</p>
+<ul>
+  <li><strong>Share permissions</strong> — Per-share settings (read, write, delete, reshare). Set when sharing a file or folder.</li>
+  <li><strong>Files Access Control app</strong> — Rule-based automated restrictions (e.g., block downloads from outside Kenya, restrict file types). Enable under <em>Settings → Apps → Files Access Control</em>.</li>
+</ul>
+<h4>Configuring an access control rule</h4>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Enable the app</strong> — <em>Settings → Apps</em> → search "Files Access Control" → <strong>Enable</strong>.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Create a rule</strong> — <em>Settings → Administration → Files Access Control → + New rule set</em>. Define conditions (user group, IP range, file tag) and the action (block download, deny write).</div>
+</div>
+
+<h3>B3. External Storage Configuration</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Enable app</strong> — Go to <em>Settings → Apps → External Storage</em> → Enable.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Add a storage backend</strong> — <em>Settings → Administration → External Storage → + Add storage</em>. Choose backend (S3, SFTP, SMB, Google Drive, etc.). Enter the required credentials.</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Assign to users/groups</strong> — Set <em>Applicable users/groups</em> to restrict visibility. Click the green checkmark to save and test the connection.</div>
+</div>
+
+<h3>B4. Operations &amp; Restart Commands</h3>
+<pre># Switch to namespace
+oc project i3-social
+
+# List pods
+oc get pods -n i3-social
+
+# Tail Nextcloud logs
+oc logs -f deployment/nextcloud -n i3-social
+
+# Restart Nextcloud
+oc rollout restart deployment/nextcloud -n i3-social
+oc rollout status deployment/nextcloud -n i3-social
+
+# Run occ commands inside the Nextcloud pod
+oc exec -it deployment/nextcloud -n i3-social -- php occ status
+oc exec -it deployment/nextcloud -n i3-social -- php occ user:list
+oc exec -it deployment/nextcloud -n i3-social -- php occ maintenance:mode --on
+oc exec -it deployment/nextcloud -n i3-social -- php occ maintenance:mode --off
+oc exec -it deployment/nextcloud -n i3-social -- php occ files:scan --all
+
+# Check PVC
+oc get pvc -n i3-social
+
+# View Nextcloud config
+oc exec -it deployment/nextcloud -n i3-social -- cat /var/www/html/config/config.php</pre>
+
+<hr class="divider" />
+
+<!-- ─── B: USER GUIDE ─── -->
+<h2 id="b-user">B — User Guide</h2>
+
+<h3>B-U1. Uploading Files</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Log in</strong> — Visit <code>https://nextcloud.i3technologies.co.ke</code> with your assigned credentials.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Upload via drag-and-drop</strong> — Open the <em>Files</em> app. Drag files from your desktop into the browser window. A progress bar confirms the upload.</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Upload via button</strong> — Click the <strong>+</strong> (plus) button → <em>Upload file</em> or <em>New folder</em> to organise content.</div>
+</div>
+
+<h3>B-U2. Sharing Files and Folders</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Hover over a file</strong> and click the <em>Share</em> icon (person silhouette).</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Share with a user or group</strong> — Type a name or group. Set permissions (read-only, edit, delete) using the toggles.</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Create a public link</strong> — Toggle <em>Share link</em>. Optionally set a password and expiry date, then copy the link to share externally.</div>
+</div>
+
+<h3>B-U3. Collaborating on Documents</h3>
+<p>Nextcloud Office (Collabora or OnlyOffice) allows real-time co-editing of <code>.docx</code>, <code>.xlsx</code>, and <code>.odt</code> files directly in the browser. Click any compatible file to open it in the integrated editor. Multiple users can edit simultaneously; changes are auto-saved.</p>
+
+<h3>B-U4. Calendar</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Open Calendar app</strong> — Click the grid icon (top-left) → <em>Calendar</em>.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Create an event</strong> — Click a day/time slot → enter title, set attendees, add a video-call link (Nextcloud Talk integration).</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Subscribe to a team calendar</strong> — Click <em>+ New calendar → Subscribe from link</em> and paste the CalDAV URL shared by your team.</div>
+</div>
+
+<h3>B-U5. Mobile App Setup</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Install app</strong> — Download <em>Nextcloud</em> from Google Play or the Apple App Store.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Log in</strong> — Tap <em>Log in</em>. Enter server URL: <code>https://nextcloud.i3technologies.co.ke</code>. Enter your username and password.</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Enable auto-upload</strong> — In <em>Settings → Auto upload</em>, select the folders (Camera, Documents) you want synced automatically.</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     SECTION C — DIRECTUS CMS
+═════════════════════════════════════════════════════════ -->
+<div class="section-banner" id="sec-c">
+  <h2>Section C — Directus CMS</h2>
+  <div class="sub">Headless CMS — Website Content · Course Materials · Platform Announcements</div>
+</div>
+
+<h3>Service Overview</h3>
+<table>
+  <thead><tr><th>Item</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td>Primary URL</td><td><code>https://cms.i3technologies.co.ke</code></td></tr>
+    <tr><td>Alias URL</td><td><code>https://directus.i3technologies.co.ke</code></td></tr>
+    <tr><td>Namespace</td><td><code>i3-ott</code></td></tr>
+    <tr><td>DB user</td><td><code>directus</code></td></tr>
+    <tr><td>Purpose</td><td>Headless CMS providing structured content via REST/GraphQL APIs to the website, EvalOS, and mobile apps</td></tr>
+  </tbody>
+</table>
+
+<div class="cred-grid">
+  <div class="cred-card"><div class="label">Admin Email</div><div class="value">admin@i3.tech</div></div>
+  <div class="cred-card"><div class="label">Admin Password</div><div class="value">a0meDpzBwTx7Srks</div></div>
+  <div class="cred-card"><div class="label">DB Password</div><div class="value">xHwpeEqoHy5AhrTrESJgRxh</div></div>
+  <div class="cred-card"><div class="label">KEY</div><div class="value">Oxq1TIwd85EjbvFs7CytHZupmK6J0RLD</div></div>
+  <div class="cred-card"><div class="label">SECRET</div><div class="value">dAsSW5NMZiE7X2xIcpu1LDv3kwUljFRP</div></div>
+</div>
+
+<hr class="divider" />
+
+<!-- ─── C: ADMIN GUIDE ─── -->
+<h2 id="c-admin">C — Admin Guide</h2>
+
+<h3>C1. Collections &amp; Fields</h3>
+<p>In Directus, a <strong>Collection</strong> is equivalent to a database table. Fields are the columns within that collection.</p>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Create a collection</strong> — Log in at <code>https://cms.i3technologies.co.ke</code>. Go to <em>Settings → Data Model → + Create Collection</em>. Enter the collection name (snake_case, e.g., <code>course_materials</code>). Choose a primary key type (usually <em>Auto-Increment Integer</em> or <em>UUID</em>).</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Add fields</strong> — Inside the collection, click <em>+ Create Field</em>. Select the field type (String, Integer, Datetime, Image, Relation, etc.). Configure validation rules, defaults, and display options.</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Set up relations</strong> — Use <em>Many-to-One</em>, <em>One-to-Many</em>, or <em>Many-to-Many</em> field types to link collections (e.g., <code>courses</code> → <code>modules</code> → <code>lessons</code>).</div>
+</div>
+
+<h3>C2. User &amp; Role Management</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Create a role</strong> — <em>Settings → Roles &amp; Permissions → + Create Role</em>. Name the role (e.g., <em>Content Editor</em>). Set per-collection permissions: create, read, update, delete, share.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Invite a user</strong> — <em>User Management → + Invite User</em>. Enter the email; they receive an invitation link. Assign the user to one or more roles.</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Public role</strong> — The built-in <em>Public</em> role controls what unauthenticated API requests can access. For any collection exposed publicly (e.g., blog posts), grant read-only permissions to the Public role.</div>
+</div>
+
+<h3>C3. API Access</h3>
+<p>Directus exposes both REST and GraphQL APIs automatically for all collections.</p>
+<table>
+  <thead><tr><th>Endpoint</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>GET /items/{collection}</code></td><td>Fetch list of items</td></tr>
+    <tr><td><code>GET /items/{collection}/{id}</code></td><td>Fetch single item</td></tr>
+    <tr><td><code>POST /items/{collection}</code></td><td>Create item</td></tr>
+    <tr><td><code>PATCH /items/{collection}/{id}</code></td><td>Update item</td></tr>
+    <tr><td><code>DELETE /items/{collection}/{id}</code></td><td>Delete item</td></tr>
+    <tr><td><code>POST /graphql</code></td><td>GraphQL endpoint</td></tr>
+    <tr><td><code>POST /auth/login</code></td><td>Obtain access token</td></tr>
+  </tbody>
+</table>
+<h4>Generate a static API token (for n8n or website)</h4>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Open user settings</strong> — <em>User Management → [user] → Token → Generate Token</em>. Copy the token immediately (shown once).</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Use in API calls</strong> — Add the header <code>Authorization: Bearer YOUR_TOKEN</code> to all API requests. Example:<br /><code>curl https://cms.i3technologies.co.ke/items/announcements -H "Authorization: Bearer YOUR_TOKEN"</code></div>
+</div>
+
+<h3>C4. Webhooks</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Create a webhook</strong> — <em>Settings → Webhooks → + Create Webhook</em>.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Configure trigger</strong> — Select Collection, Action (create, update, delete), and enter the Webhook URL (e.g., your n8n webhook URL at <code>https://n8n.i3technologies.co.ke/webhook/…</code>).</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Enable and test</strong> — Toggle the webhook to <em>Active</em>. Create or update an item in the target collection; check n8n execution history to confirm the payload arrived.</div>
+</div>
+
+<h3>C5. Operations &amp; Restart Commands</h3>
+<pre># Switch to namespace
+oc project i3-ott
+
+# List Directus pods
+oc get pods -n i3-ott -l app=directus
+
+# Tail Directus logs
+oc logs -f deployment/directus -n i3-ott
+
+# Restart Directus
+oc rollout restart deployment/directus -n i3-ott
+oc rollout status deployment/directus -n i3-ott
+
+# Run Directus CLI commands inside the pod
+oc exec -it deployment/directus -n i3-ott -- npx directus database migrate:latest
+oc exec -it deployment/directus -n i3-ott -- npx directus schema snapshot /tmp/snapshot.yaml
+
+# Check env vars (confirm KEY, SECRET, DB config)
+oc exec -it deployment/directus -n i3-ott -- printenv | grep -E 'DIRECTUS|DB_|KEY|SECRET'</pre>
+
+<hr class="divider" />
+
+<!-- ─── C: USER GUIDE ─── -->
+<h2 id="c-user">C — User Guide</h2>
+
+<h3>C-U1. Creating and Editing Content</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Log in</strong> — Visit <code>https://cms.i3technologies.co.ke</code>. Use your assigned email and password.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Select a collection</strong> — In the left sidebar, under <em>Content</em>, click the collection you want to edit (e.g., <em>Announcements</em>, <em>Course Materials</em>).</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Create a new item</strong> — Click <strong>+ Create Item</strong>. Fill in all required fields (marked with an asterisk). Use the rich-text editor for long-form content.</div>
+</div>
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body"><strong>Edit an existing item</strong> — Click the item row in the list. Make changes in the detail view. Click <strong>Save</strong>.</div>
+</div>
+
+<h3>C-U2. Media Uploads</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Open File Library</strong> — Click <em>File Library</em> in the sidebar.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Upload</strong> — Drag and drop files or click <em>+ Upload Files</em>. Supported: images, PDFs, videos, documents.</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Link to content</strong> — In an item's image/file field, click <em>Upload a file</em> or <em>Choose from Library</em> to attach an already-uploaded asset.</div>
+</div>
+
+<h3>C-U3. Publishing Content</h3>
+<p>Directus uses a <strong>Status</strong> field convention. Typical values are <code>draft</code>, <code>review</code>, and <code>published</code>. Content is only surfaced through the public API when its status is <code>published</code>.</p>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Change status</strong> — Open the item. In the <em>Status</em> dropdown (usually top-right), select <em>Published</em>.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Save</strong> — Click <strong>Save</strong>. The item is now visible via the public API and any connected frontend applications.</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     SECTION D — n8n
+═════════════════════════════════════════════════════════ -->
+<div class="section-banner" id="sec-d">
+  <h2>Section D — n8n Workflow Automation</h2>
+  <div class="sub">No-code/low-code workflows connecting all i3 platform services</div>
+</div>
+
+<h3>Service Overview</h3>
+<table>
+  <thead><tr><th>Item</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td>URL</td><td><code>https://n8n.i3technologies.co.ke</code></td></tr>
+    <tr><td>Namespace</td><td><code>i3-ott</code></td></tr>
+    <tr><td>DB user</td><td><code>n8n</code></td></tr>
+    <tr><td>Encryption key</td><td><code>8CgTV0QNltXMpqBkUjLAKz17GrwZx5e6</code></td></tr>
+    <tr><td>Purpose</td><td>Central automation hub — connects AfroERP, Nextcloud, Directus, EvalOS, Engage, and external APIs</td></tr>
+  </tbody>
+</table>
+
+<div class="cred-grid">
+  <div class="cred-card"><div class="label">DB Password</div><div class="value">REDACTED-n8n-db</div></div>
+  <div class="cred-card"><div class="label">Encryption Key</div><div class="value">8CgTV0QNltXMpqBkUjLAKz17GrwZx5e6</div></div>
+</div>
+
+<h4>Key Workflows</h4>
+<ul>
+  <li><strong>EvalOS Events → Engage Notifications:</strong> Triggered when an event is created or updated in EvalOS; sends formatted notifications via Engage (WhatsApp/SMS/Email).</li>
+  <li><strong>Onboarding Automation:</strong> New user registered in AfroERP/Nextcloud → creates accounts, sends welcome emails, provisions Nextcloud folder, notifies HR.</li>
+  <li><strong>FORD Membership Verification Alerts:</strong> Monitors membership status changes; alerts the FORD team when renewals are due or memberships expire.</li>
+</ul>
+
+<hr class="divider" />
+
+<!-- ─── D: ADMIN GUIDE ─── -->
+<h2 id="d-admin">D — Admin Guide</h2>
+
+<h3>D1. Deploying Workflows</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Import a workflow</strong> — Log in to <code>https://n8n.i3technologies.co.ke</code>. Go to <em>Workflows → Import from File</em> or paste JSON. Review the nodes before activating.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Configure credentials</strong> — Each integration node (HTTP Request, Directus, ERPNext, etc.) requires stored credentials. Open the node → credential selector → <em>Create new credential</em>. See D2 below.</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Activate the workflow</strong> — Toggle the <em>Active</em> switch in the top-right of the workflow editor. Active workflows with Webhook triggers start listening immediately; scheduled triggers use cron syntax.</div>
+</div>
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body"><strong>Duplicate for staging</strong> — Before modifying a production workflow, duplicate it (<em>⋯ → Duplicate</em>), test on the duplicate, then update the production copy.</div>
+</div>
+
+<h3>D2. Credentials Management</h3>
+<p>All service credentials are stored encrypted using the <code>N8N_ENCRYPTION_KEY</code> (<code>8CgTV0QNltXMpqBkUjLAKz17GrwZx5e6</code>). Never change this key on a running instance — it will invalidate all stored credentials.</p>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Add a credential</strong> — <em>Credentials → + Add Credential</em>. Select the type (HTTP Header Auth, OAuth2, API Key, Basic Auth). Enter values and click <strong>Save</strong>.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Share credentials</strong> — In the credential detail, use <em>Sharing</em> to make it available to other n8n users so they can use it in workflows without seeing the raw secret.</div>
+</div>
+
+<h4>Recommended credentials to configure</h4>
+<table>
+  <thead><tr><th>Service</th><th>Credential Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>AfroERP (ERPNext)</td><td>HTTP Header Auth</td><td>Use ERPNext API key+secret (Settings → User → API Access)</td></tr>
+    <tr><td>Directus CMS</td><td>HTTP Header Auth</td><td>Bearer token generated in Directus user settings</td></tr>
+    <tr><td>Nextcloud</td><td>Basic Auth</td><td>Use <code>i3admin</code> or a dedicated API user</td></tr>
+    <tr><td>Engage (notifications)</td><td>HTTP Header Auth / API Key</td><td>Engage platform API key</td></tr>
+    <tr><td>M-Pesa Daraja</td><td>OAuth2</td><td>Consumer Key + Secret from Safaricom Daraja</td></tr>
+    <tr><td>KRA eTIMS</td><td>HTTP Header Auth</td><td>Client ID + Secret from KRA portal</td></tr>
+    <tr><td>Directus Webhook (inbound)</td><td>Webhook node (no cred needed)</td><td>Copy webhook URL; paste into Directus webhook config</td></tr>
+  </tbody>
+</table>
+
+<h3>D3. Execution History</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>View executions</strong> — Click <em>Executions</em> in the left sidebar. Filter by workflow, status (success/error/waiting), and date range.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Inspect a failed execution</strong> — Click the execution row. Click the failed node (shown in red). The <em>Input</em> and <em>Output</em> panels show the exact data that caused the failure.</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Retry</strong> — In the execution detail view, click <em>Retry</em> to re-run the execution with the same input data (useful for transient network errors).</div>
+</div>
+
+<h3>D4. Error Handling</h3>
+<p>Configure error workflows to catch failures and send alerts:</p>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Create an error workflow</strong> — Build a workflow that starts with an <em>Error Trigger</em> node. Add an HTTP Request or email node to send alerts to the ops team Engage channel.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Assign to workflows</strong> — In each production workflow's <em>Settings</em> tab, set <em>Error Workflow</em> to your error-handler workflow.</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Use Try/Catch in nodes</strong> — On any HTTP Request node, enable <em>Continue On Fail</em> + add a downstream <em>IF</em> node to branch on <code>$node["HTTP Request"].error</code> for graceful degradation.</div>
+</div>
+
+<h3>D5. Operations &amp; Restart Commands</h3>
+<pre># Switch to namespace
+oc project i3-ott
+
+# List n8n pods
+oc get pods -n i3-ott -l app=n8n
+
+# Tail n8n logs
+oc logs -f deployment/n8n -n i3-ott
+
+# Restart n8n
+oc rollout restart deployment/n8n -n i3-ott
+oc rollout status deployment/n8n -n i3-ott
+
+# View n8n environment (confirm encryption key, DB config)
+oc exec -it deployment/n8n -n i3-ott -- printenv | grep -E 'N8N|DB_|ENCRYPTION'
+
+# Scale down for maintenance
+oc scale deployment/n8n --replicas=0 -n i3-ott
+oc scale deployment/n8n --replicas=1 -n i3-ott
+
+# Check persistent storage (workflow/credentials DB)
+oc get pvc -n i3-ott</pre>
+
+<div class="alert warn"><strong>Warning:</strong> If you change the <code>N8N_ENCRYPTION_KEY</code> environment variable, all stored credentials will become unreadable. Re-enter every credential after a key rotation.</div>
+
+<hr class="divider" />
+
+<!-- ─── D: USER GUIDE ─── -->
+<h2 id="d-user">D — User Guide</h2>
+
+<h3>D-U1. Accessing n8n</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Log in</strong> — Visit <code>https://n8n.i3technologies.co.ke</code>. Use your assigned n8n username and password (provided by the platform administrator).</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Home screen</strong> — The <em>Workflows</em> tab lists all workflows you have access to. Active workflows show a green badge.</div>
+</div>
+
+<h3>D-U2. Understanding Workflows</h3>
+<p>An n8n workflow is a visual flowchart of <strong>nodes</strong> connected by edges.</p>
+<ul>
+  <li><strong>Trigger node</strong> (leftmost, green border) — Starts the workflow. Types: Webhook, Schedule (cron), Manual, or application-specific events.</li>
+  <li><strong>Action nodes</strong> — Perform operations: HTTP requests, database queries, data transformations, send notifications.</li>
+  <li><strong>Logic nodes</strong> — IF, Switch, Merge, Loop — control flow based on data conditions.</li>
+  <li><strong>Data flows</strong> — Each node passes JSON items to the next. Expressions like <code>{{ $json.email }}</code> reference upstream data.</li>
+</ul>
+<p>To view a workflow without editing: click its name → the canvas opens in read-only mode if you have Viewer access only.</p>
+
+<h3>D-U3. Triggering Manual Executions</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><strong>Open the workflow</strong> — Click the workflow name from the list.</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><strong>Click Test Workflow</strong> — The orange <em>Test Workflow</em> button (top-right) runs the workflow once with test data. Each node lights up green (success) or red (error) as it executes.</div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><strong>Inspect results</strong> — Click any node after execution to see its input/output data panels. This is useful for verifying that the correct data was sent to downstream services.</div>
+</div>
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body"><strong>Trigger via webhook (externally)</strong> — For webhook-triggered workflows, send an HTTP POST to the workflow's webhook URL. Example:<br />
+    <code>curl -X POST https://n8n.i3technologies.co.ke/webhook/YOUR-WEBHOOK-ID -H "Content-Type: application/json" -d '{"event":"test"}'</code>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     QUICK REFERENCE
+═════════════════════════════════════════════════════════ -->
+<hr class="divider" />
+<h2>Quick Reference — All Services</h2>
+<table>
+  <thead><tr><th>Service</th><th>URL</th><th>Namespace</th><th>Admin Login</th></tr></thead>
+  <tbody>
+    <tr><td>AfroERP (ERPNext)</td><td><code>https://afroerp.i3technologies.co.ke</code></td><td><code>i3-afroerp</code></td><td>Administrator / REDACTED-erp-admin</td></tr>
+    <tr><td>Mfumo AI</td><td><code>https://mfumo.i3technologies.co.ke</code></td><td><code>i3-afroerp</code></td><td>LiteLLM key in secret</td></tr>
+    <tr><td>Nextcloud</td><td><code>https://nextcloud.i3technologies.co.ke</code></td><td><code>i3-social</code></td><td>i3admin / i3-Social-Admin-2026!</td></tr>
+    <tr><td>Directus CMS</td><td><code>https://cms.i3technologies.co.ke</code></td><td><code>i3-ott</code></td><td>admin@i3.tech / a0meDpzBwTx7Srks</td></tr>
+    <tr><td>n8n</td><td><code>https://n8n.i3technologies.co.ke</code></td><td><code>i3-ott</code></td><td>Set by deployment — see secret</td></tr>
+  </tbody>
+</table>
+
+<h4>Common oc commands cheat sheet</h4>
+<pre># Switch project
+oc project &lt;namespace&gt;
+
+# Get all resources
+oc get all -n &lt;namespace&gt;
+
+# Describe a pod (events, resource limits)
+oc describe pod &lt;pod-name&gt; -n &lt;namespace&gt;
+
+# Get pod logs (last 100 lines)
+oc logs --tail=100 &lt;pod-name&gt; -n &lt;namespace&gt;
+
+# Execute a shell in a pod
+oc exec -it &lt;pod-name&gt; -n &lt;namespace&gt; -- /bin/bash
+
+# Restart a deployment
+oc rollout restart deployment/&lt;name&gt; -n &lt;namespace&gt;
+
+# View secrets (base64-encoded values)
+oc get secret &lt;secret-name&gt; -o yaml -n &lt;namespace&gt;
+
+# Decode a secret value
+oc get secret &lt;secret-name&gt; -o jsonpath='{.data.MY_KEY}' -n &lt;namespace&gt; | base64 -d
+
+# Check PVC usage
+oc get pvc -n &lt;namespace&gt;</pre>
+
+</div><!-- /.container -->
+
+<!-- ═══════════════  FOOTER  ═══════════════ -->
+<div class="footer">
+  Made with IBM Bob | Component 09 of 14
+</div>
+
+</body>
+</html>

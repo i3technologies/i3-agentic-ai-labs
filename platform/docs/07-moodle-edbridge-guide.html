@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Component 07 — Moodle / EdBridge LMS | Admin &amp; User Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+    background: #f7f8fa;
+    color: #1f2328;
+  }
+  .cover {
+    background: linear-gradient(135deg, #0550ae, #1d6fde);
+    color: #ffffff;
+    padding: 56px 40px 48px;
+    text-align: center;
+  }
+  .cover .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .cover h1 { font-size: 32px; font-weight: 700; margin-bottom: 10px; }
+  .cover .sub { font-size: 15px; opacity: 0.88; margin-bottom: 8px; }
+  .cover .url {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    padding: 4px 14px;
+    font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    margin-top: 10px;
+    letter-spacing: 0.02em;
+  }
+  .meta-bar {
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 10px 40px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    font-size: 12.5px;
+    color: #57606a;
+  }
+  .meta-bar span strong { color: #1f2328; }
+
+  .wrapper { max-width: 900px; margin: 0 auto; padding: 40px 24px 60px; }
+
+  h2 {
+    color: #0550ae;
+    font-size: 19px;
+    font-weight: 700;
+    border-bottom: 2px solid #0550ae;
+    padding-bottom: 7px;
+    margin: 44px 0 18px;
+  }
+  h3 {
+    color: #1f2328;
+    font-size: 15px;
+    font-weight: 700;
+    margin: 28px 0 10px;
+  }
+  h4 {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0550ae;
+    margin: 20px 0 8px;
+  }
+  p { margin-bottom: 10px; }
+  ul, ol { padding-left: 22px; margin-bottom: 12px; }
+  li { margin-bottom: 5px; }
+
+  code {
+    background: #f0f6ff;
+    border: 1px solid #b6d4fe;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 12.5px;
+    color: #0550ae;
+  }
+  pre {
+    background: #f0f6ff;
+    border: 1px solid #b6d4fe;
+    border-radius: 6px;
+    padding: 14px 18px;
+    overflow-x: auto;
+    margin: 12px 0 16px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 12.5px;
+    color: #0550ae;
+    line-height: 1.6;
+  }
+
+  .card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 18px;
+  }
+  .card-title {
+    font-weight: 700;
+    font-size: 13.5px;
+    margin-bottom: 10px;
+    color: #0550ae;
+  }
+
+  .info-box {
+    background: #eff6ff;
+    border-left: 4px solid #0550ae;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 13px;
+  }
+  .warn-box {
+    background: #fffbeb;
+    border-left: 4px solid #d97706;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 13px;
+    color: #78350f;
+  }
+  .warn-box strong { color: #92400e; }
+  .danger-box {
+    background: #fef2f2;
+    border-left: 4px solid #dc2626;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 13px;
+    color: #7f1d1d;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 20px;
+    font-size: 13px;
+  }
+  thead tr { background: #0550ae; color: #ffffff; }
+  thead th { padding: 10px 14px; text-align: left; font-weight: 600; }
+  tbody tr:nth-child(even) { background: #f7f8fa; }
+  tbody tr:nth-child(odd)  { background: #ffffff; }
+  tbody td { padding: 9px 14px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #0550ae;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .step { display: flex; align-items: flex-start; margin-bottom: 10px; }
+  .step-body { flex: 1; }
+
+  .section-label {
+    display: inline-block;
+    background: #0550ae;
+    color: #fff;
+    border-radius: 4px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .user-label {
+    background: #1d6fde;
+  }
+
+  .toc { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px 24px; margin-bottom: 36px; }
+  .toc h3 { color: #0550ae; font-size: 14px; margin: 0 0 12px; }
+  .toc ol { column-count: 2; column-gap: 30px; }
+  .toc li { margin-bottom: 4px; font-size: 13px; }
+  .toc a { color: #0550ae; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  .divider { border: none; border-top: 2px dashed #e5e7eb; margin: 40px 0; }
+
+  footer {
+    text-align: center;
+    padding: 18px 0 24px;
+    border-top: 1px solid #e5e7eb;
+    color: #57606a;
+    font-size: 12px;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ░░ COVER ░░ -->
+<div class="cover">
+  <div class="badge">Component 07 of 14 · i3 Digital Work-Centers</div>
+  <h1>Moodle / EdBridge</h1>
+  <p class="sub">Learning Management System — Admin &amp; User Guide</p>
+  <div class="url">https://moodle.i3technologies.co.ke</div>
+</div>
+
+<!-- ░░ META BAR ░░ -->
+<div class="meta-bar">
+  <span><strong>Namespace:</strong> i3-edbridge</span>
+  <span><strong>Platform:</strong> Bitnami Moodle on OpenShift</span>
+  <span><strong>Database:</strong> PostgreSQL (edbridge_db)</span>
+  <span><strong>Auth:</strong> Keycloak OIDC (i3edbridge client)</span>
+  <span><strong>Storage:</strong> edbridge-data PVC · 20 GiB</span>
+</div>
+
+<!-- ░░ WRAPPER ░░ -->
+<div class="wrapper">
+
+  <!-- TOC -->
+  <div class="toc">
+    <h3>Table of Contents</h3>
+    <ol>
+      <li><a href="#overview">Overview &amp; Architecture</a></li>
+      <li><a href="#admin-creds">Admin Credentials</a></li>
+      <li><a href="#site-admin">Accessing Site Administration</a></li>
+      <li><a href="#courses">Creating Courses</a></li>
+      <li><a href="#enrolment">Enrolling Students</a></li>
+      <li><a href="#formats">Course Formats &amp; Activities</a></li>
+      <li><a href="#grades">Grading &amp; Gradebook</a></li>
+      <li><a href="#quiz">Quiz / Exam Module</a></li>
+      <li><a href="#certificates">Moodle Certificates Plugin</a></li>
+      <li><a href="#sso">SSO Configuration (Keycloak OIDC)</a></li>
+      <li><a href="#cron">Scheduled Tasks &amp; Cron</a></li>
+      <li><a href="#files">File Management &amp; Backup</a></li>
+      <li><a href="#pod-ops">Pod Operations (oc commands)</a></li>
+      <li><a href="#admin-troubleshoot">Admin Troubleshooting</a></li>
+      <li><a href="#user-login">User: Logging In</a></li>
+      <li><a href="#user-dashboard">User: Dashboard &amp; Courses</a></li>
+      <li><a href="#user-materials">User: Accessing Materials</a></li>
+      <li><a href="#user-assignments">User: Submitting Assignments</a></li>
+      <li><a href="#user-quiz">User: Taking a Quiz or Exam</a></li>
+      <li><a href="#user-grades">User: Checking Grades</a></li>
+      <li><a href="#user-forum">User: Forums &amp; Discussion</a></li>
+      <li><a href="#user-certs">User: Certificates</a></li>
+      <li><a href="#user-troubleshoot">User Troubleshooting</a></li>
+    </ol>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!--  ADMIN GUIDE                                                 -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <div class="section-label">Admin Guide</div>
+
+  <!-- 1. Overview -->
+  <h2 id="overview">1. Overview &amp; Architecture</h2>
+
+  <p>EdBridge is the i3 Digital Work-Centers Learning Management System (LMS), deployed as a <strong>Bitnami Moodle</strong> instance on OpenShift. It hosts all training courses, manages learner enrolments, tracks progress, and delivers online examinations for staff and students across all Work-Center locations.</p>
+
+  <div class="card">
+    <div class="card-title">Tech Stack</div>
+    <table>
+      <thead><tr><th>Layer</th><th>Technology</th><th>Details</th></tr></thead>
+      <tbody>
+        <tr><td>Application</td><td>Bitnami Moodle</td><td>Latest stable release; PHP 8.1+</td></tr>
+        <tr><td>Database</td><td>PostgreSQL</td><td>Database: <code>edbridge_db</code>, User: <code>edbridge</code>. Credentials in <code>edbridge-secrets</code>.</td></tr>
+        <tr><td>Container Platform</td><td>OpenShift</td><td>Namespace: <code>i3-edbridge</code></td></tr>
+        <tr><td>File Storage</td><td>Persistent Volume Claim</td><td><code>edbridge-data</code> PVC — 20 GiB. Contains all uploaded course files, backups, and moodledata.</td></tr>
+        <tr><td>Authentication</td><td>Keycloak OIDC</td><td>Client ID: <code>i3edbridge</code> on <code>sso.i3technologies.co.ke</code></td></tr>
+        <tr><td>Back-channel</td><td>sit-api</td><td>SIT Work-Centers writes enrolment data back to Moodle via sit-api.</td></tr>
+        <tr><td>Ingress</td><td>OpenShift Route</td><td><code>moodle.i3technologies.co.ke</code> (TLS terminated)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-box">
+    <strong>PostgreSQL note:</strong> The default Bitnami Moodle ships with MariaDB. This deployment replaces it with PostgreSQL. All database credentials are stored in the <code>edbridge-secrets</code> Secret in the <code>i3-edbridge</code> namespace — never commit them to source control.
+  </div>
+
+  <h3>Architecture Diagram (Text)</h3>
+  <pre>
+  Learner Browser
+       │
+       ▼
+  OpenShift Route  ──► Moodle Pod (i3-edbridge)
+       │                     │               │
+       │               edbridge-data      sit-api  ◄──► SIT Work-Centers
+       │               PVC (20 GiB)
+       │
+       ▼
+  Keycloak (sso.i3technologies.co.ke)   ◄── OIDC / SSO
+       │
+       ▼
+  PostgreSQL  (edbridge_db)
+  </pre>
+
+  <!-- 2. Admin Credentials -->
+  <h2 id="admin-creds">2. Admin Credentials &amp; Access Details</h2>
+
+  <div class="danger-box">
+    <strong>⚠ Sensitive — restrict access:</strong> Store these credentials in a secrets manager. Do not share over unencrypted channels.
+  </div>
+
+  <table>
+    <thead><tr><th>Item</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Moodle Admin URL</td><td><code>https://moodle.i3technologies.co.ke/login</code></td></tr>
+      <tr><td>Admin Username</td><td><code>i3admin</code></td></tr>
+      <tr><td>Admin Password</td><td><code>i3-Moodle-Admin-2026!</code></td></tr>
+      <tr><td>Site Administration</td><td>Top navigation → <strong>Site Administration</strong> (visible only to admin role)</td></tr>
+      <tr><td>Database Name</td><td><code>edbridge_db</code></td></tr>
+      <tr><td>DB User</td><td><code>edbridge</code> (password from <code>edbridge-secrets</code>)</td></tr>
+      <tr><td>OpenShift Namespace</td><td><code>i3-edbridge</code></td></tr>
+      <tr><td>Current Pod</td><td><code>edbridge-6d4bff754c-bpvlk</code> (changes on restart)</td></tr>
+    </tbody>
+  </table>
+
+  <p>To retrieve the database password from the OpenShift secret:</p>
+  <pre>oc get secret edbridge-secrets -n i3-edbridge -o jsonpath='{.data.db-password}' | base64 -d</pre>
+
+  <!-- 3. Accessing Site Administration -->
+  <h2 id="site-admin">3. Accessing Site Administration</h2>
+
+  <div class="step"><span class="step-num">1</span><div class="step-body">Navigate to <code>https://moodle.i3technologies.co.ke/login</code> in your browser.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">Enter username <code>i3admin</code> and the admin password. Click <strong>Log in</strong>.</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">After login, the top navigation bar shows a <strong>Site administration</strong> link (only visible to the site admin role). Click it.</div></div>
+  <div class="step"><span class="step-num">4</span><div class="step-body">The <strong>Site Administration</strong> panel is tabbed: <em>General, Plugins, Security, Appearance, Server, Reports, Development</em>. Key areas:
+    <ul>
+      <li><strong>General → Advanced features</strong> — enable/disable core features</li>
+      <li><strong>Plugins → Authentication</strong> — manage OIDC/SSO plugin</li>
+      <li><strong>Plugins → Enrolments</strong> — configure enrolment methods</li>
+      <li><strong>Server → Scheduled tasks</strong> — manage cron jobs</li>
+      <li><strong>Reports → Logs</strong> — audit trail for all user actions</li>
+    </ul>
+  </div></div>
+  <div class="step"><span class="step-num">5</span><div class="step-body">To access the admin panel directly, bookmark: <code>https://moodle.i3technologies.co.ke/admin/</code></div></div>
+
+  <!-- 4. Creating Courses -->
+  <h2 id="courses">4. Creating Courses</h2>
+
+  <h3>4.1 Course Category Structure</h3>
+  <p>Courses must be organised into categories. Navigate to <strong>Site Administration → Courses → Manage courses and categories</strong>.</p>
+
+  <div class="step"><span class="step-num">1</span><div class="step-body">Click <strong>Create new category</strong>. Enter a name (e.g., <em>Digital Literacy</em>), optionally a parent category, and a description.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">Save. The new category appears in the left-hand category tree.</div></div>
+
+  <h3>4.2 Creating a New Course</h3>
+  <div class="step"><span class="step-num">1</span><div class="step-body">In the desired category, click <strong>Create new course</strong>.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">Fill in <strong>Course full name</strong>, <strong>Short name</strong> (unique identifier, e.g. <code>DL101</code>), and <strong>Course ID number</strong>.</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">Set <strong>Course format</strong> (Topics, Weekly, Single Activity — see §6).</div></div>
+  <div class="step"><span class="step-num">4</span><div class="step-body">Set <strong>Start date</strong>, <strong>End date</strong>, and <strong>Enrolment key</strong> if using self-enrolment.</div></div>
+  <div class="step"><span class="step-num">5</span><div class="step-body">Click <strong>Save and display</strong>. The course editing view opens.</div></div>
+
+  <h3>4.3 Adding Sections and Activities</h3>
+  <div class="step"><span class="step-num">1</span><div class="step-body">Click <strong>Turn editing on</strong> (top-right button).</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">Click <strong>Edit section name</strong> on any topic/week to rename it (e.g., <em>Week 1: Introduction</em>).</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">Within a section, click <strong>Add an activity or resource</strong>. The activity picker opens.</div></div>
+  <div class="step"><span class="step-num">4</span><div class="step-body">Select the activity type (Lecture notes → <em>File</em> / <em>Page</em>; assessment → <em>Quiz</em> or <em>Assignment</em>; discussion → <em>Forum</em>).</div></div>
+  <div class="step"><span class="step-num">5</span><div class="step-body">Configure the activity settings and click <strong>Save and return to course</strong>.</div></div>
+  <div class="step"><span class="step-num">6</span><div class="step-body">Repeat for all sections. Use the drag handles to reorder activities.</div></div>
+
+  <!-- 5. Enrolling Students -->
+  <h2 id="enrolment">5. Enrolling Students</h2>
+
+  <h3>5.1 Manual Enrolment</h3>
+  <div class="step"><span class="step-num">1</span><div class="step-body">Open the course. In the navigation drawer select <strong>Participants</strong>.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">Click <strong>Enrol users</strong> (button, top right).</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">Search by name or email. Select the role (<em>Student</em>). Click <strong>Enrol selected users and cohorts</strong>.</div></div>
+
+  <h3>5.2 Self-Enrolment</h3>
+  <div class="step"><span class="step-num">1</span><div class="step-body">Go to course <strong>Settings → Enrolment methods</strong>. Add <strong>Self enrolment</strong>.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">Optionally set an <strong>Enrolment key</strong> to restrict access to authorised learners.</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">Set a maximum enrolment limit and enrolment duration if required. Save.</div></div>
+
+  <h3>5.3 Bulk CSV Enrolment</h3>
+  <div class="step"><span class="step-num">1</span><div class="step-body">Navigate to <strong>Site Administration → Courses → Upload users</strong>.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">Prepare a CSV with columns: <code>username, firstname, lastname, email, course1, type1</code> where <code>type1=1</code> means <em>Student</em>.</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">Upload the file, review the preview, and click <strong>Upload users</strong>.</div></div>
+
+  <h3>5.4 Keycloak SSO Auto-Provisioning</h3>
+  <p>When a user logs in via Keycloak SSO for the first time, the <strong>OpenID Connect</strong> plugin automatically creates their Moodle account from the JWT claims (<code>email</code>, <code>given_name</code>, <code>family_name</code>). To auto-enrol them into a course on first login, combine with the <strong>Cohort sync</strong> enrolment method:</p>
+  <div class="step"><span class="step-num">1</span><div class="step-body">Create a Cohort under <strong>Site Administration → Users → Cohorts</strong> (e.g., <em>Work-Center Students 2026</em>).</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">In Keycloak, map the user's group to a Moodle cohort field via the <code>i3edbridge</code> client mapper.</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">In the course, add <strong>Cohort sync</strong> enrolment method and select the matching cohort. Users in the cohort are automatically enrolled.</div></div>
+
+  <!-- 6. Course Formats and Activities -->
+  <h2 id="formats">6. Course Formats &amp; Activities</h2>
+
+  <table>
+    <thead><tr><th>Format / Activity</th><th>Use Case</th><th>Key Settings</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Topics format</strong></td><td>Thematic modules — not time-bound</td><td>Number of sections configurable; collapse unused topics</td></tr>
+      <tr><td><strong>Weekly format</strong></td><td>Instructor-led courses with a fixed schedule</td><td>Auto-labels sections by calendar week</td></tr>
+      <tr><td><strong>Single Activity</strong></td><td>One SCORM package or one quiz</td><td>Select the activity type at course creation</td></tr>
+      <tr><td><strong>SCORM package</strong></td><td>Pre-built e-learning modules (xAPI/SCORM 1.2 or 2004)</td><td>Upload .zip package; set completion tracking to SCORM completion status</td></tr>
+      <tr><td><strong>Quiz</strong></td><td>Formative and summative assessments</td><td>Time limit, attempts, question shuffling, feedback (see §8)</td></tr>
+      <tr><td><strong>Assignment</strong></td><td>File uploads, text submissions, offline activities</td><td>Due date, submission type (file/text/both), max file size</td></tr>
+      <tr><td><strong>Forum</strong></td><td>Discussion boards, Q&amp;A, announcements</td><td>Standard / Q&amp;A / Blog-style; subscription settings</td></tr>
+      <tr><td><strong>File / URL / Page</strong></td><td>Static resources — PDFs, videos, external links</td><td>Display inline or force download; restrict by date or grade</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 7. Grading -->
+  <h2 id="grades">7. Grading &amp; Gradebook Management</h2>
+
+  <h3>7.1 Accessing the Gradebook</h3>
+  <div class="step"><span class="step-num">1</span><div class="step-body">Inside a course, click <strong>Grades</strong> in the navigation drawer.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">The <strong>Grader report</strong> shows all students × all graded activities. Use <strong>View → User report</strong> for an individual student's summary.</div></div>
+
+  <h3>7.2 Grade Categories and Weights</h3>
+  <div class="step"><span class="step-num">1</span><div class="step-body">Go to <strong>Gradebook setup</strong> (Grades → Setup tab).</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">Click <strong>Add category</strong> (e.g., <em>Assignments 40%</em>, <em>Exams 60%</em>). Set aggregation to <em>Weighted mean of grades</em>.</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">Drag activities into the correct grade category. Set weights. Save.</div></div>
+
+  <h3>7.3 Exporting Grades</h3>
+  <p>Go to <strong>Grades → Export → Excel spreadsheet / CSV</strong>. Select the columns and download. Useful for offline record-keeping and reporting to Work-Center administrators.</p>
+
+  <!-- 8. Quiz Module -->
+  <h2 id="quiz">8. Setting Up the Quiz / Exam Module</h2>
+
+  <h3>8.1 Creating a Question Bank</h3>
+  <div class="step"><span class="step-num">1</span><div class="step-body">Navigate to <strong>Site Administration → Question bank</strong> or within a course go to <strong>More → Question bank</strong>.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">Click <strong>Add a new question</strong>. Select question type: <em>Multiple choice</em>, <em>True/False</em>, <em>Short answer</em>, <em>Matching</em>, <em>Calculated</em>, or <em>Essay</em>.</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">Fill in question text, answer options, feedback, and marks. Save.</div></div>
+  <div class="step"><span class="step-num">4</span><div class="step-body">Organise questions into categories in the question bank for easy reuse across courses.</div></div>
+
+  <h3>8.2 Configuring the Quiz Activity</h3>
+  <div class="step"><span class="step-num">1</span><div class="step-body">Add a <strong>Quiz</strong> activity to the course. In the settings form:
+    <ul>
+      <li><strong>Timing:</strong> Open / close dates, time limit (e.g., <em>90 minutes</em>), grace period.</li>
+      <li><strong>Attempts:</strong> Number of allowed attempts (set <em>1</em> for formal exams).</li>
+      <li><strong>Grading:</strong> Grading method — <em>Highest grade</em>, <em>Average</em>, <em>First</em>, or <em>Last attempt</em>.</li>
+      <li><strong>Layout:</strong> Questions per page, shuffling.</li>
+      <li><strong>Question behaviour:</strong> Deferred feedback (results shown only after submission) for exams.</li>
+      <li><strong>Review options:</strong> What students see after attempt — during, immediately after, later. For exams, restrict post-attempt review until after all students have sat.</li>
+      <li><strong>Security:</strong> Enable <em>Browser security — full-screen pop-up</em> or integrate Safe Exam Browser if required.</li>
+    </ul>
+  </div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">Click <strong>Save and display</strong>. Then click <strong>Edit quiz</strong> to add questions from the question bank.</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">Use <strong>Add → from question bank</strong> or <strong>Add → a random question</strong> (randomly drawn from a category — recommended for randomised exams).</div></div>
+  <div class="step"><span class="step-num">4</span><div class="step-body">Set per-question marks. The total quiz mark is automatically calculated. Click <strong>Save</strong>.</div></div>
+
+  <!-- 9. Certificates -->
+  <h2 id="certificates">9. Moodle Certificates Plugin</h2>
+
+  <p>The <strong>Custom Certificate</strong> plugin (<code>mod_customcert</code>) allows admins to design and automatically issue PDF certificates on course completion.</p>
+
+  <h3>9.1 Designing a Certificate Template</h3>
+  <div class="step"><span class="step-num">1</span><div class="step-body">Go to <strong>Site Administration → Plugins → Activity modules → Custom certificate → Manage templates</strong>.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">Click <strong>Create template</strong>. Name it (e.g., <em>i3 Course Completion Certificate</em>). Set page size (A4 Landscape recommended).</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">Add elements using the visual editor: <em>Text</em> (static), <em>User field</em> (learner name), <em>Course name</em>, <em>Date completed</em>, <em>Grade</em>, <em>QR code</em>, <em>Image</em> (for logo/signature).</div></div>
+  <div class="step"><span class="step-num">4</span><div class="step-body">Position and style each element. Preview using <strong>Preview certificate</strong>. Save.</div></div>
+
+  <h3>9.2 Adding Certificate to a Course</h3>
+  <div class="step"><span class="step-num">1</span><div class="step-body">In the course, <strong>Add an activity → Custom certificate</strong>.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">Select the template created above. Set <strong>Required minutes in course</strong> and <strong>Grade required</strong> thresholds if applicable.</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">Use <strong>Completion conditions</strong> to make the certificate available only after the student has completed all required activities.</div></div>
+  <div class="step"><span class="step-num">4</span><div class="step-body">Issued certificates are viewable under <strong>Site Administration → Reports → Custom certificate → Issued certificates</strong>.</div></div>
+
+  <!-- 10. SSO Configuration -->
+  <h2 id="sso">10. SSO Configuration — Keycloak OIDC</h2>
+
+  <p>EdBridge uses the <strong>OpenID Connect</strong> authentication plugin (<code>auth_oidc</code>) to delegate login to Keycloak.</p>
+
+  <h3>10.1 Plugin Configuration</h3>
+  <div class="step"><span class="step-num">1</span><div class="step-body">Navigate to <strong>Site Administration → Plugins → Authentication → Manage authentication</strong>.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">Enable <strong>OpenID Connect</strong>. Click the settings gear.</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">Set the following values:
+    <table>
+      <thead><tr><th>Field</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Provider Name</td><td><code>i3 SSO</code></td></tr>
+        <tr><td>Client ID</td><td><code>i3edbridge</code></td></tr>
+        <tr><td>Client Secret</td><td>(from <code>edbridge-secrets</code> key <code>oidc-secret</code>)</td></tr>
+        <tr><td>Authorization Endpoint</td><td><code>https://sso.i3technologies.co.ke/realms/i3/protocol/openid-connect/auth</code></td></tr>
+        <tr><td>Token Endpoint</td><td><code>https://sso.i3technologies.co.ke/realms/i3/protocol/openid-connect/token</code></td></tr>
+        <tr><td>Userinfo Endpoint</td><td><code>https://sso.i3technologies.co.ke/realms/i3/protocol/openid-connect/userinfo</code></td></tr>
+        <tr><td>Redirect URI</td><td><code>https://moodle.i3technologies.co.ke/auth/oidc/</code></td></tr>
+        <tr><td>Scopes</td><td><code>openid email profile</code></td></tr>
+        <tr><td>Username mapping</td><td><code>email</code> claim → Moodle username</td></tr>
+      </tbody>
+    </table>
+  </div></div>
+  <div class="step"><span class="step-num">4</span><div class="step-body">Enable <strong>Prevent account creation when authenticating</strong> = <em>No</em> (allow auto-provisioning).</div></div>
+  <div class="step"><span class="step-num">5</span><div class="step-body">Save. Test by logging out and clicking the <strong>i3 SSO</strong> button on the Moodle login page.</div></div>
+
+  <h3>10.2 Keycloak Client Settings (i3edbridge)</h3>
+  <p>In Keycloak (admin console at <code>sso.i3technologies.co.ke</code>), the <code>i3edbridge</code> client should be configured as:</p>
+  <ul>
+    <li><strong>Client Protocol:</strong> openid-connect</li>
+    <li><strong>Access Type:</strong> confidential</li>
+    <li><strong>Valid Redirect URIs:</strong> <code>https://moodle.i3technologies.co.ke/auth/oidc/*</code></li>
+    <li><strong>Web Origins:</strong> <code>https://moodle.i3technologies.co.ke</code></li>
+    <li><strong>Mappers:</strong> <code>email</code>, <code>given_name</code>, <code>family_name</code>, <code>groups</code> (for cohort mapping)</li>
+  </ul>
+
+  <!-- 11. Scheduled Tasks -->
+  <h2 id="cron">11. Scheduled Tasks &amp; Cron</h2>
+
+  <p>Moodle relies on a cron process running inside the pod. The Bitnami image runs it automatically. You can verify and manage tasks via the UI or CLI.</p>
+
+  <h3>11.1 Viewing Tasks in the UI</h3>
+  <p>Go to <strong>Site Administration → Server → Scheduled tasks</strong>. Each task shows its next run time, last run time, and status.</p>
+
+  <h3>11.2 Key Scheduled Tasks</h3>
+  <table>
+    <thead><tr><th>Task</th><th>Default Schedule</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>Main cron</td><td>Every 1 minute</td><td>Processes all queued Moodle tasks</td></tr>
+      <tr><td>Automated backups</td><td>Daily at 02:00</td><td>Backs up course data to edbridge-data PVC</td></tr>
+      <tr><td>Log table cleanup</td><td>Daily at 04:00</td><td>Removes old log entries to keep DB lean</td></tr>
+      <tr><td>Grade cleanup</td><td>Daily</td><td>Recalculates grade aggregations</td></tr>
+      <tr><td>Session cleanup</td><td>Every hour</td><td>Clears expired sessions from DB</td></tr>
+      <tr><td>Certificate issuance</td><td>Every 5 minutes</td><td>Generates pending PDF certificates</td></tr>
+    </tbody>
+  </table>
+
+  <h3>11.3 Triggering Cron Manually</h3>
+  <pre>oc exec -n i3-edbridge edbridge-6d4bff754c-bpvlk -- php /opt/bitnami/moodle/admin/cli/cron.php</pre>
+  <p>Or trigger a specific task:</p>
+  <pre>oc exec -n i3-edbridge edbridge-6d4bff754c-bpvlk -- \
+  php /opt/bitnami/moodle/admin/cli/scheduled_task.php \
+  --execute='\core\task\automated_backup_task'</pre>
+
+  <!-- 12. File Management and Backup -->
+  <h2 id="files">12. File Management &amp; Backup</h2>
+
+  <h3>12.1 edbridge-data PVC</h3>
+  <p>All Moodle file uploads (course files, backups, profile pictures, certificate PDFs) reside on the <code>edbridge-data</code> PVC mounted at <code>/bitnami/moodle</code> inside the pod.</p>
+  <pre>
+# Check PVC usage
+oc exec -n i3-edbridge edbridge-6d4bff754c-bpvlk -- df -h /bitnami/moodle
+
+# List backup directory
+oc exec -n i3-edbridge edbridge-6d4bff754c-bpvlk -- ls -lh /bitnami/moodle/backups/
+  </pre>
+
+  <h3>12.2 Course Backups (MBZ files)</h3>
+  <div class="step"><span class="step-num">1</span><div class="step-body">In any course, go to <strong>More → Backup</strong>. Follow the wizard: select included items → confirm → download the <code>.mbz</code> file.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">To restore: <strong>Site Administration → Courses → Restore course</strong>. Upload the <code>.mbz</code> file and follow the restore wizard.</div></div>
+
+  <h3>12.3 Full Site Backup Strategy</h3>
+  <p>For disaster recovery, combine two strategies:</p>
+  <ol>
+    <li><strong>PVC snapshot</strong> — Take an OpenShift VolumeSnapshot of <code>edbridge-data</code> (coordinate with the infrastructure team).</li>
+    <li><strong>Database dump</strong>:
+      <pre>oc exec -n i3-edbridge edbridge-6d4bff754c-bpvlk -- \
+  pg_dump -U edbridge edbridge_db > edbridge_db_$(date +%Y%m%d).sql</pre>
+    </li>
+  </ol>
+
+  <!-- 13. Pod Operations -->
+  <h2 id="pod-ops">13. Pod Operations (oc Commands)</h2>
+
+  <div class="warn-box">
+    <strong>Pod name may change</strong> after a restart. Always fetch the current pod name with <code>oc get pods -n i3-edbridge</code> before running exec commands.
+  </div>
+
+  <h4>Get current pod name</h4>
+  <pre>oc get pods -n i3-edbridge -l app=edbridge</pre>
+
+  <h4>View application logs</h4>
+  <pre>oc logs -n i3-edbridge edbridge-6d4bff754c-bpvlk --tail=100 -f</pre>
+
+  <h4>Open a shell in the pod</h4>
+  <pre>oc exec -it -n i3-edbridge edbridge-6d4bff754c-bpvlk -- /bin/bash</pre>
+
+  <h4>Restart the pod (rolling restart)</h4>
+  <pre>oc rollout restart deployment/edbridge -n i3-edbridge</pre>
+
+  <h4>Check rollout status</h4>
+  <pre>oc rollout status deployment/edbridge -n i3-edbridge</pre>
+
+  <h4>Scale down / up (maintenance window)</h4>
+  <pre>
+# Scale down
+oc scale deployment/edbridge -n i3-edbridge --replicas=0
+
+# Scale back up
+oc scale deployment/edbridge -n i3-edbridge --replicas=1
+  </pre>
+
+  <h4>Check PVC mount and disk usage</h4>
+  <pre>oc exec -n i3-edbridge edbridge-6d4bff754c-bpvlk -- df -h</pre>
+
+  <h4>Health / readiness probe check</h4>
+  <pre>oc describe pod -n i3-edbridge edbridge-6d4bff754c-bpvlk | grep -A 5 "Readiness\|Liveness"</pre>
+
+  <h4>View events in namespace</h4>
+  <pre>oc get events -n i3-edbridge --sort-by='.lastTimestamp'</pre>
+
+  <h4>Retrieve all secrets in namespace</h4>
+  <pre>oc get secrets -n i3-edbridge</pre>
+
+  <!-- 14. Troubleshooting -->
+  <h2 id="admin-troubleshoot">14. Admin Troubleshooting</h2>
+
+  <table>
+    <thead><tr><th>Symptom</th><th>Likely Cause</th><th>Resolution Steps</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Login page returns error / can't log in with local account</strong></td>
+        <td>OIDC plugin misconfigured or Keycloak down; admin account locked</td>
+        <td>Try direct login: <code>/login/index.php?authCAS=off</code>. Check Keycloak pod status. Verify OIDC plugin settings (§10). Unlock account via DB: <code>UPDATE mdl_user SET suspended=0,deleted=0 WHERE username='i3admin';</code></td>
+      </tr>
+      <tr>
+        <td><strong>Database connection failed</strong></td>
+        <td>PostgreSQL pod crashed; credentials rotated but not updated in config.php</td>
+        <td>Check <code>oc get pods -n i3-edbridge</code>; verify PostgreSQL pod running. Confirm <code>config.php</code> credentials match <code>edbridge-secrets</code>. Redeploy if needed.</td>
+      </tr>
+      <tr>
+        <td><strong>Slow page load / timeout</strong></td>
+        <td>Missing opcode cache; low PHP memory; DB running slow queries</td>
+        <td>Enable OPcache in PHP config. Increase <code>memory_limit</code> in <code>php.ini</code>. Run <code>EXPLAIN ANALYZE</code> on slow queries in PostgreSQL. Check pod resource limits: <code>oc describe pod ... | grep -A 3 Limits</code>.</td>
+      </tr>
+      <tr>
+        <td><strong>Cron not running / tasks overdue</strong></td>
+        <td>Pod restart killed cron; cron lock stuck in DB</td>
+        <td>Run cron manually (§11.3). Check for stuck locks: <code>SELECT * FROM mdl_task_scheduled WHERE nextruntime &lt; EXTRACT(EPOCH FROM NOW())-3600;</code>. Clear with: <code>UPDATE mdl_task_scheduled SET blocking=0;</code></td>
+      </tr>
+      <tr>
+        <td><strong>File upload errors</strong></td>
+        <td>PVC nearing 20 GiB limit; PHP <code>upload_max_filesize</code> too low</td>
+        <td>Check disk usage (§13). Delete old backup MBZ files. Increase PVC via storage team. Edit PHP settings in Moodle admin: <strong>Site Administration → Security → Site security settings → Maximum uploaded file size</strong>.</td>
+      </tr>
+      <tr>
+        <td><strong>SSO redirect loop</strong></td>
+        <td>Keycloak redirect URI mismatch; stale Moodle session cookie</td>
+        <td>Verify Valid Redirect URIs in Keycloak <code>i3edbridge</code> client includes <code>https://moodle.i3technologies.co.ke/auth/oidc/*</code>. Clear browser cookies. Check Moodle <code>$CFG-&gt;wwwroot</code> in <code>config.php</code> matches the actual URL exactly.</td>
+      </tr>
+      <tr>
+        <td><strong>Certificates not generating</strong></td>
+        <td>Certificate task not running; completion criteria not met</td>
+        <td>Run cron manually. Check task log: <strong>Site Administration → Reports → Task logs</strong>. Verify course completion criteria are enabled and student meets them.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr class="divider" />
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!--  USER GUIDE                                                  -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <div class="section-label user-label">User Guide</div>
+
+  <h2 id="user-login">15. Logging In</h2>
+
+  <p>Access EdBridge using your i3 Digital Work-Centers account through Single Sign-On (SSO). You do <strong>not</strong> need a separate password — use the same credentials you use for all i3 systems.</p>
+
+  <div class="step"><span class="step-num">1</span><div class="step-body">Open your browser and go to <strong>https://moodle.i3technologies.co.ke</strong>.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">On the login page, click the <strong>i3 SSO</strong> button (blue button). Do <em>not</em> type a username and password into the local fields unless specifically instructed.</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">You are redirected to <strong>sso.i3technologies.co.ke</strong>. Enter your i3 username and password.</div></div>
+  <div class="step"><span class="step-num">4</span><div class="step-body">Click <strong>Sign In</strong>. You will be automatically redirected back to Moodle and logged in.</div></div>
+  <div class="step"><span class="step-num">5</span><div class="step-body">If this is your first login, your Moodle account is created automatically from your i3 profile. No further action is needed.</div></div>
+
+  <div class="info-box">
+    <strong>Tip:</strong> Bookmark <code>https://moodle.i3technologies.co.ke</code> for quick access. Your session stays active for 2 hours of inactivity.
+  </div>
+
+  <!-- User: Dashboard -->
+  <h2 id="user-dashboard">16. Navigating the Dashboard &amp; Finding Your Courses</h2>
+
+  <div class="step"><span class="step-num">1</span><div class="step-body">After login, you land on the <strong>Dashboard</strong>. It shows:
+    <ul>
+      <li><strong>My courses</strong> — all courses you are enrolled in</li>
+      <li><strong>Timeline</strong> — upcoming assignment and quiz deadlines</li>
+      <li><strong>Recently accessed courses</strong> — your recent learning activity</li>
+    </ul>
+  </div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">To find a specific course, use the <strong>search bar</strong> at the top of the page, or click <strong>My courses</strong> in the left navigation drawer.</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">To browse all available courses, click <strong>Site home</strong> (home icon) or <strong>Course catalogue</strong> in the navigation drawer.</div></div>
+  <div class="step"><span class="step-num">4</span><div class="step-body">Click any course card to open it. If you are not yet enrolled, you will see an enrolment button or be prompted for an enrolment key (if applicable).</div></div>
+  <div class="step"><span class="step-num">5</span><div class="step-body">To return to the Dashboard at any time, click the <strong>grid icon</strong> or your institution name in the top navigation.</div></div>
+
+  <!-- User: Materials -->
+  <h2 id="user-materials">17. Accessing Course Materials</h2>
+
+  <div class="step"><span class="step-num">1</span><div class="step-body">Open your course. The course page is divided into <strong>sections</strong> (topics or weeks). Each section contains activities and resources.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">Click on a resource name to open it:
+    <ul>
+      <li><strong>PDF / Document:</strong> Opens inline in the browser or downloads depending on the instructor's settings.</li>
+      <li><strong>Video / Presentation:</strong> Plays directly in the browser using the embedded media player.</li>
+      <li><strong>External link / URL:</strong> Opens in a new tab.</li>
+      <li><strong>SCORM module:</strong> Launches the interactive e-learning module — allow pop-ups for this site if prompted.</li>
+    </ul>
+  </div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">Use the <strong>breadcrumb trail</strong> at the top (e.g., <em>Dashboard › My courses › DL101 › Week 1</em>) to navigate back to the course.</div></div>
+  <div class="step"><span class="step-num">4</span><div class="step-body">Some resources are hidden until you complete earlier activities. If an item appears greyed out, check the completion requirement shown beneath it.</div></div>
+
+  <!-- User: Assignments -->
+  <h2 id="user-assignments">18. Submitting Assignments</h2>
+
+  <div class="step"><span class="step-num">1</span><div class="step-body">Navigate to the assignment in your course. Click the assignment title to open it.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">Read the assignment brief and note the <strong>due date</strong> and <strong>submission type</strong> (file upload, online text, or both).</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">Click <strong>Add submission</strong>.</div></div>
+  <div class="step"><span class="step-num">4</span><div class="step-body">For <strong>file submission</strong>: drag and drop your file(s) into the upload area, or click the file icon to browse. Supported types and maximum size are shown above the upload area.</div></div>
+  <div class="step"><span class="step-num">5</span><div class="step-body">For <strong>online text</strong>: type or paste your work into the text editor. You can use the toolbar to format your text, add images, and paste from Word (use the <em>Paste from Word</em> icon to preserve formatting).</div></div>
+  <div class="step"><span class="step-num">6</span><div class="step-body">Click <strong>Save changes</strong>. Your submission status changes to <em>Submitted for grading</em>. You will receive a confirmation email.</div></div>
+  <div class="step"><span class="step-num">7</span><div class="step-body">If the assignment allows editing before the due date, click <strong>Edit submission</strong> to update your work.</div></div>
+
+  <div class="warn-box">
+    <strong>Important:</strong> Do not close the browser while uploading large files. If the upload bar stalls, check your internet connection and try again. Submissions after the due date may be accepted but marked as <em>Late</em>.
+  </div>
+
+  <!-- User: Quiz -->
+  <h2 id="user-quiz">19. Taking a Quiz or Exam</h2>
+
+  <div class="step"><span class="step-num">1</span><div class="step-body">Navigate to the quiz in your course. Click the quiz title. You will see the quiz description, time limit, number of attempts allowed, and open/close dates.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">Click <strong>Attempt quiz</strong>. A confirmation dialog appears — read it carefully (especially the time limit).</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">Click <strong>Start attempt</strong>. The timer begins immediately in the top-right corner.</div></div>
+  <div class="step"><span class="step-num">4</span><div class="step-body">Answer each question. Use the <strong>question navigation panel</strong> (right side or bottom) to jump to any question. Flagged questions are highlighted — click the flag icon on a question to mark it for review.</div></div>
+  <div class="step"><span class="step-num">5</span><div class="step-body">Click <strong>Next page</strong> to advance through multi-page quizzes. Your answers are <em>auto-saved</em> as you go — a network interruption will not lose answered questions.</div></div>
+  <div class="step"><span class="step-num">6</span><div class="step-body">When finished, scroll to the bottom and click <strong>Finish attempt</strong>. Review the summary page showing answered / unanswered questions.</div></div>
+  <div class="step"><span class="step-num">7</span><div class="step-body">Click <strong>Submit all and finish</strong>. A final confirmation dialog appears. Click <strong>Submit all and finish</strong> again to confirm.</div></div>
+  <div class="step"><span class="step-num">8</span><div class="step-body">Your results page appears (if the instructor has enabled immediate feedback). Your grade is recorded in the gradebook automatically.</div></div>
+
+  <div class="warn-box">
+    <strong>Time warning:</strong> When 5 minutes remain, a red timer warning appears. At zero, the attempt is automatically submitted with whatever answers you have provided. Do not rely on this — aim to finish early.
+  </div>
+
+  <!-- User: Grades -->
+  <h2 id="user-grades">20. Checking Your Grades</h2>
+
+  <div class="step"><span class="step-num">1</span><div class="step-body">While inside a course, click <strong>Grades</strong> in the left navigation drawer.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">The <strong>User report</strong> opens, showing all graded items, your score, the maximum score, and any feedback from your instructor.</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">To view feedback on a specific assignment, click the assignment name in the grade report — it opens the submission with inline feedback and comments.</div></div>
+  <div class="step"><span class="step-num">4</span><div class="step-body">To see grades across all your courses, go to your <strong>Profile → Grades overview</strong> (click your name/avatar in the top-right → <strong>Profile</strong> → <strong>Grades overview</strong>).</div></div>
+  <div class="step"><span class="step-num">5</span><div class="step-body">Grades are usually updated within 7 days of submission. If a grade is missing after that, contact your instructor via the course forum or messaging.</div></div>
+
+  <!-- User: Forum -->
+  <h2 id="user-forum">21. Using the Course Forum &amp; Discussion Board</h2>
+
+  <div class="step"><span class="step-num">1</span><div class="step-body">In your course, find the <strong>Forum</strong> activity (usually in the first section as <em>Announcements</em> or a dedicated discussion section). Click it.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">To read an existing thread, click its title. Replies are nested below the original post.</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">To start a new discussion thread, click <strong>Add a new discussion topic</strong>. Enter a subject and your message. You can attach files using the attachment area.</div></div>
+  <div class="step"><span class="step-num">4</span><div class="step-body">To reply to an existing post, click <strong>Reply</strong> under that post. Type your response and click <strong>Post to forum</strong>.</div></div>
+  <div class="step"><span class="step-num">5</span><div class="step-body"><strong>Subscriptions:</strong> By default, you receive email notifications for replies in threads you participate in. To manage subscriptions, click <strong>Subscribe to this forum</strong> (to get all posts) or <strong>Unsubscribe</strong> to stop receiving emails.</div></div>
+  <div class="step"><span class="step-num">6</span><div class="step-body">The <strong>Announcements</strong> forum (if present) is instructor-only for posting — students can read but cannot reply. Check it regularly for important course updates.</div></div>
+
+  <div class="info-box">
+    <strong>Netiquette reminder:</strong> Keep discussions respectful and on topic. Posts are visible to all enrolled students. Contact your instructor privately for personal matters.
+  </div>
+
+  <!-- User: Certificates -->
+  <h2 id="user-certs">22. Downloading Your Certificate of Completion</h2>
+
+  <div class="step"><span class="step-num">1</span><div class="step-body">After completing all required course activities (as defined by the completion criteria), a <strong>Certificate</strong> activity will become available in the course. Click it.</div></div>
+  <div class="step"><span class="step-num">2</span><div class="step-body">Click <strong>Get your certificate</strong> (or <strong>Download certificate</strong>). A PDF certificate opens or downloads to your device.</div></div>
+  <div class="step"><span class="step-num">3</span><div class="step-body">The certificate contains your full name, course name, completion date, and a unique QR code for verification. Save a copy for your records.</div></div>
+  <div class="step"><span class="step-num">4</span><div class="step-body">To retrieve a previously issued certificate, go to the same Certificate activity in the course — it always shows your latest issued certificate.</div></div>
+  <div class="step"><span class="step-num">5</span><div class="step-body">If the certificate activity is not visible or the download button is greyed out, not all completion criteria have been met. Check the course progress by going to <strong>My courses → [Course name] → Progress</strong>.</div></div>
+
+  <!-- User: Troubleshooting -->
+  <h2 id="user-troubleshoot">23. User Troubleshooting</h2>
+
+  <table>
+    <thead><tr><th>Problem</th><th>What to Try</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Can't log in / stuck at SSO page</strong></td>
+        <td>
+          <ol>
+            <li>Clear your browser cache and cookies, then try again.</li>
+            <li>Try an incognito / private browser window.</li>
+            <li>Ensure you are using your correct i3 username and password at <code>sso.i3technologies.co.ke</code>.</li>
+            <li>If your account is locked, contact the i3 helpdesk — they can unlock it in Keycloak.</li>
+          </ol>
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Course not visible in My Courses</strong></td>
+        <td>
+          <ol>
+            <li>Check that the course has started — courses with a future start date may be hidden.</li>
+            <li>Confirm you are enrolled: go to Site home and search for the course name. If it shows but has an <em>Enrol</em> button, you need to self-enrol or ask your instructor to enrol you.</li>
+            <li>Ask your instructor or admin to verify your enrolment.</li>
+          </ol>
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Video won't play / buffering</strong></td>
+        <td>
+          <ol>
+            <li>Check your internet connection speed (minimum 2 Mbps recommended for HD video).</li>
+            <li>Try a different browser (Chrome or Firefox recommended). Disable browser extensions that may block media.</li>
+            <li>If using a SCORM module, ensure pop-ups are allowed for <code>moodle.i3technologies.co.ke</code>.</li>
+            <li>Try downloading the video if the instructor has enabled the download option.</li>
+          </ol>
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Assignment submission error</strong></td>
+        <td>
+          <ol>
+            <li>Check the file size limit shown on the submission page. Compress or split large files.</li>
+            <li>Ensure the file type is allowed (e.g., PDF, DOCX — not EXE or ZIP unless specified).</li>
+            <li>Try a different browser. Disable VPN if active, as it can cause upload timeouts.</li>
+            <li>If the due date has passed and submission is blocked, contact your instructor immediately to request an extension.</li>
+          </ol>
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Quiz timer ran out before I finished</strong></td>
+        <td>
+          The quiz is automatically submitted with your answers at time expiry — your partial answers are saved. Contact your instructor to explain and request an additional attempt if the circumstances warrant it. Admins can grant extra attempts per-student in the quiz settings.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Certificate not available after course completion</strong></td>
+        <td>
+          <ol>
+            <li>Check that <em>all</em> required activities are marked as complete (green tick). Some activities require a minimum grade.</li>
+            <li>Wait up to 10 minutes — certificate generation runs every 5 minutes via cron.</li>
+            <li>Reload the course page. If still unavailable, contact your instructor or the Moodle admin.</li>
+          </ol>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="info-box">
+    <strong>Need further help?</strong> Contact the i3 helpdesk via the Work-Center portal or email your course instructor through the Moodle messaging system (click the instructor's name → <strong>Message</strong>).
+  </div>
+
+</div><!-- /wrapper -->
+
+<footer>
+  Made with IBM Bob | Component 07 of 14
+</footer>
+
+</body>
+</html>

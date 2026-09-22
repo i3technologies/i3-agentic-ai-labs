@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Component 12: FORD-Asili Blockchain PMaaS — Admin &amp; User Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: #1f2328;
+    background: #ffffff;
+  }
+
+  /* ── COVER ── */
+  .cover {
+    background: linear-gradient(135deg, #cf222e, #9a6700);
+    color: #fff;
+    padding: 56px 40px 48px;
+    text-align: center;
+  }
+  .cover .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .cover h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    margin-bottom: 10px;
+  }
+  .cover .subtitle {
+    font-size: 1.05rem;
+    opacity: .88;
+    margin-bottom: 28px;
+  }
+  .cover .meta-grid {
+    display: inline-grid;
+    grid-template-columns: repeat(3, auto);
+    gap: 10px 28px;
+    text-align: left;
+    background: rgba(0,0,0,0.18);
+    border-radius: 10px;
+    padding: 16px 28px;
+    font-size: 13px;
+  }
+  .cover .meta-grid .label { opacity: .7; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+  .cover .meta-grid .value { font-weight: 600; }
+
+  .deadline-banner {
+    background: #1f2328;
+    color: #fff;
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 13.5px;
+  }
+  .deadline-banner strong { color: #fbbf24; }
+
+  /* ── LAYOUT ── */
+  .page { max-width: 820px; margin: 0 auto; padding: 0 28px 60px; }
+
+  /* ── TOC ── */
+  .toc {
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin: 32px 0;
+  }
+  .toc h2 { color: #cf222e; border: none; font-size: 1rem; margin-bottom: 14px; text-transform: uppercase; letter-spacing: .06em; }
+  .toc-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin-bottom: 4px; font-size: 13.5px; }
+  .toc a { color: #3b82d4; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc .section-label { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #57606a; margin-bottom: 6px; margin-top: 14px; }
+
+  /* ── TYPOGRAPHY ── */
+  h2 {
+    color: #cf222e;
+    font-size: 1.35rem;
+    font-weight: 700;
+    border-bottom: 2px solid #cf222e;
+    padding-bottom: 8px;
+    margin: 40px 0 16px;
+  }
+  h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1f2328;
+    margin: 26px 0 10px;
+  }
+  h4 {
+    font-size: .95rem;
+    font-weight: 600;
+    color: #57606a;
+    margin: 18px 0 8px;
+  }
+  p { margin-bottom: 12px; }
+  ul, ol { padding-left: 22px; margin-bottom: 12px; }
+  li { margin-bottom: 5px; }
+
+  /* ── CODE ── */
+  code, pre {
+    font-family: "Consolas", "SF Mono", "Menlo", monospace;
+    font-size: 13px;
+  }
+  code {
+    background: #fff0f0;
+    border: 1px solid #ffb8b8;
+    border-radius: 4px;
+    padding: 1px 5px;
+  }
+  pre {
+    background: #fff0f0;
+    border: 1px solid #ffb8b8;
+    border-radius: 6px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    margin: 14px 0;
+    line-height: 1.5;
+  }
+  pre code { background: none; border: none; padding: 0; }
+
+  /* ── TABLES ── */
+  .table-wrap { overflow-x: auto; margin: 14px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  thead tr { background: #cf222e; color: #fff; }
+  thead th { padding: 10px 14px; text-align: left; font-weight: 600; }
+  tbody tr:nth-child(even) { background: #f7f8fa; }
+  tbody td { padding: 9px 14px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-left: 4px solid #cf222e;
+    background: #fff0f0;
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 16px 0;
+    font-size: 13.5px;
+  }
+  .callout.warn { border-color: #9a6700; background: #fffbeb; }
+  .callout.info { border-color: #3b82d4; background: #eff6ff; }
+  .callout.ok   { border-color: #16a34a; background: #f0fdf4; }
+  .callout strong { display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+
+  /* ── STATUS BADGES ── */
+  .badge-ok   { background: #dcfce7; color: #15803d; border-radius: 12px; padding: 2px 10px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .badge-err  { background: #fee2e2; color: #b91c1c; border-radius: 12px; padding: 2px 10px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .badge-warn { background: #fef3c7; color: #92400e; border-radius: 12px; padding: 2px 10px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .badge-pending { background: #e0e7ff; color: #3730a3; border-radius: 12px; padding: 2px 10px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+
+  /* ── SECTION DIVIDERS ── */
+  .part-header {
+    background: linear-gradient(135deg, #cf222e, #9a6700);
+    color: #fff;
+    padding: 14px 22px;
+    border-radius: 8px;
+    margin: 48px 0 8px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: .01em;
+  }
+
+  /* ── STEP LIST ── */
+  .steps { counter-reset: step-counter; list-style: none; padding-left: 0; }
+  .steps li {
+    counter-increment: step-counter;
+    padding: 10px 14px 10px 52px;
+    position: relative;
+    border-left: 2px solid #e5e7eb;
+    margin-bottom: 10px;
+  }
+  .steps li::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 12px;
+    top: 10px;
+    width: 24px; height: 24px;
+    background: #cf222e;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 20px 0 28px;
+    border-top: 1px solid #e5e7eb;
+    color: #57606a;
+    font-size: 12px;
+    margin-top: 60px;
+  }
+
+  .url { word-break: break-all; }
+
+  @media (max-width: 600px) {
+    .cover h1 { font-size: 1.5rem; }
+    .toc-cols { grid-template-columns: 1fr; }
+    .cover .meta-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     COVER
+════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="badge">Component 12 of 14 — Platform Documentation</div>
+  <h1>FORD-Asili Blockchain PMaaS</h1>
+  <p class="subtitle">Hyperledger Fabric Political Membership-as-a-Service<br>Admin &amp; Field Agent User Guide</p>
+  <div class="meta-grid">
+    <div>
+      <div class="label">API Base URL</div>
+      <div class="value">ford.i3technologies.co.ke</div>
+    </div>
+    <div>
+      <div class="label">Namespace</div>
+      <div class="value">i3-ford</div>
+    </div>
+    <div>
+      <div class="label">Hard Deadline</div>
+      <div class="value">16 March 2027</div>
+    </div>
+    <div>
+      <div class="label">Database</div>
+      <div class="value">ford_members_db</div>
+    </div>
+    <div>
+      <div class="label">DB User</div>
+      <div class="value">ford_app</div>
+    </div>
+    <div>
+      <div class="label">Blockchain</div>
+      <div class="value">Hyperledger Fabric</div>
+    </div>
+  </div>
+</div>
+
+<div class="deadline-banner">
+  ⚠️ <strong>HARD DEADLINE: 16 March 2027</strong> — 2027 Kenya General Elections. All blockchain channels, chaincode, and member registration must be fully operational before this date.
+</div>
+
+<div class="page">
+
+<!-- ══════════════════════════════════════════════
+     TABLE OF CONTENTS
+════════════════════════════════════════════════ -->
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <div class="toc-cols">
+    <div>
+      <div class="section-label">Part A — Admin Guide</div>
+      <ol>
+        <li><a href="#a1">FORD-Asili Overview &amp; Political Context</a></li>
+        <li><a href="#a2">Membership Registration Workflow</a></li>
+        <li><a href="#a3">Agent Management</a></li>
+        <li><a href="#a4">OTP Verification System</a></li>
+        <li><a href="#a5">Privacy &amp; Data Protection</a></li>
+        <li><a href="#a6">Velocity Rate Limiting</a></li>
+        <li><a href="#a7">i3 Engage Webhook Integration</a></li>
+        <li><a href="#a8">Hyperledger Fabric — Current Status</a></li>
+        <li><a href="#a9">Completing the Blockchain Setup</a></li>
+        <li><a href="#a10">Operations: Pods, Logs, API Testing</a></li>
+        <li><a href="#a11">Keycloak Client — Action Required</a></li>
+        <li><a href="#a12">Troubleshooting</a></li>
+      </ol>
+    </div>
+    <div>
+      <div class="section-label">Part B — Field Agent User Guide</div>
+      <ol>
+        <li><a href="#b1">Your Role as a Field Agent</a></li>
+        <li><a href="#b2">Registering a New Member</a></li>
+        <li><a href="#b3">The OTP Verification Process</a></li>
+        <li><a href="#b4">Understanding Your Duty Count</a></li>
+        <li><a href="#b5">Flagged Registrations</a></li>
+        <li><a href="#b6">Accessing the FORD Portal</a></li>
+        <li><a href="#b7">Help &amp; Support Contacts</a></li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     PART A — ADMIN GUIDE
+════════════════════════════════════════════════ -->
+<div class="part-header">Part A — Administrator Guide</div>
+
+
+<!-- A1 -->
+<h2 id="a1">A1. FORD-Asili Overview &amp; Political Context</h2>
+
+<p>
+  <strong>FORD-Asili Digital PMaaS</strong> (Political Membership-as-a-Service) is a Hyperledger Fabric blockchain platform built for the <em>Forum for the Restoration of Democracy – Asili</em> party's 2027 Kenya General Election cycle. It provides an immutable, auditable, and privacy-preserving system for:
+</p>
+<ul>
+  <li><strong>Ward-level membership registration</strong> across all 47 Kenya counties</li>
+  <li><strong>AI-powered nomination management</strong> for 2027 election candidacies</li>
+  <li><strong>Primary ballot processing</strong> with tamper-proof audit trail</li>
+  <li><strong>Agent performance tracking</strong> (field agents who register members on the ground)</li>
+</ul>
+
+<h3>Ward-First Strategy</h3>
+<p>
+  Kenya's electoral geography is organised into <em>wards → sub-counties → counties → constituencies</em>. FORD-Asili's ward-first strategy requires that every member registration captures ward identity at source. This granularity enables accurate delegate allocation, ground coverage analytics, and nomination eligibility verification.
+</p>
+
+<div class="callout warn">
+  <strong>⏰ Hard Deadline</strong>
+  The 2027 Kenya General Elections are scheduled for <strong>16 March 2027</strong>. The IEBC nomination window opens well before polling day. All four planned blockchain channels (<code>membership</code>, <code>nominations</code>, <code>primaries-2027</code>) and their associated chaincode must be live before the party's internal nomination deadline. Plan backwards from 16 March 2027 accordingly.
+</div>
+
+<h3>System Components At-a-Glance</h3>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Layer</th><th>Technology</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>REST API</td><td>Node.js / Express</td><td>Public-facing membership registration and agent endpoints</td></tr>
+      <tr><td>Blockchain</td><td>Hyperledger Fabric 2.x</td><td>Immutable member records, nomination transactions, ballot entries</td></tr>
+      <tr><td>World State DB</td><td>CouchDB (couchdb-i3tech)</td><td>Rich queries against blockchain state</td></tr>
+      <tr><td>Relational DB</td><td>PostgreSQL (ford_members_db)</td><td>Hashed PII storage, OTP sessions, agent duty log</td></tr>
+      <tr><td>Identity &amp; SSO</td><td>Keycloak (ford-portal client)</td><td>Agent and admin authentication</td></tr>
+      <tr><td>OTP Delivery</td><td>i3 Engage webhook</td><td>SMS OTP delivery for phone number verification</td></tr>
+      <tr><td>Kubernetes Namespace</td><td>i3-ford</td><td>All Fabric pods, API deployment, CouchDB</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- A2 -->
+<h2 id="a2">A2. Membership Registration Workflow</h2>
+
+<p>The end-to-end registration flow from field agent mobile app to confirmed blockchain record proceeds as follows:</p>
+
+<ol class="steps">
+  <li>Field agent opens the FORD portal and logs in via Keycloak (role: <code>ford-agent</code>).</li>
+  <li>Agent captures member details: national ID, phone number, ward, sub-county, county. The agent's own <code>agent_id</code> is injected server-side from the JWT token.</li>
+  <li>App calls <code>POST /api/v1/members/register</code>. The API immediately SHA-256 hashes the national ID and phone number before touching any database or blockchain.</li>
+  <li>API checks velocity rate: has this agent already registered ≥ 50 members today? If yes → HTTP 429.</li>
+  <li>API checks duplicate hashes. If the national ID hash already exists → member is auto-flagged.</li>
+  <li>A 6-digit OTP is generated and dispatched via the i3 Engage webhook to the member's phone number.</li>
+  <li>Member status is set to <code>pending</code> and a row is inserted into <code>otp_verifications</code>.</li>
+  <li>Member reads OTP from SMS and gives it to the agent (or enters it themselves).</li>
+  <li>App calls <code>POST /api/v1/members/verify-otp</code>. On success, member status changes to <code>verified</code>.</li>
+  <li>A Hyperledger Fabric transaction is submitted to the <code>membership</code> channel, invoking the <code>MembershipRegistry</code> chaincode. The hashed PII + ward metadata are written immutably to the ledger.</li>
+  <li>Agent's duty count increments by 1 in <code>agent_duty_log</code>.</li>
+</ol>
+
+<h3>Register Member — API Reference</h3>
+
+<h4>Request</h4>
+<pre><code>POST https://ford.i3technologies.co.ke/api/v1/members/register
+Content-Type: application/json
+Authorization: Bearer &lt;keycloak_jwt&gt;
+
+{
+  "national_id": "12345678",
+  "phone": "0712345678",
+  "ward": "Westlands Ward",
+  "sub_county": "Westlands",
+  "county": "Nairobi",
+  "agent_id": "AGT-00247"
+}</code></pre>
+
+<h4>Success Response (201 Created)</h4>
+<pre><code>{
+  "status": "pending",
+  "member_ref": "MBR-2025-00912",
+  "message": "OTP sent to registered phone number. Verify to complete registration.",
+  "otp_expires_in_seconds": 300
+}</code></pre>
+
+<h4>Error Responses</h4>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>HTTP Code</th><th>Reason</th><th>Body (status)</th></tr></thead>
+    <tbody>
+      <tr><td>400</td><td>Missing required field</td><td><code>{"error":"national_id is required"}</code></td></tr>
+      <tr><td>409</td><td>Duplicate national ID hash</td><td><code>{"error":"member_flagged","member_ref":"MBR-..."}</code></td></tr>
+      <tr><td>429</td><td>Agent velocity limit exceeded (50/day)</td><td><code>{"error":"rate_limit_exceeded","retry_after":"tomorrow 00:00 EAT"}</code></td></tr>
+      <tr><td>401</td><td>Invalid or expired JWT</td><td><code>{"error":"unauthorized"}</code></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h3>Verify OTP — API Reference</h3>
+
+<h4>Request</h4>
+<pre><code>POST https://ford.i3technologies.co.ke/api/v1/members/verify-otp
+Content-Type: application/json
+Authorization: Bearer &lt;keycloak_jwt&gt;
+
+{
+  "phone_hash": "a3f5c2d1e4b6...",
+  "otp_code": "847291"
+}</code></pre>
+
+<h4>Success Response (200 OK)</h4>
+<pre><code>{
+  "status": "verified",
+  "member_ref": "MBR-2025-00912",
+  "blockchain_tx_id": "3a7f9c2e1b4d8...",
+  "message": "Member successfully registered and committed to blockchain."
+}</code></pre>
+
+
+<!-- A3 -->
+<h2 id="a3">A3. Agent Management</h2>
+
+<h3>Creating Agent Accounts</h3>
+<ol>
+  <li>Log in to the Keycloak admin console.</li>
+  <li>Navigate to the <strong>i3-ford</strong> realm (or the realm where <code>ford-portal</code> client is configured).</li>
+  <li>Create a new user with the agent's email. Set a temporary password.</li>
+  <li>Assign the role <code>ford-agent</code> to the user.</li>
+  <li>Communicate the <code>agent_id</code> (e.g. <code>AGT-00247</code>) and initial credentials to the agent securely.</li>
+</ol>
+
+<h3>Duty Quotas</h3>
+<p>Each agent is capped at <strong>50 registrations per calendar day (EAT)</strong>. The quota resets at 00:00 East Africa Time. Administrators can monitor agent activity via the duty-count endpoint:</p>
+
+<h4>Get Agent Duty Count</h4>
+<pre><code>GET https://ford.i3technologies.co.ke/api/v1/agents/{agent_id}/duty-count
+Authorization: Bearer &lt;admin_jwt&gt;
+
+# Example
+GET /api/v1/agents/AGT-00247/duty-count</code></pre>
+
+<h4>Response</h4>
+<pre><code>{
+  "agent_id": "AGT-00247",
+  "date": "2026-11-15",
+  "verified": 34,
+  "pending": 5,
+  "flagged": 1,
+  "total_today": 40,
+  "quota_remaining": 10
+}</code></pre>
+
+<div class="callout info">
+  <strong>ℹ️ Monitoring Tip</strong>
+  Run a scheduled job querying all active agent IDs against <code>GET /api/v1/agents/{id}/duty-count</code> and aggregate results into a dashboard. Agents with a high <code>flagged</code> ratio warrant investigation for potential ballot stuffing.
+</div>
+
+
+<!-- A4 -->
+<h2 id="a4">A4. OTP Verification System</h2>
+
+<p>Phone ownership verification is mandatory before a registration is marked <code>verified</code> and committed to the blockchain. This prevents registrations of fictitious or non-consenting members.</p>
+
+<h3>How It Works</h3>
+<ol class="steps">
+  <li>On <code>POST /api/v1/members/register</code>, the API generates a cryptographically random 6-digit OTP.</li>
+  <li>The OTP and its expiry timestamp (default: 5 minutes / 300 seconds) are stored in the <code>otp_verifications</code> table, linked to the phone hash.</li>
+  <li>The API fires a <strong>POST webhook</strong> to i3 Engage with the phone number and OTP payload. i3 Engage dispatches the SMS.</li>
+  <li>When <code>POST /api/v1/members/verify-otp</code> is called, the API checks: (a) OTP matches, (b) OTP has not expired, (c) phone hash matches the stored record.</li>
+  <li>On success, the row in <code>otp_verifications</code> is marked consumed and the member row status is updated to <code>verified</code>.</li>
+</ol>
+
+<h3>OTP Table Schema (otp_verifications)</h3>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>id</td><td>UUID</td><td>Primary key</td></tr>
+      <tr><td>phone_hash</td><td>CHAR(64)</td><td>SHA-256 of phone number</td></tr>
+      <tr><td>otp_code</td><td>CHAR(6)</td><td>6-digit numeric OTP (hashed at rest recommended)</td></tr>
+      <tr><td>created_at</td><td>TIMESTAMPTZ</td><td>UTC creation time</td></tr>
+      <tr><td>expires_at</td><td>TIMESTAMPTZ</td><td>created_at + 300s</td></tr>
+      <tr><td>consumed</td><td>BOOLEAN</td><td>True once verified or expired</td></tr>
+      <tr><td>member_ref</td><td>VARCHAR</td><td>FK to members_pii</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout">
+  <strong>🚨 OTP Expiry</strong>
+  OTPs expire after <strong>5 minutes</strong>. If a member does not receive the SMS or enters the code late, the agent must re-trigger registration. Expired OTPs leave the member in <code>pending</code> status indefinitely — run a periodic cleanup job to expire stale pending records.
+</div>
+
+
+<!-- A5 -->
+<h2 id="a5">A5. Privacy &amp; Data Protection</h2>
+
+<h3>SHA-256 Hashing — Privacy by Design</h3>
+<p>
+  FORD-Asili implements a <em>privacy-by-design</em> architecture. National ID numbers and phone numbers are <strong>never stored in plain text</strong> — anywhere. Not in PostgreSQL, not in the Hyperledger Fabric ledger, not in application logs.
+</p>
+<p>The hashing pipeline:</p>
+<pre><code>// Pseudocode — executed server-side before any DB write
+const national_id_hash = sha256(national_id.trim().toLowerCase());
+const phone_hash       = sha256(normalise_phone(phone)); // E.164 format
+
+// Plain-text values are discarded from memory immediately after hashing.
+// They are NEVER logged, NEVER written to any store.
+</code></pre>
+
+<h3>What Is Stored</h3>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Data Element</th><th>Stored As</th><th>Location</th></tr></thead>
+    <tbody>
+      <tr><td>National ID</td><td>SHA-256 hash (hex, 64 chars)</td><td>members_pii, Fabric ledger</td></tr>
+      <tr><td>Phone number</td><td>SHA-256 hash</td><td>members_pii, otp_verifications</td></tr>
+      <tr><td>Ward / Sub-county / County</td><td>Plain text</td><td>members_pii, Fabric ledger</td></tr>
+      <tr><td>Agent ID</td><td>Plain text</td><td>agent_duty_log, Fabric tx metadata</td></tr>
+      <tr><td>OTP code</td><td>Plain text (short-lived, 5 min)</td><td>otp_verifications only</td></tr>
+      <tr><td>Ballot entries</td><td>Encrypted references</td><td>ballot_entries, primaries channel</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h3>Why This Matters (Kenya Data Protection Act 2019)</h3>
+<p>
+  Kenya's <em>Data Protection Act 2019</em> mandates that personal data be processed lawfully, stored securely, and protected against unauthorised access. By storing only irreversible hashes, FORD-Asili ensures that even a complete database breach exposes no usable PII. Hash values cannot be reversed to reveal a national ID or phone number.
+</p>
+
+<div class="callout ok">
+  <strong>✅ Compliance Note</strong>
+  Do NOT add any logging middleware that outputs raw request bodies containing <code>national_id</code> or <code>phone</code> fields. Ensure the API's request logger explicitly redacts these fields before writing to any log sink.
+</div>
+
+
+<!-- A6 -->
+<h2 id="a6">A6. Velocity Rate Limiting</h2>
+
+<h3>The 50-per-Day Cap</h3>
+<p>
+  Each field agent is limited to registering a maximum of <strong>50 members per calendar day</strong> (resetting at 00:00 EAT). This limit is enforced at the API level before any hash or database operation.
+</p>
+
+<h3>Why This Limit Exists</h3>
+<ul>
+  <li><strong>Anti-fraud:</strong> Ballot stuffing or mass fabrication of fictitious members requires an agent to submit many registrations rapidly. A 50/day cap makes large-scale fraud economically unviable for any single actor.</li>
+  <li><strong>Operational realism:</strong> A diligent field agent physically visiting members can realistically achieve 30–50 verified registrations per day. Higher counts are a red flag.</li>
+  <li><strong>SMS cost control:</strong> Each registration triggers an OTP SMS via i3 Engage. Rate limiting protects against runaway SMS spend caused by misbehaving clients or compromised agent credentials.</li>
+</ul>
+
+<h3>How It Is Enforced</h3>
+<pre><code>-- Checked before every registration insert
+SELECT COUNT(*) FROM agent_duty_log
+WHERE agent_id = $1
+  AND DATE(created_at AT TIME ZONE 'Africa/Nairobi') = CURRENT_DATE AT TIME ZONE 'Africa/Nairobi'
+  AND status IN ('pending', 'verified');
+
+-- If COUNT >= 50 → return HTTP 429</code></pre>
+
+<div class="callout warn">
+  <strong>⚠️ Temporary Limit Raise</strong>
+  Do not raise the velocity cap without a written approval from the FORD-Asili data protection officer and the party's National Elections Board (NEB). Any change must be logged with a justification.
+</div>
+
+
+<!-- A7 -->
+<h2 id="a7">A7. i3 Engage Webhook Integration</h2>
+
+<p>OTP SMS messages are delivered via the <strong>i3 Engage</strong> platform. The FORD-Asili API acts as a webhook <em>caller</em> — it POSTs OTP payloads to the i3 Engage endpoint which handles SMS routing.</p>
+
+<h3>Webhook Payload</h3>
+<pre><code>POST &lt;i3-engage-webhook-url&gt;
+Content-Type: application/json
+X-Engage-Token: &lt;engage_api_token&gt;
+
+{
+  "channel": "sms",
+  "recipient": "+254712345678",
+  "template": "ford_otp",
+  "variables": {
+    "otp_code": "847291",
+    "expiry_minutes": "5",
+    "party_name": "FORD-Asili"
+  }
+}</code></pre>
+
+<h3>Configuration</h3>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Config Key</th><th>Where to Set</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>ENGAGE_WEBHOOK_URL</td><td>Kubernetes Secret / ConfigMap</td><td>i3 Engage endpoint URL</td></tr>
+      <tr><td>ENGAGE_API_TOKEN</td><td>Kubernetes Secret</td><td>Never commit to source control</td></tr>
+      <tr><td>OTP_TEMPLATE_ID</td><td>ConfigMap</td><td>Must match template name in Engage dashboard</td></tr>
+      <tr><td>OTP_EXPIRY_SECONDS</td><td>ConfigMap (default: 300)</td><td>Adjustable per deployment</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout info">
+  <strong>ℹ️ Fallback Behaviour</strong>
+  If the i3 Engage webhook returns a non-2xx response, the registration is <strong>not</strong> aborted. The member remains in <code>pending</code> status and the API returns a warning in the response body (<code>"otp_delivery":"failed"</code>). The agent should advise the member to contact FORD support for manual OTP delivery.
+</div>
+
+
+<!-- A8 -->
+<h2 id="a8">A8. Hyperledger Fabric — Current Status</h2>
+
+<p>All Fabric components are deployed in the <code>i3-ford</code> Kubernetes namespace. Below is the current status as of the time of writing:</p>
+
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Component</th><th>Kind</th><th>Status</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>ford-ca</code></td><td>Deployment</td>
+        <td><span class="badge-ok">Running 1/1</span></td>
+        <td>Fabric CA for the FORD organisation. Operational.</td>
+      </tr>
+      <tr>
+        <td><code>i3tech-ca</code></td><td>Deployment</td>
+        <td><span class="badge-ok">Running 1/1</span></td>
+        <td>Fabric CA for the i3Tech organisation. Operational.</td>
+      </tr>
+      <tr>
+        <td><code>couchdb-i3tech</code></td><td>Deployment</td>
+        <td><span class="badge-ok">Running 1/1</span></td>
+        <td>CouchDB world-state database for i3Tech peer. Operational.</td>
+      </tr>
+      <tr>
+        <td><code>orderer-0</code></td><td>StatefulSet</td>
+        <td><span class="badge-err">CrashLoopBackOff</span></td>
+        <td><strong>BLOCKED — MSP crypto material not yet generated.</strong> Orderer cannot start without valid MSP certificates.</td>
+      </tr>
+      <tr>
+        <td><code>peer0-i3tech</code></td><td>Deployment/StatefulSet</td>
+        <td><span class="badge-warn">Deployed — Needs MSP</span></td>
+        <td>Peer is deployed but requires MSP crypto material from <code>i3tech-ca</code> before it can join channels.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h3>Planned Channels</h3>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Channel</th><th>Purpose</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td><code>membership</code></td><td>Verified member records (ward-level)</td><td><span class="badge-pending">Not yet created</span></td></tr>
+      <tr><td><code>nominations</code></td><td>Candidate nomination transactions</td><td><span class="badge-pending">Not yet created</span></td></tr>
+      <tr><td><code>primaries-2027</code></td><td>Primary ballot entries and result tally</td><td><span class="badge-pending">Not yet created</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h3>Planned Chaincode</h3>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Chaincode</th><th>Channel</th><th>Responsibility</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td><code>MembershipRegistry</code></td><td>membership</td><td>Create/query member records from hashed PII + ward metadata</td><td><span class="badge-pending">Not deployed</span></td></tr>
+      <tr><td><code>NominationManager</code></td><td>nominations</td><td>Submit and endorse candidate nominations</td><td><span class="badge-pending">Not deployed</span></td></tr>
+      <tr><td><code>PrimaryVoting</code></td><td>primaries-2027</td><td>Record and validate ballot entries</td><td><span class="badge-pending">Not deployed</span></td></tr>
+      <tr><td><code>ResultTally</code></td><td>primaries-2027</td><td>Aggregate and certify primary results</td><td><span class="badge-pending">Not deployed</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout">
+  <strong>🚨 Critical Blocker</strong>
+  The <code>orderer-0</code> CrashLoopBackOff means no channels can be created and no chaincode can be deployed. <strong>The entire blockchain layer is non-functional until MSP crypto is generated and mounted.</strong> See Section A9 for remediation steps.
+</div>
+
+
+<!-- A9 -->
+<h2 id="a9">A9. Completing the Blockchain Setup</h2>
+
+<p>The following tasks must be completed in order to bring the Hyperledger Fabric network fully operational. Work through them sequentially — each step depends on the previous one.</p>
+
+<h3>Step 1 — Generate MSP Crypto Material</h3>
+<p>Use <code>fabric-ca-client</code> to enrol the orderer and peer identities against the running CAs:</p>
+<pre><code># Enrol the FORD-Asili orderer identity against ford-ca
+fabric-ca-client enroll \
+  -u https://orderer:&lt;password&gt;@ford-ca.i3-ford.svc.cluster.local:7054 \
+  --caname ford-ca \
+  --mspdir /var/hyperledger/orderer/msp
+
+# Enrol the i3Tech peer identity against i3tech-ca
+fabric-ca-client enroll \
+  -u https://peer0:&lt;password&gt;@i3tech-ca.i3-ford.svc.cluster.local:7054 \
+  --caname i3tech-ca \
+  --mspdir /var/hyperledger/peer/msp</code></pre>
+
+<p>Mount the generated MSP directories into the respective pod volumes via Kubernetes Secrets or PVC.</p>
+
+<h3>Step 2 — Restart the Orderer</h3>
+<pre><code>kubectl rollout restart statefulset/orderer-0 -n i3-ford
+kubectl rollout status statefulset/orderer-0 -n i3-ford
+# Expected: statefulset rolling update complete</code></pre>
+
+<h3>Step 3 — Generate the System Channel Genesis Block</h3>
+<pre><code># Using configtxgen (ensure configtx.yaml is populated with org MSP paths)
+configtxgen \
+  -profile FordOrdererGenesis \
+  -channelID system-channel \
+  -outputBlock ./genesis.block
+
+# Copy genesis block into the orderer pod
+kubectl cp ./genesis.block i3-ford/&lt;orderer-pod&gt;:/var/hyperledger/orderer/</code></pre>
+
+<h3>Step 4 — Create Application Channels</h3>
+<pre><code># Create 'membership' channel
+peer channel create \
+  -o orderer-0.i3-ford.svc.cluster.local:7050 \
+  -c membership \
+  -f ./membership.tx \
+  --tls --cafile $ORDERER_TLS_CA
+
+# Peer joins the channel
+peer channel join -b membership.block
+
+# Repeat for 'nominations' and 'primaries-2027'</code></pre>
+
+<h3>Step 5 — Package and Deploy Chaincode</h3>
+<pre><code># Package MembershipRegistry chaincode
+peer lifecycle chaincode package membershipregistry.tar.gz \
+  --path ./chaincode/MembershipRegistry \
+  --lang node \
+  --label membershipregistry_1
+
+# Install on peer
+peer lifecycle chaincode install membershipregistry.tar.gz
+
+# Approve and commit (both orgs must approve)
+peer lifecycle chaincode approveformyorg ...
+peer lifecycle chaincode commit ...</code></pre>
+
+<div class="callout warn">
+  <strong>⚠️ Multi-Org Endorsement</strong>
+  All four chaincode packages require endorsement from <strong>both organisations</strong> (FORD org via <code>ford-ca</code> and i3Tech org via <code>i3tech-ca</code>). Coordinate approval calls between both org admins before committing each chaincode to a channel.
+</div>
+
+<h3>Completion Checklist</h3>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>#</th><th>Task</th><th>Owner</th><th>Done?</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Generate orderer MSP crypto from ford-ca</td><td>Infra Admin</td><td>☐</td></tr>
+      <tr><td>2</td><td>Generate peer0-i3tech MSP crypto from i3tech-ca</td><td>Infra Admin</td><td>☐</td></tr>
+      <tr><td>3</td><td>Mount MSP into orderer-0 StatefulSet and restart</td><td>Infra Admin</td><td>☐</td></tr>
+      <tr><td>4</td><td>Generate genesis block and create system channel</td><td>Blockchain Dev</td><td>☐</td></tr>
+      <tr><td>5</td><td>Create <code>membership</code> channel and join peer</td><td>Blockchain Dev</td><td>☐</td></tr>
+      <tr><td>6</td><td>Create <code>nominations</code> channel and join peer</td><td>Blockchain Dev</td><td>☐</td></tr>
+      <tr><td>7</td><td>Create <code>primaries-2027</code> channel and join peer</td><td>Blockchain Dev</td><td>☐</td></tr>
+      <tr><td>8</td><td>Deploy and commit <code>MembershipRegistry</code> chaincode</td><td>Blockchain Dev</td><td>☐</td></tr>
+      <tr><td>9</td><td>Deploy and commit <code>NominationManager</code> chaincode</td><td>Blockchain Dev</td><td>☐</td></tr>
+      <tr><td>10</td><td>Deploy and commit <code>PrimaryVoting</code> chaincode</td><td>Blockchain Dev</td><td>☐</td></tr>
+      <tr><td>11</td><td>Deploy and commit <code>ResultTally</code> chaincode</td><td>Blockchain Dev</td><td>☐</td></tr>
+      <tr><td>12</td><td>End-to-end registration test (register → verify OTP → blockchain tx confirmed)</td><td>QA</td><td>☐</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- A10 -->
+<h2 id="a10">A10. Operations: Pods, Logs &amp; API Testing</h2>
+
+<h3>Check Pod Status</h3>
+<pre><code># All pods in i3-ford namespace
+kubectl get pods -n i3-ford
+
+# Detailed pod description (for crash diagnosis)
+kubectl describe pod orderer-0-0 -n i3-ford
+
+# Watch for pod restarts in real time
+kubectl get pods -n i3-ford -w</code></pre>
+
+<h3>View Logs</h3>
+<pre><code># Orderer logs (crash reason)
+kubectl logs statefulset/orderer-0 -n i3-ford --previous
+
+# FORD API logs
+kubectl logs deployment/ford-api -n i3-ford --tail=200 -f
+
+# Fabric CA logs
+kubectl logs deployment/ford-ca -n i3-ford --tail=100</code></pre>
+
+<h3>Restart Components</h3>
+<pre><code># Restart API deployment
+kubectl rollout restart deployment/ford-api -n i3-ford
+
+# Restart CAs
+kubectl rollout restart deployment/ford-ca -n i3-ford
+kubectl rollout restart deployment/i3tech-ca -n i3-ford
+
+# Restart CouchDB
+kubectl rollout restart deployment/couchdb-i3tech -n i3-ford</code></pre>
+
+<h3>API Health Check</h3>
+<pre><code>curl -s https://ford.i3technologies.co.ke/health | jq .
+
+# Expected
+{
+  "status": "ok",
+  "db": "connected",
+  "blockchain": "pending_orderer",
+  "timestamp": "2026-11-15T08:30:00Z"
+}</code></pre>
+
+<h3>Database Access</h3>
+<pre><code># Connect to PostgreSQL
+psql -h &lt;db-host&gt; -U ford_app -d ford_members_db
+# Password: 85405f2aa77f4e7c87d183ad
+
+-- Check member counts by status
+SELECT status, COUNT(*) FROM members_pii GROUP BY status;
+
+-- Agent duty summary today (EAT)
+SELECT agent_id, COUNT(*) AS registrations_today
+FROM agent_duty_log
+WHERE DATE(created_at AT TIME ZONE 'Africa/Nairobi') = CURRENT_DATE AT TIME ZONE 'Africa/Nairobi'
+GROUP BY agent_id
+ORDER BY registrations_today DESC;</code></pre>
+
+<div class="callout warn">
+  <strong>⚠️ DB Credentials Security</strong>
+  The database password <code>85405f2aa77f4e7c87d183ad</code> must be stored in a Kubernetes Secret, not in ConfigMaps, environment variable literals in manifests, or source control. Rotate this password if you suspect it has been exposed.
+</div>
+
+
+<!-- A11 -->
+<h2 id="a11">A11. Keycloak Client — Action Required</h2>
+
+<div class="callout">
+  <strong>🚨 Action Required — ford-portal Client Secret Is Empty</strong>
+  The Keycloak client <code>ford-portal</code> currently has an <strong>empty client secret</strong>. This means the FORD API cannot perform OIDC token introspection or service-account calls to Keycloak. This must be resolved before the portal goes live.
+</div>
+
+<h3>Remediation Steps</h3>
+<ol class="steps">
+  <li>Log in to the Keycloak admin console as realm administrator.</li>
+  <li>Navigate to <strong>Clients → ford-portal → Credentials</strong> tab.</li>
+  <li>Click <strong>Regenerate Secret</strong>. Copy the generated secret immediately.</li>
+  <li>Store the secret in a Kubernetes Secret in the <code>i3-ford</code> namespace:<br>
+    <pre><code>kubectl create secret generic ford-keycloak-secret \
+  --from-literal=client_secret=&lt;regenerated_secret&gt; \
+  -n i3-ford</code></pre>
+  </li>
+  <li>Update the FORD API deployment to mount <code>ford-keycloak-secret</code> and reference it as the <code>KEYCLOAK_CLIENT_SECRET</code> environment variable.</li>
+  <li>Restart the API deployment: <code>kubectl rollout restart deployment/ford-api -n i3-ford</code>.</li>
+  <li>Test a login flow end-to-end: authenticate an agent via the portal and confirm the JWT is accepted by the API.</li>
+</ol>
+
+<h3>Keycloak Role Reference</h3>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Role</th><th>Assigned To</th><th>Permissions</th></tr></thead>
+    <tbody>
+      <tr><td><code>ford-member</code></td><td>Registered party members</td><td>Read-only portal access; view own membership status</td></tr>
+      <tr><td><code>ford-agent</code></td><td>Field registration agents</td><td>Register members, verify OTP, view own duty count</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- A12 -->
+<h2 id="a12">A12. Troubleshooting</h2>
+
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Problem</th><th>Likely Cause</th><th>Resolution</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>orderer-0</code> in CrashLoopBackOff</td>
+        <td>MSP crypto material missing or incorrectly mounted</td>
+        <td>Generate MSP via <code>fabric-ca-client enroll</code>, mount into StatefulSet volume, restart. See Section A9.</td>
+      </tr>
+      <tr>
+        <td>POST /register returns 401</td>
+        <td>JWT expired or Keycloak client secret empty</td>
+        <td>Re-authenticate agent. If all agents affected, check <code>ford-portal</code> client secret — see Section A11.</td>
+      </tr>
+      <tr>
+        <td>POST /register returns 429</td>
+        <td>Agent velocity cap reached (50/day)</td>
+        <td>Quota resets at 00:00 EAT. If legitimate overflow, request temporary cap raise with written approval.</td>
+      </tr>
+      <tr>
+        <td>POST /register returns 409 (flagged)</td>
+        <td>Duplicate national ID hash in members_pii</td>
+        <td>Query <code>members_pii</code> for the hash. Investigate agent for potential double-registration. Unflag via admin API if genuine error.</td>
+      </tr>
+      <tr>
+        <td>OTP SMS not received</td>
+        <td>i3 Engage webhook failure; incorrect phone number</td>
+        <td>Check <code>otp_verifications</code> table for the record. Check FORD API logs for webhook response. Verify ENGAGE_WEBHOOK_URL and token are correctly set.</td>
+      </tr>
+      <tr>
+        <td>OTP expired</td>
+        <td>5-minute window passed</td>
+        <td>Agent must re-register the member. The old <code>pending</code> record should be cleaned up by the expiry job.</td>
+      </tr>
+      <tr>
+        <td>Blockchain tx not confirming</td>
+        <td>Orderer down or channels not created</td>
+        <td>Check <code>/health</code> endpoint for <code>blockchain</code> field. If <code>pending_orderer</code>, complete blockchain setup (Section A9) first.</td>
+      </tr>
+      <tr>
+        <td>CouchDB not reachable from peer</td>
+        <td>Network policy or CouchDB crash</td>
+        <td><code>kubectl get pods -n i3-ford | grep couchdb</code>. Restart if not Running. Check peer env vars for CouchDB endpoint.</td>
+      </tr>
+      <tr>
+        <td>Agent duty-count shows wrong numbers</td>
+        <td>Timezone mismatch (EAT vs UTC)</td>
+        <td>Confirm all SQL day-boundary queries use <code>AT TIME ZONE 'Africa/Nairobi'</code>. Do not rely on server local time.</td>
+      </tr>
+      <tr>
+        <td>ford-portal login page error: "Client not found"</td>
+        <td>Keycloak client <code>ford-portal</code> not configured in realm</td>
+        <td>Verify realm name matches KEYCLOAK_REALM env var. Confirm client ID is exactly <code>ford-portal</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     PART B — FIELD AGENT USER GUIDE
+════════════════════════════════════════════════ -->
+<div class="part-header">Part B — Field Agent User Guide</div>
+
+<p style="margin-top:16px; color:#57606a;">
+  This section is written for FORD-Asili field registration agents. It explains your responsibilities, how to use the FORD Portal, and what to do when things go wrong. You do not need technical knowledge to follow this guide.
+</p>
+
+
+<!-- B1 -->
+<h2 id="b1">B1. Your Role as a Field Registration Agent</h2>
+
+<p>
+  As a FORD-Asili Field Registration Agent, you are on the front line of building FORD-Asili's membership base ahead of the <strong>2027 Kenya General Elections</strong>. Your job is to visit community members in your assigned ward, explain the FORD-Asili vision, and register willing members using the FORD Portal.
+</p>
+
+<h3>What You Are Responsible For</h3>
+<ul>
+  <li>Visiting members in your assigned <strong>ward</strong> and registering them accurately.</li>
+  <li>Ensuring the member provides a valid <strong>National ID number</strong> and <strong>phone number</strong>.</li>
+  <li>Confirming the member's <strong>OTP code</strong> to complete registration (see Section B3).</li>
+  <li>Staying within your daily registration quota (<strong>50 members per day</strong>).</li>
+  <li>Never registering a member without their knowledge and consent.</li>
+</ul>
+
+<div class="callout">
+  <strong>🚨 Important</strong>
+  Registering a person without their consent, or registering a fake person, is a criminal offence under Kenya's Elections Act. Your <strong>agent_id</strong> is permanently attached to every registration you make on the blockchain. Fraudulent registrations will be traced back to you.
+</div>
+
+<h3>Your Agent ID</h3>
+<p>
+  You were given an <strong>Agent ID</strong> (e.g., <code>AGT-00247</code>) when your account was created. This ID is automatically attached to every member you register. It is used to track your performance and your daily registration count.
+</p>
+
+
+<!-- B2 -->
+<h2 id="b2">B2. Registering a New Member</h2>
+
+<p>Follow these steps carefully to register a new FORD-Asili member:</p>
+
+<ol class="steps">
+  <li>
+    <strong>Open the FORD Portal</strong> on your phone or laptop.<br>
+    Go to: <code>https://ford.i3technologies.co.ke</code>
+  </li>
+  <li>
+    <strong>Log in</strong> using your agent username and password. If you have forgotten your password, contact your supervisor.
+  </li>
+  <li>
+    <strong>Tap "Register New Member"</strong> on the dashboard.
+  </li>
+  <li>
+    <strong>Fill in the member's details:</strong>
+    <ul>
+      <li>National ID Number (from their ID card — check carefully, no typos)</li>
+      <li>Phone Number (the number where they will receive an SMS — must be working)</li>
+      <li>Ward (your assigned ward — should be pre-filled)</li>
+      <li>Sub-County and County (should be pre-filled based on your profile)</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Tap "Submit Registration"</strong>. The system will send an SMS OTP to the member's phone.
+  </li>
+  <li>
+    <strong>Complete the OTP step</strong> — see Section B3 below.
+  </li>
+</ol>
+
+<div class="callout ok">
+  <strong>✅ Tip: Double-check Before Submitting</strong>
+  Read the National ID number and phone number back to the member before tapping Submit. A wrong ID number means the registration will be attached to the wrong person. There is no easy way to fix this after submission.
+</div>
+
+
+<!-- B3 -->
+<h2 id="b3">B3. The OTP Verification Process</h2>
+
+<p>
+  OTP stands for <em>One-Time Password</em>. It is a 6-digit code sent by SMS to the member's phone number. This code proves that the phone number belongs to the member and that they are present and consenting.
+</p>
+
+<h3>What Happens</h3>
+<ol class="steps">
+  <li>After you submit the registration form, the FORD system sends an SMS to the member's phone. The SMS will say something like: <em>"Your FORD-Asili verification code is 847291. Valid for 5 minutes."</em></li>
+  <li>Ask the member to read out the 6-digit code from their SMS.</li>
+  <li>Enter the 6-digit code into the "Verify OTP" box in the app and tap <strong>Confirm</strong>.</li>
+  <li>If correct, you will see a green <strong>"Registration Successful"</strong> message. The member is now registered.</li>
+</ol>
+
+<h3>What If the SMS Does Not Arrive?</h3>
+<ul>
+  <li>Wait up to 1 minute — SMS delivery can sometimes take a moment.</li>
+  <li>Check that the phone number entered was correct. Ask the member to confirm their number.</li>
+  <li>If the SMS still does not arrive after 2 minutes, tap <strong>"Resend OTP"</strong> if available, or cancel and re-submit the registration.</li>
+  <li>If the problem persists, note down the member's details and contact FORD support (Section B7).</li>
+</ul>
+
+<div class="callout">
+  <strong>⏱️ The OTP expires after 5 minutes.</strong>
+  If the member does not enter the code within 5 minutes, it will expire. You will need to start the registration again. Make sure the member is ready with their phone before you submit.
+</div>
+
+
+<!-- B4 -->
+<h2 id="b4">B4. Understanding Your Duty Count</h2>
+
+<p>
+  Your <strong>duty count</strong> shows how many members you have registered today. You can view it on the FORD Portal dashboard, or your supervisor can check it.
+</p>
+
+<h3>The Three Counts</h3>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Count</th><th>What It Means</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Verified</strong></td><td>Members who completed OTP verification. These are fully registered.</td></tr>
+      <tr><td><strong>Pending</strong></td><td>Members who were submitted but have not yet verified their OTP. Follow up with them!</td></tr>
+      <tr><td><strong>Flagged</strong></td><td>Registrations that were automatically flagged (see Section B5). These need admin review.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h3>The 50-Per-Day Limit</h3>
+<p>
+  You can register a maximum of <strong>50 members per day</strong>. This limit resets every day at midnight. If you reach 50, the system will not allow any more registrations until the next day.
+</p>
+<p>
+  This limit exists to ensure quality and prevent errors. If you genuinely have more than 50 people waiting to register in a single day, speak to your supervisor who can request a temporary increase through the proper channels.
+</p>
+
+
+<!-- B5 -->
+<h2 id="b5">B5. What Happens When a Registration Is Flagged</h2>
+
+<p>
+  A registration is automatically <strong>flagged</strong> by the system when it detects a potential problem — most commonly because the same National ID number has already been registered before.
+</p>
+
+<h3>Possible Reasons for Flagging</h3>
+<ul>
+  <li>The member has already been registered by another agent.</li>
+  <li>The member has already registered themselves previously.</li>
+  <li>There was a data entry error and the same person was submitted twice.</li>
+</ul>
+
+<h3>What To Do</h3>
+<ul>
+  <li>Tell the member the system has flagged their registration.</li>
+  <li>Do <strong>not</strong> try to register the same person again — it will flag again and may trigger a fraud alert on your account.</li>
+  <li>Record the member's name, the date, and the error message, and send this information to FORD support (Section B7).</li>
+  <li>An administrator will review the flagged record and either confirm the previous registration or clear the flag if it was an error.</li>
+</ul>
+
+<div class="callout warn">
+  <strong>⚠️ High Flag Rate = Investigation</strong>
+  If your account shows many flagged registrations, FORD headquarters may investigate your activities. Always register members accurately and with their consent.
+</div>
+
+
+<!-- B6 -->
+<h2 id="b6">B6. Accessing the FORD Portal</h2>
+
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Item</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td>Portal URL</td><td><code>https://ford.i3technologies.co.ke</code></td></tr>
+      <tr><td>Login Method</td><td>Username and password provided by FORD HQ</td></tr>
+      <tr><td>Supported Browsers</td><td>Chrome, Firefox, Safari (mobile or desktop)</td></tr>
+      <tr><td>App Version</td><td>Web app — no download required. Works on phones.</td></tr>
+      <tr><td>Offline Support</td><td>No — internet connection required for all registrations</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h3>Logging In</h3>
+<ol class="steps">
+  <li>Open your browser and go to <code>https://ford.i3technologies.co.ke</code>.</li>
+  <li>You will be redirected to the FORD-Asili login page.</li>
+  <li>Enter your <strong>username</strong> and <strong>password</strong> as provided by your supervisor.</li>
+  <li>You will see your agent dashboard showing your duty count and a button to register new members.</li>
+</ol>
+
+<h3>Forgotten Password</h3>
+<p>
+  If you cannot remember your password, do not try to guess it many times — your account may be locked. Contact your supervisor or FORD support (Section B7) to have your password reset.
+</p>
+
+
+<!-- B7 -->
+<h2 id="b7">B7. Help &amp; Support Contacts</h2>
+
+<div class="callout info">
+  <strong>ℹ️ Support Channels</strong>
+  For technical issues with the FORD Portal, contact the i3 Technologies support desk. For policy or membership queries, contact your FORD-Asili ward coordinator.
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Issue Type</th><th>Who to Contact</th><th>How</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Cannot log in / password reset</td>
+        <td>Your FORD Ward Supervisor</td>
+        <td>Phone or WhatsApp your supervisor directly</td>
+      </tr>
+      <tr>
+        <td>App error / technical bug</td>
+        <td>i3 Technologies Support</td>
+        <td>Email or helpdesk ticket via FORD Portal</td>
+      </tr>
+      <tr>
+        <td>OTP not arriving / SMS issues</td>
+        <td>i3 Technologies Support</td>
+        <td>Log the issue with member reference number</td>
+      </tr>
+      <tr>
+        <td>Flagged registration / suspected duplicate</td>
+        <td>FORD-Asili NEB Admin</td>
+        <td>Submit a written report to your ward coordinator</td>
+      </tr>
+      <tr>
+        <td>Member complaints about registration</td>
+        <td>FORD-Asili Ward Office</td>
+        <td>Direct member to their ward FORD office</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout ok">
+  <strong>✅ Remember Your Member Reference Number</strong>
+  Every successful registration generates a <strong>Member Reference Number</strong> (e.g., <code>MBR-2025-00912</code>). Always note this down for the member. It is their proof of registration and is needed for any follow-up queries.
+</div>
+
+<br>
+<div style="background:#f7f8fa; border:1px solid #e5e7eb; border-radius:8px; padding:20px 24px; margin-top:32px;">
+  <h3 style="margin-top:0; color:#cf222e;">Quick Reference Card — Field Agents</h3>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:13.5px;">
+    <div><strong>Portal URL:</strong><br><code>https://ford.i3technologies.co.ke</code></div>
+    <div><strong>Daily Registration Limit:</strong><br>50 members per day (resets midnight EAT)</div>
+    <div><strong>OTP Expiry:</strong><br>5 minutes from SMS receipt</div>
+    <div><strong>2027 Election Date:</strong><br>16 March 2027</div>
+    <div><strong>My Agent ID:</strong><br>______________________</div>
+    <div><strong>My Ward:</strong><br>______________________</div>
+  </div>
+</div>
+
+</div><!-- end .page -->
+
+<footer>
+  Made with IBM Bob | Component 12 of 14
+</footer>
+
+</body>
+</html>

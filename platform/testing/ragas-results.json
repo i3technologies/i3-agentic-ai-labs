@@ -1,0 +1,19 @@
+{
+  "admissions": {
+    "agent": "admissions",
+    "n_pairs": 30,
+    "faithfulness": 0.8028,
+    "answer_relevancy": 0.4068,
+    "faithfulness_pass": true,
+    "relevancy_pass": false
+  },
+  "pmaas": {
+    "agent": "pmaas",
+    "n_pairs": 20,
+    "faithfulness": 0.5292,
+    "answer_relevancy": 0.477,
+    "faithfulness_pass": false,
+    "relevancy_pass": false
+  },
+  "gate_passed": false
+}

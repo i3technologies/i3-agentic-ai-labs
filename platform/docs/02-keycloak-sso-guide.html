@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>i3 Platform — Component 02: Keycloak / SSO</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.7;background:#fff;color:#1f2328}
+.wrap{max-width:860px;margin:0 auto;padding:40px 20px}
+h1{font-size:24px;font-weight:800;margin-bottom:4px;color:#7c5cd8}
+h2{font-size:18px;font-weight:700;margin:36px 0 12px;padding-bottom:6px;border-bottom:2px solid #7c5cd8;color:#7c5cd8}
+h3{font-size:15px;font-weight:700;margin:20px 0 8px}
+h4{font-size:13px;font-weight:700;margin:14px 0 6px;color:#57606a;text-transform:uppercase;letter-spacing:.04em}
+p{margin-bottom:10px}
+ul,ol{padding-left:20px;margin-bottom:10px}
+li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px}
+th{background:#7c5cd8;color:#fff;text-align:left;padding:8px 12px;font-weight:600}
+td{padding:8px 12px;border:1px solid #e5e7eb;vertical-align:top}
+tr:nth-child(even) td{background:#f7f8fa}
+code{font-family:"Consolas","Courier New",monospace;font-size:12px;background:#f0eeff;padding:2px 6px;border-radius:3px;border:1px solid #d2b6ff}
+pre{background:#1f2328;color:#e8f4fd;padding:16px;border-radius:6px;font-size:12px;overflow-x:auto;margin-bottom:14px;line-height:1.6}
+pre code{background:none;border:none;color:inherit;padding:0}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.b-green{background:#dafbe1;color:#1a7f37}
+.b-blue{background:#ddf4ff;color:#0550ae}
+.b-purple{background:#f0eeff;color:#7c5cd8}
+.note{background:#f0eeff;border-left:4px solid #7c5cd8;padding:12px 16px;margin:14px 0;border-radius:0 6px 6px 0;font-size:13px}
+.warn{background:#fff8c5;border-left:4px solid #d4a72c;padding:12px 16px;margin:14px 0;border-radius:0 6px 6px 0;font-size:13px}
+.danger{background:#ffebe9;border-left:4px solid #cf222e;padding:12px 16px;margin:14px 0;border-radius:0 6px 6px 0;font-size:13px}
+.cover{background:linear-gradient(135deg,#7c5cd8,#a78bfa);color:#fff;padding:36px 30px;border-radius:8px;margin-bottom:36px}
+.cover h1{color:#fff;font-size:28px}
+.toc{background:#f7f8fa;border:1px solid #e5e7eb;padding:20px;border-radius:6px;margin-bottom:30px}
+.toc h3{margin-top:0;color:#7c5cd8}
+.step{counter-increment:step;display:flex;gap:14px;margin-bottom:18px}
+.step-num{background:#7c5cd8;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;margin-top:2px}
+footer{margin-top:48px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:center;font-size:12px;color:#57606a}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="cover">
+  <div style="font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">i3 Technologies Ltd — Confidential</div>
+  <h1>i3 Agentic AI Platform</h1>
+  <div style="font-size:18px;font-weight:600;margin-top:6px">Component 02: Identity &amp; Single Sign-On</div>
+  <div style="font-size:14px;opacity:.85;margin-top:4px">Keycloak / Red Hat SSO — Admin &amp; User Guide</div>
+  <div style="font-size:12px;opacity:.7;margin-top:14px">Namespace: i3-auth &nbsp;|&nbsp; Version: Red Hat SSO (Keycloak 18+ compatible)</div>
+</div>
+
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <ol>
+    <li>Overview &amp; Purpose</li>
+    <li>Access URLs &amp; Admin Credentials</li>
+    <li>Realm Architecture</li>
+    <li>Registered Clients (All Applications)</li>
+    <li>Admin Guide — User Management</li>
+    <li>Admin Guide — Creating New Clients</li>
+    <li>Admin Guide — Roles &amp; Groups</li>
+    <li>Admin Guide — Operations &amp; Troubleshooting</li>
+    <li>User Guide — Logging In to Any i3 Application</li>
+    <li>User Guide — Password Reset</li>
+    <li>User Guide — Profile Management</li>
+  </ol>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>1. Overview &amp; Purpose</h2>
+<p>Keycloak (deployed as Red Hat SSO) is the <strong>centralised identity and access management (IAM)</strong> service for the entire i3 Platform. All 27 applications use Keycloak for authentication via <strong>OpenID Connect (OIDC)</strong> and <strong>OAuth 2.0</strong>.</p>
+<p>Users log in <strong>once</strong> at the SSO portal and gain access to all authorised applications without re-entering credentials — this is <strong>Single Sign-On (SSO)</strong>.</p>
+
+<table>
+  <tr><th>Feature</th><th>Description</th></tr>
+  <tr><td>Protocol</td><td>OpenID Connect 1.0 / OAuth 2.0 / SAML 2.0</td></tr>
+  <tr><td>SSO realm</td><td><code>i3</code> (all platform apps)</td></tr>
+  <tr><td>Master realm</td><td>Admin-only realm for Keycloak configuration</td></tr>
+  <tr><td>User federation</td><td>Local database (LDAP federation available if needed)</td></tr>
+  <tr><td>MFA</td><td>TOTP (Google Authenticator / Authy) — configurable per role</td></tr>
+  <tr><td>Token lifespan</td><td>Access token: 5 min | Refresh token: 30 min | SSO session: 8 hrs</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>2. Access URLs &amp; Admin Credentials</h2>
+
+<table>
+  <tr><th>URL</th><th>Purpose</th></tr>
+  <tr><td><a href="https://sso.i3technologies.co.ke">https://sso.i3technologies.co.ke</a></td><td><strong>Primary SSO login page</strong> — users go here</td></tr>
+  <tr><td><a href="https://keycloak.i3technologies.co.ke">https://keycloak.i3technologies.co.ke</a></td><td>Keycloak Admin Console — admin configuration</td></tr>
+  <tr><td><a href="https://sso.i3technologies.co.ke/auth/realms/i3/.well-known/openid-configuration">OIDC Discovery</a></td><td>OpenID Connect metadata endpoint</td></tr>
+</table>
+
+<div class="danger">
+  <strong>Admin Credentials — RESTRICTED ACCESS</strong><br/>
+  Username: <code>admin</code><br/>
+  Password: <code>REDACTED-keycloak-admin</code><br/>
+  <em>These credentials give full control over all users and application access. Share only with senior IT staff.</em>
+</div>
+
+<div class="note">
+  <strong>Issuer URL (for OIDC configuration):</strong> <code>https://sso.i3technologies.co.ke/auth/realms/i3</code><br/>
+  All applications use this as their <code>KEYCLOAK_ISSUER</code> or <code>KC_ISSUER</code> environment variable.
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>3. Realm Architecture</h2>
+
+<table>
+  <tr><th>Realm</th><th>Purpose</th><th>Who uses it</th></tr>
+  <tr><td><code>master</code></td><td>Keycloak admin realm</td><td>IT Administrators only — never use for app logins</td></tr>
+  <tr><td><code>i3</code></td><td>All platform applications</td><td>All staff, students, clients, and external users</td></tr>
+</table>
+
+<h3>i3 Realm — Key Configuration</h3>
+<ul>
+  <li><strong>Display name:</strong> i3 Technologies Platform</li>
+  <li><strong>Login page URL:</strong> <code>https://sso.i3technologies.co.ke/auth/realms/i3/account</code></li>
+  <li><strong>Account console:</strong> <code>https://sso.i3technologies.co.ke/auth/realms/i3/account/</code></li>
+  <li><strong>Registration:</strong> Enabled (new users can self-register, subject to email verification)</li>
+  <li><strong>Email sender:</strong> Brevo SMTP (<code>smtp-relay.brevo.com:587</code>)</li>
+</ul>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>4. Registered Clients (All Applications)</h2>
+<table>
+  <tr><th>Client ID</th><th>Application</th><th>Type</th><th>Keycloak Secret Location</th></tr>
+  <tr><td><code>evalos-spa</code></td><td>EvalOS Assessment Platform</td><td>Public (SPA)</td><td>evalos-web-secrets / i3-evalos</td></tr>
+  <tr><td><code>engage-web</code></td><td>Engage Communication Hub</td><td>Confidential</td><td>engage-secrets / i3-engage</td></tr>
+  <tr><td><code>pmaas-web</code></td><td>PMaaS Project Management</td><td>Confidential</td><td>pmaas-secrets / i3-pmaas</td></tr>
+  <tr><td><code>jupyterhub</code></td><td>JupyterHub AI Lab</td><td>Confidential</td><td>ai-lab namespace</td></tr>
+  <tr><td><code>open-webui-sage</code></td><td>Sage (Open WebUI)</td><td>Confidential</td><td>i3-ai-lab namespace</td></tr>
+  <tr><td><code>i3edbridge</code></td><td>Moodle / EdBridge LMS</td><td>Confidential</td><td>edbridge-secrets / i3-edbridge</td></tr>
+  <tr><td><code>i3social</code></td><td>Nextcloud Collaboration</td><td>Confidential</td><td>social-secrets / i3-social</td></tr>
+  <tr><td><code>directus-cms</code></td><td>Directus CMS</td><td>Confidential</td><td>directus-secrets / i3-ott</td></tr>
+  <tr><td><code>litellm-service</code></td><td>LiteLLM Gateway</td><td>Confidential</td><td>litellm-secrets / i3-model-gateway</td></tr>
+  <tr><td><code>i3smartlab</code></td><td>SmartLab API</td><td>Confidential</td><td>smartlab-secrets / i3-smartlab</td></tr>
+  <tr><td><code>admissions-widget</code></td><td>Admissions Agent</td><td>Confidential</td><td>i3-admissions namespace</td></tr>
+  <tr><td><code>sit-web</code></td><td>SIT Work-Centers Portal</td><td>Confidential</td><td>sit-secrets / i3-sit</td></tr>
+  <tr><td><code>talent-web</code></td><td>Talent Cloud Portal</td><td>Confidential</td><td>talent-secrets / i3-talent</td></tr>
+  <tr><td><code>ford-portal</code></td><td>FORD-Asili Member Portal</td><td>Confidential</td><td>ford-secrets / i3-ford</td></tr>
+  <tr><td><code>i3-ar-server</code></td><td>MCP Gateway (i3-AR)</td><td>Confidential</td><td>i3-ar-secrets / i3-ar</td></tr>
+  <tr><td><code>i3-code-cli</code></td><td>i3-code Developer CLI</td><td>Public (device flow)</td><td>CLI config</td></tr>
+  <tr><td><code>dawa</code></td><td>Dawa AI (PMaaS coworker)</td><td>Confidential</td><td>i3-pmaas namespace</td></tr>
+  <tr><td><code>nuru</code></td><td>Nuru AI (Engage coworker)</td><td>Confidential</td><td>i3-engage namespace</td></tr>
+  <tr><td><code>mfumo</code></td><td>Mfumo AI (AfroERP coworker)</td><td>Confidential</td><td>i3-afroerp namespace</td></tr>
+  <tr><td><code>zuri</code></td><td>Zuri AI (EvalOS coworker)</td><td>Confidential</td><td>i3-evalos namespace</td></tr>
+  <tr><td><code>ai-lab-workbench</code></td><td>AI Lab general</td><td>Confidential</td><td>i3-ai-lab namespace</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>5. Admin Guide — User Management</h2>
+
+<h3>Creating a New User (Admin Console)</h3>
+<div class="step"><div class="step-num">1</div><div>Go to <a href="https://keycloak.i3technologies.co.ke">keycloak.i3technologies.co.ke</a> → Log in with admin credentials above.</div></div>
+<div class="step"><div class="step-num">2</div><div>In the top-left dropdown, select realm <strong>"i3"</strong> (not "master").</div></div>
+<div class="step"><div class="step-num">3</div><div>Left sidebar → <strong>Users</strong> → <strong>Add User</strong>.</div></div>
+<div class="step"><div class="step-num">4</div><div>Fill in: <strong>Username</strong> (required), <strong>Email</strong>, <strong>First Name</strong>, <strong>Last Name</strong>. Set <strong>Email Verified = ON</strong>. Click <strong>Save</strong>.</div></div>
+<div class="step"><div class="step-num">5</div><div>Go to <strong>Credentials</strong> tab → <strong>Set Password</strong>. Uncheck "Temporary" if you want a permanent password. Click <strong>Save Password</strong>.</div></div>
+<div class="step"><div class="step-num">6</div><div>Go to <strong>Role Mappings</strong> tab → assign appropriate roles (see Section 7).</div></div>
+
+<h3>Resetting a User Password (Admin)</h3>
+<div class="step"><div class="step-num">1</div><div>Realm i3 → Users → find the user → click their username.</div></div>
+<div class="step"><div class="step-num">2</div><div>Credentials tab → <strong>Reset Password</strong>. Enter new password. Toggle "Temporary" ON to force change at next login.</div></div>
+<div class="step"><div class="step-num">3</div><div>Click <strong>Reset Password</strong> → Confirm.</div></div>
+
+<h3>Disabling / Deleting a User</h3>
+<ul>
+  <li><strong>Disable:</strong> Users → click user → Details tab → set <strong>Enabled = OFF</strong> → Save. The user can no longer log in but their data is retained.</li>
+  <li><strong>Delete:</strong> Users → click user → Actions dropdown → Delete. This is <strong>irreversible</strong>.</li>
+</ul>
+
+<h3>Finding a User</h3>
+<pre><code># Via Admin API (useful for bulk queries)
+# Get token first
+TOKEN=$(curl -s -d "username=admin&password=REDACTED-keycloak-admin&grant_type=password&client_id=admin-cli" \
+  https://sso.i3technologies.co.ke/auth/realms/master/protocol/openid-connect/token | jq -r .access_token)
+
+# Search users by email
+curl -s -H "Authorization: Bearer $TOKEN" \
+  "https://sso.i3technologies.co.ke/auth/admin/realms/i3/users?email=user@example.com"</code></pre>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>6. Admin Guide — Creating New OIDC Clients</h2>
+
+<div class="step"><div class="step-num">1</div><div>Realm i3 → Left sidebar → <strong>Clients</strong> → <strong>Create Client</strong>.</div></div>
+<div class="step"><div class="step-num">2</div><div>Set <strong>Client type = OpenID Connect</strong>, enter <strong>Client ID</strong> (e.g. <code>my-new-app</code>). Click Next.</div></div>
+<div class="step"><div class="step-num">3</div><div>Authentication flow: enable <strong>Standard flow</strong> (web apps) and/or <strong>Service accounts</strong> (M2M). Click Next.</div></div>
+<div class="step"><div class="step-num">4</div><div>Set <strong>Root URL</strong> and <strong>Valid redirect URIs</strong> (e.g. <code>https://myapp.i3technologies.co.ke/*</code>). Set <strong>Web origins</strong> to <code>+</code>. Click Save.</div></div>
+<div class="step"><div class="step-num">5</div><div>Go to <strong>Credentials</strong> tab → copy the <strong>Client Secret</strong>. Store it in a Kubernetes secret in your app's namespace.</div></div>
+<div class="step"><div class="step-num">6</div><div>Configure your app with: <code>KEYCLOAK_ISSUER=https://sso.i3technologies.co.ke/auth/realms/i3</code>, <code>KEYCLOAK_CLIENT_ID=my-new-app</code>, <code>KEYCLOAK_CLIENT_SECRET=&lt;secret&gt;</code>.</div></div>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>7. Admin Guide — Roles &amp; Groups</h2>
+
+<h3>Platform Roles (Realm-Level)</h3>
+<table>
+  <tr><th>Role</th><th>Description</th><th>Typical Assignees</th></tr>
+  <tr><td><code>i3-admin</code></td><td>Full platform administrator</td><td>IT team leads</td></tr>
+  <tr><td><code>i3-staff</code></td><td>i3 Technologies staff member</td><td>All i3 employees</td></tr>
+  <tr><td><code>i3-trainer</code></td><td>Course instructor / trainer</td><td>SIT trainers, EvalOS instructors</td></tr>
+  <tr><td><code>i3-learner</code></td><td>Student / learner</td><td>SIT students, EvalOS candidates</td></tr>
+  <tr><td><code>i3-client</code></td><td>External client user</td><td>PMaaS clients, AfroERP users</td></tr>
+  <tr><td><code>i3-developer</code></td><td>Developer — API access, CLI</td><td>Developers using i3-code CLI</td></tr>
+  <tr><td><code>ford-member</code></td><td>FORD registered member</td><td>Ward-level political members</td></tr>
+  <tr><td><code>ford-agent</code></td><td>FORD field registration agent</td><td>Agents registering new members</td></tr>
+  <tr><td><code>talent-candidate</code></td><td>Job candidate profile</td><td>Talent Cloud job seekers</td></tr>
+  <tr><td><code>talent-recruiter</code></td><td>Recruiter / HR</td><td>Companies hiring via Talent Cloud</td></tr>
+</table>
+
+<h3>Creating a Group</h3>
+<ol>
+  <li>Realm i3 → <strong>Groups</strong> → <strong>Create Group</strong></li>
+  <li>Name the group (e.g. "SIT-Trainers-Nairobi")</li>
+  <li>Click the group → <strong>Role Mappings</strong> → assign relevant roles</li>
+  <li>Add users to the group via <strong>Members</strong> tab</li>
+</ol>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>8. Admin Guide — Operations &amp; Troubleshooting</h2>
+
+<h3>Check Keycloak Pod Health</h3>
+<pre><code>$env:KUBECONFIG = "$env:USERPROFILE\.bluemix\plugins\container-service\clusters\i3-platform-da0umukf0anep6valpig-admin\kube-config.yaml"
+oc get pods -n i3-auth --no-headers
+oc logs keycloak-0 -n i3-auth --tail=30</code></pre>
+
+<h3>Restart Keycloak</h3>
+<pre><code># Keycloak is deployed as a StatefulSet
+oc rollout restart statefulset/keycloak -n i3-auth
+oc rollout status statefulset/keycloak -n i3-auth</code></pre>
+
+<h3>Export Realm Configuration (Backup)</h3>
+<pre><code># Export the i3 realm as a JSON backup
+oc exec keycloak-0 -n i3-auth -- /opt/keycloak/bin/kc.sh export \
+  --dir /tmp/realm-export --realm i3
+oc cp i3-auth/keycloak-0:/tmp/realm-export/i3-realm.json ./i3-realm-backup.json</code></pre>
+
+<h3>Common Issues</h3>
+<table>
+  <tr><th>Symptom</th><th>Likely Cause</th><th>Fix</th></tr>
+  <tr><td>Login page shows error</td><td>Keycloak pod restarting</td><td><code>oc get pods -n i3-auth</code> → wait for Running, or rollout restart</td></tr>
+  <tr><td>"Invalid redirect_uri"</td><td>App redirect URI not registered in client config</td><td>Admin Console → Client → Valid Redirect URIs → add the URL</td></tr>
+  <tr><td>"Client not found"</td><td>Wrong Client ID in app config</td><td>Verify client ID in Admin Console → Clients list</td></tr>
+  <tr><td>Token expired errors</td><td>Token lifespan too short for use case</td><td>Realm Settings → Tokens → increase Access Token Lifespan</td></tr>
+  <tr><td>User locked out</td><td>Too many failed logins (brute force protection)</td><td>Admin Console → Users → find user → Actions → Clear Login Failures</td></tr>
+  <tr><td>SSO session not sharing across apps</td><td>Different realm or cookie domain</td><td>Ensure all apps use <code>sso.i3technologies.co.ke/auth/realms/i3</code></td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>9. User Guide — Logging In to Any i3 Application</h2>
+<p>All i3 platform applications share a single login. You only need <strong>one username and password</strong>.</p>
+
+<h3>How to Log In</h3>
+<div class="step"><div class="step-num">1</div><div>Open any i3 application — e.g. <a href="https://evalos.i3technologies.co.ke">evalos.i3technologies.co.ke</a></div></div>
+<div class="step"><div class="step-num">2</div><div>Click <strong>"Log In"</strong> or <strong>"Sign In"</strong>. You will be redirected to the i3 SSO login page at <strong>sso.i3technologies.co.ke</strong></div></div>
+<div class="step"><div class="step-num">3</div><div>Enter your <strong>username</strong> (or email address) and <strong>password</strong>. Click <strong>Sign In</strong>.</div></div>
+<div class="step"><div class="step-num">4</div><div>You are automatically redirected back to the application you were trying to use — <strong>logged in</strong>.</div></div>
+<div class="step"><div class="step-num">5</div><div>Open any other i3 application in the same browser — you are already logged in (SSO). No need to enter your password again.</div></div>
+
+<div class="note"><strong>Session Duration:</strong> Your session remains active for 8 hours. After that, you will be asked to log in again.</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>10. User Guide — Password Reset</h2>
+
+<h3>Self-Service Reset (if you know your current password)</h3>
+<div class="step"><div class="step-num">1</div><div>Go to <a href="https://sso.i3technologies.co.ke/auth/realms/i3/account/">sso.i3technologies.co.ke/auth/realms/i3/account/</a></div></div>
+<div class="step"><div class="step-num">2</div><div>Log in with your current credentials.</div></div>
+<div class="step"><div class="step-num">3</div><div>Click <strong>Account Security</strong> → <strong>Signing In</strong> → <strong>Update Password</strong>.</div></div>
+<div class="step"><div class="step-num">4</div><div>Enter your current password, then your new password twice. Click <strong>Submit</strong>.</div></div>
+
+<h3>Forgot Password</h3>
+<div class="step"><div class="step-num">1</div><div>Go to any i3 application → click <strong>Sign In</strong> → on the login page click <strong>"Forgot Password?"</strong></div></div>
+<div class="step"><div class="step-num">2</div><div>Enter your email address and click <strong>Submit</strong>.</div></div>
+<div class="step"><div class="step-num">3</div><div>Check your email for a password reset link from <code>noreply@i3technologies.co.ke</code>. Click the link within 30 minutes.</div></div>
+<div class="step"><div class="step-num">4</div><div>Enter and confirm your new password. You are now logged in.</div></div>
+
+<div class="warn"><strong>No email received?</strong> Check your spam/junk folder. If still not received, contact your IT administrator to reset your password manually.</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<h2>11. User Guide — Profile Management</h2>
+
+<h3>Updating Your Profile</h3>
+<div class="step"><div class="step-num">1</div><div>Go to <a href="https://sso.i3technologies.co.ke/auth/realms/i3/account/">sso.i3technologies.co.ke/auth/realms/i3/account/</a></div></div>
+<div class="step"><div class="step-num">2</div><div>Click <strong>Personal Info</strong> to update your name, email address, and phone number.</div></div>
+<div class="step"><div class="step-num">3</div><div>Click <strong>Save</strong>. Changes apply immediately across all i3 applications.</div></div>
+
+<h3>Setting Up Two-Factor Authentication (2FA)</h3>
+<div class="step"><div class="step-num">1</div><div>Account page → <strong>Account Security</strong> → <strong>Signing In</strong> → find <strong>"Authenticator Application"</strong> → click <strong>Set up Authenticator Application</strong>.</div></div>
+<div class="step"><div class="step-num">2</div><div>Install <strong>Google Authenticator</strong> or <strong>Authy</strong> on your phone.</div></div>
+<div class="step"><div class="step-num">3</div><div>Scan the QR code shown on screen with your authenticator app.</div></div>
+<div class="step"><div class="step-num">4</div><div>Enter the 6-digit code from your app to verify. Click <strong>Submit</strong>.</div></div>
+<div class="step"><div class="step-num">5</div><div>From now on, every login will require both your password and the 6-digit code from your app.</div></div>
+
+<h3>Viewing Your Active Sessions</h3>
+<p>Account page → <strong>Account Security</strong> → <strong>Device Activity</strong>. You can see all active sessions across devices. Click <strong>Sign Out All Devices</strong> if you suspect unauthorised access.</p>
+
+<footer>Made with IBM Bob &nbsp;|&nbsp; i3 Technologies Ltd — Confidential &nbsp;|&nbsp; Component 02 of 14</footer>
+</div>
+</body>
+</html>

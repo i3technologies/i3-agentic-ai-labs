@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>i3 Platform — Component 01: Platform Overview & Infrastructure</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.7;background:#fff;color:#1f2328}
+.wrap{max-width:860px;margin:0 auto;padding:40px 20px}
+h1{font-size:24px;font-weight:800;margin-bottom:4px;color:#0550ae}
+h2{font-size:18px;font-weight:700;margin:36px 0 12px;padding-bottom:6px;border-bottom:2px solid #0550ae;color:#0550ae}
+h3{font-size:15px;font-weight:700;margin:20px 0 8px;color:#1f2328}
+h4{font-size:13px;font-weight:700;margin:14px 0 6px;color:#57606a;text-transform:uppercase;letter-spacing:.04em}
+p{margin-bottom:10px}
+ul,ol{padding-left:20px;margin-bottom:10px}
+li{margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px}
+th{background:#0550ae;color:#fff;text-align:left;padding:8px 12px;font-weight:600}
+td{padding:8px 12px;border:1px solid #e5e7eb;vertical-align:top}
+tr:nth-child(even) td{background:#f7f8fa}
+code{font-family:"Consolas","Courier New",monospace;font-size:12px;background:#f0f6ff;padding:2px 6px;border-radius:3px;border:1px solid #b6d4fe}
+pre{background:#1f2328;color:#e8f4fd;padding:16px;border-radius:6px;font-size:12px;overflow-x:auto;margin-bottom:14px;line-height:1.6}
+pre code{background:none;border:none;color:inherit;padding:0}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.b-green{background:#dafbe1;color:#1a7f37}
+.b-blue{background:#ddf4ff;color:#0550ae}
+.b-yellow{background:#fff8c5;color:#9a6700}
+.b-red{background:#ffebe9;color:#cf222e}
+.note{background:#ddf4ff;border-left:4px solid #0550ae;padding:12px 16px;margin:14px 0;border-radius:0 6px 6px 0;font-size:13px}
+.warn{background:#fff8c5;border-left:4px solid #d4a72c;padding:12px 16px;margin:14px 0;border-radius:0 6px 6px 0;font-size:13px}
+.danger{background:#ffebe9;border-left:4px solid #cf222e;padding:12px 16px;margin:14px 0;border-radius:0 6px 6px 0;font-size:13px}
+.toc{background:#f7f8fa;border:1px solid #e5e7eb;padding:20px;border-radius:6px;margin-bottom:30px}
+.toc h3{margin-top:0;color:#0550ae}
+.toc ol{margin-bottom:0}
+.cover{background:linear-gradient(135deg,#0550ae,#3b82d4);color:#fff;padding:36px 30px;border-radius:8px;margin-bottom:36px}
+.cover h1{color:#fff;font-size:28px}
+.cover .sub{font-size:14px;opacity:.85;margin-top:8px}
+.cover .meta{font-size:12px;opacity:.7;margin-top:16px}
+.arch-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.arch-card{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:14px}
+.arch-card h4{margin-top:0;color:#0550ae;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.arch-card ul{margin-bottom:0;font-size:13px}
+.ns-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f0f0f0}
+.ns-name{font-family:monospace;font-size:12px;background:#f0f6ff;padding:2px 6px;border-radius:3px;min-width:160px}
+footer{margin-top:48px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:center;font-size:12px;color:#57606a}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="cover">
+  <div style="font-size:11px;opacity:.7;margin-bottom:8px;text-transform:uppercase;letter-spacing:.1em">i3 Technologies Ltd — Confidential</div>
+  <h1>i3 Agentic AI Platform</h1>
+  <div style="font-size:18px;font-weight:600;margin-top:6px">Component 01: Platform Overview &amp; Infrastructure</div>
+  <div class="sub">Administrator &amp; Operations Technical Reference Guide</div>
+  <div class="meta">Cluster: IBM ROKS Frankfurt (eu-de) &nbsp;|&nbsp; OpenShift 4.17 / Kubernetes 1.30 &nbsp;|&nbsp; Document Date: September 2026</div>
+</div>
+
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <ol>
+    <li>Platform Mission &amp; Architecture Summary</li>
+    <li>IBM ROKS Cluster Details</li>
+    <li>Node Topology</li>
+    <li>Namespace Map</li>
+    <li>Load Balancer &amp; DNS Architecture</li>
+    <li>Storage Architecture</li>
+    <li>Networking &amp; Security Model</li>
+    <li>Cluster Access &amp; kubeconfig</li>
+    <li>Key Internal Service Addresses</li>
+    <li>Daily Operations Runbook</li>
+    <li>Monitoring &amp; Alerting</li>
+    <li>Backup Strategy</li>
+    <li>Disaster Recovery</li>
+  </ol>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>1. Platform Mission &amp; Architecture Summary</h2>
+<p>The <strong>i3 Agentic AI Platform</strong> is a multi-tenant, cloud-native AI infrastructure hosted on IBM Red Hat OpenShift Kubernetes Service (ROKS) in the <strong>Frankfurt (eu-de) region</strong>. It serves as the unified technology backbone for i3 Technologies Ltd and its ecosystem of products and clients.</p>
+
+<p>The platform delivers the following capabilities from a single OpenShift cluster:</p>
+
+<div class="arch-grid">
+  <div class="arch-card">
+    <h4>AI &amp; LLM Services</h4>
+    <ul>
+      <li>LiteLLM multi-model proxy gateway</li>
+      <li>Ollama local LLM server (Mistral, Granite)</li>
+      <li>Open WebUI (Sage) — chat interface</li>
+      <li>JupyterHub — AI notebook environment</li>
+      <li>ChromaDB — vector database</li>
+      <li>Langfuse — LLM observability</li>
+    </ul>
+  </div>
+  <div class="arch-card">
+    <h4>Business Applications</h4>
+    <ul>
+      <li>EvalOS — AI-powered assessment platform</li>
+      <li>PMaaS — Project &amp; campaign management</li>
+      <li>AfroERP (ERPNext) — Enterprise ERP</li>
+      <li>Moodle (EdBridge) — Learning management</li>
+      <li>Engage — WhatsApp/SMS/email hub</li>
+      <li>Nextcloud — Collaboration &amp; storage</li>
+    </ul>
+  </div>
+  <div class="arch-card">
+    <h4>New Platform Services (2026)</h4>
+    <ul>
+      <li>SIT Digital Work-Centers — TVET/eCitizen</li>
+      <li>Talent Cloud — Candidate &amp; job matching</li>
+      <li>FORD-Asili — Blockchain membership/PMaaS</li>
+      <li>MCP Gateway (i3-AR) — Agentic runtime</li>
+      <li>SmartLab — IoT/lab management API</li>
+      <li>Voice STT/TTS — Speech services</li>
+    </ul>
+  </div>
+  <div class="arch-card">
+    <h4>Platform Infrastructure</h4>
+    <ul>
+      <li>Keycloak / Red Hat SSO — Identity &amp; auth</li>
+      <li>PostgreSQL HA — Primary database cluster</li>
+      <li>SeaweedFS — Distributed object storage</li>
+      <li>Kafka — Event streaming</li>
+      <li>OpenBao (Vault) — Secrets management</li>
+      <li>Grafana / Prometheus — Observability</li>
+      <li>ArgoCD — GitOps deployment</li>
+      <li>n8n — Workflow automation</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>2. IBM ROKS Cluster Details</h2>
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Cluster Name</td><td><code>i3-platform</code></td></tr>
+  <tr><td>Cluster ID</td><td><code>da0umukf0anep6valpig</code></td></tr>
+  <tr><td>Cloud Provider</td><td>IBM Cloud VPC — Frankfurt (eu-de)</td></tr>
+  <tr><td>Platform</td><td>Red Hat OpenShift 4.17.56</td></tr>
+  <tr><td>Kubernetes</td><td>v1.30.14</td></tr>
+  <tr><td>API Endpoint</td><td><code>https://c113-e.eu-de.containers.cloud.ibm.com:32581</code></td></tr>
+  <tr><td>Console URL</td><td><code>https://console-openshift-console.i3-platform-bcc5f5bc822da314835720fd0c9856ce-0000.eu-de.containers.appdomain.cloud</code></td></tr>
+  <tr><td>IBM Cloud Dashboard</td><td><code>https://cloud.ibm.com/kubernetes/clusters/da0umukf0anep6valpig/overview</code></td></tr>
+  <tr><td>Cluster ingress domain</td><td><code>i3-platform-bcc5f5bc822da314835720fd0c9856ce-0000.eu-de.containers.appdomain.cloud</code></td></tr>
+  <tr><td>Public Load Balancer</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td></tr>
+  <tr><td>LB IPs</td><td><code>149.81.239.32</code>, <code>158.176.12.150</code></td></tr>
+  <tr><td>Node count</td><td>12 × master/worker (converged)</td></tr>
+  <tr><td>Total Running Pods</td><td>~400+</td></tr>
+</table>
+
+<h3>Accessing the Cluster — kubeconfig</h3>
+<div class="warn"><strong>Important:</strong> The <code>KUBECONFIG</code> environment variable must be set at the start of every terminal session before using <code>oc</code> or <code>kubectl</code> commands.</div>
+<pre><code># Set KUBECONFIG for the session (PowerShell)
+$env:KUBECONFIG = "$env:USERPROFILE\.bluemix\plugins\container-service\clusters\i3-platform-da0umukf0anep6valpig-admin\kube-config.yaml"
+
+# Verify cluster access
+oc whoami
+oc get nodes</code></pre>
+
+<pre><code># Login via IBM Cloud CLI (refresh credentials)
+ibmcloud login --sso --region eu-de
+ibmcloud oc cluster config --cluster i3-platform-da0umukf0anep6valpig --admin</code></pre>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Admin kubeconfig path</td><td><code>~\.bluemix\plugins\container-service\clusters\i3-platform-da0umukf0anep6valpig-admin\kube-config.yaml</code></td></tr>
+  <tr><td>Default admin user</td><td><code>KubeCert#IBMid-693001MZ5X</code></td></tr>
+  <tr><td>OpenShift Web Console user</td><td><code>admin</code> (Keycloak-federated)</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>3. Node Topology</h2>
+<p>The cluster runs 12 converged <strong>master/worker</strong> nodes spread across 3 IBM Cloud VPC availability zones in Frankfurt. Each node runs both control-plane and workload pods.</p>
+
+<table>
+  <tr><th>Node IP</th><th>Zone (inferred)</th><th>Status</th><th>Kubernetes Version</th></tr>
+  <tr><td>10.240.0.18</td><td>eu-de-1</td><td><span class="badge b-green">Ready</span></td><td>v1.30.14</td></tr>
+  <tr><td>10.240.0.19</td><td>eu-de-1</td><td><span class="badge b-green">Ready</span></td><td>v1.30.14</td></tr>
+  <tr><td>10.240.0.20</td><td>eu-de-1</td><td><span class="badge b-green">Ready</span></td><td>v1.30.14</td></tr>
+  <tr><td>10.240.0.21</td><td>eu-de-1</td><td><span class="badge b-green">Ready</span></td><td>v1.30.14</td></tr>
+  <tr><td>10.240.64.17</td><td>eu-de-2</td><td><span class="badge b-green">Ready</span></td><td>v1.30.14</td></tr>
+  <tr><td>10.240.64.18</td><td>eu-de-2</td><td><span class="badge b-green">Ready</span></td><td>v1.30.14</td></tr>
+  <tr><td>10.240.64.20</td><td>eu-de-2</td><td><span class="badge b-green">Ready</span></td><td>v1.30.14</td></tr>
+  <tr><td>10.240.64.21</td><td>eu-de-2</td><td><span class="badge b-green">Ready</span></td><td>v1.30.14</td></tr>
+  <tr><td>10.240.128.17</td><td>eu-de-3</td><td><span class="badge b-green">Ready</span></td><td>v1.30.14</td></tr>
+  <tr><td>10.240.128.18</td><td>eu-de-3</td><td><span class="badge b-green">Ready</span></td><td>v1.30.14</td></tr>
+  <tr><td>10.240.128.20</td><td>eu-de-3</td><td><span class="badge b-green">Ready</span></td><td>v1.30.14</td></tr>
+  <tr><td>10.240.128.21</td><td>eu-de-3</td><td><span class="badge b-green">Ready</span></td><td>v1.30.14</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>4. Namespace Map</h2>
+<p>Each application or service group runs in its own OpenShift namespace for isolation, RBAC, and NetworkPolicy enforcement.</p>
+
+<table>
+  <tr><th>Namespace</th><th>Purpose</th><th>Key Workloads</th><th>Age</th></tr>
+  <tr><td><code>i3-auth</code></td><td>Identity &amp; SSO</td><td>Keycloak / Red Hat SSO, RHSSO Operator</td><td>31d</td></tr>
+  <tr><td><code>i3-data</code></td><td>Databases</td><td>PostgreSQL HA (3 primaries), PGBouncer</td><td>31d</td></tr>
+  <tr><td><code>i3-messaging</code></td><td>Event streaming</td><td>Kafka (3-node combined), Zookeeper</td><td>31d</td></tr>
+  <tr><td><code>i3-security</code></td><td>Secrets management</td><td>OpenBao (Vault)</td><td>31d</td></tr>
+  <tr><td><code>i3-monitoring</code></td><td>Observability</td><td>Grafana, Prometheus</td><td>31d</td></tr>
+  <tr><td><code>i3-gitops</code></td><td>GitOps / CI-CD</td><td>ArgoCD, Admissions Agent, Tekton</td><td>31d</td></tr>
+  <tr><td><code>i3-model-gateway</code></td><td>AI / LLM gateway</td><td>LiteLLM proxy, Langfuse, Ollama</td><td>31d</td></tr>
+  <tr><td><code>i3-ai-lab</code></td><td>AI lab environment</td><td>JupyterHub, Open WebUI (Sage), ChromaDB</td><td>31d</td></tr>
+  <tr><td><code>i3-ott</code></td><td>OTT &amp; platform services</td><td>SeaweedFS, n8n, Directus CMS, Langfuse, NGINX HLS</td><td>31d</td></tr>
+  <tr><td><code>i3-evalos</code></td><td>Assessment platform</td><td>EvalOS Next.js app, Zuri AI coworker</td><td>31d</td></tr>
+  <tr><td><code>i3-engage</code></td><td>Communication hub</td><td>Engage Next.js app, Nuru AI coworker</td><td>6d</td></tr>
+  <tr><td><code>i3-edbridge</code></td><td>Learning management</td><td>Moodle (Bitnami), wait-for-db init</td><td>4d</td></tr>
+  <tr><td><code>i3-pmaas</code></td><td>Project management</td><td>PMaaS Next.js app, Dawa AI coworker</td><td>6d</td></tr>
+  <tr><td><code>i3-afroerp</code></td><td>Enterprise ERP</td><td>ERPNext (Frappe), MariaDB, Mfumo AI coworker</td><td>6d</td></tr>
+  <tr><td><code>i3-social</code></td><td>Collaboration</td><td>Nextcloud</td><td>4d</td></tr>
+  <tr><td><code>i3-voice</code></td><td>Speech services</td><td>Voice STT (Whisper), Voice TTS (Piper)</td><td>5d</td></tr>
+  <tr><td><code>i3-smartlab</code></td><td>IoT / lab API</td><td>SmartLab FastAPI</td><td>3d</td></tr>
+  <tr><td><code>i3-admissions</code></td><td>Student intake</td><td>Admissions Agent (FastAPI)</td><td>31d</td></tr>
+  <tr><td><code>i3-onboarding</code></td><td>User onboarding</td><td>Onboarding Agent (FastAPI)</td><td>11d</td></tr>
+  <tr><td><code>i3-ar</code></td><td>Agentic Runtime</td><td>MCP Gateway (FastAPI)</td><td>39h</td></tr>
+  <tr><td><code>i3-sit</code></td><td>SIT Work-Centers</td><td>SIT API (FastAPI), SIT Tutor Agent</td><td>39h</td></tr>
+  <tr><td><code>i3-talent</code></td><td>Talent Cloud</td><td>Talent API (FastAPI)</td><td>39h</td></tr>
+  <tr><td><code>i3-ford</code></td><td>FORD-Asili blockchain</td><td>FORD API, ford-ca, i3tech-ca, CouchDB, Orderer</td><td>39h</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>5. Load Balancer &amp; DNS Architecture</h2>
+<p>All external HTTPS traffic enters the cluster through OpenShift's HAProxy Router, fronted by a single IBM Cloud Application Load Balancer. All public DNS hostnames use CNAME records pointing to this single LB endpoint.</p>
+
+<table>
+  <tr><th>Layer</th><th>Component</th><th>Value</th></tr>
+  <tr><td>DNS Zone</td><td>Primary domain</td><td><code>i3technologies.co.ke</code></td></tr>
+  <tr><td>DNS Zone</td><td>Secondary domain</td><td><code>i3.tech</code></td></tr>
+  <tr><td>DNS Manager</td><td>cPanel</td><td><code>cpanel.i3technologies.co.ke:2083</code></td></tr>
+  <tr><td>IBM LB hostname</td><td>Anycast LB</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td></tr>
+  <tr><td>LB IP #1</td><td>Frankfurt IPs</td><td><code>149.81.239.32</code></td></tr>
+  <tr><td>LB IP #2</td><td>Frankfurt IPs</td><td><code>158.176.12.150</code></td></tr>
+  <tr><td>TLS termination</td><td>OpenShift Router</td><td>Edge termination (Let's Encrypt wildcard via IBM ACME)</td></tr>
+  <tr><td>Wildcard TLS secret</td><td>Namespace: i3-auth</td><td><code>i3technologies-wildcard-tls</code></td></tr>
+  <tr><td>OCP router namespace</td><td>Internal</td><td><code>openshift-ingress</code></td></tr>
+  <tr><td>OCP ingress domain</td><td>Default OCP domain</td><td><code>*.i3-platform-bcc5f5bc...eu-de.containers.appdomain.cloud</code></td></tr>
+</table>
+
+<h3>All Public DNS CNAME Records</h3>
+<table>
+  <tr><th>Hostname</th><th>CNAME Target</th><th>Application</th></tr>
+  <tr><td>sso.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>Keycloak SSO (public)</td></tr>
+  <tr><td>keycloak.i3technologies.co.ke</td><td>→ i3-platform-bcc5...eu-de.containers.appdomain.cloud</td><td>Keycloak Admin</td></tr>
+  <tr><td>grafana.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>Grafana</td></tr>
+  <tr><td>n8n.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>n8n</td></tr>
+  <tr><td>vault.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>OpenBao / Vault</td></tr>
+  <tr><td>evalos.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>EvalOS</td></tr>
+  <tr><td>engage.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>Engage</td></tr>
+  <tr><td>moodle.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>Moodle / EdBridge</td></tr>
+  <tr><td>pmaas.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>PMaaS</td></tr>
+  <tr><td>afroerp.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>AfroERP</td></tr>
+  <tr><td>cms.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>Directus CMS</td></tr>
+  <tr><td>jupyter.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>JupyterHub</td></tr>
+  <tr><td>sage.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>Sage (Open WebUI)</td></tr>
+  <tr><td>nextcloud.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>Nextcloud</td></tr>
+  <tr><td>stt.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>Voice STT</td></tr>
+  <tr><td>tts.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>Voice TTS</td></tr>
+  <tr><td>admissions.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>Admissions Agent</td></tr>
+  <tr><td>onboarding.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>Onboarding Agent</td></tr>
+  <tr><td>api.smartlab.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>SmartLab API</td></tr>
+  <tr><td>langfuse.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>Langfuse LLM Observability</td></tr>
+  <tr><td>litellm.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>LiteLLM Gateway</td></tr>
+  <tr><td>argocd.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>ArgoCD GitOps</td></tr>
+  <tr><td>ar.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>MCP Gateway (i3-AR)</td></tr>
+  <tr><td>ford.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>FORD-Asili API</td></tr>
+  <tr><td>api.sit.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>SIT API</td></tr>
+  <tr><td>sit.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>SIT Web Portal</td></tr>
+  <tr><td>tutor.sit.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>SIT AI Tutor</td></tr>
+  <tr><td>verify.sit.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>SIT Credential Verify</td></tr>
+  <tr><td>api.talent.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>Talent API</td></tr>
+  <tr><td>talent.i3technologies.co.ke</td><td>8eec2322-eu-de.lb.appdomain.cloud</td><td>Talent Cloud Web</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>6. Storage Architecture</h2>
+<h3>Storage Classes</h3>
+<table>
+  <tr><th>Storage Class</th><th>IOPS</th><th>Reclaim Policy</th><th>Used For</th></tr>
+  <tr><td><code>ibmc-vpc-block-10iops-tier</code> (default)</td><td>10 IOPS/GB</td><td>Delete</td><td>General workloads — databases, app data</td></tr>
+  <tr><td><code>ibmc-vpc-block-retain-10iops-tier</code></td><td>10 IOPS/GB</td><td><strong>Retain</strong></td><td>Critical data (SeaweedFS, Moodle, ChromaDB admissions)</td></tr>
+  <tr><td><code>ibmc-vpc-block-5iops-tier</code></td><td>5 IOPS/GB</td><td>Delete</td><td>Lower-priority storage</td></tr>
+</table>
+
+<h3>Key Persistent Volumes</h3>
+<table>
+  <tr><th>Namespace</th><th>PVC Name</th><th>Size</th><th>Purpose</th></tr>
+  <tr><td>i3-data</td><td>i3-postgres-primary-*-pgdata (×3)</td><td>20 GiB each</td><td>PostgreSQL HA primary data</td></tr>
+  <tr><td>i3-ott</td><td>data-seaweedfs-volume-0/1/2</td><td>500 GiB each</td><td>Object storage volumes (total 1.5 TiB)</td></tr>
+  <tr><td>i3-ott</td><td>data-seaweedfs-master-0</td><td>10 GiB</td><td>SeaweedFS master metadata</td></tr>
+  <tr><td>i3-ott</td><td>n8n-data-pvc</td><td>10 GiB</td><td>n8n workflow data (retain)</td></tr>
+  <tr><td>i3-messaging</td><td>data-i3-kafka-combined-0/1/2</td><td>20 GiB each</td><td>Kafka message logs</td></tr>
+  <tr><td>i3-model-gateway</td><td>ollama-data-ollama-0</td><td>80 GiB</td><td>Ollama LLM model weights</td></tr>
+  <tr><td>i3-edbridge</td><td>edbridge-data</td><td>20 GiB</td><td>Moodle files (retain)</td></tr>
+  <tr><td>i3-monitoring</td><td>prometheus-data</td><td>20 GiB</td><td>Prometheus time-series data</td></tr>
+  <tr><td>i3-evalos</td><td>evalos-rootfs-pvc</td><td>40 GiB</td><td>EvalOS root filesystem</td></tr>
+  <tr><td>i3-ford</td><td>data-seaweedfs-volume-* (×5)</td><td>10 GiB each</td><td>Hyperledger Fabric CA/peer data</td></tr>
+</table>
+
+<h3>SeaweedFS S3 Buckets</h3>
+<p>SeaweedFS provides S3-compatible object storage at <code>seaweedfs-s3.i3-ott.svc.cluster.local:8333</code>. The following buckets are provisioned:</p>
+<table>
+  <tr><th>Bucket</th><th>Used By</th></tr>
+  <tr><td>talent-cvs, talent-certs, talent-reports</td><td>Talent Cloud — CV uploads, certificates, reports</td></tr>
+  <tr><td>sit-course-content, sit-exam-assets, sit-professional-docs, sit-credentials</td><td>SIT Work-Centers</td></tr>
+  <tr><td>ar-context</td><td>MCP Gateway (i3-AR) — agent context storage</td></tr>
+  <tr><td>ford-evidence</td><td>FORD-Asili — membership evidence documents</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>7. Networking &amp; Security Model</h2>
+<h3>NetworkPolicy Strategy</h3>
+<p>Every namespace follows the <strong>default-deny-all + explicit allow</strong> pattern:</p>
+<ul>
+  <li>A <code>deny-all-ingress</code> NetworkPolicy blocks all intra-cluster traffic by default in all data namespaces.</li>
+  <li>Explicit <code>allow-*</code> policies open only the required ports between namespaces.</li>
+  <li>DNS egress uses both a namespace selector (<code>openshift-dns</code>) and an IP block (<code>172.21.0.10/32</code>) to ensure name resolution works.</li>
+  <li>Image registry egress uses both a namespace selector (<code>openshift-image-registry</code>) and an IP block (<code>172.21.59.183/32</code>).</li>
+</ul>
+
+<h3>Database Access Control (i3-data)</h3>
+<p>The <code>i3-data</code> namespace has two key NetworkPolicies that control which namespaces may reach PostgreSQL and PGBouncer:</p>
+<table>
+  <tr><th>NetworkPolicy</th><th>Allowed Namespaces (as of Sep 2026)</th></tr>
+  <tr><td><code>allow-db-clients</code></td><td>i3-model-gateway, i3-admissions, i3-evalos, i3-ai-lab, i3-gitops, i3-auth, i3-ott, i3-sit, i3-talent, i3-ar, i3-ford, i3-edbridge, i3-pmaas, i3-onboarding, i3-social, i3-voice, i3-smartlab, i3-engage</td></tr>
+  <tr><td><code>allow-postgres-clients</code></td><td>i3-model-gateway, i3-evalos, i3-ott, i3-admissions, i3-auth, i3-monitoring, i3-sit, i3-talent, i3-ar, i3-ford, i3-edbridge, i3-pmaas, i3-onboarding, i3-social, i3-voice, i3-smartlab, i3-engage</td></tr>
+</table>
+
+<h3>Key Internal DNS Addresses</h3>
+<table>
+  <tr><th>Service</th><th>Internal DNS</th><th>Port</th></tr>
+  <tr><td>PostgreSQL Primary (direct)</td><td><code>i3-postgres-primary.i3-data.svc</code></td><td>5432</td></tr>
+  <tr><td>PostgreSQL HA (read-write)</td><td><code>i3-postgres-ha.i3-data.svc</code></td><td>5432</td></tr>
+  <tr><td>PGBouncer (connection pool)</td><td><code>i3-postgres-pgbouncer.i3-data.svc</code></td><td>5432</td></tr>
+  <tr><td>Kafka Bootstrap</td><td><code>kafka-bootstrap.i3-messaging.svc.cluster.local</code></td><td>9092</td></tr>
+  <tr><td>LiteLLM Gateway</td><td><code>litellm-proxy.i3-model-gateway.svc.cluster.local</code></td><td>4000</td></tr>
+  <tr><td>ChromaDB (AI lab)</td><td><code>chromadb.i3-ai-lab.svc.cluster.local</code></td><td>8000</td></tr>
+  <tr><td>SeaweedFS S3</td><td><code>seaweedfs-s3.i3-ott.svc.cluster.local</code></td><td>8333</td></tr>
+  <tr><td>n8n</td><td><code>n8n.i3-ott.svc.cluster.local</code></td><td>5678</td></tr>
+  <tr><td>Langfuse</td><td><code>langfuse.i3-ott.svc</code></td><td>3000</td></tr>
+  <tr><td>OpenBao (Vault)</td><td><code>openbao-active.i3-security.svc</code></td><td>8200</td></tr>
+  <tr><td>Keycloak (internal)</td><td><code>keycloak.i3-auth.svc.cluster.local</code></td><td>8080</td></tr>
+  <tr><td>Cluster DNS IP</td><td><code>172.21.0.10</code></td><td>53 UDP/TCP</td></tr>
+  <tr><td>Image Registry IP</td><td><code>172.21.59.183</code></td><td>5000</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>8. Build &amp; Deployment Pattern</h2>
+<div class="note">All application builds use OpenShift's internal S2I/Docker build system. <strong>Docker Hub and registry.access.redhat.com are unreachable from build pods</strong> — all Python apps must use <code>openshift/python:3.11-slim</code> imagestream from the internal registry.</div>
+
+<h3>Standard Build &amp; Deploy Procedure</h3>
+<pre><code># 1. Set KUBECONFIG
+$env:KUBECONFIG = "$env:USERPROFILE\.bluemix\plugins\container-service\clusters\i3-platform-da0umukf0anep6valpig-admin\kube-config.yaml"
+
+# 2. Create a BuildConfig (first time only)
+oc new-build --name=APP_NAME --image-stream=openshift/python:3.11-slim --binary -n NAMESPACE
+
+# 3. Start build from local source directory
+oc start-build APP_NAME -n NAMESPACE --from-dir=platform/APP_DIR
+
+# 4. Check build status
+oc get builds -n NAMESPACE --no-headers | Select-Object -Last 3
+
+# 5. Rollout the new image
+oc rollout restart deployment/APP_NAME -n NAMESPACE
+
+# 6. Wait for rollout
+oc rollout status deployment/APP_NAME -n NAMESPACE --timeout=120s</code></pre>
+
+<div class="warn"><strong>Note on --follow:</strong> The <code>oc start-build --follow</code> flag always times out after ~5 minutes in PowerShell. Use <code>oc get builds</code> to check status instead. Builds typically complete in 15–22 minutes.</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>9. PostgreSQL Database Inventory</h2>
+<table>
+  <tr><th>Database</th><th>App User</th><th>Password</th><th>Used By</th></tr>
+  <tr><td><code>ar_db</code></td><td><code>ar_app</code></td><td><code>de0ca0d50fd34c2f8847258f</code></td><td>MCP Gateway (i3-AR)</td></tr>
+  <tr><td><code>talent_db</code></td><td><code>talent_app</code></td><td><code>222d37ba48bf45f1b8f05987</code></td><td>Talent Cloud API</td></tr>
+  <tr><td><code>sit_db</code></td><td><code>sit_app</code></td><td><code>9a12b5ece9344b2faeb04577</code></td><td>SIT Work-Centers API</td></tr>
+  <tr><td><code>ford_members_db</code></td><td><code>ford_app</code></td><td><code>85405f2aa77f4e7c87d183ad</code></td><td>FORD-Asili Membership API</td></tr>
+  <tr><td><code>evalos_db</code></td><td><code>evalos</code></td><td>(URL-encoded in secret)</td><td>EvalOS platform</td></tr>
+  <tr><td><code>engage_db</code></td><td><code>engage</code></td><td><code>engage-2026-secure</code></td><td>Engage platform</td></tr>
+  <tr><td><code>edbridge_db</code></td><td><code>edbridge</code></td><td>(in edbridge-secrets)</td><td>Moodle / EdBridge</td></tr>
+  <tr><td><code>social_db</code></td><td><code>socialapp</code></td><td><code>i3-Social-DB-2026!</code></td><td>Nextcloud</td></tr>
+  <tr><td><code>pmaas_db</code></td><td><code>pmaas</code></td><td>(REPLACE in secret)</td><td>PMaaS platform</td></tr>
+  <tr><td>All DBs</td><td><code>i3admin</code> (superuser)</td><td><code>?Z-EfajDpq21=G/5iR21&gt;k8f</code></td><td>DBA operations, migrations</td></tr>
+</table>
+
+<div class="danger"><strong>Security:</strong> The i3admin superuser password grants full access to ALL databases. Store securely. Never commit to version control.</div>
+
+<h3>Connecting to PostgreSQL (Admin)</h3>
+<pre><code># Exec into a Postgres pod for psql access
+oc exec -it $(oc get pods -n i3-data -l postgres-operator.crunchydata.com/role=master --no-headers | head -1 | awk '{print $1}') -n i3-data -- psql -U i3admin -d postgres
+
+# OR connect via PGBouncer from any authorised pod
+psql "postgresql://i3admin:?Z-EfajDpq21=G/5iR21>k8f@i3-postgres-pgbouncer.i3-data.svc:5432/postgres"</code></pre>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>10. Daily Operations Runbook</h2>
+
+<h3>Health Check — Run Daily</h3>
+<pre><code># Quick cluster health
+$env:KUBECONFIG = "$env:USERPROFILE\.bluemix\plugins\container-service\clusters\i3-platform-da0umukf0anep6valpig-admin\kube-config.yaml"
+oc get nodes --no-headers
+oc get pods -A --no-headers | Where-Object { $_ -notmatch "Running|Completed" }  # Shows only unhealthy pods</code></pre>
+
+<h3>Check All Endpoints (30-second sweep)</h3>
+<pre><code>$apps = @("sso","grafana","n8n","vault","evalos","engage","moodle","afroerp","cms","jupyter","sage","nextcloud","litellm","langfuse","pmaas","argocd")
+foreach ($a in $apps) {
+  $code = curl.exe -sk --max-time 6 -o NUL -w "%{http_code}" "https://$a.i3technologies.co.ke"
+  Write-Output "$code  $a.i3technologies.co.ke"
+}</code></pre>
+
+<h3>Restart a Deployment</h3>
+<pre><code># Graceful rolling restart
+oc rollout restart deployment/DEPLOYMENT_NAME -n NAMESPACE
+oc rollout status deployment/DEPLOYMENT_NAME -n NAMESPACE</code></pre>
+
+<h3>View Logs</h3>
+<pre><code># Last 50 lines from a pod
+oc logs -n NAMESPACE POD_NAME --tail=50
+
+# Follow live logs
+oc logs -n NAMESPACE POD_NAME -f
+
+# From a deployment (picks any healthy pod)
+oc logs -n NAMESPACE deployment/DEPLOYMENT_NAME --tail=50</code></pre>
+
+<h3>Scale a Deployment</h3>
+<pre><code># Scale down (maintenance)
+oc scale deployment/DEPLOYMENT_NAME --replicas=0 -n NAMESPACE
+
+# Scale back up
+oc scale deployment/DEPLOYMENT_NAME --replicas=2 -n NAMESPACE</code></pre>
+
+<h3>Check PVC Usage</h3>
+<pre><code">oc get pvc -A --no-headers | Where-Object { $_ -match "^i3" }</code></pre>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>11. Monitoring &amp; Alerting</h2>
+<table>
+  <tr><th>Tool</th><th>URL</th><th>Credentials</th><th>Purpose</th></tr>
+  <tr><td>Grafana</td><td><a href="https://grafana.i3technologies.co.ke">grafana.i3technologies.co.ke</a></td><td>admin / (see Component 14)</td><td>Dashboards, metrics, alerting</td></tr>
+  <tr><td>Prometheus</td><td><code>prometheus-k8s-openshift-monitoring.*.eu-de.containers.appdomain.cloud</code></td><td>OpenShift token</td><td>Raw metrics store</td></tr>
+  <tr><td>Langfuse</td><td><a href="https://langfuse.i3technologies.co.ke">langfuse.i3technologies.co.ke</a></td><td>admin@i3.tech / (see Component 04)</td><td>LLM call tracing, token usage</td></tr>
+  <tr><td>OCP Console</td><td>console-openshift-console.*.eu-de.containers.appdomain.cloud</td><td>OpenShift admin</td><td>Full cluster observability</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>12. Backup Strategy</h2>
+<h3>PostgreSQL — pgBackRest</h3>
+<p>The PostgreSQL HA cluster is managed by Crunchy Data Postgres Operator (PGO) with pgBackRest configured for both full and differential backups stored in SeaweedFS S3.</p>
+<table>
+  <tr><th>Backup Type</th><th>Schedule</th><th>Retention</th></tr>
+  <tr><td>Full backup</td><td>Daily at 02:00 UTC</td><td>7 days</td></tr>
+  <tr><td>Differential backup</td><td>Every 6 hours</td><td>48 hours</td></tr>
+</table>
+
+<div class="warn"><strong>Known issue:</strong> pgBackRest backup jobs have been failing with <code>HostConnectError timeout on port 8432</code>. The NetworkPolicy fix has been applied. Run <code>oc get pods -n i3-data | Select-String "repo1"</code> to check for failed jobs and clean with <code>oc delete pods -n i3-data -l pgbackrest-backup=repo1-full</code>.</div>
+
+<pre><code># Trigger manual full backup
+oc exec -n i3-data \
+  $(oc get pods -n i3-data -l postgres-operator.crunchydata.com/role=master --no-headers | head -1 | awk '{print $1}') \
+  -- pgbackrest backup --stanza=db --type=full</code></pre>
+
+<h3>Persistent Volume Snapshots</h3>
+<p>IBM VPC Block Storage supports volume snapshots via the IBM Cloud Console. Critical PVCs to snapshot regularly:</p>
+<ul>
+  <li><code>data-seaweedfs-volume-*</code> (1.5 TiB object storage)</li>
+  <li><code>edbridge-data</code> (Moodle files)</li>
+  <li><code>ollama-data-ollama-0</code> (LLM model weights — 80 GiB)</li>
+  <li><code>n8n-data-pvc</code> (n8n workflows)</li>
+</ul>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>13. Disaster Recovery</h2>
+<h3>RTO / RPO Targets</h3>
+<table>
+  <tr><th>Tier</th><th>Systems</th><th>RTO</th><th>RPO</th></tr>
+  <tr><td>Tier 1 — Critical</td><td>Keycloak SSO, PostgreSQL, PGBouncer</td><td>15 min</td><td>1 hour</td></tr>
+  <tr><td>Tier 2 — Important</td><td>EvalOS, Engage, LiteLLM, n8n, Vault</td><td>1 hour</td><td>4 hours</td></tr>
+  <tr><td>Tier 3 — Standard</td><td>All other applications</td><td>4 hours</td><td>24 hours</td></tr>
+</table>
+
+<h3>Recovery Steps</h3>
+<ol>
+  <li><strong>Cluster unreachable:</strong> Log in to IBM Cloud console → Kubernetes → Cluster → Reboot nodes or contact IBM Support.</li>
+  <li><strong>Namespace broken:</strong> <code>oc get events -n NAMESPACE | tail -20</code> to diagnose, then redeploy from GitOps/ArgoCD.</li>
+  <li><strong>Database corruption:</strong> Use pgBackRest restore: <code>pgbackrest restore --stanza=db --delta</code> from primary pod.</li>
+  <li><strong>Secret lost:</strong> Retrieve from OpenBao vault (requires root token) or re-generate and patch the secret + rollout restart.</li>
+  <li><strong>LB/DNS issue:</strong> All CNAME records point to <code>8eec2322-eu-de.lb.appdomain.cloud</code>. Verify at cPanel (<code>cpanel.i3technologies.co.ke:2083</code>).</li>
+</ol>
+
+<footer>Made with IBM Bob &nbsp;|&nbsp; i3 Technologies Ltd — Confidential &nbsp;|&nbsp; Component 01 of 14</footer>
+</div>
+</body>
+</html>

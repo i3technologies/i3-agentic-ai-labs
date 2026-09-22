@@ -1,0 +1,22 @@
+# ============================================================
+# Phase 1 p95 latency baseline — P2-GATE-09
+# Update this ConfigMap after each confirmed Phase completion.
+# Apply: kubectl apply -f platform/testing/locust/p1-latency-baseline.yaml
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: p1-latency-baseline
+  namespace: i3-gitops
+  labels:
+    i3.io/gate: "P2-GATE-09"
+data:
+  # Endpoint name -> p95 latency in milliseconds (recorded at Phase 1 gate)
+  health: "120"
+  admissions-chat: "2800"
+  exam-start: "800"
+  campaigns-send: "1200"
+  briefing-generate: "3500"
+  regression_limit_pct: "15"
+  recorded_at: "2026-09-20"
+  phase: "P1"
