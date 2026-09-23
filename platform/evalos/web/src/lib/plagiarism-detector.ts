@@ -62,9 +62,7 @@ function jaccardSimilarity(a: Set<string>, b: Set<string>): number {
   if (a.size === 0 && b.size === 0) return 100
   if (a.size === 0 || b.size === 0) return 0
   let intersection = 0
-  for (const t of a) {
-    if (b.has(t)) intersection++
-  }
+  Array.from(a).forEach((t) => { if (b.has(t)) intersection++ })
   const union = a.size + b.size - intersection
   return Math.round((intersection / union) * 100)
 }
