@@ -29,9 +29,17 @@ export async function GET() {
          COALESCE(e.pass_threshold, 68) AS pass_threshold,
          e.tags,
          (
+           -- Safely parse set_number from code: only cast when code ends with SETn
+           -- substring() extracts the numeric suffix after SET without a backreference.
            SELECT COUNT(*)::int
            FROM questions q
-           WHERE q.set_number = REGEXP_REPLACE(e.code, '^.*SET', '', 'g')::int
+           WHERE q.set_number = (
+             CASE
+               WHEN e.code ~ 'SET[0-9]+$'
+               THEN (SUBSTRING(e.code FROM 'SET([0-9]+)$'))::int
+               ELSE NULL
+             END
+           )
              AND q.is_active = true
          ) AS question_count,
          (

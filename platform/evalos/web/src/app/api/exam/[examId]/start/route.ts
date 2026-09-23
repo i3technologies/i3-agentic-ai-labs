@@ -96,13 +96,14 @@ export async function POST(
       })
     }
 
-    // Fetch exam metadata including new columns
+    // Fetch exam metadata including draw_spec for rotating-bank exams
     const { rows: examRows } = await client.query(
       `SELECT id, code, randomize_order,
               COALESCE(pass_threshold, 90)  AS pass_threshold,
               COALESCE(max_attempts, 5)     AS max_attempts,
               retake_window_hours,
-              prerequisite_exam_id
+              prerequisite_exam_id,
+              draw_spec
        FROM exams
        WHERE id = $1 AND is_published = true`,
       [examId]
@@ -194,34 +195,68 @@ export async function POST(
     const setNumberMatch = exam.code.match(/SET(\d+)$/i)
     const setNumber = setNumberMatch ? parseInt(setNumberMatch[1], 10) : null
 
-    let questionsQuery: string
-    let queryParams: (string | number)[]
+    // HC-4: questions are filtered by (tenant_id = current tenant OR tenant_id IS NULL)
+    // so system/shared questions are visible to all tenants but cross-tenant leakage is blocked.
+    let rawQuestions: Array<Record<string, unknown>> = []
 
-    if (setNumber !== null) {
-      questionsQuery = `
-        SELECT
-          id, text, type, question_type, options, correct_answers,
-          explanation, domain_number, domain_name, topic, set_number
-        FROM questions
-        WHERE set_number = $1 AND is_active = true
-        ORDER BY question_number`
-      queryParams = [setNumber]
+    type DrawSpecEntry = { domain_number: number; domain_name: string; count: number }
+    const drawSpec: DrawSpecEntry[] | null =
+      exam.draw_spec && Array.isArray(exam.draw_spec) && exam.draw_spec.length > 0
+        ? (exam.draw_spec as DrawSpecEntry[])
+        : null
+
+    if (drawSpec && setNumber !== null) {
+      // ── draw_spec rotating bank: proportional per-domain random draw ────────
+      // For each domain entry, draw `count` questions at random using DB RANDOM().
+      // This guarantees a unique 60-question combination on every attempt.
+      for (const entry of drawSpec) {
+        const { rows: domainRows } = await client.query(
+          `SELECT
+             id, text, type, question_type, options, correct_answers,
+             explanation, domain_number, domain_name, topic, set_number
+           FROM questions
+           WHERE set_number = $1
+             AND domain_number = $2
+             AND is_active = true
+             AND (tenant_id = $3 OR tenant_id IS NULL)
+           ORDER BY RANDOM()
+           LIMIT $4`,
+          [setNumber, entry.domain_number, tenantId, entry.count]
+        )
+        rawQuestions = rawQuestions.concat(domainRows)
+      }
+    } else if (setNumber !== null) {
+      // ── Fallback: all active questions for this set (Sets 1–6 without draw_spec) ─
+      const { rows } = await client.query(
+        `SELECT
+           id, text, type, question_type, options, correct_answers,
+           explanation, domain_number, domain_name, topic, set_number
+         FROM questions
+         WHERE set_number = $1
+           AND is_active = true
+           AND (tenant_id = $2 OR tenant_id IS NULL)
+         ORDER BY question_number`,
+        [setNumber, tenantId]
+      )
+      rawQuestions = rows
     } else {
-      questionsQuery = `
-        SELECT
-          id, text, type, question_type, options, correct_answers,
-          explanation, domain_number, domain_name, topic, set_number
-        FROM questions
-        WHERE is_active = true
-        ORDER BY domain_number, question_number
-        LIMIT 60`
-      queryParams = []
+      // ── No set number: draw first 60 active questions across all sets ─────
+      const { rows } = await client.query(
+        `SELECT
+           id, text, type, question_type, options, correct_answers,
+           explanation, domain_number, domain_name, topic, set_number
+         FROM questions
+         WHERE is_active = true
+           AND (tenant_id = $1 OR tenant_id IS NULL)
+         ORDER BY domain_number, question_number
+         LIMIT 60`,
+        [tenantId]
+      )
+      rawQuestions = rows
     }
 
-    const { rows: rawQuestions } = await client.query(questionsQuery, queryParams)
-
     const questions = rawQuestions.map((q) => {
-      const opts = exam.randomize_order ? shuffle(q.options) : q.options
+      const opts = exam.randomize_order ? shuffle(q.options as unknown[]) : q.options
       return {
         id: q.id,
         text: q.text,
@@ -236,6 +271,7 @@ export async function POST(
       }
     })
 
+    // Apply Fisher-Yates shuffle to merge the per-domain draws into a single random order
     const finalQuestions = exam.randomize_order ? shuffle(questions) : questions
 
     // Insert attempt record (HC-4: tenant_id included in INSERT)

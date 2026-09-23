@@ -78,6 +78,13 @@ ALTER TABLE exams
   ADD COLUMN IF NOT EXISTS tenant_id UUID
     NOT NULL DEFAULT '00000000-0000-0000-0000-000000000002';
 
+-- draw_spec: per-domain question draw specification for rotating banks.
+-- Already present in the base schema as NOT NULL; add here for databases
+-- that were seeded from an older schema version that lacked this column.
+-- NULL = draw all active questions for the set (backward-compatible).
+ALTER TABLE exams
+  ADD COLUMN IF NOT EXISTS draw_spec JSONB DEFAULT NULL;
+
 
 -- ═══════════════════════════════════════════════════════════════
 -- 2. quiz_attempts table
