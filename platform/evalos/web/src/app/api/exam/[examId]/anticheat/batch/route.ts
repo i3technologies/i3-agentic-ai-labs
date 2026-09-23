@@ -39,33 +39,41 @@ export async function POST(
   }
 
   const { attemptId, events } = parsed.data
-  const userId = session.user.userId || session.user.email || ''
+  const userId   = session.user.userId || session.user.email || ''
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
 
-  // Verify ownership
-  const { rows } = await pool.query(
-    `SELECT id FROM quiz_attempts
-     WHERE id = $1 AND student_id = $2 AND exam_id = $3`,
-    [attemptId, userId, examId]
-  )
-  if (rows.length === 0) {
-    return NextResponse.json({ error: 'Attempt not found' }, { status: 404 })
+  const client = await pool.connect()
+  try {
+    // HC-4: set RLS session variable
+    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+
+    // Verify ownership
+    const { rows } = await client.query(
+      `SELECT id FROM quiz_attempts
+       WHERE id = $1 AND student_id = $2 AND exam_id = $3`,
+      [attemptId, userId, examId]
+    )
+    if (rows.length === 0) {
+      return NextResponse.json({ error: 'Attempt not found' }, { status: 404 })
+    }
+
+    const focusLost    = events.filter((e) => e.type === 'focus_lost').length
+    const fsExits      = events.filter((e) => e.type === 'fullscreen_exit').length
+    const clipboardEvt = events.filter((e) => e.type === 'clipboard_copy' || e.type === 'clipboard_paste').length
+    const tabSwitches  = events.filter((e) => e.type === 'tab_switch')
+
+    await client.query(
+      `UPDATE quiz_attempts
+       SET focus_lost_count   = COALESCE(focus_lost_count, 0) + $1,
+           fullscreen_exits   = COALESCE(fullscreen_exits, 0) + $2,
+           clipboard_events   = COALESCE(clipboard_events, 0) + $3,
+           tab_switch_events  = COALESCE(tab_switch_events, '[]'::jsonb) || $4::jsonb
+       WHERE id = $5`,
+      [focusLost, fsExits, clipboardEvt, JSON.stringify(tabSwitches), attemptId]
+    )
+
+    return NextResponse.json({ ok: true })
+  } finally {
+    client.release()
   }
-
-  // Count events by type and update the attempt
-  const focusLost    = events.filter((e) => e.type === 'focus_lost').length
-  const fsExits      = events.filter((e) => e.type === 'fullscreen_exit').length
-  const clipboardEvt = events.filter((e) => e.type === 'clipboard_copy' || e.type === 'clipboard_paste').length
-  const tabSwitches  = events.filter((e) => e.type === 'tab_switch')
-
-  await pool.query(
-    `UPDATE quiz_attempts
-     SET focus_lost_count   = COALESCE(focus_lost_count, 0) + $1,
-         fullscreen_exits   = COALESCE(fullscreen_exits, 0) + $2,
-         clipboard_events   = COALESCE(clipboard_events, 0) + $3,
-         tab_switch_events  = COALESCE(tab_switch_events, '[]'::jsonb) || $4::jsonb
-     WHERE id = $5`,
-    [focusLost, fsExits, clipboardEvt, JSON.stringify(tabSwitches), attemptId]
-  )
-
-  return NextResponse.json({ ok: true })
 }

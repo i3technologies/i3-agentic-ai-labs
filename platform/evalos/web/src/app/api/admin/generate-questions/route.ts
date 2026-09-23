@@ -72,6 +72,7 @@ export async function POST(req: Request) {
   if (!session?.user.isAdmin) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000001'
 
   let body: GenerateRequest
   try {
@@ -94,8 +95,10 @@ export async function POST(req: Request) {
     const resp = await fetch(`${LITELLM_URL}/chat/completions`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${LITELLM_KEY}`,
+        'Content-Type':         'application/json',
+        'Authorization':        `Bearer ${LITELLM_KEY}`,
+        'x-litellm-max-tokens': '3000',
+        'x-litellm-metadata':   JSON.stringify({ tenant_id: tenantId, agent_id: 'evalos-question-generator' }),
       },
       body: JSON.stringify({
         model: GENERATE_MODEL,

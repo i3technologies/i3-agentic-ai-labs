@@ -16,7 +16,10 @@ metadata:
     app.kubernetes.io/part-of: i3-platform
 type: Opaque
 stringData:
-  OPENAI_API_KEY:     "REPLACE_WITH_LITELLM_MASTER_KEY"
+  # AUTH-01: per-service virtual key (not master key).
+  # Issue: POST litellm /key/generate {"metadata": {"service": "zuri-coworker"}, "max_budget": 30, "budget_duration": "1d"}
+  # OpenBao path: i3/litellm/virtual-keys/zuri-coworker
+  OPENAI_API_KEY:     "REPLACE_FROM_VAULT"
   OAUTH_CLIENT_ID:    "open-webui-zuri"
   OAUTH_CLIENT_SECRET: "REPLACE_WITH_KEYCLOAK_CLIENT_SECRET"
   WEBUI_SECRET_KEY:   "REPLACE_WITH_RANDOM_32_CHAR"

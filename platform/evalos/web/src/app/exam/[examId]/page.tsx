@@ -10,33 +10,41 @@ interface ExamPageProps {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-async function getOrCreateAttempt(examId: string, userId: string) {
-  // Check for an in-progress attempt
-  const { rows: existing } = await pool.query(
-    `SELECT id, question_snapshot, answers, started_at
-     FROM quiz_attempts
-     WHERE exam_id = $1 AND student_id = $2 AND status = 'in_progress'
-     ORDER BY started_at DESC
-     LIMIT 1`,
-    [examId, userId]
-  )
-  if (existing.length > 0) return existing[0]
-
-  // Create a new attempt via the API (start route handles snapshot creation)
-  return null
+async function getOrCreateAttempt(examId: string, userId: string, tenantId: string) {
+  const client = await pool.connect()
+  try {
+    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    const { rows: existing } = await client.query(
+      `SELECT id, question_snapshot, answers, started_at
+       FROM quiz_attempts
+       WHERE exam_id = $1 AND student_id = $2 AND status = 'in_progress'
+       ORDER BY started_at DESC
+       LIMIT 1`,
+      [examId, userId]
+    )
+    return existing[0] ?? null
+  } finally {
+    client.release()
+  }
 }
 
-async function getExamMeta(examId: string) {
-  const { rows } = await pool.query(
-    `SELECT id, title, code, description, duration_minutes,
-            COALESCE(duration_secs, duration_minutes * 60) AS duration_secs,
-            COALESCE(pass_threshold, 68) AS pass_threshold,
-            randomize_order
-     FROM exams
-     WHERE id = $1 AND is_published = true`,
-    [examId]
-  )
-  return rows[0] ?? null
+async function getExamMeta(examId: string, tenantId: string) {
+  const client = await pool.connect()
+  try {
+    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    const { rows } = await client.query(
+      `SELECT id, title, code, description,
+              COALESCE(duration_secs, 5400) AS duration_secs,
+              COALESCE(pass_threshold, passing_score, 68) AS pass_threshold,
+              COALESCE(randomize_order, true) AS randomize_order
+       FROM exams
+       WHERE id = $1 AND is_published = true`,
+      [examId]
+    )
+    return rows[0] ?? null
+  } finally {
+    client.release()
+  }
 }
 
 export default async function ExamPage({ params }: ExamPageProps) {
@@ -46,11 +54,12 @@ export default async function ExamPage({ params }: ExamPageProps) {
   const examId = params.examId
   if (!UUID_RE.test(examId)) redirect('/dashboard')
 
-  const exam = await getExamMeta(examId)
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
+  const exam = await getExamMeta(examId, tenantId)
   if (!exam) redirect('/dashboard')
 
   const userId = session.user.userId || session.user.email || ''
-  const existingAttempt = await getOrCreateAttempt(examId, userId)
+  const existingAttempt = await getOrCreateAttempt(examId, userId, tenantId)
 
   return (
     <ExamClient

@@ -47,27 +47,34 @@ interface DomainRow {
   pct: number
 }
 
-async function getAttemptResults(attemptId: string, userId: string): Promise<AttemptRow | null> {
-  const { rows } = await pool.query<AttemptRow>(
-    `SELECT
-       qa.id,
-       qa.exam_id,
-       e.title AS exam_title,
-       e.code AS exam_code,
-       COALESCE(e.pass_threshold, 68) AS pass_threshold,
-       qa.question_snapshot,
-       qa.answers,
-       qa.score,
-       qa.max_score,
-       qa.pct_score,
-       qa.passed,
-       qa.submitted_at
-     FROM quiz_attempts qa
-     JOIN exams e ON e.id = qa.exam_id
-     WHERE qa.id = $1 AND qa.student_id = $2 AND qa.status = 'submitted'`,
-    [attemptId, userId]
-  )
-  return rows[0] ?? null
+async function getAttemptResults(attemptId: string, userId: string, tenantId: string): Promise<AttemptRow | null> {
+  const client = await pool.connect()
+  try {
+    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    const { rows } = await client.query<AttemptRow>(
+      `SELECT
+         qa.id,
+         qa.exam_id,
+         e.title AS exam_title,
+         e.code  AS exam_code,
+         COALESCE(e.pass_threshold, e.passing_score, 68) AS pass_threshold,
+         qa.question_snapshot,
+         qa.answers,
+         qa.score,
+         qa.max_score,
+         qa.pct_score,
+         qa.passed,
+         qa.submitted_at
+       FROM quiz_attempts qa
+       JOIN exams e ON e.id = qa.exam_id
+       WHERE qa.id = $1 AND qa.student_id = $2
+         AND qa.status IN ('submitted','graded')`,
+      [attemptId, userId]
+    )
+    return rows[0] ?? null
+  } finally {
+    client.release()
+  }
 }
 
 function computeDomainBreakdown(
@@ -117,8 +124,9 @@ export default async function ResultsPage({ params, searchParams }: ResultsPageP
 
   if (!UUID_RE.test(examId) || !UUID_RE.test(attemptId)) redirect('/dashboard')
 
-  const userId = session.user.userId || session.user.email || ''
-  const attempt = await getAttemptResults(attemptId, userId)
+  const userId   = session.user.userId || session.user.email || ''
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
+  const attempt  = await getAttemptResults(attemptId, userId, tenantId)
 
   if (!attempt) redirect('/dashboard')
 

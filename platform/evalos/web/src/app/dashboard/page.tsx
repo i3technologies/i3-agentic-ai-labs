@@ -4,6 +4,9 @@ import Link from 'next/link'
 import { authOptions } from '@/lib/auth'
 import pool from '@/lib/db'
 
+// Default tenant for queries that don't have one from session
+const DEFAULT_TENANT = '00000000-0000-0000-0000-000000000002'
+
 interface Exam {
   id: string
   title: string
@@ -34,86 +37,85 @@ interface RecentAttempt {
   status: string
 }
 
-async function getExamsWithAttempts(userId: string): Promise<Exam[]> {
-  const { rows } = await pool.query<Exam>(
-    `
-    SELECT
-      e.id,
-      e.title,
-      e.code,
-      e.description,
-      e.duration_minutes,
-      COALESCE(e.pass_threshold, 90)  AS pass_threshold,
-      COALESCE(e.max_attempts, 5)     AS max_attempts,
-      (
-        SELECT COUNT(*)::int
-        FROM questions q
-        WHERE q.set_number = REGEXP_REPLACE(e.code, '^.*SET', '', 'g')::int
-          AND q.is_active = true
-      ) AS question_count,
-      COUNT(qa.id)::int AS attempt_count,
-      MAX(qa.pct_score) AS best_score,
-      (
-        SELECT pct_score
-        FROM quiz_attempts
-        WHERE exam_id = e.id AND student_id = $1
-        ORDER BY started_at DESC
-        LIMIT 1
-      ) AS last_score,
-      (
-        SELECT passed
-        FROM quiz_attempts
-        WHERE exam_id = e.id AND student_id = $1
-        ORDER BY started_at DESC
-        LIMIT 1
-      ) AS last_passed,
-      e.prerequisite_exam_id,
-      pre.code AS prerequisite_code,
-      -- prerequisite is met if the student has at least one passing submitted attempt
-      COALESCE((
-        SELECT true
-        FROM quiz_attempts pqa
-        WHERE pqa.exam_id = e.prerequisite_exam_id
-          AND pqa.student_id = $1
-          AND pqa.status IN ('submitted', 'graded')
-          AND pqa.passed = true
-        LIMIT 1
-      ), e.prerequisite_exam_id IS NULL) AS prerequisite_passed
-    FROM exams e
-    LEFT JOIN exams pre ON pre.id = e.prerequisite_exam_id
-    LEFT JOIN quiz_attempts qa
-      ON qa.exam_id = e.id AND qa.student_id = $1
-    WHERE e.is_published = true
-    GROUP BY e.id, pre.code
-    ORDER BY e.code
-    `,
-    [userId]
-  )
-  return rows
+async function getExamsWithAttempts(userId: string, tenantId: string): Promise<Exam[]> {
+  const client = await pool.connect()
+  try {
+    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    const { rows } = await client.query<Exam>(
+      `SELECT
+         e.id,
+         e.title,
+         e.code,
+         e.description,
+         COALESCE(e.duration_minutes, e.duration_secs / 60) AS duration_minutes,
+         COALESCE(e.pass_threshold, e.passing_score, 68)    AS pass_threshold,
+         COALESCE(e.max_attempts, 5)                        AS max_attempts,
+         (
+           SELECT COUNT(*)::int FROM questions q
+           WHERE q.set_number = (
+             CASE WHEN e.code ~ 'SET[0-9]+$'
+             THEN REGEXP_REPLACE(e.code, '^.*SET', '')::int
+             ELSE 0 END
+           ) AND q.is_active = true
+         ) AS question_count,
+         COUNT(qa.id)::int AS attempt_count,
+         MAX(qa.pct_score) AS best_score,
+         (SELECT pct_score FROM quiz_attempts
+          WHERE exam_id = e.id AND student_id = $1
+          ORDER BY started_at DESC LIMIT 1) AS last_score,
+         (SELECT passed FROM quiz_attempts
+          WHERE exam_id = e.id AND student_id = $1
+          ORDER BY started_at DESC LIMIT 1) AS last_passed,
+         e.prerequisite_exam_id,
+         pre.code AS prerequisite_code,
+         COALESCE((
+           SELECT true FROM quiz_attempts pqa
+           WHERE pqa.exam_id = e.prerequisite_exam_id
+             AND pqa.student_id = $1
+             AND pqa.status IN ('submitted','graded')
+             AND pqa.passed = true
+           LIMIT 1
+         ), e.prerequisite_exam_id IS NULL) AS prerequisite_passed
+       FROM exams e
+       LEFT JOIN exams pre ON pre.id = e.prerequisite_exam_id
+       LEFT JOIN quiz_attempts qa ON qa.exam_id = e.id AND qa.student_id = $1
+       WHERE e.is_published = true
+       GROUP BY e.id, pre.code
+       ORDER BY e.code`,
+      [userId]
+    )
+    return rows
+  } finally {
+    client.release()
+  }
 }
 
-async function getRecentAttempts(userId: string): Promise<RecentAttempt[]> {
-  const { rows } = await pool.query<RecentAttempt>(
-    `
-    SELECT
-      qa.id,
-      qa.exam_id,
-      e.title AS exam_title,
-      e.code AS exam_code,
-      qa.pct_score,
-      qa.passed,
-      qa.started_at,
-      qa.submitted_at,
-      qa.status
-    FROM quiz_attempts qa
-    JOIN exams e ON e.id = qa.exam_id
-    WHERE qa.student_id = $1
-    ORDER BY qa.started_at DESC
-    LIMIT 10
-    `,
-    [userId]
-  )
-  return rows
+async function getRecentAttempts(userId: string, tenantId: string): Promise<RecentAttempt[]> {
+  const client = await pool.connect()
+  try {
+    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    const { rows } = await client.query<RecentAttempt>(
+      `SELECT
+         qa.id,
+         qa.exam_id,
+         e.title AS exam_title,
+         e.code  AS exam_code,
+         qa.pct_score,
+         qa.passed,
+         qa.started_at,
+         qa.submitted_at,
+         qa.status
+       FROM quiz_attempts qa
+       JOIN exams e ON e.id = qa.exam_id
+       WHERE qa.student_id = $1
+       ORDER BY qa.started_at DESC
+       LIMIT 10`,
+      [userId]
+    )
+    return rows
+  } finally {
+    client.release()
+  }
 }
 
 function ScoreBadge({
@@ -141,10 +143,12 @@ export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/api/auth/signin')
 
-  const userId = session.user.userId || session.user.email || ''
+  const userId   = session.user.userId || session.user.email || ''
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? DEFAULT_TENANT
+
   const [exams, recentAttempts] = await Promise.all([
-    getExamsWithAttempts(userId),
-    getRecentAttempts(userId),
+    getExamsWithAttempts(userId, tenantId),
+    getRecentAttempts(userId, tenantId),
   ])
 
   return (

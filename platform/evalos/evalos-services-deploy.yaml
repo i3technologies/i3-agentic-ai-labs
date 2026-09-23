@@ -1,0 +1,187 @@
+# ============================================================
+# Grading + Credential Services — Kubernetes manifests
+# Namespace: i3-evalos
+# STEP-P2-05 / P2-GATE-05
+# Apply: kubectl apply -f platform/evalos/evalos-services-deploy.yaml
+# ============================================================
+
+# ── Grading Service Deployment ───────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grading-service
+  namespace: i3-evalos
+  labels:
+    app: grading-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: grading-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: grading-service
+    spec:
+      containers:
+        - name: grading-service
+          image: image-registry.openshift-image-registry.svc:5000/i3-evalos/grading-service:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: PASS_THRESHOLD
+              value: "68.0"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+
+---
+# ── Grading Service ──────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: grading-service
+  namespace: i3-evalos
+spec:
+  selector:
+    app: grading-service
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+
+---
+# ── Credential Service Deployment ────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: credential-service
+  namespace: i3-evalos
+  labels:
+    app: credential-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: credential-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: credential-service
+    spec:
+      containers:
+        - name: credential-service
+          image: image-registry.openshift-image-registry.svc:5000/i3-evalos/credential-service:latest
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - secretRef:
+                name: evalos-secrets
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+
+---
+# ── Credential Service ───────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: credential-service
+  namespace: i3-evalos
+spec:
+  selector:
+    app: credential-service
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+
+---
+# ── BuildConfig: grading-service ─────────────────────────────
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: grading-service
+  namespace: i3-evalos
+spec:
+  source:
+    type: Binary
+  strategy:
+    type: Docker
+  output:
+    to:
+      kind: ImageStreamTag
+      name: grading-service:latest
+
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: grading-service
+  namespace: i3-evalos
+
+---
+# ── BuildConfig: credential-service ──────────────────────────
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: credential-service
+  namespace: i3-evalos
+spec:
+  source:
+    type: Binary
+  strategy:
+    type: Docker
+  output:
+    to:
+      kind: ImageStreamTag
+      name: credential-service:latest
+
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: credential-service
+  namespace: i3-evalos

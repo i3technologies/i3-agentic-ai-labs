@@ -31,6 +31,8 @@ export const authOptions: NextAuthOptions = {
           | undefined
         token.roles = realmAccess?.roles ?? []
         token.userId = (p['sub'] as string) ?? token.sub ?? ''
+        // HC-4: extract tenant_id from Keycloak custom claim
+        token.tenant_id = (p['tenant_id'] as string) ?? null
       }
       return token
     },
@@ -44,6 +46,8 @@ export const authOptions: NextAuthOptions = {
         name: token.name ?? session.user?.name ?? '',
         roles,
         isAdmin: roles.includes('i3-admin'),
+        // HC-4: propagate tenant_id into session
+        tenant_id: (token.tenant_id as string | null) ?? null,
       }
       return session
     },

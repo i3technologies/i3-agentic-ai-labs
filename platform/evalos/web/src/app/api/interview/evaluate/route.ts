@@ -143,9 +143,10 @@ export async function POST(req: Request) {
     ? buildCodeEvalPrompt(body)
     : buildTextEvalPrompt(body)
 
-  const traceId = randomUUID()
-  const start = new Date()
-  const userId = session.user.userId || session.user.email || ''
+  const traceId  = randomUUID()
+  const start    = new Date()
+  const userId   = session.user.userId || session.user.email || ''
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
 
   try {
     const rawContent = await callLLM(prompt, model, AbortSignal.timeout(120_000))
@@ -166,24 +167,31 @@ export async function POST(req: Request) {
     const score = Math.max(0, Math.min(100, Math.round(parsed.score ?? 0)))
     const end = new Date()
 
-    // Persist evaluation to DB
-    await pool.query(
-      `INSERT INTO ai_interview_evaluations
-         (id, exam_id, question_id, student_id, question_type, student_answer,
-          score, feedback, strengths, improvements, model_used, created_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,NOW())
-       ON CONFLICT (exam_id, question_id, student_id) DO UPDATE
-         SET score=$7, feedback=$8, strengths=$9, improvements=$10,
-             model_used=$11, updated_at=NOW()`,
-      [
-        randomUUID(), examId, questionId, userId,
-        questionType, studentAnswer.slice(0, 5000),
-        score, parsed.feedback ?? '',
-        JSON.stringify(parsed.strengths ?? []),
-        JSON.stringify(parsed.improvements ?? []),
-        model,
-      ]
-    )
+    // Persist evaluation to DB (HC-4: SET LOCAL + tenant_id in INSERT)
+    const dbClient = await pool.connect()
+    try {
+      await dbClient.query('SET LOCAL app.tenant_id = $1', [tenantId])
+      await dbClient.query(
+        `INSERT INTO ai_interview_evaluations
+           (id, exam_id, question_id, student_id, question_type, student_answer,
+            score, feedback, strengths, improvements, model_used, tenant_id, created_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,NOW())
+         ON CONFLICT (exam_id, question_id, student_id) DO UPDATE
+           SET score=$7, feedback=$8, strengths=$9, improvements=$10,
+               model_used=$11, updated_at=NOW()`,
+        [
+          randomUUID(), examId, questionId, userId,
+          questionType, studentAnswer.slice(0, 5000),
+          score, parsed.feedback ?? '',
+          JSON.stringify(parsed.strengths ?? []),
+          JSON.stringify(parsed.improvements ?? []),
+          model,
+          tenantId,
+        ]
+      )
+    } finally {
+      dbClient.release()
+    }
 
     traceLangfuse({
       traceId,

@@ -15,12 +15,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const { rows } = await pool.query(
-    `SELECT id, text, type, language, time_limit, sort_order, is_active, created_at
-     FROM ai_interview_questions
-     ORDER BY sort_order, created_at`
-  )
-  return NextResponse.json({ questions: rows })
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
+  const client = await pool.connect()
+  try {
+    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    const { rows } = await client.query(
+      `SELECT id, text, type, language, time_limit, sort_order, is_active, created_at
+       FROM ai_interview_questions
+       ORDER BY sort_order, created_at`
+    )
+    return NextResponse.json({ questions: rows })
+  } finally {
+    client.release()
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -39,15 +46,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'type must be "text" or "code"' }, { status: 400 })
   }
 
-  const { rows } = await pool.query(
-    `INSERT INTO ai_interview_questions
-       (text, type, language, rubric, time_limit, sort_order, is_active, created_at)
-     VALUES ($1, $2, $3, $4, $5, $6, true, NOW())
-     RETURNING *`,
-    [text.trim(), type, language ?? null, rubric ?? '', time_limit ?? 600, sort_order ?? 99]
-  )
-
-  return NextResponse.json({ question: rows[0] }, { status: 201 })
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
+  const client = await pool.connect()
+  try {
+    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    const { rows } = await client.query(
+      `INSERT INTO ai_interview_questions
+         (text, type, language, rubric, time_limit, sort_order, is_active, tenant_id, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, true, $7, NOW())
+       RETURNING *`,
+      [text.trim(), type, language ?? null, rubric ?? '', time_limit ?? 600, sort_order ?? 99, tenantId]
+    )
+    return NextResponse.json({ question: rows[0] }, { status: 201 })
+  } finally {
+    client.release()
+  }
 }
 
 export async function PATCH(req: NextRequest) {
@@ -69,14 +82,20 @@ export async function PATCH(req: NextRequest) {
 
   if (updates.length === 0) return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
 
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
   params.push(id)
-  const { rows } = await pool.query(
-    `UPDATE ai_interview_questions SET ${updates.join(', ')} WHERE id = $${p} RETURNING *`,
-    params
-  )
-  if (rows.length === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-
-  return NextResponse.json({ question: rows[0] })
+  const client = await pool.connect()
+  try {
+    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    const { rows } = await client.query(
+      `UPDATE ai_interview_questions SET ${updates.join(', ')} WHERE id = $${p} RETURNING *`,
+      params
+    )
+    if (rows.length === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    return NextResponse.json({ question: rows[0] })
+  } finally {
+    client.release()
+  }
 }
 
 export async function DELETE(req: NextRequest) {
@@ -89,6 +108,13 @@ export async function DELETE(req: NextRequest) {
   const id = searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
-  await pool.query('DELETE FROM ai_interview_questions WHERE id = $1', [id])
-  return NextResponse.json({ deleted: true })
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
+  const client = await pool.connect()
+  try {
+    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await client.query('DELETE FROM ai_interview_questions WHERE id = $1', [id])
+    return NextResponse.json({ deleted: true })
+  } finally {
+    client.release()
+  }
 }

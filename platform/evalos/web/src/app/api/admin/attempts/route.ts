@@ -15,26 +15,36 @@ export async function GET() {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const { rows } = await pool.query(
-    `SELECT
-       qa.id,
-       qa.student_id,
-       e.title AS exam_title,
-       e.code AS exam_code,
-       qa.status,
-       qa.pct_score,
-       qa.passed,
-       qa.started_at,
-       qa.submitted_at,
-       COALESCE(qa.focus_lost_count, 0) AS focus_lost_count,
-       COALESCE(qa.fullscreen_exits, 0) AS fullscreen_exits,
-       COALESCE(qa.clipboard_events, 0) AS clipboard_events,
-       qa.proctor_flags
-     FROM quiz_attempts qa
-     JOIN exams e ON e.id = qa.exam_id
-     ORDER BY qa.started_at DESC
-     LIMIT 500`
-  )
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
 
-  return NextResponse.json(rows)
+  const client = await pool.connect()
+  try {
+    // HC-4: set RLS session variable before any tenant-scoped query
+    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+
+    const { rows } = await client.query(
+      `SELECT
+         qa.id,
+         qa.student_id,
+         e.title AS exam_title,
+         e.code AS exam_code,
+         qa.status,
+         qa.pct_score,
+         qa.passed,
+         qa.started_at,
+         qa.submitted_at,
+         COALESCE(qa.focus_lost_count, 0) AS focus_lost_count,
+         COALESCE(qa.fullscreen_exits, 0) AS fullscreen_exits,
+         COALESCE(qa.clipboard_events, 0) AS clipboard_events,
+         qa.proctor_flags
+       FROM quiz_attempts qa
+       JOIN exams e ON e.id = qa.exam_id
+       ORDER BY qa.started_at DESC
+       LIMIT 500`
+    )
+
+    return NextResponse.json(rows)
+  } finally {
+    client.release()
+  }
 }

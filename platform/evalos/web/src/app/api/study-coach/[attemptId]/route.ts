@@ -10,14 +10,12 @@ export const maxDuration = 115   // seconds — covers 110 s LLM AbortSignal + o
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-// LiteLLM gateway (preferred) — falls back to direct Ollama if not configured
+// LiteLLM gateway — sole approved inference path (R1)
+// LITELLM_URL and LITELLM_KEY must be present; missing values cause a startup-time
+// configuration error surfaced in the 502 response rather than a silent fallback.
 const LITELLM_URL   = process.env.LITELLM_URL   ?? ''
 const LITELLM_KEY   = process.env.LITELLM_KEY   ?? ''
 const LITELLM_MODEL = process.env.LITELLM_MODEL ?? 'qwen-fast'
-
-// Direct Ollama fallback (i3-ott, always available)
-const OLLAMA_URL   = process.env.OLLAMA_URL   ?? 'http://ollama.i3-ott.svc.cluster.local:11434'
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL ?? 'mistral:7b-instruct-q4_K_M'
 
 interface QuestionSnap {
   id: string
@@ -186,29 +184,6 @@ async function callLiteLLM(prompt: string, signal: AbortSignal, tenantId: string
   return data.choices?.[0]?.message?.content ?? ''
 }
 
-/**
- * Call Ollama /api/generate endpoint directly (fallback path).
- */
-async function callOllama(prompt: string, signal: AbortSignal): Promise<string> {
-  const resp = await fetch(`${OLLAMA_URL}/api/generate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: OLLAMA_MODEL,
-      prompt,
-      stream: false,
-      options: { temperature: 0.7, num_predict: 500, top_p: 0.9 },
-    }),
-    signal,
-  })
-  if (!resp.ok) {
-    const err = await resp.text()
-    throw new Error(`Ollama ${resp.status}: ${err}`)
-  }
-  const data = await resp.json()
-  return data.response ?? ''
-}
-
 export async function GET(
   _req: Request,
   { params }: { params: { attemptId: string } }
@@ -220,16 +195,25 @@ export async function GET(
   if (!UUID_RE.test(attemptId)) return NextResponse.json({ error: 'Invalid attempt ID' }, { status: 400 })
 
   const userId   = session.user.userId || session.user.email || ''
-  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000001'
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
 
-  const { rows } = await pool.query(
-    `SELECT qa.question_snapshot, qa.answers, qa.pct_score, qa.passed,
-            e.code AS exam_code, e.title AS exam_title
-     FROM quiz_attempts qa
-     JOIN exams e ON e.id = qa.exam_id
-     WHERE qa.id = $1 AND qa.student_id = $2 AND qa.status = 'submitted'`,
-    [attemptId, userId]
-  )
+  const client = await pool.connect()
+  let rows: Record<string, unknown>[]
+  try {
+    // HC-4: set RLS session variable
+    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    const result = await client.query(
+      `SELECT qa.question_snapshot, qa.answers, qa.pct_score, qa.passed,
+              e.code AS exam_code, e.title AS exam_title
+       FROM quiz_attempts qa
+       JOIN exams e ON e.id = qa.exam_id
+       WHERE qa.id = $1 AND qa.student_id = $2 AND qa.status = 'submitted'`,
+      [attemptId, userId]
+    )
+    rows = result.rows
+  } finally {
+    client.release()
+  }
 
   if (rows.length === 0) return NextResponse.json({ error: 'Attempt not found' }, { status: 404 })
 
@@ -250,23 +234,20 @@ export async function GET(
   const inferenceStart = new Date()
   let modelUsed = ''
 
+  if (!LITELLM_URL || !LITELLM_KEY) {
+    return NextResponse.json(
+      { error: 'Model gateway not configured', detail: 'LITELLM_URL and LITELLM_KEY are required (R1)' },
+      { status: 503 }
+    )
+  }
+
   try {
     const signal = AbortSignal.timeout(110_000)
 
-    // Prefer LiteLLM if configured; fall back to direct Ollama
-    if (LITELLM_URL && LITELLM_KEY) {
-      try {
-        coachReport = await callLiteLLM(prompt, signal, tenantId, userId)
-        modelUsed = `litellm/${LITELLM_MODEL}`
-      } catch (litellmErr) {
-        console.warn('[study-coach] LiteLLM failed, falling back to Ollama:', litellmErr)
-        coachReport = await callOllama(prompt, signal)
-        modelUsed = `ollama/${OLLAMA_MODEL}`
-      }
-    } else {
-      coachReport = await callOllama(prompt, signal)
-      modelUsed = `ollama/${OLLAMA_MODEL}`
-    }
+    // R1: all inference routes through LiteLLM proxy only.
+    // LiteLLM's own fallback chain (qwen-fast → granite-nano) handles model-level failures.
+    coachReport = await callLiteLLM(prompt, signal, tenantId, userId)
+    modelUsed = `litellm/${LITELLM_MODEL}`
 
     const inferenceEnd = new Date()
     const latencyMs = inferenceEnd.getTime() - inferenceStart.getTime()
@@ -303,7 +284,7 @@ export async function GET(
       output: `ERROR: ${String(err)}`,
       startTime: inferenceStart.toISOString(),
       endTime: inferenceEnd.toISOString(),
-      modelName: modelUsed || OLLAMA_MODEL,
+      modelName: modelUsed || LITELLM_MODEL,
       latencyMs: inferenceEnd.getTime() - inferenceStart.getTime(),
       level: 'ERROR',
     })

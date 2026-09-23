@@ -15,20 +15,18 @@ metadata:
   namespace: i3-evalos
 type: Opaque
 stringData:
-  NEXTAUTH_SECRET: "i3EvalOS-NextAuth-Secret-2026-xK9mPqRvTs"
-  DATABASE_URL: "postgresql://evalos:+UjoQo60gBAn%40RJ5GvlndqWc@i3-postgres-pgbouncer.i3-data.svc:5432/evalos_db"
+  NEXTAUTH_SECRET: ""  # SCRUBBED (STEP-P1-01): oc get secret evalos-web-secrets -n i3-evalos -o jsonpath='{.data.NEXTAUTH_SECRET}' | base64 -d
+  DATABASE_URL: ""  # SCRUBBED (STEP-P1-01): retrieve via — oc get secret evalos-web-secrets -n i3-evalos -o jsonpath='{.data.DATABASE_URL}' | base64 -d
   NEXTAUTH_URL: "https://evalos.i3technologies.co.ke"
   KEYCLOAK_ISSUER: "https://sso.i3technologies.co.ke/auth/realms/i3"
   KEYCLOAK_CLIENT_ID: "evalos-spa"
-  # LiteLLM gateway — primary AI inference path for Study Coach
-  # STEP-P1-01: LITELLM_KEY removed from ConfigMap.
-  # Inject via secretKeyRef → secret: litellm-api-secret, key: api-key
-  # OpenBao path: i3/litellm/api-key
+  # LiteLLM gateway — sole AI inference path for Study Coach (R1).
+  # Direct-Ollama fallback removed (R1-01). LiteLLM router handles model-level
+  # fallbacks internally (qwen-fast → granite-nano).
+  # LITELLM_KEY: inject via secretKeyRef → secret: litellm-api-secret, key: api-key
+  # OpenBao path: i3/litellm/api-key  (per-service virtual key, not master key)
   LITELLM_URL: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000"
   LITELLM_MODEL: "qwen-fast"
-  # Ollama direct — fallback if LiteLLM is unavailable
-  OLLAMA_URL: "http://ollama.i3-ott.svc.cluster.local:11434"
-  OLLAMA_MODEL: "mistral:7b-instruct-q4_K_M"
 
 ---
 # ── ImageStream ───────────────────────────────────────────────

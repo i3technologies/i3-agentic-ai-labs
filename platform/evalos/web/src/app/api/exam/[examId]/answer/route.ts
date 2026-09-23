@@ -35,25 +35,34 @@ export async function PATCH(
   }
 
   const { attemptId, questionId, answer } = parsed.data
-  const userId = session.user.userId || session.user.email || ''
+  const userId   = session.user.userId || session.user.email || ''
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
 
-  // Verify attempt ownership
-  const { rows } = await pool.query(
-    `SELECT id, answers FROM quiz_attempts
-     WHERE id = $1 AND student_id = $2 AND exam_id = $3 AND status = 'in_progress'`,
-    [attemptId, userId, examId]
-  )
-  if (rows.length === 0) {
-    return NextResponse.json({ error: 'Attempt not found' }, { status: 404 })
+  const client = await pool.connect()
+  try {
+    // HC-4: set RLS session variable
+    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+
+    // Verify attempt ownership
+    const { rows } = await client.query(
+      `SELECT id, answers FROM quiz_attempts
+       WHERE id = $1 AND student_id = $2 AND exam_id = $3 AND status = 'in_progress'`,
+      [attemptId, userId, examId]
+    )
+    if (rows.length === 0) {
+      return NextResponse.json({ error: 'Attempt not found' }, { status: 404 })
+    }
+
+    const currentAnswers: Record<string, unknown> = rows[0].answers ?? {}
+    currentAnswers[questionId] = answer
+
+    await client.query(
+      `UPDATE quiz_attempts SET answers = $1 WHERE id = $2`,
+      [JSON.stringify(currentAnswers), attemptId]
+    )
+
+    return NextResponse.json({ ok: true })
+  } finally {
+    client.release()
   }
-
-  const currentAnswers: Record<string, unknown> = rows[0].answers ?? {}
-  currentAnswers[questionId] = answer
-
-  await pool.query(
-    `UPDATE quiz_attempts SET answers = $1 WHERE id = $2`,
-    [JSON.stringify(currentAnswers), attemptId]
-  )
-
-  return NextResponse.json({ ok: true })
 }
