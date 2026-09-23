@@ -15,14 +15,20 @@ export default async function HomePage() {
         {/* Logo block */}
         <div className="text-center mb-10">
           <div className="inline-flex flex-col items-center gap-4 mb-2">
-            <div className="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-lg">
-              <Image
-                src="/i3-logo.svg"
-                alt="i3 Technologies"
-                width={72}
-                height={26}
-                priority
-              />
+            {/* i3 branded orb — displayed large on login screen */}
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full blur-2xl opacity-30 scale-110"
+                   style={{ background: 'radial-gradient(circle, #8eadd4 0%, #3b5a8a 70%)' }}/>
+              <div className="relative bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-600/50 rounded-3xl p-6 shadow-2xl">
+                <Image
+                  src="/i3-logo.svg"
+                  alt="i3 Technologies"
+                  width={160}
+                  height={44}
+                  priority
+                  className="drop-shadow-lg"
+                />
+              </div>
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white tracking-tight">

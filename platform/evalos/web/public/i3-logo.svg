@@ -1,10 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" fill="none">
-  <!-- i3 wordmark -->
-  <!-- "i" dot -->
-  <circle cx="12" cy="8" r="4" fill="#60A5FA"/>
-  <!-- "i" stem -->
-  <rect x="9" y="15" width="6" height="20" rx="3" fill="#60A5FA"/>
-  <!-- "3" numeral -->
-  <path d="M32 12 Q48 12 48 20 Q48 28 36 28 Q48 28 48 34 Q48 40 32 40" stroke="#60A5FA" stroke-width="5.5" stroke-linecap="round" fill="none"/>
-  <!-- Tagline text removed — wordmark only for header use -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 44" fill="none">
+  <!-- i3 Brand Mark: Swirl sphere orb (replicating the actual i3 Technologies logo) -->
+  <defs>
+    <radialGradient id="orbGrad" cx="50%" cy="38%" r="55%">
+      <stop offset="0%" stop-color="#8eadd4"/>
+      <stop offset="60%" stop-color="#5878a8"/>
+      <stop offset="100%" stop-color="#3b5a8a"/>
+    </radialGradient>
+    <clipPath id="orbClip">
+      <circle cx="19" cy="19" r="17"/>
+    </clipPath>
+  </defs>
+  <!-- Orb background -->
+  <circle cx="19" cy="19" r="17" fill="url(#orbGrad)"/>
+  <!-- Swirl 1 — large outer curve -->
+  <path d="M8 28 C10 16, 22 8, 30 14 C34 18, 30 26, 22 24 C15 22, 14 14, 20 10"
+        stroke="white" stroke-width="2.6" stroke-linecap="round" fill="none"
+        clip-path="url(#orbClip)" opacity="0.82"/>
+  <!-- Swirl 2 — inner counter curve -->
+  <path d="M12 12 C16 20, 26 22, 28 30"
+        stroke="white" stroke-width="1.8" stroke-linecap="round" fill="none"
+        clip-path="url(#orbClip)" opacity="0.55"/>
+  <!-- Subtle orb rim highlight -->
+  <ellipse cx="14" cy="12" rx="6" ry="3.5" fill="white" opacity="0.18" transform="rotate(-30,14,12)"/>
+
+  <!-- Wordmark: "i3" -->
+  <!-- i dot -->
+  <circle cx="50" cy="10" r="3.2" fill="#3b5a8a"/>
+  <!-- i stem -->
+  <rect x="47.2" y="16" width="5.6" height="19" rx="2.8" fill="#3b5a8a"/>
+  <!-- 3 numeral -->
+  <path d="M63 15 Q76 15 76 22 Q76 29 66 29 Q76 29 76 35 Q76 42 63 42"
+        stroke="#3b5a8a" stroke-width="5" stroke-linecap="round" fill="none"/>
+
+  <!-- " Technologies" thin caption text -->
+  <text x="88" y="30" font-family="-apple-system,Segoe UI,Arial,sans-serif"
+        font-size="10.5" font-weight="400" letter-spacing="0.4" fill="#5878a8">Technologies</text>
 </svg>

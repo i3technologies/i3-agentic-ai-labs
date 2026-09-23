@@ -15,6 +15,8 @@ interface Exam {
   duration_minutes: number
   pass_threshold: number
   max_attempts: number
+  retake_window_hours: number | null
+  first_attempt_at: string | null
   question_count: number
   attempt_count: number
   best_score: number | null
@@ -48,8 +50,13 @@ async function getExamsWithAttempts(userId: string, tenantId: string): Promise<E
          e.code,
          e.description,
          COALESCE(e.duration_minutes, e.duration_secs / 60) AS duration_minutes,
-         COALESCE(e.pass_threshold, e.passing_score, 68)    AS pass_threshold,
+         COALESCE(e.pass_threshold, e.passing_score, 90)    AS pass_threshold,
          COALESCE(e.max_attempts, 5)                        AS max_attempts,
+         e.retake_window_hours,
+         (SELECT MIN(qa2.started_at) FROM quiz_attempts qa2
+          WHERE qa2.exam_id = e.id AND qa2.student_id = $1
+            AND qa2.status IN ('submitted','graded','in_progress','grading','grading_failed')
+         ) AS first_attempt_at,
          (
            SELECT COUNT(*)::int FROM questions q
            WHERE q.set_number = (
@@ -170,10 +177,18 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {exams.map((exam) => {
             const attemptsLeft = Math.max(0, exam.max_attempts - exam.attempt_count)
-            const isExhausted = exam.attempt_count >= exam.max_attempts && !exam.last_passed
-            const isLocked = !exam.prerequisite_passed
-            const isPassed = exam.last_passed === true
-            const isDisabled = isLocked || isExhausted
+              const isExhausted = exam.attempt_count >= exam.max_attempts && !exam.last_passed
+              const isLocked = !exam.prerequisite_passed
+              const isPassed = exam.last_passed === true
+              const isDisabled = isLocked || isExhausted
+  
+              // Retake window logic for timed exams (e.g. Set 7: 48h window)
+              let retakeDeadline: Date | null = null
+              let retakeWindowExpired = false
+              if (exam.retake_window_hours && exam.first_attempt_at && exam.attempt_count > 0 && !isPassed) {
+                retakeDeadline = new Date(new Date(exam.first_attempt_at).getTime() + exam.retake_window_hours * 3600_000)
+                retakeWindowExpired = retakeDeadline < new Date()
+              }
 
             return (
               <div
@@ -216,9 +231,33 @@ export default async function DashboardPage() {
                     <span className="font-semibold text-slate-700">{exam.duration_minutes ?? 90}</span> min
                   </span>
                   <span>
-                    Pass at <span className="font-semibold text-slate-700">{exam.pass_threshold}%</span>
+                    Pass at{' '}
+                    <span className={`font-semibold ${exam.pass_threshold >= 90 ? 'text-orange-600' : 'text-slate-700'}`}>
+                      {exam.pass_threshold}%
+                    </span>
+                    {exam.pass_threshold >= 90 && (
+                      <span className="ml-1 text-orange-500 font-bold">⚡</span>
+                    )}
                   </span>
                 </div>
+
+                {/* Retake window badge (Set 7 and similar timed retake exams) */}
+                {exam.retake_window_hours && exam.attempt_count > 0 && !isPassed && (
+                  <div className={`flex items-center gap-2 text-xs rounded-lg px-3 py-1.5 ${
+                    retakeWindowExpired
+                      ? 'bg-red-50 border border-red-200 text-red-700'
+                      : 'bg-amber-50 border border-amber-200 text-amber-800'
+                  }`}>
+                    <span>{retakeWindowExpired ? '⏰' : '⏳'}</span>
+                    <span>
+                      {retakeWindowExpired
+                        ? `Retake window expired`
+                        : `Retake deadline: ${retakeDeadline?.toLocaleString('en-KE', { dateStyle: 'short', timeStyle: 'short' })}`
+                      }
+                      {' '}({exam.retake_window_hours}h window)
+                    </span>
+                  </div>
+                )}
 
                 {/* Attempts tracker */}
                 <div className="flex items-center gap-2">
@@ -244,6 +283,10 @@ export default async function DashboardPage() {
                   <div className="mt-auto flex items-center gap-2 bg-slate-50 border border-slate-200 text-slate-500 text-sm font-medium rounded-lg py-2.5 px-4">
                     <span>🔒</span>
                     <span className="text-xs">Pass {exam.prerequisite_code} first</span>
+                  </div>
+                ) : retakeWindowExpired ? (
+                  <div className="mt-auto flex items-center justify-center gap-2 bg-red-50 border border-red-200 text-red-700 text-xs font-medium rounded-lg py-2.5 px-4">
+                    ⏰ Retake window expired
                   </div>
                 ) : isExhausted ? (
                   <div className="mt-auto flex items-center justify-center gap-2 bg-red-50 border border-red-200 text-red-700 text-xs font-medium rounded-lg py-2.5 px-4">

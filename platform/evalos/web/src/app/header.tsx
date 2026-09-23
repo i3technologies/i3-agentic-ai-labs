@@ -10,17 +10,17 @@ export default function Header() {
   return (
     <header className="bg-slate-900 text-white border-b border-slate-700/50">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3">
-          {/* i3 logo */}
+        <Link href="/" className="flex items-center gap-2">
+          {/* i3 swirl-orb logo */}
           <Image
             src="/i3-logo.svg"
             alt="i3 Technologies"
-            width={40}
-            height={14}
-            className="brightness-100"
+            width={120}
+            height={33}
+            className="brightness-110"
             priority
           />
-          <div className="h-4 w-px bg-slate-600" />
+          <div className="h-4 w-px bg-slate-600 mx-1" />
           <span className="text-white font-semibold text-sm tracking-tight">EvalOS</span>
           <span className="hidden sm:inline text-slate-400 text-xs">
             Certification Practice

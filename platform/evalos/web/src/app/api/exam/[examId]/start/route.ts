@@ -99,8 +99,9 @@ export async function POST(
     // Fetch exam metadata including new columns
     const { rows: examRows } = await client.query(
       `SELECT id, code, randomize_order,
-              COALESCE(pass_threshold, 90) AS pass_threshold,
-              COALESCE(max_attempts, 5)    AS max_attempts,
+              COALESCE(pass_threshold, 90)  AS pass_threshold,
+              COALESCE(max_attempts, 5)     AS max_attempts,
+              retake_window_hours,
               prerequisite_exam_id
        FROM exams
        WHERE id = $1 AND is_published = true`,
@@ -113,7 +114,8 @@ export async function POST(
 
     // ── Rule 1: attempt limit ────────────────────────────────────────────────
     const { rows: countRows } = await client.query(
-      `SELECT COUNT(*)::int AS total
+      `SELECT COUNT(*)::int AS total,
+              MIN(started_at) AS first_attempt_at
        FROM quiz_attempts
        WHERE exam_id = $1 AND student_id = $2
          AND status IN ('submitted', 'graded', 'in_progress', 'grading', 'grading_failed')`,
@@ -130,6 +132,33 @@ export async function POST(
         },
         { status: 403 }
       )
+    }
+
+    // ── Rule 1b: retake window enforcement ─────────────────────────────────
+    // If retake_window_hours is set and this is a retake (attempt > 0),
+    // the new attempt must be started within retake_window_hours of the FIRST attempt.
+    if (exam.retake_window_hours != null && usedAttempts > 0) {
+      const firstAttemptAt: Date | null = countRows[0].first_attempt_at
+        ? new Date(countRows[0].first_attempt_at)
+        : null
+      if (firstAttemptAt) {
+        const windowMs   = exam.retake_window_hours * 60 * 60 * 1000
+        const deadlineMs = firstAttemptAt.getTime() + windowMs
+        const nowMs      = Date.now()
+        if (nowMs > deadlineMs) {
+          const deadline = new Date(deadlineMs).toISOString()
+          return NextResponse.json(
+            {
+              error: 'retake_window_expired',
+              message: `Retake window for this exam has closed. Retakes must be started within ${exam.retake_window_hours} hours of your first attempt (deadline: ${deadline}).`,
+              retake_window_hours: exam.retake_window_hours,
+              first_attempt_at: firstAttemptAt.toISOString(),
+              deadline,
+            },
+            { status: 403 }
+          )
+        }
+      }
     }
 
     // ── Rule 2: prerequisite pass check ─────────────────────────────────────
