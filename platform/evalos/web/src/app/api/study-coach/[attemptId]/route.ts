@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import pool from '@/lib/db'
+import pool, { setTenantContext } from '@/lib/db'
 import { traceLangfuse, estimateTokens } from '@/lib/langfuse'
 import { randomUUID } from 'crypto'
 
@@ -202,7 +202,7 @@ export async function GET(
   let rows: any[]
   try {
     // HC-4: set RLS session variable
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
     const result = await client.query(
       `SELECT qa.question_snapshot, qa.answers, qa.pct_score, qa.passed,
               e.code AS exam_code, e.title AS exam_title

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { z } from 'zod'
 import { authOptions } from '@/lib/auth'
-import pool from '@/lib/db'
+import pool, { setTenantContext } from '@/lib/db'
 import { runEvaluationPipeline, type AgentInput } from '@/lib/agent-pipeline'
 
 export const dynamic = 'force-dynamic'
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
   // Verify the attempt belongs to this user (or is admin)
   const client = await pool.connect()
   try {
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
     const { rows } = await client.query(
       `SELECT id FROM quiz_attempts WHERE id = $1 AND (student_id = $2 OR $3)`,
       [attempt_id, userId, session.user.isAdmin]
@@ -81,7 +81,7 @@ export async function POST(req: Request) {
   ;(async () => {
     const dbClient = await pool.connect()
     try {
-      await dbClient.query('SET LOCAL app.tenant_id = $1', [tenantId])
+      await setTenantContext(dbClient, tenantId)
       for (const report of result.reports) {
         await dbClient.query(
           `INSERT INTO evaluation_agent_reports

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import pool from '@/lib/db'
+import pool, { setTenantContext } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
   const client = await pool.connect()
   try {
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
     const { rows } = await client.query(
       `SELECT id, text, type, language, time_limit, sort_order, is_active, created_at
        FROM ai_interview_questions
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
   const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
   const client = await pool.connect()
   try {
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
     const { rows } = await client.query(
       `INSERT INTO ai_interview_questions
          (text, type, language, rubric, time_limit, sort_order, is_active, tenant_id, created_at)
@@ -86,7 +86,7 @@ export async function PATCH(req: NextRequest) {
   params.push(id)
   const client = await pool.connect()
   try {
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
     const { rows } = await client.query(
       `UPDATE ai_interview_questions SET ${updates.join(', ')} WHERE id = $${p} RETURNING *`,
       params
@@ -111,7 +111,7 @@ export async function DELETE(req: NextRequest) {
   const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
   const client = await pool.connect()
   try {
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
     await client.query('DELETE FROM ai_interview_questions WHERE id = $1', [id])
     return NextResponse.json({ deleted: true })
   } finally {

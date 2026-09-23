@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import pool from '@/lib/db'
+import pool, { setTenantContext } from '@/lib/db'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { CertificatePDF } from '@/lib/certificate-pdf'
 import { randomUUID } from 'crypto'
@@ -27,7 +27,7 @@ export async function POST(
   const client = await pool.connect()
   try {
     // HC-4: set RLS session variable
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
 
     // Verify the attempt is a passing submission
     const { rows: attemptRows } = await client.query(
@@ -87,7 +87,7 @@ export async function GET(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let rows: any[]
   try {
-    await certClient.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(certClient, tenantId)
     const result = await certClient.query(
       `SELECT * FROM certificates WHERE attempt_id = $1 AND student_id = $2`,
       [attemptId, userId]

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import pool from '@/lib/db'
+import pool, { setTenantContext } from '@/lib/db'
 import { traceLangfuse, estimateTokens } from '@/lib/langfuse'
 import { randomUUID } from 'crypto'
 
@@ -170,7 +170,7 @@ export async function POST(req: Request) {
     // Persist evaluation to DB (HC-4: SET LOCAL + tenant_id in INSERT)
     const dbClient = await pool.connect()
     try {
-      await dbClient.query('SET LOCAL app.tenant_id = $1', [tenantId])
+      await setTenantContext(dbClient, tenantId)
       await dbClient.query(
         `INSERT INTO ai_interview_evaluations
            (id, exam_id, question_id, student_id, question_type, student_answer,

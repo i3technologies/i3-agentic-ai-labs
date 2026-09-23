@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createHmac, timingSafeEqual } from 'crypto'
 import { z } from 'zod'
-import pool from '@/lib/db'
+import pool, { setTenantContext } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
   const client = await pool.connect()
   try {
     // HC-4: set RLS context
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
 
     // Log inbound webhook event for audit trail
     await client.query(

@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
-import pool from '@/lib/db'
+import pool, { setTenantContext } from '@/lib/db'
 import ExamClient from './exam-client'
 
 interface ExamPageProps {
@@ -13,7 +13,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 async function getOrCreateAttempt(examId: string, userId: string, tenantId: string) {
   const client = await pool.connect()
   try {
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
     const { rows: existing } = await client.query(
       `SELECT id, question_snapshot, answers, started_at
        FROM quiz_attempts
@@ -31,7 +31,7 @@ async function getOrCreateAttempt(examId: string, userId: string, tenantId: stri
 async function getExamMeta(examId: string, tenantId: string) {
   const client = await pool.connect()
   try {
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
     const { rows } = await client.query(
       `SELECT id, title, code, description,
               COALESCE(duration_secs, 5400) AS duration_secs,

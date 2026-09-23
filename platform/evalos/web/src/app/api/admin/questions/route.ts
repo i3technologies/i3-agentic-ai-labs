@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import pool from '@/lib/db'
+import pool, { setTenantContext } from '@/lib/db'
 import { randomUUID } from 'crypto'
 
 export const dynamic = 'force-dynamic'
@@ -40,7 +40,7 @@ export async function GET(req: Request) {
   const client = await pool.connect()
   try {
     // HC-4: set RLS session variable
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
 
     const { rowCount } = await client.query(
       `UPDATE questions SET is_active = $1, updated_at = NOW()
@@ -89,7 +89,7 @@ export async function POST(req: Request) {
 
   try {
     // HC-4: set RLS session variable for all queries in this transaction
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
 
     // Resolve domain_number from domain_name if we can
     const { rows: domainRows } = await client.query<{ domain_name: string; domain_number: number }>(

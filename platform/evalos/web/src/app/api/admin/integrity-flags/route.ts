@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import pool from '@/lib/db'
+import pool, { setTenantContext } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,7 +32,7 @@ export async function GET() {
   const client = await pool.connect()
   try {
     // HC-4: set RLS context
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
 
     const { rows } = await client.query(
       `SELECT
@@ -106,7 +106,7 @@ export async function PATCH(req: Request) {
 
   const client = await pool.connect()
   try {
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
 
     if (action === 'clear') {
       // Reviewer is satisfied: remove flag, keep scores as-is

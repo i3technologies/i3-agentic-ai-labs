@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { z } from 'zod'
 import { authOptions } from '@/lib/auth'
-import pool from '@/lib/db'
+import pool, { setTenantContext } from '@/lib/db'
 import { triggerN8nWebhook } from '@/lib/n8n'
 import { computeIntegrityScores } from '@/lib/integrity-scorer'
 import {
@@ -151,7 +151,7 @@ export async function POST(
     tenantId = attempt.tenant_id ?? (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
 
     // HC-4: set RLS context now that we have the tenant_id
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
 
     // ── SAGA Step 2: mark attempt as 'grading' ──────────────────────────────
     await client.query(
@@ -239,7 +239,7 @@ export async function POST(
       ;(async () => {
         const skillClient = await pool.connect()
         try {
-          await skillClient.query('SET LOCAL app.tenant_id = $1', [tenantId])
+          await setTenantContext(skillClient, tenantId)
           for (const d of domain_breakdown) {
             // Upsert skill node for this domain (idempotent)
             const { rows: skillRows } = await skillClient.query(

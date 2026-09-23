@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { z } from 'zod'
 import { authOptions } from '@/lib/auth'
-import pool from '@/lib/db'
+import pool, { setTenantContext } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -132,7 +132,7 @@ export async function POST(req: Request) {
   const client = await pool.connect()
   let source: QuestionRow
   try {
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
     const { rows } = await client.query(
       `SELECT id, text, type, question_type, options, correct_answers,
               explanation, domain_name, topic, set_number, difficulty

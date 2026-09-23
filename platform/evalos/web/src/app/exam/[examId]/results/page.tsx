@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { authOptions } from '@/lib/auth'
-import pool from '@/lib/db'
+import pool, { setTenantContext } from '@/lib/db'
 import CertificateButton from './certificate-button'
 import StudyCoachPanel from './study-coach-panel'
 
@@ -50,7 +50,7 @@ interface DomainRow {
 async function getAttemptResults(attemptId: string, userId: string, tenantId: string): Promise<AttemptRow | null> {
   const client = await pool.connect()
   try {
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
     const { rows } = await client.query<AttemptRow>(
       `SELECT
          qa.id,

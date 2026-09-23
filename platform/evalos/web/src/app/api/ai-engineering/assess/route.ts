@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { z } from 'zod'
 import { authOptions } from '@/lib/auth'
-import pool from '@/lib/db'
+import pool, { setTenantContext } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 115
@@ -163,7 +163,7 @@ export async function POST(req: Request) {
   // Persist session record
   const client = await pool.connect()
   try {
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
     await client.query(
       `INSERT INTO ai_engineering_sessions
          (tenant_id, attempt_id, candidate_id, mode, prompts_sent,

@@ -11,7 +11,7 @@
  */
 
 import { createHmac } from 'crypto'
-import pool from './db'
+import pool, { setTenantContext } from './db'
 
 const ADMISSIONS_URL    = process.env.ADMISSIONS_WEBHOOK_URL    ?? ''
 const ADMISSIONS_SECRET = process.env.ADMISSIONS_WEBHOOK_SECRET ?? ''
@@ -96,7 +96,7 @@ export async function dispatchAssessmentCompleted(
   const client = await pool.connect()
   let logId: string | undefined
   try {
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
     const { rows } = await client.query(
       `INSERT INTO admissions_webhook_log
          (tenant_id, direction, event_type, payload, applicant_id, attempt_id)
@@ -132,7 +132,7 @@ export async function dispatchAssessmentCompleted(
     if (logId) {
       const logClient = await pool.connect()
       try {
-        await logClient.query('SET LOCAL app.tenant_id = $1', [tenantId])
+        await setTenantContext(logClient, tenantId)
         await logClient.query(
           `UPDATE admissions_webhook_log
            SET status_code = $1, error_message = $2
@@ -152,7 +152,7 @@ export async function dispatchAssessmentCompleted(
     if (logId) {
       const logClient = await pool.connect()
       try {
-        await logClient.query('SET LOCAL app.tenant_id = $1', [tenantId])
+        await setTenantContext(logClient, tenantId)
         await logClient.query(
           `UPDATE admissions_webhook_log SET error_message = $1 WHERE id = $2`,
           [String(httpErr), logId]

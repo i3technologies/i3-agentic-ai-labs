@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { authOptions } from '@/lib/auth'
-import pool from '@/lib/db'
+import pool, { setTenantContext } from '@/lib/db'
 
 // Default tenant for queries that don't have one from session
 const DEFAULT_TENANT = '00000000-0000-0000-0000-000000000002'
@@ -42,7 +42,7 @@ interface RecentAttempt {
 async function getExamsWithAttempts(userId: string, tenantId: string): Promise<Exam[]> {
   const client = await pool.connect()
   try {
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
     const { rows } = await client.query<Exam>(
       `SELECT
          e.id,
@@ -100,7 +100,7 @@ async function getExamsWithAttempts(userId: string, tenantId: string): Promise<E
 async function getRecentAttempts(userId: string, tenantId: string): Promise<RecentAttempt[]> {
   const client = await pool.connect()
   try {
-    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+    await setTenantContext(client, tenantId)
     const { rows } = await client.query<RecentAttempt>(
       `SELECT
          qa.id,
