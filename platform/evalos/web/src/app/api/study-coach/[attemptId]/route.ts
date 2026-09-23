@@ -198,7 +198,8 @@ export async function GET(
   const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
 
   const client = await pool.connect()
-  let rows: Record<string, unknown>[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let rows: any[]
   try {
     // HC-4: set RLS session variable
     await client.query('SET LOCAL app.tenant_id = $1', [tenantId])

@@ -13,7 +13,8 @@ export async function GET() {
   const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
 
   const client = await pool.connect()
-  let rows: Record<string, unknown>[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let rows: any[]
   try {
     // HC-4: set RLS session variable before any tenant-scoped query
     await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
@@ -55,8 +56,8 @@ export async function GET() {
       r.status,
       r.pct_score ?? '',
       r.passed ?? '',
-      r.started_at ? new Date(r.started_at as string).toISOString() : '',
-      r.submitted_at ? new Date(r.submitted_at as string).toISOString() : '',
+      r.started_at ? new Date(r.started_at).toISOString() : '',
+      r.submitted_at ? new Date(r.submitted_at).toISOString() : '',
       r.focus_lost,
       r.fullscreen_exits,
       r.clipboard_events,
