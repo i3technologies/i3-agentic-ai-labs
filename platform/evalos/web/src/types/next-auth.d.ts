@@ -10,6 +10,7 @@ declare module 'next-auth' {
       image?: string | null
       roles: string[]
       isAdmin: boolean
+      tenant_id?: string | null   // HC-4: propagated from Keycloak claim
     }
   }
 }
@@ -18,6 +19,7 @@ declare module 'next-auth/jwt' {
   interface JWT {
     userId: string
     roles: string[]
+    tenant_id?: string | null     // HC-4: from Keycloak custom claim
     accessToken?: string
     idToken?: string
     refreshToken?: string
