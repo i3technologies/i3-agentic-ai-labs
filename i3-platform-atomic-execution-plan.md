@@ -1,4 +1,4 @@
-# i3 AI Platform — Atomic Execution Plan
+﻿# i3 AI Platform — Atomic Execution Plan
 ## Sequential Refactoring Steps with Interface Contracts, Compatibility Rules, and Sensor Checks
 
 **Version:** 1.0  
@@ -56,7 +56,7 @@ Steps with explicit `Depends On` entries are strictly sequential.
 - `platform/scripts/setpw-root-pct.sh` — remove hardcoded `REDACTED-mariadb-root`
 - `platform/scripts/setup-erpnext-site.sh` — remove hardcoded `REDACTED-erp-admin`
 - `platform/scripts/test_keycloak.sh` — remove hardcoded `REDACTED-keycloak-admin`
-- `platform/scripts/test_litellm_full.sh` — remove hardcoded `sk-litellm-i3-f951c9377163a11275864cb92e90ad13`
+- `platform/scripts/test_litellm_full.sh` — remove hardcoded `REDACTED-LITELLM-KEY`
 - `pmaas-secret-patch.json` — remove base64-encoded `postgresql://pmaas:REDACTED-pmaas-db@...`
 - `onboarding-agent/.env.local` — remove from git tracking
 - `.gitignore` — add `*.env.local`, `.env`, `.env.*`, `*secret-patch.json`

@@ -1,4 +1,4 @@
-# i3 AI Platform — Incremental Modernisation Roadmap
+﻿# i3 AI Platform — Incremental Modernisation Roadmap
 ## Architecture Plan Document
 
 **Version:** 1.0  
@@ -92,7 +92,7 @@ Every service must have a green test gate before Phase 2 begins.
 - [ ] Rotate MariaDB root password (`REDACTED-mariadb-root`) found in `platform/scripts/setpw-root-pct.sh`
 - [ ] Rotate ERPNext admin password (`REDACTED-erp-admin`) found in `platform/scripts/setup-erpnext-site.sh`
 - [ ] Rotate Keycloak admin password (`REDACTED-keycloak-admin`) found in `platform/scripts/test_keycloak.sh`
-- [ ] Rotate LiteLLM API key (`sk-litellm-i3-f951c9377163a11275864cb92e90ad13`) found in `platform/scripts/test_litellm_full.sh`
+- [ ] Rotate LiteLLM API key (`REDACTED-LITELLM-KEY`) found in `platform/scripts/test_litellm_full.sh`
 - [ ] Revoke and regenerate the PostgreSQL connection URL in `pmaas-secret-patch.json` (decoded: `postgresql://pmaas:REDACTED-pmaas-db@...`)
 - [ ] Remove or rewrite all `platform/scripts/*.sh` files that embed passwords; store rotated credentials in OpenBao only
 - [ ] Add `onboarding-agent/.env.local` to `.gitignore` and remove from git tracking

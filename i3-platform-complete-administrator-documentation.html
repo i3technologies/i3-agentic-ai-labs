@@ -1,4 +1,4 @@
-
+﻿
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -317,7 +317,7 @@ oc exec -n i3-data $(oc get pods -n i3-data \
   <tr><td>Internal URL</td><td><code>http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000</code></td></tr>
   <tr><td>Port</td><td>4000</td></tr>
   <tr><td>Replicas</td><td>2 (scales 1–8 via KEDA on request rate &gt;20/min)</td></tr>
-  <tr><td><strong>Master API Key</strong></td><td><span class="pw">sk-litellm-i3-f951c9377163a11275864cb92e90ad13</span></td></tr>
+  <tr><td><strong>Master API Key</strong></td><td><span class="pw">REDACTED-LITELLM-KEY</span></td></tr>
   <tr><td>Routing Strategy</td><td>least-busy with fallback chain</td></tr>
   <tr><td>Redis Semantic Cache TTL</td><td>3600 s, similarity threshold 0.95</td></tr>
 </table>
@@ -349,19 +349,19 @@ curl -s https://litellm.i3technologies.co.ke/health/readiness | python3 -m json.
 
 # List available models
 curl -s https://litellm.i3technologies.co.ke/v1/models \
-  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  -H "Authorization: Bearer REDACTED-LITELLM-KEY" \
   | python3 -m json.tool
 
 # Create user API key
 curl -s -X POST https://litellm.i3technologies.co.ke/key/generate \
-  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  -H "Authorization: Bearer REDACTED-LITELLM-KEY" \
   -H "Content-Type: application/json" \
   -d '{"user_id":"student01","models":["granite-nano","qwen-fast"],"max_budget":5.0,"rpm_limit":30}' \
   | python3 -m json.tool
 
 # Check spend/budget
 curl -s https://litellm.i3technologies.co.ke/global/spend \
-  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  -H "Authorization: Bearer REDACTED-LITELLM-KEY" \
   | python3 -m json.tool
 
 # View logs
@@ -461,7 +461,7 @@ oc rollout restart deployment/directus -n i3-ott
   <tr><td>NEXTAUTH_SECRET</td><td>Stored in <code>evalos-web-secrets</code></td></tr>
   <tr><td>Langfuse PK</td><td><span class="pw">pk-lf-i3evalos-8ed2998c3f68449b</span></td></tr>
   <tr><td>Langfuse SK</td><td><span class="pw">sk-lf-i3evalos-b7905eaf49904cc5</span></td></tr>
-  <tr><td>LiteLLM Key</td><td><span class="pw">sk-litellm-i3-f951c9377163a11275864cb92e90ad13</span></td></tr>
+  <tr><td>LiteLLM Key</td><td><span class="pw">REDACTED-LITELLM-KEY</span></td></tr>
 </table>
 
 <h3>Execution Profiles</h3>
@@ -496,7 +496,7 @@ oc get scaledobject evalos-sandbox-scaler -n i3-evalos
 
 # AI question generation requires:
 #   LITELLM_URL = http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1
-#   LITELLM_KEY = sk-litellm-i3-f951c9377163a11275864cb92e90ad13
+#   LITELLM_KEY = REDACTED-LITELLM-KEY
 </pre>
 
 
@@ -969,7 +969,7 @@ make build-images         # Builds all custom images, pushes to de.icr.io
   <tr><td>5</td><td>Configure KRA eTIMS credentials</td><td>AfroERP</td><td style="color:#d4a017">🟠 MEDIUM</td><td>Set KRA_CLIENT_ID, KRA_CLIENT_SECRET, KRA_PIN in afroerp-secrets (i3-afroerp)</td></tr>
   <tr><td>6</td><td>Configure M-Pesa credentials (AfroERP)</td><td>AfroERP</td><td style="color:#d4a017">🟠 MEDIUM</td><td>Set MPESA_CONSUMER_KEY, MPESA_CONSUMER_SECRET, MPESA_PASSKEY in afroerp-secrets</td></tr>
   <tr><td>7</td><td>Set MariaDB root + frappe passwords (AfroERP)</td><td>AfroERP</td><td style="color:#d4a017">🟠 MEDIUM</td><td>Replace REPLACE_WITH_SECURE_ROOT_PW and REPLACE_WITH_SECURE_DB_PW in afroerp-secrets</td></tr>
-  <tr><td>8</td><td>Set LiteLLM key in afroerp-secrets</td><td>AfroERP AI</td><td style="color:#d4a017">🟠 MEDIUM</td><td>Set LITELLM_KEY=sk-litellm-i3-f951c9377163a11275864cb92e90ad13 in afroerp-secrets</td></tr>
+  <tr><td>8</td><td>Set LiteLLM key in afroerp-secrets</td><td>AfroERP AI</td><td style="color:#d4a017">🟠 MEDIUM</td><td>Set LITELLM_KEY=REDACTED-LITELLM-KEY in afroerp-secrets</td></tr>
   <tr><td>9</td><td>Generate Hyperledger Fabric MSP for orderer-0</td><td>FORD Blockchain</td><td style="color:#5a8a00">🟡 LOW</td><td>orderer-0 in i3-ford is in CrashLoopBackOff — generate MSP cert from i3tech-ca</td></tr>
   <tr><td>10</td><td>Fix pgBackRest backup recurring failures</td><td>i3-data</td><td style="color:#5a8a00">🟡 LOW</td><td>Port 8432 NP applied; stale Error pods accumulating — investigate and clear</td></tr>
   <tr><td>11</td><td>Set Directus static token in n8n-secrets</td><td>n8n ↔ Directus</td><td style="color:#5a8a00">🟡 LOW</td><td>Generate in Directus admin → API Tokens → set DIRECTUS_STATIC_TOKEN in n8n-secrets</td></tr>

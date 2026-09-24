@@ -1,4 +1,4 @@
-
+﻿
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -208,7 +208,7 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid #e5e7eb;text-align:
 <div class="cmd"><code><span class="comment"># Edit platform/model-gateway/litellm/litellm-config-oss.yaml</span><br /><span class="comment"># Add entry under model_list, then:</span><br />git add platform/model-gateway/litellm/litellm-config-oss.yaml<br />git commit -m "feat(models): add &lt;model&gt; alias"<br />git push origin main<br /><span class="comment"># ArgoCD applies; LiteLLM hot-reloads config</span></code></div>
 
 <h3>Test LiteLLM via Ollama Pod</h3>
-<div class="cmd"><code>oc exec -n i3-model-gateway ollama-0 -c ollama -- \<br />  wget -qO- http://litellm-proxy.i3-model-gateway.svc:4000/models \<br />  --header "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13"</code></div>
+<div class="cmd"><code>oc exec -n i3-model-gateway ollama-0 -c ollama -- \<br />  wget -qO- http://litellm-proxy.i3-model-gateway.svc:4000/models \<br />  --header "Authorization: Bearer REDACTED-LITELLM-KEY"</code></div>
 
 
 <h2 class="section" id="s7">7. Keycloak / SSO</h2>
