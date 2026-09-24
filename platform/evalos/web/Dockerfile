@@ -17,6 +17,9 @@ ENV NEXTAUTH_URL=https://evalos.i3technologies.co.ke
 ENV KEYCLOAK_ISSUER=https://sso.i3technologies.co.ke/auth/realms/i3
 ENV KEYCLOAK_CLIENT_ID=evalos-spa
 ENV DATABASE_URL=postgresql://evalos:placeholder@localhost:5432/evalos_db
+# Signal to db.ts that this is a build-time execution — skips PG_CA_CERT_PATH check.
+# The check IS enforced at runtime (pod startup). Fail-closed behaviour is preserved.
+ENV NEXT_BUILD=true
 
 RUN npm run build
 

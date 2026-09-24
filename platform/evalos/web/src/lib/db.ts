@@ -72,10 +72,13 @@ function createPool(): Pool {
   // SSL configuration — STEP-P1-03: enforce certificate validation in production.
   // PG_CA_CERT_PATH must be set to the Crunchy operator CA cert path
   // (mounted from the crunchy-postgres-ca Secret by the EvalOS Deployment).
-  // If PG_CA_CERT_PATH is not set in production the pool will fail to start,
-  // which is the intended fail-safe behaviour (fail closed).
+  // NEXT_BUILD=true is set by the OpenShift BuildConfig to skip the cert check
+  // during `next build` static page collection — cert files are not present in
+  // the build container. The check is enforced at runtime (pod startup), not
+  // at build time, so fail-closed behaviour is preserved.
   const caCertPath = process.env.PG_CA_CERT_PATH
-  if (process.env.NODE_ENV === 'production') {
+  const isBuildPhase = process.env.NEXT_BUILD === 'true'
+  if (process.env.NODE_ENV === 'production' && !isBuildPhase) {
     if (!caCertPath) {
       throw new Error(
         'PG_CA_CERT_PATH is not set. Mount the crunchy-postgres-ca Secret and set ' +
@@ -87,14 +90,14 @@ function createPool(): Pool {
       ca: readCaCert(caCertPath),
     }
   } else {
-    // Development: allow plaintext or self-signed
+    // Development or build phase: allow plaintext / skip cert check
     config.ssl = false
   }
 
   return new Pool(config)
 }
 
-// Reuse pool across hot reloads in development
+// Reuse pool across hot reloads in development; created fresh each build in prod.
 const pool: Pool = global._pgPool ?? createPool()
 
 if (process.env.NODE_ENV !== 'production') {
