@@ -1,0 +1,9 @@
+{
+  "name": "voteChoicesCollection",
+  "policy": "OR('FordPeerMSP.peer')",
+  "requiredPeerCount": 1,
+  "maxPeerCount": 1,
+  "blockToLive": 0,
+  "memberOnlyRead": true,
+  "memberOnlyWrite": true
+}

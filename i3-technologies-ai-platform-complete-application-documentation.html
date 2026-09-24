@@ -1,0 +1,520 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>i3 Technologies AI Platform — Full Documentation</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.6;background:#fff;color:#1f2328;padding:32px 16px}
+.wrap{max-width:780px;margin:0 auto}
+h1{font-size:24px;font-weight:700;margin-bottom:4px}
+h2{font-size:16px;font-weight:700;margin:32px 0 10px;padding-bottom:6px;border-bottom:2px solid #e5e7eb;color:#1f2328}
+h3{font-size:13px;font-weight:700;margin:18px 0 6px;color:#3b82d4;text-transform:uppercase;letter-spacing:.05em}
+.meta{color:#57606a;font-size:13px;margin-bottom:28px}
+.toc{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:16px 20px;margin-bottom:32px;columns:2;column-gap:32px}
+.toc a{color:#3b82d4;text-decoration:none;font-size:13px;display:block;margin-bottom:3px}
+.toc a:hover{text-decoration:underline}
+
+/* summary bar */
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.kpi-card{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:14px;text-align:center}
+.kpi-card .n{font-size:28px;font-weight:700;color:#1a7f37}
+.kpi-card .l{font-size:12px;color:#57606a;margin-top:2px}
+
+/* app cards */
+.app-card{border:1px solid #e5e7eb;border-radius:8px;margin-bottom:18px;overflow:hidden}
+.app-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#f7f8fa;border-bottom:1px solid #e5e7eb}
+.app-header .title{font-weight:700;font-size:15px}
+.app-header .ns{font-size:11px;color:#57606a;font-family:"SFMono-Regular",Consolas,monospace;background:#e5e7eb;padding:2px 7px;border-radius:20px}
+.app-body{padding:14px 16px}
+.row{display:grid;grid-template-columns:140px 1fr;gap:4px 12px;margin-bottom:2px;font-size:13px}
+.row .lbl{color:#57606a;font-weight:600}
+.row .val a{color:#3b82d4;text-decoration:none}
+.row .val a:hover{text-decoration:underline}
+code{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:3px;padding:1px 5px;font-size:12px;font-family:"SFMono-Regular",Consolas,monospace;word-break:break-all}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.ok{background:#dafbe1;color:#1a7f37}
+.warn{background:#fff8c5;color:#9a6700}
+.err{background:#ffebe9;color:#cf222e}
+.info{background:#ddf4ff;color:#0550ae}
+.note{background:#fff8c5;border:1px solid #d4a017;border-radius:5px;padding:9px 13px;font-size:13px;margin:8px 0}
+.note strong{color:#9a6700}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+th{background:#f7f8fa;text-align:left;padding:7px 10px;border-bottom:2px solid #e5e7eb;font-weight:600;color:#57606a;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+td{padding:7px 10px;border-bottom:1px solid #e5e7eb;vertical-align:top}
+tr:last-child td{border-bottom:none}
+.divider{border:none;border-top:1px solid #e5e7eb;margin:28px 0}
+footer{margin-top:40px;padding-top:14px;border-top:1px solid #e5e7eb;text-align:center;font-size:12px;color:#57606a}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>i3 Technologies AI Platform</h1>
+<div class="meta">
+  Complete Application Documentation  ·  IBM ROKS Frankfurt (eu-de)  ·  OpenShift 4.17.56  ·  Last verified: <strong>15 September 2026</strong>
+</div>
+
+
+<div class="kpi">
+  <div class="kpi-card"><div class="n">12</div><div class="l">Nodes Ready</div></div>
+  <div class="kpi-card"><div class="n">18</div><div class="l">Namespaces</div></div>
+  <div class="kpi-card"><div class="n">22</div><div class="l">Applications</div></div>
+  <div class="kpi-card"><div class="n">1.5 TB</div><div class="l">Persistent Storage</div></div>
+</div>
+
+
+<div class="toc">
+  <a href="#infra">1. Infrastructure Overview</a>
+  <a href="#auth">2. Keycloak SSO (i3-auth)</a>
+  <a href="#evalos">3. i3 Evalos (i3-evalos)</a>
+  <a href="#edbridge">4. Moodle EduBridge (i3-edbridge)</a>
+  <a href="#ailab">5. AI Lab — JupyterHub + Sage (i3-ai-lab)</a>
+  <a href="#pmaas">6. PMaaS (i3-pmaas)</a>
+  <a href="#afroerp">7. AfroERP / ERPNext (i3-afroerp)</a>
+  <a href="#engage">8. Engage (i3-engage)</a>
+  <a href="#admissions">9. Admissions Agent (i3-admissions)</a>
+  <a href="#onboarding">10. Onboarding Agent (i3-onboarding)</a>
+  <a href="#ott">11. OTT Platform — n8n, Directus, SeaweedFS (i3-ott)</a>
+  <a href="#model">12. Model Gateway — LiteLLM, Ollama (i3-model-gateway)</a>
+  <a href="#voice">13. Voice — STT / TTS (i3-voice)</a>
+  <a href="#smartlab">14. SmartLab API (i3-smartlab)</a>
+  <a href="#social">15. Nextcloud Social (i3-social)</a>
+  <a href="#security">16. OpenBao Vault (i3-security)</a>
+  <a href="#monitoring">17. Monitoring — Grafana + Prometheus (i3-monitoring)</a>
+  <a href="#data">18. PostgreSQL HA (i3-data)</a>
+  <a href="#messaging">19. Kafka (i3-messaging)</a>
+  <a href="#gitops">20. GitOps (i3-gitops)</a>
+  <a href="#creds">Credentials Quick Reference</a>
+  <a href="#dns">DNS Records Reference</a>
+</div>
+
+
+<h2 id="infra">1. Infrastructure Overview</h2>
+<div class="row"><span class="lbl">Cluster</span><span class="val">IBM ROKS Frankfurt — <code>c113-e.eu-de.containers.cloud.ibm.com:32581</code></span></div>
+<div class="row"><span class="lbl">OpenShift</span><span class="val">4.17.56 (client 4.15.59)</span></div>
+<div class="row"><span class="lbl">Kubernetes</span><span class="val">v1.30.14</span></div>
+<div class="row"><span class="lbl">Nodes</span><span class="val">12 × master/worker across 3 AZs (eu-de-1/2/3) — all Ready</span></div>
+<div class="row"><span class="lbl">Load Balancer</span><span class="val"><code>8eec2322-eu-de.lb.appdomain.cloud</code> (IBM Cloud VPC LB)</span></div>
+<div class="row"><span class="lbl">DNS Authority</span><span class="val">ns1.host-ww.net / ns2.host-ww.net (cPanel)</span></div>
+<div class="row"><span class="lbl">TLS / Certs</span><span class="val">cert-manager + Let's Encrypt prod via acme-dns (DNS-01). Wildcard <code>*.i3technologies.co.ke</code> LE cert. Two per-host LE certs for SmartLab API.</span></div>
+<div class="row"><span class="lbl">Secrets Backend</span><span class="val">OpenBao (Vault) — 3-node HA Raft, unsealed, active</span></div>
+<div class="row"><span class="lbl">Object Storage</span><span class="val">SeaweedFS — 3 × 500 Gi volumes + IBM COS DR sync</span></div>
+<div class="row"><span class="lbl">Primary Database</span><span class="val">PostgreSQL 16.8 HA (3-node Patroni via PGO) — 174 MB data, daily full + 6-hourly diff backups via pgBackRest</span></div>
+<div class="row"><span class="lbl">Message Bus</span><span class="val">Apache Kafka 3-broker cluster via Strimzi</span></div>
+
+<hr class="divider" />
+
+
+<h2 id="auth">2. Keycloak SSO</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">Keycloak RHSSO</span><span class="ns">i3-auth</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">Public URL</span><span class="val"><a href="https://sso.i3technologies.co.ke" target="_blank">https://sso.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Alt URL</span><span class="val"><a href="https://keycloak.i3technologies.co.ke" target="_blank">https://keycloak.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Admin Console</span><span class="val"><a href="https://sso.i3technologies.co.ke/auth/admin" target="_blank">https://sso.i3technologies.co.ke/auth/admin</a></span></div>
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ Running</span> 1/1 pod</span></div>
+    <div class="row"><span class="lbl">Username</span><span class="val"><code>admin</code></span></div>
+    <div class="row"><span class="lbl">Password</span><span class="val"><code>REDACTED-keycloak-admin</code></span></div>
+    <div class="row"><span class="lbl">Realm</span><span class="val"><code>i3</code> — all platform apps authenticate here</span></div>
+    <div class="row"><span class="lbl">OIDC Discovery</span><span class="val"><code>https://sso.i3technologies.co.ke/auth/realms/i3/.well-known/openid-configuration</code></span></div>
+    <div class="row"><span class="lbl">Internal SVC</span><span class="val"><code>keycloak.i3-auth.svc.cluster.local:8443</code></span></div>
+    <div class="row"><span class="lbl">OIDC Clients</span><span class="val">evalos-web · open-webui-sage · pmaas-web · i3smartlab · nuru-coworker · zuri-coworker · dawa-coworker · mfumo-coworker + others</span></div>
+    <div class="note"><strong>Note:</strong> <code>keycloak.i3technologies.co.ke</code> may show an SSL trust error on Windows machines with outdated root store — use <code>sso.i3technologies.co.ke</code> as primary login URL.</div>
+  </div>
+</div>
+
+
+<h2 id="evalos">3. i3 Evalos</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">i3 Evalos — AI-Powered Sandbox Learning Platform</span><span class="ns">i3-evalos</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">URL</span><span class="val"><a href="https://evalos.i3technologies.co.ke" target="_blank">https://evalos.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ 200 OK</span> 2 web replicas + sandbox pod</span></div>
+    <div class="row"><span class="lbl">Login</span><span class="val">Via Keycloak SSO (i3 realm)</span></div>
+    <div class="row"><span class="lbl">AI Agent</span><span class="val">Zuri — <a href="https://zuri.i3technologies.co.ke" target="_blank">https://zuri.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Storage</span><span class="val">40 Gi rootfs PVC + 10 Gi kernels PVC + 10 Gi Zuri-data PVC</span></div>
+    <div class="row"><span class="lbl">Sandbox</span><span class="val">Isolated Jupyter kernel execution environment (<code>evalos-sandbox</code> pod)</span></div>
+    <div class="row"><span class="lbl">AI Services</span><span class="val">LiteLLM proxy (model-gateway) · ChromaDB RAG · STT/TTS voice</span></div>
+  </div>
+</div>
+
+
+<h2 id="edbridge">4. i3 EduBridge — Moodle LMS</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">Moodle 4.4.12 (i3 EduBridge)</span><span class="ns">i3-edbridge</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">URL</span><span class="val"><a href="https://moodle.i3technologies.co.ke" target="_blank">https://moodle.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ 200 OK</span> 1/1 pod — Recreate strategy</span></div>
+    <div class="row"><span class="lbl">Admin URL</span><span class="val"><a href="https://moodle.i3technologies.co.ke/login/index.php" target="_blank">https://moodle.i3technologies.co.ke/login/index.php</a></span></div>
+    <div class="row"><span class="lbl">Username</span><span class="val"><code>i3admin</code></span></div>
+    <div class="row"><span class="lbl">Password</span><span class="val"><code>i3-Moodle-Admin-2026!</code></span></div>
+    <div class="row"><span class="lbl">Version</span><span class="val">Moodle 4.4.12 — code <code>2024042212.00</code>, DB aligned</span></div>
+    <div class="row"><span class="lbl">Image</span><span class="val"><code>moodlehq/moodle-php-apache:8.2</code> — Moodle source downloaded to PVC on init</span></div>
+    <div class="row"><span class="lbl">Storage</span><span class="val">20 Gi RWO PVC (<code>edbridge-data</code>) — Moodle source + data persisted</span></div>
+    <div class="row"><span class="lbl">Init Containers</span><span class="val"><code>wait-for-db</code> → <code>install-moodle</code> (downloads 4.4.12 if missing) → <code>moodle-upgrade</code> (runs upgrade CLI)</span></div>
+    <div class="row"><span class="lbl">Web Service</span><span class="val">Token: <code>4a88241080ac203af3a76a00c428b7a9</code> — used by SmartLab API</span></div>
+    <div class="row"><span class="lbl">Config</span><span class="val"><code>$CFG-&gt;sslproxy = true</code> — required for HTTPS behind OpenShift edge termination</span></div>
+  </div>
+</div>
+
+
+<h2 id="ailab">5. AI Lab — JupyterHub &amp; Sage</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">JupyterHub</span><span class="ns">i3-ai-lab</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">URL</span><span class="val"><a href="https://jupyter.i3technologies.co.ke" target="_blank">https://jupyter.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ 200 OK</span> 2/2 containers — Recreate strategy</span></div>
+    <div class="row"><span class="lbl">Login</span><span class="val">Via Keycloak SSO (i3 realm)</span></div>
+    <div class="row"><span class="lbl">Storage</span><span class="val">10 Gi shared notebooks PVC + 20 Gi ChromaDB PVC</span></div>
+    <div class="row"><span class="lbl">AI Access</span><span class="val">LiteLLM + Ollama via <code>i3-model-gateway</code> namespace</span></div>
+  </div>
+</div>
+<div class="app-card">
+  <div class="app-header"><span class="title">Sage — Open-WebUI AI Assistant</span><span class="ns">i3-ai-lab</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">URL</span><span class="val"><a href="https://sage.i3technologies.co.ke" target="_blank">https://sage.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ 200 OK</span> — OIDC login <span class="badge ok">✓ Working</span></span></div>
+    <div class="row"><span class="lbl">Login</span><span class="val">Click <em>"Sign in with i3 SSO"</em> → redirects to Keycloak → returns to Sage</span></div>
+    <div class="row"><span class="lbl">Version</span><span class="val">Open-WebUI v0.11.3</span></div>
+    <div class="row"><span class="lbl">Keycloak Client</span><span class="val"><code>open-webui-sage</code> — redirectURI: <code>https://sage.i3technologies.co.ke/*</code></span></div>
+    <div class="row"><span class="lbl">Default Model</span><span class="val"><code>qwen-fast</code> via LiteLLM proxy</span></div>
+    <div class="row"><span class="lbl">Voice</span><span class="val">STT: Whisper via <code>voice-stt.i3-voice</code> · TTS via <code>voice-tts.i3-voice</code></span></div>
+    <div class="row"><span class="lbl">RAG</span><span class="val">Ollama <code>nomic-embed-text</code> embeddings · ChromaDB vector store</span></div>
+    <div class="row"><span class="lbl">Persona</span><span class="val">Sage — AI Lab instructor at i3 Technologies (cloud/AI/DevOps mentor)</span></div>
+    <div class="row"><span class="lbl">Signups</span><span class="val">Disabled — login only via SSO</span></div>
+  </div>
+</div>
+
+
+<h2 id="pmaas">6. PMaaS — Project Management as a Service</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">PMaaS Web + Dawa Agent</span><span class="ns">i3-pmaas</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">URL</span><span class="val"><a href="https://pmaas.i3technologies.co.ke" target="_blank">https://pmaas.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ 307 → 200</span> Running — redirect to login is normal</span></div>
+    <div class="row"><span class="lbl">Login</span><span class="val">Via Keycloak SSO (i3 realm) — client <code>pmaas-web</code></span></div>
+    <div class="row"><span class="lbl">Dawa Agent</span><span class="val"><a href="https://dawa.i3technologies.co.ke" target="_blank">https://dawa.i3technologies.co.ke</a> <span class="badge ok">✓ 200</span></span></div>
+    <div class="row"><span class="lbl">Storage</span><span class="val">20 Gi media PVC + 10 Gi Dawa-data PVC</span></div>
+    <div class="row"><span class="lbl">Campaign Agent</span><span class="val">1/1 Running — handles automated project communications</span></div>
+  </div>
+</div>
+
+
+<h2 id="afroerp">7. AfroERP — ERPNext</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">AfroERP (ERPNext) + Mfumo Agent</span><span class="ns">i3-afroerp</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">URL</span><span class="val"><a href="https://afroerp.i3technologies.co.ke" target="_blank">https://afroerp.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ 200 OK</span></span></div>
+    <div class="row"><span class="lbl">Username</span><span class="val"><code>Administrator</code></span></div>
+    <div class="row"><span class="lbl">Password</span><span class="val"><code>REDACTED-erp-admin</code></span></div>
+    <div class="row"><span class="lbl">Mfumo Agent</span><span class="val"><a href="https://mfumo.i3technologies.co.ke" target="_blank">https://mfumo.i3technologies.co.ke</a> <span class="badge ok">✓ 200</span></span></div>
+    <div class="row"><span class="lbl">Database</span><span class="val">MariaDB — 50 Gi PVC</span></div>
+    <div class="row"><span class="lbl">Cache</span><span class="val">Redis 1/1 Running</span></div>
+    <div class="row"><span class="lbl">App Storage</span><span class="val">20 Gi ERPNext sites PVC</span></div>
+    <div class="row"><span class="lbl">Build</span><span class="val">Custom S2I build via <code>afroerp-agent</code> BuildConfig</span></div>
+  </div>
+</div>
+
+
+<h2 id="engage">8. Engage — Campaign &amp; Messaging Platform</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">Engage Web + Nuru Agent</span><span class="ns">i3-engage</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">URL</span><span class="val"><a href="https://engage.i3technologies.co.ke" target="_blank">https://engage.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge warn">⚠ 404</span> Pod is running but Next.js build has no UI pages — only API routes compiled. Rebuild required.</span></div>
+    <div class="row"><span class="lbl">Nuru Agent</span><span class="val"><a href="https://nuru.i3technologies.co.ke" target="_blank">https://nuru.i3technologies.co.ke</a> <span class="badge ok">✓ 200</span></span></div>
+    <div class="row"><span class="lbl">WhatsApp Webhook</span><span class="val"><code>https://engage-webhook.i3technologies.co.ke/webhook/whatsapp</code></span></div>
+    <div class="row"><span class="lbl">SMS Consumer</span><span class="val">1/1 Running — <code>sms-consumer</code> pod</span></div>
+    <div class="row"><span class="lbl">API Routes</span><span class="val"><code>/api/auth</code> · <code>/api/health</code> · <code>/api/contacts</code> · <code>/api/campaigns/send</code></span></div>
+    <div class="row"><span class="lbl">Storage</span><span class="val">10 Gi Nuru-data PVC</span></div>
+    <div class="note"><strong>Action needed:</strong> Engage UI pages missing from build. Trigger a new build with complete <code>src/app/</code> source included.</div>
+  </div>
+</div>
+
+
+<h2 id="admissions">9. Admissions Agent</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">Admissions AI Agent</span><span class="ns">i3-admissions</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">URL</span><span class="val"><a href="https://admissions.i3technologies.co.ke" target="_blank">https://admissions.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Health</span><span class="val"><span class="badge ok">✓ /health → 200</span></span></div>
+    <div class="row"><span class="lbl">Root response</span><span class="val">404 — agent API, no root handler by design</span></div>
+    <div class="row"><span class="lbl">Components</span><span class="val">admissions-agent pod + ChromaDB (20 Gi) + MCP Connectors</span></div>
+    <div class="row"><span class="lbl">AI Access</span><span class="val">LiteLLM proxy + ChromaDB RAG</span></div>
+  </div>
+</div>
+
+
+<h2 id="onboarding">10. Onboarding Agent</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">Onboarding AI Agent</span><span class="ns">i3-onboarding</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">URL</span><span class="val"><a href="https://onboarding.i3technologies.co.ke" target="_blank">https://onboarding.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Health</span><span class="val"><span class="badge ok">✓ /health → 200</span></span></div>
+    <div class="row"><span class="lbl">Root response</span><span class="val">404 — agent API, no root handler by design</span></div>
+    <div class="row"><span class="lbl">Port</span><span class="val">3000 — Node.js runtime</span></div>
+  </div>
+</div>
+
+
+<h2 id="ott">11. OTT Platform</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">n8n — Workflow Automation</span><span class="ns">i3-ott</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">URL</span><span class="val"><a href="https://n8n.i3technologies.co.ke" target="_blank">https://n8n.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ 200 OK</span> — login working</span></div>
+    <div class="row"><span class="lbl">API Key</span><span class="val"><code>eb1db1b7bc27004b3ce95e8a4b750a6174b336af60b67038a9516b23cd9a3b41</code></span></div>
+    <div class="row"><span class="lbl">Editor URL</span><span class="val"><code>https://n8n.i3technologies.co.ke:5678/</code></span></div>
+    <div class="row"><span class="lbl">Webhook URL</span><span class="val"><code>https://n8n.i3technologies.co.ke</code></span></div>
+    <div class="row"><span class="lbl">Active Workflow</span><span class="val">EvalOS Events (ID: <code>319537be-cd59-4645-9b5e-f183acfecf7e</code>)</span></div>
+    <div class="row"><span class="lbl">VOD Pipeline</span><span class="val">Workflow ID: <code>cDnWgJkI6RZ90pfy</code> — imported, needs activation</span></div>
+    <div class="row"><span class="lbl">Storage</span><span class="val">10 Gi PVC — Recreate strategy</span></div>
+    <div class="row"><span class="lbl">Database</span><span class="val">PostgreSQL (<code>n8n</code> DB via PGBouncer)</span></div>
+  </div>
+</div>
+<div class="app-card">
+  <div class="app-header"><span class="title">Directus CMS</span><span class="ns">i3-ott</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">URL</span><span class="val"><a href="https://cms.i3technologies.co.ke" target="_blank">https://cms.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ 200 OK</span></span></div>
+    <div class="row"><span class="lbl">Username</span><span class="val"><code>admin@i3.tech</code></span></div>
+    <div class="row"><span class="lbl">Password</span><span class="val"><code>a0meDpzBwTx7Srks</code></span></div>
+    <div class="row"><span class="lbl">Alt URL</span><span class="val"><a href="https://directus.i3technologies.co.ke" target="_blank">https://directus.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Internal SVC</span><span class="val"><code>directus.i3-ott.svc.cluster.local:8055</code></span></div>
+  </div>
+</div>
+<div class="app-card">
+  <div class="app-header"><span class="title">SeaweedFS Object Storage</span><span class="ns">i3-ott</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ All pods running</span> master + 3 volumes + filer + S3-GW</span></div>
+    <div class="row"><span class="lbl">S3 Endpoint</span><span class="val"><code>http://seaweedfs-s3.i3-ott.svc.cluster.local:8333</code></span></div>
+    <div class="row"><span class="lbl">SmartLab Buckets</span><span class="val"><code>smartlab-content</code> · <code>smartlab-scorm</code> · <code>smartlab-video</code> · <code>smartlab-epub</code></span></div>
+    <div class="row"><span class="lbl">Storage</span><span class="val">3 × 500 Gi RWO PVCs (retain) + COS DR sync (daily)</span></div>
+    <div class="row"><span class="lbl">CDN / HLS</span><span class="val">nginx-hls — 2 replicas — <code>https://cdn.i3.tech</code></span></div>
+  </div>
+</div>
+<div class="app-card">
+  <div class="app-header"><span class="title">Langfuse — LLM Observability</span><span class="ns">i3-ott</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">URL</span><span class="val"><a href="https://langfuse.i3technologies.co.ke" target="_blank">https://langfuse.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ Pod 1/1 Running</span> — SSL trust error on Windows only (wildcard cert, valid globally)</span></div>
+    <div class="row"><span class="lbl">Also in</span><span class="val"><code>i3-model-gateway</code> — <code>langfuse-web</code> pod 1/1 Running</span></div>
+  </div>
+</div>
+
+
+<h2 id="model">12. Model Gateway</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">LiteLLM Proxy</span><span class="ns">i3-model-gateway</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">URL</span><span class="val"><a href="https://litellm.i3technologies.co.ke" target="_blank">https://litellm.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ 2 replicas running</span> — SSL trust error on Windows only (confirmed 200 internally)</span></div>
+    <div class="row"><span class="lbl">Master Key</span><span class="val"><code>sk-litellm-i3-f951c9377163a11275864cb92e90ad13</code></span></div>
+    <div class="row"><span class="lbl">Internal SVC</span><span class="val"><code>litellm-proxy.i3-model-gateway.svc.cluster.local:4000</code></span></div>
+    <div class="row"><span class="lbl">Models</span><span class="val">Routes to Ollama (local) + external providers via API keys</span></div>
+  </div>
+</div>
+<div class="app-card">
+  <div class="app-header"><span class="title">Ollama</span><span class="ns">i3-model-gateway</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ 1/1 Running</span></span></div>
+    <div class="row"><span class="lbl">Internal SVC</span><span class="val"><code>ollama.i3-model-gateway.svc.cluster.local:11434</code></span></div>
+    <div class="row"><span class="lbl">Storage</span><span class="val">80 Gi model storage PVC</span></div>
+    <div class="row"><span class="lbl">OTT Ollama</span><span class="val">Separate Ollama in <code>i3-ott</code> with 20 Gi models PVC — 1/1 Running</span></div>
+  </div>
+</div>
+
+
+<h2 id="voice">13. Voice — STT / TTS</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">Speech-to-Text &amp; Text-to-Speech</span><span class="ns">i3-voice</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">STT URL</span><span class="val"><a href="https://stt.i3technologies.co.ke" target="_blank">https://stt.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">TTS URL</span><span class="val"><a href="https://tts.i3technologies.co.ke" target="_blank">https://tts.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ Both 1/1 Running</span> — external timeout on Windows (wildcard SSL). <code>/docs → 200</code> internally.</span></div>
+    <div class="row"><span class="lbl">STT Internal</span><span class="val"><code>voice-stt.i3-voice.svc.cluster.local:8001</code> — Whisper-compatible <code>/v1</code> endpoint</span></div>
+    <div class="row"><span class="lbl">TTS Internal</span><span class="val"><code>voice-tts.i3-voice.svc.cluster.local:8000</code> — OpenAI-compatible <code>/v1</code> endpoint</span></div>
+    <div class="row"><span class="lbl">Storage</span><span class="val">10 Gi models + 10 Gi STT-models + 10 Gi voice-clones PVCs</span></div>
+  </div>
+</div>
+
+
+<h2 id="smartlab">14. i3 SmartLab API</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">SmartLab Authoring API (FastAPI)</span><span class="ns">i3-smartlab</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">Primary URL</span><span class="val"><a href="https://api.smartlab.i3technologies.co.ke/docs" target="_blank">https://api.smartlab.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Alt URL</span><span class="val"><a href="https://smartlab-api.i3technologies.co.ke/docs" target="_blank">https://smartlab-api.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ 200 — Valid Let's Encrypt SSL on both routes</span></span></div>
+    <div class="row"><span class="lbl">API Docs</span><span class="val"><code>/docs</code> — Swagger UI · <code>/redoc</code> — ReDoc</span></div>
+    <div class="row"><span class="lbl">TLS Cert 1</span><span class="val"><code>smartlab-api-tls</code> — LE cert for <code>api.smartlab.i3technologies.co.ke</code> — <span class="badge ok">READY</span></span></div>
+    <div class="row"><span class="lbl">TLS Cert 2</span><span class="val"><code>smartlab-api-wildcard-tls</code> — LE cert for <code>smartlab-api.i3technologies.co.ke</code> — <span class="badge ok">READY</span></span></div>
+    <div class="row"><span class="lbl">Keycloak Client</span><span class="val"><code>i3smartlab</code> (ID: <code>f8e3dd4a</code>) — OIDC realm: i3</span></div>
+    <div class="row"><span class="lbl">Database</span><span class="val">PostgreSQL <code>smartlab_db</code> — 12 tables (courses, lessons, books, quizzes, jobs, ai_sessions, etc.)</span></div>
+    <div class="row"><span class="lbl">Storage</span><span class="val">20 Gi scratch PVC — S3: SeaweedFS (4 buckets)</span></div>
+    <div class="row"><span class="lbl">n8n Workflow</span><span class="val">VOD Pipeline ID: <code>cDnWgJkI6RZ90pfy</code> — imported, needs activation in n8n UI</span></div>
+    <div class="row"><span class="lbl">Routers</span><span class="val">ai · books · courses · jobs · lessons · live · publish · quizzes</span></div>
+    <div class="row"><span class="lbl">Services</span><span class="val">ai_service · epub_builder · moodle_service · scorm_packager · storage_service</span></div>
+    <div class="note"><strong>Next Phase:</strong> SmartLab Studio UI (Next.js 14) at <code>author.i3technologies.co.ke</code> — Phase 2 not yet deployed.</div>
+  </div>
+</div>
+
+
+<h2 id="social">15. Nextcloud Social</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">Nextcloud</span><span class="ns">i3-social</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">URL</span><span class="val"><a href="https://nextcloud.i3technologies.co.ke" target="_blank">https://nextcloud.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ 200 OK</span></span></div>
+    <div class="row"><span class="lbl">Username</span><span class="val"><code>i3admin</code></span></div>
+    <div class="row"><span class="lbl">Password</span><span class="val"><code>i3-Social-Admin-2026!</code></span></div>
+    <div class="row"><span class="lbl">Storage</span><span class="val">50 Gi RWO PVC (retain)</span></div>
+    <div class="row"><span class="lbl">Cache</span><span class="val">Redis 1/1 Running</span></div>
+  </div>
+</div>
+
+
+<h2 id="security">16. OpenBao Vault</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">OpenBao (Vault) — Secrets Management</span><span class="ns">i3-security</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">URL</span><span class="val"><a href="https://vault.i3technologies.co.ke" target="_blank">https://vault.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ 200 OK — Unsealed — HA Active</span></span></div>
+    <div class="row"><span class="lbl">Version</span><span class="val">OpenBao 2.6.1</span></div>
+    <div class="row"><span class="lbl">Mode</span><span class="val">HA Raft — 3 nodes — active since 2026-09-06</span></div>
+    <div class="row"><span class="lbl">Seal Type</span><span class="val">Shamir — 3 shares, threshold 2 — <strong>currently unsealed</strong></span></div>
+    <div class="row"><span class="lbl">Storage</span><span class="val">3 × 10 Gi PVCs (one per raft node)</span></div>
+    <div class="row"><span class="lbl">Unseal Script</span><span class="val"><code>platform/scripts/unseal-openbao.ps1</code></span></div>
+  </div>
+</div>
+
+
+<h2 id="monitoring">17. Monitoring</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">Grafana + Prometheus</span><span class="ns">i3-monitoring</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">Grafana URL</span><span class="val"><a href="https://grafana.i3technologies.co.ke/login" target="_blank">https://grafana.i3technologies.co.ke</a></span></div>
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ 200 OK — Login working</span></span></div>
+    <div class="row"><span class="lbl">Username</span><span class="val"><code>admin</code></span></div>
+    <div class="row"><span class="lbl">Password</span><span class="val"><code>0rINtjXAE3yRTSouVnqF</code></span></div>
+    <div class="row"><span class="lbl">Prometheus</span><span class="val">Internal only — <code>prometheus.i3-monitoring.svc.cluster.local:9090</code> — 20 Gi PVC</span></div>
+    <div class="row"><span class="lbl">Plugin</span><span class="val"><code>grafana-piechart-panel</code> installed</span></div>
+    <div class="note"><strong>Fixed this session:</strong> Removed <code>/grafana</code> sub-path from ROOT_URL (was causing infinite 302 redirect). Password now reads from secret <code>grafana-secrets</code>.</div>
+  </div>
+</div>
+
+
+<h2 id="data">18. PostgreSQL HA</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">PostgreSQL 16.8 — 3-node Patroni HA (PGO)</span><span class="ns">i3-data</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ 3/3 primaries (4/4 containers each) — Active primary confirmed</span></span></div>
+    <div class="row"><span class="lbl">Connection</span><span class="val"><code>i3-postgres-pgbouncer.i3-data.svc.cluster.local:5432</code></span></div>
+    <div class="row"><span class="lbl">Databases</span><span class="val">keycloak · moodle · n8n · evalos · pmaas · afroerp · langfuse · smartlab_db + others</span></div>
+    <div class="row"><span class="lbl">Storage</span><span class="val">3 × 20 Gi pgdata PVCs (one per node)</span></div>
+    <div class="row"><span class="lbl">Backup</span><span class="val">pgBackRest repo1 — daily full + 6-hourly diff. Last successful: 2026-09-15 00:01 UTC. Status: <span class="badge ok">OK</span></span></div>
+    <div class="row"><span class="lbl">Backup Note</span><span class="val">Sep 14 06:00–15:00 UTC batch failed (port-8432 timeout). Manual diff run succeeded. Monitor next window.</span></div>
+    <div class="row"><span class="lbl">PGBouncer</span><span class="val">1/1 Running — connection pooling proxy</span></div>
+    <div class="row"><span class="lbl">Version</span><span class="val">PostgreSQL 16.8 compiled by GCC 8.5.0</span></div>
+  </div>
+</div>
+
+
+<h2 id="messaging">19. Apache Kafka</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">Kafka 3-broker cluster (Strimzi)</span><span class="ns">i3-messaging</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ 3/3 brokers + entity-operator + Strimzi operator running</span></span></div>
+    <div class="row"><span class="lbl">Brokers</span><span class="val"><code>i3-kafka-combined-0/1/2</code> — combined mode (broker + controller)</span></div>
+    <div class="row"><span class="lbl">Storage</span><span class="val">3 × 20 Gi PVCs</span></div>
+    <div class="row"><span class="lbl">Operator</span><span class="val">Strimzi v0.51.0</span></div>
+  </div>
+</div>
+
+
+<h2 id="gitops">20. GitOps</h2>
+<div class="app-card">
+  <div class="app-header"><span class="title">i3 GitOps — EventListener</span><span class="ns">i3-gitops</span></div>
+  <div class="app-body">
+    <div class="row"><span class="lbl">Status</span><span class="val"><span class="badge ok">✓ el-i3-github-listener Running</span> (3 restarts — normal for webhook listener)</span></div>
+    <div class="row"><span class="lbl">Purpose</span><span class="val">GitHub webhook triggers OpenShift Tekton Pipelines (S2I builds) for evalos, admissions, mcp-connectors, etc.</span></div>
+  </div>
+</div>
+
+<hr class="divider" />
+
+
+<h2 id="creds">Credentials Quick Reference</h2>
+<table>
+  <tr><th>Application</th><th>Login URL</th><th>Username</th><th>Password / Key</th></tr>
+  <tr><td><strong>Keycloak SSO</strong></td><td><a href="https://sso.i3technologies.co.ke/auth/admin">sso.i3technologies.co.ke/auth/admin</a></td><td><code>admin</code></td><td><code>REDACTED-keycloak-admin</code></td></tr>
+  <tr><td><strong>Moodle (EduBridge)</strong></td><td><a href="https://moodle.i3technologies.co.ke/login">moodle.i3technologies.co.ke</a></td><td><code>i3admin</code></td><td><code>i3-Moodle-Admin-2026!</code></td></tr>
+  <tr><td><strong>Grafana</strong></td><td><a href="https://grafana.i3technologies.co.ke/login">grafana.i3technologies.co.ke</a></td><td><code>admin</code></td><td><code>0rINtjXAE3yRTSouVnqF</code></td></tr>
+  <tr><td><strong>Directus CMS</strong></td><td><a href="https://cms.i3technologies.co.ke">cms.i3technologies.co.ke</a></td><td><code>admin@i3.tech</code></td><td><code>a0meDpzBwTx7Srks</code></td></tr>
+  <tr><td><strong>AfroERP</strong></td><td><a href="https://afroerp.i3technologies.co.ke">afroerp.i3technologies.co.ke</a></td><td><code>Administrator</code></td><td><code>REDACTED-erp-admin</code></td></tr>
+  <tr><td><strong>Nextcloud</strong></td><td><a href="https://nextcloud.i3technologies.co.ke">nextcloud.i3technologies.co.ke</a></td><td><code>i3admin</code></td><td><code>i3-Social-Admin-2026!</code></td></tr>
+  <tr><td><strong>LiteLLM</strong></td><td><a href="https://litellm.i3technologies.co.ke">litellm.i3technologies.co.ke</a></td><td>—</td><td><code>sk-litellm-i3-f951c9377163a11275864cb92e90ad13</code></td></tr>
+  <tr><td><strong>n8n</strong></td><td><a href="https://n8n.i3technologies.co.ke">n8n.i3technologies.co.ke</a></td><td>—</td><td><code>eb1db1b7bc27004b3ce95e8a4b750a6174b336af60b67038a9516b23cd9a3b41</code></td></tr>
+  <tr><td><strong>Moodle Web Service</strong></td><td>REST API</td><td>—</td><td><code>4a88241080ac203af3a76a00c428b7a9</code></td></tr>
+  <tr><td><strong>Sage (Open-WebUI)</strong></td><td><a href="https://sage.i3technologies.co.ke">sage.i3technologies.co.ke</a></td><td colspan="2">SSO only — sign in with i3 SSO button</td></tr>
+  <tr><td><strong>JupyterHub</strong></td><td><a href="https://jupyter.i3technologies.co.ke">jupyter.i3technologies.co.ke</a></td><td colspan="2">SSO only — sign in with i3 SSO button</td></tr>
+  <tr><td><strong>OpenBao Vault</strong></td><td><a href="https://vault.i3technologies.co.ke">vault.i3technologies.co.ke</a></td><td colspan="2">Unseal keys in cluster secret — UI token login</td></tr>
+</table>
+
+<hr class="divider" />
+
+
+<h2 id="dns">DNS Records Reference</h2>
+<table>
+  <tr><th>Subdomain</th><th>Type</th><th>Target</th><th>Purpose</th></tr>
+  <tr><td><code>evalos</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>i3 Evalos</td></tr>
+  <tr><td><code>moodle</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>EduBridge (Moodle)</td></tr>
+  <tr><td><code>sso</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>Keycloak SSO (primary)</td></tr>
+  <tr><td><code>keycloak</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>Keycloak SSO (alt)</td></tr>
+  <tr><td><code>grafana</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>Grafana monitoring</td></tr>
+  <tr><td><code>jupyter</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>JupyterHub</td></tr>
+  <tr><td><code>sage</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>Sage (Open-WebUI)</td></tr>
+  <tr><td><code>pmaas</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>PMaaS</td></tr>
+  <tr><td><code>engage</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>Engage platform</td></tr>
+  <tr><td><code>cms</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>Directus CMS</td></tr>
+  <tr><td><code>directus</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>Directus (alt)</td></tr>
+  <tr><td><code>n8n</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>n8n workflows</td></tr>
+  <tr><td><code>langfuse</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>Langfuse LLM tracing</td></tr>
+  <tr><td><code>vault</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>OpenBao Vault</td></tr>
+  <tr><td><code>nextcloud</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>Nextcloud Social</td></tr>
+  <tr><td><code>afroerp</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>AfroERP</td></tr>
+  <tr><td><code>admissions</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>Admissions agent</td></tr>
+  <tr><td><code>onboarding</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>Onboarding agent</td></tr>
+  <tr><td><code>dawa</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>Dawa agent (PMaaS)</td></tr>
+  <tr><td><code>nuru</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>Nuru agent (Engage)</td></tr>
+  <tr><td><code>zuri</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>Zuri agent (Evalos)</td></tr>
+  <tr><td><code>mfumo</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>Mfumo agent (ERP)</td></tr>
+  <tr><td><code>stt</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>Speech-to-Text API</td></tr>
+  <tr><td><code>tts</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>Text-to-Speech API</td></tr>
+  <tr><td><code>litellm</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>LiteLLM proxy</td></tr>
+  <tr><td><code>api.smartlab</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>SmartLab API (primary)</td></tr>
+  <tr><td><code>smartlab-api</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>SmartLab API (alt)</td></tr>
+  <tr><td><code>_acme-challenge</code></td><td>CNAME</td><td><code>57dffb24-1927-4a0f-99b6-a298b8fe2fcd.auth.acme-dns.io</code></td><td>Wildcard LE cert DNS-01</td></tr>
+  <tr><td><code>_acme-challenge.api.smartlab</code></td><td>CNAME</td><td><code>57dffb24-1927-4a0f-99b6-a298b8fe2fcd.auth.acme-dns.io</code></td><td>SmartLab API LE cert DNS-01</td></tr>
+  <tr><td><code>_acme-challenge.smartlab-api</code></td><td>CNAME</td><td><code>57dffb24-1927-4a0f-99b6-a298b8fe2fcd.auth.acme-dns.io</code></td><td>SmartLab wildcard LE DNS-01</td></tr>
+</table>
+
+<hr class="divider" />
+
+
+<h2>Remaining Action Items</h2>
+<table>
+  <tr><th>#</th><th>Item</th><th>Priority</th><th>Detail</th></tr>
+  <tr><td>1</td><td>Engage Web UI rebuild</td><td><span class="badge warn">Medium</span></td><td>Next.js build only has API routes — no UI pages. Trigger new <code>engage-web</code> build with complete <code>src/app/</code> source.</td></tr>
+  <tr><td>2</td><td>SmartLab Phase 2 — Studio UI</td><td><span class="badge warn">Medium</span></td><td>Next.js 14 frontend at <code>author.i3technologies.co.ke</code> — not yet deployed. DNS CNAME needs adding too.</td></tr>
+  <tr><td>3</td><td>n8n VOD Pipeline activation</td><td><span class="badge warn">Medium</span></td><td>Workflow ID <code>cDnWgJkI6RZ90pfy</code> imported. Activate in n8n UI and configure SeaweedFS/Directus credentials.</td></tr>
+  <tr><td>4</td><td>PG Backup monitor</td><td><span class="badge info">Low</span></td><td>Sep 14 06:00–15:00 UTC batch had port-8432 timeout failures. Last backup is valid. Monitor next scheduled window for recurrence.</td></tr>
+  <tr><td>5</td><td>KEDA admission webhook CrashLoop</td><td><span class="badge info">Low</span></td><td><code>keda-admission</code> pods in <code>openshift-keda</code> in CrashLoopBackOff (2 pods, 12 days). Does not affect platform apps — investigate if KEDA autoscaling is needed.</td></tr>
+</table>
+
+<footer>Made with IBM Bob  ·  i3 Technologies AI Platform  ·  September 2026</footer>
+</div>
+</body>
+</html>

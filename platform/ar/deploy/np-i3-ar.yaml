@@ -1,0 +1,105 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: i3-ar-default-deny
+  namespace: i3-ar
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: i3-ar-allow-ingress
+  namespace: i3-ar
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: openshift-ingress
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-monitoring
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: i3-ar-allow-egress
+  namespace: i3-ar
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+  egress:
+    # LiteLLM / Ollama model gateway
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-model-gateway
+      ports:
+        - port: 4000
+          protocol: TCP
+        - port: 11434
+          protocol: TCP
+    # OTT namespace (Ollama, n8n, Langfuse, SeaweedFS)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-ott
+      ports:
+        - port: 11434
+          protocol: TCP
+        - port: 5678
+          protocol: TCP
+        - port: 3000
+          protocol: TCP
+        - port: 8333
+          protocol: TCP
+    # PostgreSQL PGBouncer
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-data
+      ports:
+        - port: 5432
+          protocol: TCP
+    # Kafka
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-messaging
+      ports:
+        - port: 9092
+          protocol: TCP
+    # ChromaDB
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-ai-lab
+      ports:
+        - port: 8000
+          protocol: TCP
+    # OpenBao Vault
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-security
+      ports:
+        - port: 8200
+          protocol: TCP
+    # Keycloak auth
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-auth
+      ports:
+        - port: 8443
+          protocol: TCP
+    # DNS
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP

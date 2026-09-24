@@ -1,0 +1,463 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FORD-Asili IEBC Staging — Go/No-Go Memo</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.6; color: #1f2328; background: #fff; padding: 32px 16px 48px; }
+  .page { max-width: 760px; margin: 0 auto; }
+  .memo-header { border-bottom: 2px solid #1f2328; padding-bottom: 16px; margin-bottom: 24px; }
+  .memo-header h1 { font-size: 20px; font-weight: 700; }
+  .meta-grid { display: grid; grid-template-columns: 130px 1fr; gap: 4px 12px; margin-top: 12px; font-size: 13px; }
+  .label { color: #57606a; font-weight: 600; }
+  .verdict { padding: 14px 20px; border-radius: 4px; margin: 20px 0; font-weight: 700; font-size: 18px; text-align: center; letter-spacing: 0.5px; }
+  .verdict.nogo { background: #fef2f2; border: 2px solid #dc2626; color: #dc2626; }
+  .verdict.go   { background: #f0fdf4; border: 2px solid #16a34a; color: #16a34a; }
+  .deadline-banner { background: #7c1d1d; color: #fef2f2; border-radius: 4px; padding: 12px 20px; font-size: 13px; font-weight: 600; text-align: center; margin-bottom: 20px; }
+  h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #57606a; border-top: 1px solid #e5e7eb; padding-top: 18px; margin-top: 24px; margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 6px; }
+  th { text-align: left; padding: 7px 10px; background: #f7f8fa; border-bottom: 2px solid #e5e7eb; font-weight: 600; color: #57606a; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; }
+  td { padding: 7px 10px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .pass  { color: #16a34a; font-weight: 700; }
+  .fail  { color: #dc2626; font-weight: 700; }
+  .warn  { color: #d97706; font-weight: 700; }
+  .finding { border-left: 3px solid #dc2626; background: #fef2f2; padding: 10px 14px; margin: 10px 0; border-radius: 0 4px 4px 0; }
+  .finding.warn { border-left-color: #d97706; background: #fffbeb; }
+  .finding .fid { font-weight: 700; font-size: 12px; color: #dc2626; margin-bottom: 4px; }
+  .finding.warn .fid { color: #d97706; }
+  .finding p { margin-top: 4px; font-size: 13px; }
+  code { font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 3px; padding: 1px 5px; }
+  pre { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 4px; padding: 10px 14px; font-size: 12px; overflow-x: auto; margin: 8px 0; }
+  .action-list { margin: 0; padding-left: 0; list-style: none; }
+  .action-list li { padding: 7px 0; border-bottom: 1px solid #e5e7eb; font-size: 13px; display: flex; gap: 10px; }
+  .action-list li:last-child { border-bottom: none; }
+  .action-num { color: #fff; font-size: 11px; font-weight: 700; border-radius: 10px; min-width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .blocker { background: #dc2626; }
+  .nonblocker { background: #d97706; }
+  .sig-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 16px; }
+  .sig-box { border: 1px solid #e5e7eb; border-radius: 4px; padding: 12px; font-size: 12px; }
+  .sig-box .role { color: #57606a; margin-bottom: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .sig-box .decision-nogo { color: #dc2626; font-weight: 700; font-size: 13px; }
+  .footnote { font-size: 11px; color: #57606a; margin-top: 8px; }
+  .footer { border-top: 1px solid #e5e7eb; margin-top: 40px; padding-top: 12px; text-align: center; font-size: 11px; color: #57606a; }
+  .countdown { font-weight: 700; color: #dc2626; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="memo-header">
+    <h1>FORD-Asili IEBC Staging — Launch Readiness Review</h1>
+    <div class="meta-grid">
+      <span class="label">Document</span><span>VER-07 / FORD-Asili IEBC Staging Go/No-Go</span>
+      <span class="label">Review Date</span><span>2026-10-01 (date of assessment)</span>
+      <span class="label">Scope</span><span>orderer-0 CrashLoopBackOff · peer0-i3tech SCC · Go chaincode tests · HC-6 HMAC · HC-8 ballotPrivate PDC · P3-GATE-05/06/07</span>
+      <span class="label">Statutory Deadline</span><span>November 2026 staging (HC-2) → 16 March 2027 IEBC</span>
+      <span class="label">Reviewer</span><span>Bob — i3 Platform Engineering Agent (L0)</span>
+      <span class="label">Addressee</span><span>CEO · FORD Technical Lead · Blockchain Dev · Infra Admin</span>
+    </div>
+  </div>
+
+  <div class="deadline-banner">⚠️ HC-2 STATUTORY DEADLINE: Fabric staging must be live by November 2026 — 16 March 2027 IEBC election is non-negotiable. At current pace, this deadline is AT RISK.</div>
+
+  <div class="verdict nogo">🚫   NO-GO  —  2 CRITICAL BLOCKERS · HC-2 DEADLINE AT RISK</div>
+
+  <p style="font-size:13px;color:#57606a">
+    The entire FORD-Asili blockchain layer is non-functional. <code>orderer-0</code> is in
+    CrashLoopBackOff with MSP crypto material missing; no channels exist; no chaincode is
+    deployed; no Fabric unit tests exist for the Go chaincode.
+    This review is based on committed source code, deployment YAMLs, and documentation.
+    No cluster runtime state was accessed — runtime verification is required by Infra Admin.
+  </p>
+
+  
+  <h2>Gate Sensor Results (P3-GATE-05 through P3-GATE-08)</h2>
+
+  <table>
+    <thead>
+      <tr><th>Gate / Check</th><th>Sensor Command</th><th>Expected</th><th>Evidence</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>P3-GATE-05</strong><br />Orderer-0 resolved</td>
+        <td><code>kubectl get pod -n i3-ford -l app=hlf-peer</code> → 3 Running</td>
+        <td>3 hlf-peer pods Running</td>
+        <td><code>orderer-msp-bootstrap-deferred.md</code>: MSP crypto material NOT generated. Step 2 of root cause chain unresolved (⬜). Guide <code>12-ford-asili-guide.html</code>: completion checklist items 1–10 all ☐ (unchecked).</td>
+        <td class="fail">❌ FAIL</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>SCC fix for orderer</td>
+        <td>anyuid SCC applied; init container chowns volume</td>
+        <td><code>orderer-msp-bootstrap-deferred.md:42</code>: <em>"SCC Fix Applied (permanent)"</em> — <code>oc adm policy add-scc-to-user anyuid -z ford-sa -n i3-ford</code>. Init container <code>fix-permissions</code> added. Filesystem permission issue resolved ✅.</td>
+        <td class="pass">✅ PARTIAL</td>
+      </tr>
+      <tr>
+        <td><strong>U-10</strong><br />peer0-i3tech SCC hostPath</td>
+        <td><code>kubectl get pod peer0-i3tech -n i3-ford</code></td>
+        <td>Running (no hostPath SCC violation)</td>
+        <td><code>12-ford-asili-guide.html:639</code>: peer0-i3tech status = <em>"Deployed — Needs MSP"</em>. No SCC hostPath violation mentioned in orderer runbook (SCC fix was for orderer, not peer). Peer requires MSP crypto before it can start. hostPath not present in fabric-network.yaml peer specs — all storage uses PVC (<code>ibmc-vpc-block-retain-10iops-tier</code>). SCC violation appears resolved by PVC-only storage.</td>
+        <td class="warn">⚠️ PARTIAL</td>
+      </tr>
+      <tr>
+        <td><strong>P3-GATE-05</strong><br />Go chaincode unit tests</td>
+        <td><code>go test ./...</code> in <code>platform/ford/fabric/chaincode/membership_registry/</code></td>
+        <td>0 failures</td>
+        <td>Directory contains only <code>go.mod</code> and <code>membership_registry.go</code>. <strong>No <code>*_test.go</code> file exists.</strong> ADR-007 (chaincode skill) requires every chaincode function to have a unit test using <code>shimtest.MockStub</code>. <code>go test ./...</code> would run 0 tests — gate technically cannot fail but also cannot pass with evidence.</td>
+        <td class="fail">❌ NO TEST FILE</td>
+      </tr>
+      <tr>
+        <td><strong>P3-GATE-06</strong><br />Chaincode instantiated</td>
+        <td><code>peer chaincode list --instantiated -C ford-channel</code></td>
+        <td><code>membership-registry</code> listed</td>
+        <td>ford-channel does not exist (orderer is down; no genesis block generated; guide checklist steps 4–8 all ☐). FabricChaincodeInstall, FabricChaincodeApprove, and FabricChaincodeCommit CRDs are defined in fabric-network.yaml but cannot execute without a running orderer.</td>
+        <td class="fail">❌ FAIL</td>
+      </tr>
+      <tr>
+        <td><strong>P3-GATE-07</strong><br />FORD /register returns fabric_tx_id</td>
+        <td>POST /api/v1/members/register → response has <code>fabric_tx_id</code></td>
+        <td><code>fabric_tx_id</code> present and not <code>"fabric-pending"</code></td>
+        <td><code>ford/api/main.py</code> implements <code>record_on_fabric()</code> with graceful fallback to <code>"fabric-pending"</code> on gateway failure. Since the Fabric gateway is unreachable (orderer down), every registration will return <code>fabric_tx_id: "fabric-pending"</code>. Retry queue via Redis exists. Response field is present; value indicates failure.</td>
+        <td class="warn">⚠️ FIELD PRESENT, VALUE = PENDING</td>
+      </tr>
+      <tr>
+        <td><strong>P3-GATE-08</strong><br />USSD responds CON</td>
+        <td>POST to /ussd with empty text → <code>CON Welcome...</code></td>
+        <td><code>CON</code> prefix in response body</td>
+        <td><code>ussd/handler.py</code> step 0 returns <code>"CON Welcome to FORD-Asili / Karibu FORD-Asili\n1. English\n2. Kiswahili"</code>. USSD FSM is implemented. Does not depend on Fabric (USSD calls ford-api which has graceful Fabric fallback). USSD can technically function.</td>
+        <td class="pass">✅ PASS (source)</td>
+      </tr>
+      <tr>
+        <td><strong>HC-6</strong><br />No raw NIDs anywhere</td>
+        <td><code>grep -rn "hashlib.sha256|nationalId|nid|idNumber" platform/ford/</code> → 0 raw hash / plain NID refs</td>
+        <td>0 raw SHA-256 calls; all hashing via <code>hmac.new(..., MEMBER_HMAC_SECRET...)</code></td>
+        <td>All HMAC operations confirmed: <code>ford/api/main.py:84</code>, <code>ussd/handler.py:62</code>, <code>tests/test_otp_ratelimit.py:88</code> (test explicitly asserts HMAC ≠ raw SHA-256). Chaincode comments confirm <code>id_hash</code> and <code>phone_hash</code> are pre-computed HMAC tokens, never raw values. <code>MEMBER_HMAC_SECRET</code> required env var — startup fails fast if absent. Rehash worker (<code>rehash_worker.py</code>) exists for key rotation.</td>
+        <td class="pass">✅ PASS</td>
+      </tr>
+      <tr>
+        <td><strong>HC-8</strong><br />ballotPrivate PDC separation</td>
+        <td><code>grep "ballotPrivate\|voteChoicesCollection" platform/ford/fabric/</code></td>
+        <td>PDC defined; chaincode has ZERO path to PDC</td>
+        <td><code>collections_config.json</code>: <code>voteChoicesCollection</code> defined with <code>memberOnlyRead: true</code>, <code>memberOnlyWrite: true</code>, <code>blockToLive: 0</code>. Fabric-network.yaml chaincode approve CRD references the collection. <code>membership_registry.go</code> header: <em>"HC-8: This chaincode has ZERO read/write path to voteChoicesCollection."</em> No <code>PutPrivateData</code> or <code>GetPrivateData</code> calls in <code>membership_registry.go</code>. ADR-007 confirms separation.</td>
+        <td class="pass">✅ PASS (architecture)</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>PDC name discrepancy</td>
+        <td>ADR skill specifies <code>ballotPrivate</code></td>
+        <td>Actual PDC name in both <code>collections_config.json</code> and <code>fabric-network.yaml</code> is <code>voteChoicesCollection</code>. The chaincode-scaffold skill and some ADR references use <code>ballotPrivate</code>. Functionally equivalent but the naming divergence must be reconciled in documentation before IEBC review.</td>
+        <td class="warn">⚠️ NAME MISMATCH VS DOCS</td>
+      </tr>
+      <tr>
+        <td><strong>HC-4</strong><br />tenant_id on FORD records</td>
+        <td>Ford DB INSERT includes tenant_id</td>
+        <td>tenant_id NOT NULL in every INSERT</td>
+        <td><code>ford/api/main.py:284</code>: <code>SET LOCAL app.tenant_id = $1</code> before every query. INSERT at line 308 includes tenant_id. Chaincode <code>MemberRecord.TenantID</code> field stored on-chain. Migration <code>002_add_tenant_id.sql</code> exists.</td>
+        <td class="pass">✅ PASS</td>
+      </tr>
+      <tr>
+        <td><strong>HC-5</strong><br />Endorsement policy</td>
+        <td>Channel config: <code>OR('FordPeerMSP.peer')</code></td>
+        <td>≥1 FordPeerMSP.peer required</td>
+        <td>fabric-network.yaml channel endorsement policy: <code>OR('FordPeerMSP.peer')</code>. FabricChaincodeApprove and FabricChaincodeCommit CRDs reference same policy. No single agent can commit alone.</td>
+        <td class="pass">✅ PASS (config)</td>
+      </tr>
+      <tr>
+        <td><strong>ford-election-agent</strong><br />Agent approval gate</td>
+        <td>Agent registry manifest state</td>
+        <td>Manifest exists; state=suspended; autonomy_tier=L0</td>
+        <td>ADR-002 specifies <code>ford-election-agent-v1</code> manifest (state=suspended, autonomy_tier=L0, forbids fabric.invoke). No manifest file in <code>platform/agent-registry/manifests/</code>. This also blocks P2-GATE-02.</td>
+        <td class="fail">❌ MANIFEST MISSING</td>
+      </tr>
+      <tr>
+        <td><strong>Credentials</strong><br />MEMBER_HMAC_SECRET</td>
+        <td><code>grep "MEMBER_HMAC_SECRET" platform/ford/</code></td>
+        <td>OpenBao-injected; never hardcoded</td>
+        <td><code>ford-api-deployment.yaml</code>: secrets via <code>ford-secrets</code> K8s Secret (not yet in OpenBao — ADR-007 blocker). Secret contains MEMBER_HMAC_SECRET. OpenBao path <code>i3/ford/hmac-secret</code> is confirmed populated (ADR-007 §Context). Not yet injected via OpenBao agent sidecar.</td>
+        <td class="warn">⚠️ IN K8S SECRET, NOT YET OPENBAO-INJECTED</td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h2>Critical Blockers</h2>
+
+  <div class="finding">
+    <div class="fid">BLOCKER-1 · CRITICAL · orderer-0 CrashLoopBackOff — entire Fabric network non-functional (HC-2)</div>
+    <p>
+      <code>orderer-msp-bootstrap-deferred.md</code> documents the root cause: MSP crypto material
+      was never generated via <code>fabric-ca-client enroll</code>. Step 1 of the fix (fsGroup
+      + init container for filesystem permissions) is complete ✅. Step 2 (enroll orderer against
+      ford-ca and mount signcerts/keystore/cacerts) is marked ⬜ — not done.
+    </p>
+    <p>Without a running orderer: no channels exist, no genesis block has been generated,
+      no chaincode can be deployed, no Fabric transactions can be committed.
+      The entire IEBC blockchain audit trail is unavailable.
+    </p>
+    <p><strong>Impact:</strong> P3-GATE-05, P3-GATE-06, P3-GATE-07 all fail. HC-2 (November 2026 staging deadline) is at risk.
+    <strong>Resolution</strong> (from A9 guide): (1) <code>fabric-ca-client enroll</code> orderer against ford-ca.
+    (2) Package MSP as K8s Secret and mount into orderer-0 StatefulSet.
+    (3) Restart orderer pod. (4) Run <code>configtxgen</code> to produce genesis block.
+    (5) Create ford-channel and join peers. (6) Deploy membership-registry chaincode.
+    Owner: Infra Admin + Blockchain Dev. ETA: 5–10 days.</p>
+  </div>
+
+  <div class="finding">
+    <div class="fid">BLOCKER-2 · CRITICAL · No Go chaincode unit tests (go test ./... produces 0 tests)</div>
+    <p>
+      <code>platform/ford/fabric/chaincode/membership_registry/</code> contains only
+      <code>membership_registry.go</code> and <code>go.mod</code>. There is no
+      <code>membership_registry_test.go</code> file. The chaincode-scaffold skill (and HC-2
+      engineering standards) require every chaincode function to have a unit test using
+      <code>shimtest.MockStub</code>. <code>go test ./...</code> passes vacuously (0 tests, 0 failures)
+      but provides zero evidence of correctness.
+    </p>
+    <p>
+      Functions requiring test coverage: <code>RegisterMember</code> (idempotency, duplicate check,
+      ward counter increment), <code>VerifyMember</code> (active/revoked/not-found),
+      <code>RevokeMember</code> (idempotent revoke), <code>GetWardCount</code>, <code>GetAgentDutyCount</code>.
+    </p>
+    <p><strong>Resolution:</strong> Author <code>membership_registry_test.go</code> using
+      <code>github.com/hyperledger/fabric-chaincode-go/shimtest</code>. Must cover at minimum:
+      RegisterMember (success, duplicate, missing required field), VerifyMember (active returns true,
+      revoked returns false), RevokeMember (idempotent). Use the template in
+      <code>.bob/skills/chaincode-scaffold/templates/member_registry_test.go</code>.
+      Owner: Blockchain Dev. ETA: ≤ 1 day.
+    </p>
+  </div>
+
+  
+  <h2>Non-Blocking Warnings</h2>
+
+  <div class="finding warn">
+    <div class="fid">WARN-1 · PDC name mismatch — voteChoicesCollection vs ballotPrivate</div>
+    <p>
+      The PDC is correctly defined and architecturally separated. However, the canonical HC-8
+      description, chaincode-scaffold skill, and platform ADRs reference <code>ballotPrivate</code>,
+      while the actual committed name is <code>voteChoicesCollection</code>. Before IEBC audit
+      review, documentation should be aligned to the committed name. Update
+      <code>01-hard-constraints.md</code> and skill docs to use <code>voteChoicesCollection</code>,
+      or rename the PDC to <code>ballotPrivate</code> and update all references.
+    </p>
+  </div>
+
+  <div class="finding warn">
+    <div class="fid">WARN-2 · peer0-i3tech needs MSP crypto before it can join channels</div>
+    <p>
+      Peer is deployed (<code>12-ford-asili-guide.html:639</code>: "Deployed — Needs MSP").
+      hostPath SCC violation appears resolved by PVC-only storage (ibmc-vpc-block-retain-10iops-tier).
+      Peer still requires <code>fabric-ca-client enroll</code> against i3tech-ca before it can
+      join ford-channel. This is a dependency of BLOCKER-1 resolution, not a separate blocker.
+    </p>
+  </div>
+
+  <div class="finding warn">
+    <div class="fid">WARN-3 · MEMBER_HMAC_SECRET in K8s Secret, not yet OpenBao-injected (ADR-007 dependency)</div>
+    <p>
+      <code>ford-api-deployment.yaml</code> pulls secrets from <code>ford-secrets</code> K8s Secret
+      (not via OpenBao agent sidecar). OpenBao path <code>i3/ford/hmac-secret</code> is populated.
+      Until ADR-007 migration completes for ford-secrets, the secret is held in etcd without audit
+      log or rotation TTL. Rotate MEMBER_HMAC_SECRET immediately via the rehash-job pipeline if not
+      done since initial deployment.
+    </p>
+  </div>
+
+  <div class="finding warn">
+    <div class="fid">WARN-4 · ford-election-agent-v1 manifest absent from Agent Registry</div>
+    <p>
+      ADR-002 requires <code>ford-election-agent-v1</code> (state=suspended, autonomy_tier=L0,
+      <code>fabric.invoke</code> in forbidden_tools). Without the manifest, the MCP gateway has no
+      record of FORD agent permissions. Fabric.invoke calls cannot be governance-blocked. This is
+      also a BLOCKER in the Platform Security Gate review (VER-07 memo 2).
+    </p>
+  </div>
+
+  <div class="finding warn">
+    <div class="fid">WARN-5 · _sessions dict in ussd/handler.py is in-memory (not Redis)</div>
+    <p>
+      <code>ussd/handler.py:55</code>: <code>_sessions: dict[str, dict] = {}</code> stores
+      session metadata (lang, step, national_id tracking) in memory. A pod restart or scale-out
+      event loses all active USSD sessions. The engineering standards require all session/plan
+      storage to be backed by Redis with TTLs. OTP storage is correctly in Redis; session state
+      must also be migrated to Redis before production load.
+    </p>
+  </div>
+
+  
+  <h2>What Is Confirmed Passing</h2>
+  <table>
+    <thead><tr><th>Item</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>HC-6: All HMAC-SHA256 via MEMBER_HMAC_SECRET</td>
+        <td>ford-api, ussd/handler, chaincode — all use <code>hmac.new(..., MEMBER_HMAC_SECRET...)</code>. Test explicitly asserts HMAC ≠ raw SHA-256. No <code>hashlib.sha256</code> for identity tokens anywhere. Rehash worker supports secret rotation.</td>
+      </tr>
+      <tr>
+        <td>HC-8: voteChoicesCollection PDC defined and separated</td>
+        <td><code>collections_config.json</code>: memberOnlyRead=true, memberOnlyWrite=true, blockToLive=0. <code>membership_registry.go</code> has zero PutPrivateData/GetPrivateData calls — confirmed programmatically.</td>
+      </tr>
+      <tr>
+        <td>HC-4: tenant_id on all FORD DB records</td>
+        <td>SET LOCAL app.tenant_id before every query; INSERT includes tenant_id; migration 002 adds column; MemberRecord stores TenantID on-chain.</td>
+      </tr>
+      <tr>
+        <td>HC-5: Endorsement policy prevents single-agent commit</td>
+        <td>OR('FordPeerMSP.peer') in channel config and chaincode approve/commit CRDs.</td>
+      </tr>
+      <tr>
+        <td>Orderer filesystem permission (SCC init container)</td>
+        <td>orderer-msp-bootstrap-deferred.md confirms fsGroup+chown init container applied ✅. mkdir permission denied error resolved.</td>
+      </tr>
+      <tr>
+        <td>No hostPath volumes in fabric-network.yaml</td>
+        <td>All 3 peer StatefulSets use PVC (ibmc-vpc-block-retain-10iops-tier). No hostPath references in deploy/ directory.</td>
+      </tr>
+      <tr>
+        <td>USSD FSM implemented (P3-GATE-08 source)</td>
+        <td>ussd/handler.py implements 4-step FSM with CON/END responses. Step 0 returns required CON prefix. OTP stored as HMAC in Redis.</td>
+      </tr>
+      <tr>
+        <td>Fabric gateway integration in ford-api</td>
+        <td>record_on_fabric() implemented with graceful fallback to "fabric-pending" and Redis retry queue. API response always includes fabric_tx_id field.</td>
+      </tr>
+      <tr>
+        <td>OTP rate-limit tests (P1-GATE-08)</td>
+        <td>test_otp_ratelimit.py covers: HMAC correctness, 429 on OTP cap exceeded, constant-time comparison, key-by-HMAC-not-plain-phone (HC-6), successful verification clears keys.</td>
+      </tr>
+      <tr>
+        <td>No raw NID in chaincode</td>
+        <td>grep for nationalId|nid|idNumber → 0 matches in any *.go file. Field names are id_hash and phone_hash throughout.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h2>Required Actions Before Go (Ordered by Dependency)</h2>
+  <ul class="action-list">
+    <li>
+      <span class="action-num blocker">1</span>
+      <div>
+        <strong>[CRITICAL] Generate MSP crypto for orderer-0 and peer0-i3tech.</strong>
+        Run <code>fabric-ca-client enroll</code> against ford-ca (orderer) and i3tech-ca (peer0).
+        Package signcerts/keystore/cacerts as K8s Secrets. Mount into StatefulSets.
+        Restart orderer-0. Verify: <code>kubectl get pod -n i3-ford -l app=hlf-peer</code> → Running.
+        Owner: Infra Admin. ETA: 3–5 days. <span class="countdown">HC-2 deadline November 2026.</span>
+      </div>
+    </li>
+    <li>
+      <span class="action-num blocker">2</span>
+      <div>
+        <strong>[CRITICAL] Create ford-channel, generate genesis block, deploy membership-registry chaincode.</strong>
+        Sequential steps in A9 guide (steps 3–8): configtxgen genesis block →
+        <code>peer channel create -c ford-channel</code> → peer joins →
+        chaincode lifecycle install/approve/commit.
+        Requires BLOCKER-1 complete first.
+        Owner: Blockchain Dev. ETA: 3–5 days after BLOCKER-1.
+      </div>
+    </li>
+    <li>
+      <span class="action-num blocker">3</span>
+      <div>
+        <strong>[CRITICAL] Author Go chaincode unit tests.</strong>
+        Create <code>membership_registry_test.go</code> with shimtest.MockStub.
+        Must cover RegisterMember (success, duplicate, empty required fields),
+        VerifyMember (active=true, revoked=false, not found=false),
+        RevokeMember (idempotent revoke). Use skill template.
+        Run: <code>go test ./...</code> must show PASS with named test cases.
+        Owner: Blockchain Dev. ETA: ≤ 1 day. Can run in parallel with BLOCKER-1.
+      </div>
+    </li>
+    <li>
+      <span class="action-num nonblocker">4</span>
+      <div>
+        <strong>[WARN] Add ford-election-agent-v1 manifest to Agent Registry.</strong>
+        autonomy_tier: L0, state: suspended, fabric.invoke in forbidden_tools.
+        Accept ADR-002. Also resolves Platform Security Gate BLOCKER-3.
+        Owner: AI Safety Lead. ETA: ≤ 0.5 days.
+      </div>
+    </li>
+    <li>
+      <span class="action-num nonblocker">5</span>
+      <div>
+        <strong>[WARN] Migrate ford-secrets to OpenBao KV v2 injection (ADR-007).</strong>
+        Particularly MEMBER_HMAC_SECRET. Add OpenBao agent-inject annotations to
+        ford-api-deployment.yaml. Verify sidecar injects secret at pod startup.
+        Owner: Platform SRE. ETA: ≤ 1 day (part of ADR-007 migration track).
+      </div>
+    </li>
+    <li>
+      <span class="action-num nonblocker">6</span>
+      <div>
+        <strong>[WARN] Migrate USSD session state from in-memory dict to Redis.</strong>
+        Replace <code>_sessions: dict</code> with Redis HASH per sessionId (TTL = 300s per USSD session spec).
+        This is a prerequisite for horizontal scaling under election-day load.
+        Owner: Blockchain Dev. ETA: ≤ 1 day.
+      </div>
+    </li>
+    <li>
+      <span class="action-num nonblocker">7</span>
+      <div>
+        <strong>[WARN] Reconcile PDC name — ballotPrivate vs voteChoicesCollection.</strong>
+        Pick one canonical name and update all references (ADR docs, HC-8 rule description,
+        chaincode-scaffold skill, fabric-network.yaml, collections_config.json).
+        Ensure the committed name passes IEBC technical audit documentation.
+        Owner: FORD Tech Lead. ETA: ≤ 0.5 days.
+      </div>
+    </li>
+  </ul>
+
+  
+  <h2>HC-2 Timeline Risk Analysis</h2>
+  <pre>
+HC-2 Staging deadline:  November 2026
+Assessment date:        October 2026
+Working months remaining: ~4–6 weeks to safe staging
+
+Critical path (minimum):
+  BLOCKER-1: MSP crypto generation + orderer restart    ~5 days
+  → genesis block + channel creation                   ~2 days
+  → chaincode deploy (both orgs must approve)          ~3 days
+  BLOCKER-2: Go unit tests                              ~1 day (parallel)
+  End-to-end test (P3-GATE-07 fabric_tx_id != pending) ~2 days
+  
+  Total minimum: ~2–3 weeks
+  Total with buffer for coordination (2 org admins):   ~4–5 weeks
+
+Verdict: ACHIEVABLE before November 2026 IF BLOCKER-1 starts IMMEDIATELY.
+         Any further delay beyond this week puts HC-2 at material risk.</pre>
+
+  
+  <h2>Decision Sign-Off</h2>
+  <div class="sig-grid">
+    <div class="sig-box">
+      <div class="role">CEO</div>
+      <div class="name">Decision</div>
+      <div class="decision-nogo">NO-GO</div>
+      <div style="margin-top:6px;font-size:11px;color:#57606a">Start BLOCKER-1 this week to protect HC-2 IEBC deadline</div>
+    </div>
+    <div class="sig-box">
+      <div class="role">Infra Admin</div>
+      <div class="name">Owns</div>
+      <div style="margin-top:6px;font-size:11px;color:#57606a">BLOCKER-1: MSP crypto generation, orderer restart, peer enrollment. CRITICAL PATH.</div>
+    </div>
+    <div class="sig-box">
+      <div class="role">Blockchain Dev</div>
+      <div class="name">Owns</div>
+      <div style="margin-top:6px;font-size:11px;color:#57606a">BLOCKER-2: Go unit tests; BLOCKER-2b: channel + chaincode deploy (after BLOCKER-1); WARN-5: USSD Redis session.</div>
+    </div>
+  </div>
+  <p class="footnote" style="margin-top:12px">
+    Review methodology: static code analysis of committed source only (branch main, assessed 2026-10-01).
+    Runtime pod state, MSP certificate validity, and actual cluster health must be verified by Infra Admin.
+    The HC-6 HMAC and HC-8 PDC claims are based on source code and configuration analysis only;
+    runtime verification requires a successful <code>go test ./...</code> run with MockStub and an
+    end-to-end POST /api/v1/members/register returning a non-pending <code>fabric_tx_id</code>.
+  </p>
+
+  <div class="footer">Made with IBM Bob</div>
+</div>
+</body>
+</html>

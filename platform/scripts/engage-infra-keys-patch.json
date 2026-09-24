@@ -1,0 +1,6 @@
+{
+  "_comment": "SCRUBBED: credentials removed. Retrieve at runtime via OpenBao:",
+  "_litellm_key":   "vault kv get -field=key i3/litellm/api-key",
+  "_chroma_token":  "vault kv get -field=token i3/chromadb/token",
+  "_litellm_url":   "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1",
+  "_apply": "kubectl patch secret engage-infra-keys -n i3-engage --type=merge -p '{\"stringData\":{\"LITELLM_KEY\":\"'$(vault kv get -field=key i3/litellm/api-key)'\",\"CHROMA_TOKEN\":\"'$(vault kv get -field=token i3/chromadb/token)'\"}}'"}

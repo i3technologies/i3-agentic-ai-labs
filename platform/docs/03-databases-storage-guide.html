@@ -215,7 +215,7 @@ kubectl -n i3-data run psql-admin --rm -it --restart=Never \
   <tr>
     <td><code>n8n_db</code></td>
     <td><code>n8n</code></td>
-    <td><code>REDACTED-n8n-db</code></td>
+    <td><code>[REDACTED — rotate via OpenBao i3/n8n/db]</code></td>
     <td>n8n Workflow Automation</td>
     <td><code>i3-n8n</code></td>
   </tr>
@@ -233,7 +233,7 @@ DATABASE_URL=postgresql://ar_app:de0ca0d50fd34c2f8847258f@i3-postgres-pgbouncer.
 DATABASE_URL=postgresql://talent_app:222d37ba48bf45f1b8f05987@i3-postgres-pgbouncer.i3-data.svc:5432/talent_db
 
 # n8n
-DATABASE_URL=postgresql://n8n:REDACTED-n8n-db@i3-postgres-pgbouncer.i3-data.svc:5432/n8n_db</code></pre>
+DATABASE_URL=postgresql://n8n:[REDACTED — rotate via OpenBao i3/n8n/db]@i3-postgres-pgbouncer.i3-data.svc:5432/n8n_db</code></pre>
 
 <div class="warn">
   <strong>PMaaS database password:</strong> The <code>pmaas</code> user password is a placeholder (<code>REPLACE</code>) and must be set before deploying PMaaS for the first time. Update <code>pmaas-secrets</code> in <code>i3-pmaas</code> and recreate the DB user with the correct password.

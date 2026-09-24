@@ -1,0 +1,525 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 Platform — Full DNS CNAME Configuration Report</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:13.5px;line-height:1.65;background:#fff;color:#1f2328}
+  .page{max-width:940px;margin:0 auto;padding:36px 28px 60px}
+
+  /* Header */
+  .hdr{border-bottom:3px solid #1f2328;padding-bottom:16px;margin-bottom:26px}
+  .hdr h1{font-size:20px;font-weight:700}
+  .hdr .sub{font-size:12px;color:#57606a;margin-top:5px}
+  .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .badge{font-size:11px;font-weight:600;padding:2px 9px;border-radius:3px}
+  .bg{background:#dcfce7;color:#15803d}
+  .br{background:#fee2e2;color:#991b1b}
+  .ba{background:#fef3c7;color:#92400e}
+  .bb{background:#dbeafe;color:#1d4ed8}
+  .bgy{background:#f3f4f6;color:#374151}
+
+  /* Summary cards */
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0 26px}
+  .card{border:1px solid #e5e7eb;border-radius:5px;padding:12px 14px;text-align:center}
+  .card .v{font-size:26px;font-weight:700}
+  .card .l{font-size:11.5px;color:#57606a;margin-top:3px}
+  .v-g{color:#15803d}.v-r{color:#991b1b}.v-a{color:#b45309}.v-b{color:#1d4ed8}
+
+  h2{font-size:15px;font-weight:700;margin:28px 0 12px;padding-bottom:5px;border-bottom:2px solid #e5e7eb}
+  h3{font-size:13px;font-weight:700;margin:16px 0 6px}
+  p{font-size:12.5px;margin-bottom:8px}
+
+  /* Tables */
+  table{width:100%;border-collapse:collapse;margin:8px 0 20px;font-size:12px}
+  th{background:#f7f8fa;border:1px solid #e5e7eb;padding:7px 9px;text-align:left;font-weight:700;white-space:nowrap;font-size:11.5px}
+  td{border:1px solid #e5e7eb;padding:7px 9px;vertical-align:middle}
+  tr:nth-child(even) td{background:#fafbfc}
+
+  /* Row highlights */
+  .row-add td{background:#f0fdf4 !important}
+  .row-add td:first-child{border-left:3px solid #22c55e}
+  .row-fix td{background:#fffbeb !important}
+  .row-fix td:first-child{border-left:3px solid #f59e0b}
+  .row-ok td{background:#f8faff !important}
+  .row-ok td:first-child{border-left:3px solid #3b82f6}
+
+  /* Status pill */
+  .pill{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap}
+  .pill-add{background:#dcfce7;color:#15803d}
+  .pill-fix{background:#fef3c7;color:#92400e}
+  .pill-ok {background:#dbeafe;color:#1d4ed8}
+  .pill-chk{background:#f3f4f6;color:#374151}
+
+  /* DNS block */
+  .dns-block{background:#1e1e1e;color:#d4d4d4;border-radius:5px;padding:14px 16px;font-family:"SFMono-Regular",Consolas,monospace;font-size:11.5px;line-height:1.7;margin:12px 0 20px;overflow-x:auto;white-space:pre}
+  .dns-block .c1{color:#9cdcfe}
+  .dns-block .c2{color:#4ec9b0}
+  .dns-block .c3{color:#ce9178}
+  .dns-block .cm{color:#6a9955}
+
+  /* Info boxes */
+  .ibox{border-left:3px solid #e5e7eb;padding:10px 14px;margin:10px 0 16px;background:#fafafa;border-radius:0 4px 4px 0;font-size:12.5px}
+  .ibox.g{border-left-color:#22c55e}.ibox.a{border-left-color:#f59e0b}.ibox.r{border-left-color:#ef4444}.ibox.b{border-left-color:#3b82f6}
+  .ibox ul{padding-left:16px;margin:4px 0}.ibox li{margin-bottom:3px}
+
+  code{font-family:"SFMono-Regular",Consolas,monospace;font-size:11px;background:#f3f4f6;padding:1px 5px;border-radius:3px}
+  hr{border:none;border-top:1px solid #e5e7eb;margin:22px 0}
+  .footer{margin-top:44px;padding-top:14px;border-top:1px solid #e5e7eb;text-align:center;font-size:11.5px;color:#9ca3af}
+</style>
+</head>
+<body>
+<div class="page">
+
+
+<div class="hdr">
+  <h1>i3 Platform — Full DNS CNAME Configuration Report</h1>
+  <div class="sub">Domain: <strong>i3technologies.co.ke</strong>  |  DNS Provider: cPanel  |  IBM ROKS LB Target: <strong>8eec2322-eu-de.lb.appdomain.cloud</strong>  |  Verified via Google DNS (8.8.8.8)</div>
+  <div class="meta">
+    <span class="badge bb">Verified: September 2026</span>
+    <span class="badge bg">18 CNAMEs already resolving</span>
+    <span class="badge br">15 CNAMEs missing — ADD NOW</span>
+    <span class="badge ba">2 CNAMEs wrong target — UPDATE</span>
+  </div>
+</div>
+
+
+<div class="cards">
+  <div class="card"><div class="v v-b">35</div><div class="l">Total CNAMEs Required</div></div>
+  <div class="card"><div class="v v-g">18</div><div class="l">Already Resolving Correctly</div></div>
+  <div class="card"><div class="v v-r">15</div><div class="l">Missing — Must Add</div></div>
+  <div class="card"><div class="v v-a">2</div><div class="l">Wrong Target — Must Update</div></div>
+</div>
+
+<div class="ibox b">
+  <strong>IBM ROKS Load Balancer Target (use for ALL CNAMEs below):</strong><br />
+  <code>8eec2322-eu-de.lb.appdomain.cloud</code><br /><br />
+  This hostname resolves to two IBM Cloud VPC IPs in Frankfurt: <code>149.81.239.32</code> and <code>158.176.12.150</code>. 
+  All CNAMEs point to the single LB hostname — IBM's DNS round-robins between these two IPs automatically for load distribution.
+  <strong>Never point CNAMEs directly to the IPs</strong> — the LB hostname is the stable reference; IPs can rotate.
+</div>
+
+<div class="ibox a">
+  <strong>Recommended TTL: 300 seconds (5 minutes)</strong> for all new and updated records.<br />
+  This allows you to correct any mistakes within 5 minutes during the setup window. Once all records are verified and stable 
+  (after 48 hours of confirmed operation), increase to <strong>3600 seconds (1 hour)</strong> to reduce DNS query load. 
+  Do not use a lower TTL than 300 — some resolvers ignore values below 60 and it adds unnecessary query volume. 
+  Do not use the cPanel default of 14400 (4 hours) during initial setup — a wrong record would take 4 hours to correct globally.
+</div>
+
+<hr />
+
+
+<h2>Section 1 — CNAMEs to ADD (15 records — currently NXDOMAIN)</h2>
+<p>These subdomains have <strong>no DNS record at all</strong>. Every one of these blocks a running application or service from being reachable from the internet. All route to the same IBM ROKS load balancer.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Subdomain (Host)</th>
+      <th>Full FQDN</th>
+      <th>Type</th>
+      <th>Value (Points To)</th>
+      <th>TTL</th>
+      <th>Application / Purpose</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="row-add">
+      <td>1</td>
+      <td><code>zuri</code></td>
+      <td>zuri.i3technologies.co.ke</td>
+      <td>CNAME</td>
+      <td>8eec2322-eu-de.lb.appdomain.cloud</td>
+      <td>300</td>
+      <td>Zuri Co-worker (Open WebUI — EvalOS AI assistant)</td>
+      <td><span class="pill pill-add">ADD</span></td>
+    </tr>
+    <tr class="row-add">
+      <td>2</td>
+      <td><code>pmaas</code></td>
+      <td>pmaas.i3technologies.co.ke</td>
+      <td>CNAME</td>
+      <td>8eec2322-eu-de.lb.appdomain.cloud</td>
+      <td>300</td>
+      <td>PMaaS Campaign Management Web App</td>
+      <td><span class="pill pill-add">ADD</span></td>
+    </tr>
+    <tr class="row-add">
+      <td>3</td>
+      <td><code>dawa</code></td>
+      <td>dawa.i3technologies.co.ke</td>
+      <td>CNAME</td>
+      <td>8eec2322-eu-de.lb.appdomain.cloud</td>
+      <td>300</td>
+      <td>Dawa Co-worker (Open WebUI — PMaaS AI assistant)</td>
+      <td><span class="pill pill-add">ADD</span></td>
+    </tr>
+    <tr class="row-add">
+      <td>4</td>
+      <td><code>engage</code></td>
+      <td>engage.i3technologies.co.ke</td>
+      <td>CNAME</td>
+      <td>8eec2322-eu-de.lb.appdomain.cloud</td>
+      <td>300</td>
+      <td>i3 Engage Cloud — Customer Engagement Web App</td>
+      <td><span class="pill pill-add">ADD</span></td>
+    </tr>
+    <tr class="row-add">
+      <td>5</td>
+      <td><code>nuru</code></td>
+      <td>nuru.i3technologies.co.ke</td>
+      <td>CNAME</td>
+      <td>8eec2322-eu-de.lb.appdomain.cloud</td>
+      <td>300</td>
+      <td>Nuru Co-worker (Open WebUI — Engage AI assistant)</td>
+      <td><span class="pill pill-add">ADD</span></td>
+    </tr>
+    <tr class="row-add">
+      <td>6</td>
+      <td><code>engage-webhook</code></td>
+      <td>engage-webhook.i3technologies.co.ke</td>
+      <td>CNAME</td>
+      <td>8eec2322-eu-de.lb.appdomain.cloud</td>
+      <td>300</td>
+      <td>WhatsApp Business Webhook endpoint for Engage</td>
+      <td><span class="pill pill-add">ADD</span></td>
+    </tr>
+    <tr class="row-add">
+      <td>7</td>
+      <td><code>afroerp</code></td>
+      <td>afroerp.i3technologies.co.ke</td>
+      <td>CNAME</td>
+      <td>8eec2322-eu-de.lb.appdomain.cloud</td>
+      <td>300</td>
+      <td>AfroERP — ERPNext ERP/CRM Web App</td>
+      <td><span class="pill pill-add">ADD</span></td>
+    </tr>
+    <tr class="row-add">
+      <td>8</td>
+      <td><code>mfumo</code></td>
+      <td>mfumo.i3technologies.co.ke</td>
+      <td>CNAME</td>
+      <td>8eec2322-eu-de.lb.appdomain.cloud</td>
+      <td>300</td>
+      <td>Mfumo Co-worker (Open WebUI — AfroERP AI assistant)</td>
+      <td><span class="pill pill-add">ADD</span></td>
+    </tr>
+    <tr class="row-add">
+      <td>9</td>
+      <td><code>jupyter</code></td>
+      <td>jupyter.i3technologies.co.ke</td>
+      <td>CNAME</td>
+      <td>8eec2322-eu-de.lb.appdomain.cloud</td>
+      <td>300</td>
+      <td>JupyterHub — AI Lab notebook environment</td>
+      <td><span class="pill pill-add">ADD</span></td>
+    </tr>
+    <tr class="row-add">
+      <td>10</td>
+      <td><code>sage</code></td>
+      <td>sage.i3technologies.co.ke</td>
+      <td>CNAME</td>
+      <td>8eec2322-eu-de.lb.appdomain.cloud</td>
+      <td>300</td>
+      <td>Sage — Open WebUI no-code AI interface (AI Lab)</td>
+      <td><span class="pill pill-add">ADD</span></td>
+    </tr>
+    <tr class="row-add">
+      <td>11</td>
+      <td><code>tts</code></td>
+      <td>tts.i3technologies.co.ke</td>
+      <td>CNAME</td>
+      <td>8eec2322-eu-de.lb.appdomain.cloud</td>
+      <td>300</td>
+      <td>Voice TTS — XTTS-v2 Text-to-Speech service (pod running, needs route + DNS)</td>
+      <td><span class="pill pill-add">ADD</span></td>
+    </tr>
+    <tr class="row-add">
+      <td>12</td>
+      <td><code>stt</code></td>
+      <td>stt.i3technologies.co.ke</td>
+      <td>CNAME</td>
+      <td>8eec2322-eu-de.lb.appdomain.cloud</td>
+      <td>300</td>
+      <td>Voice STT — faster-whisper Speech-to-Text service (pod running, needs route + DNS)</td>
+      <td><span class="pill pill-add">ADD</span></td>
+    </tr>
+    <tr class="row-add">
+      <td>13</td>
+      <td><code>tracing</code></td>
+      <td>tracing.i3technologies.co.ke</td>
+      <td>CNAME</td>
+      <td>8eec2322-eu-de.lb.appdomain.cloud</td>
+      <td>300</td>
+      <td>Distributed tracing UI (Langfuse tracing dashboard alias)</td>
+      <td><span class="pill pill-add">ADD</span></td>
+    </tr>
+    <tr class="row-add">
+      <td>14</td>
+      <td><code>storage</code></td>
+      <td>storage.i3technologies.co.ke</td>
+      <td>CNAME</td>
+      <td>8eec2322-eu-de.lb.appdomain.cloud</td>
+      <td>300</td>
+      <td>SeaweedFS S3-compatible object storage UI</td>
+      <td><span class="pill pill-add">ADD</span></td>
+    </tr>
+    <tr class="row-add">
+      <td>15</td>
+      <td><code>api</code></td>
+      <td>api.i3technologies.co.ke</td>
+      <td>CNAME</td>
+      <td>8eec2322-eu-de.lb.appdomain.cloud</td>
+      <td>300</td>
+      <td>Public API Gateway endpoint (unified API entry for all platform services)</td>
+      <td><span class="pill pill-add">ADD</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+
+<h2>Section 2 — CNAMEs to UPDATE (2 records — currently wrong target)</h2>
+<p>These two subdomains exist and resolve, but point to <code>102.130.125.229</code> — which is <strong>not the IBM ROKS load balancer</strong>. They must be updated to point to the correct target. The current record will conflict with the Zimbra deployment.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Subdomain</th>
+      <th>Full FQDN</th>
+      <th>Type</th>
+      <th>Current (WRONG) Value</th>
+      <th>New (CORRECT) Value</th>
+      <th>TTL</th>
+      <th>Purpose</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="row-fix">
+      <td>1</td>
+      <td><code>mail</code></td>
+      <td>mail.i3technologies.co.ke</td>
+      <td>A → CNAME</td>
+      <td>102.130.125.229</td>
+      <td>8eec2322-eu-de.lb.appdomain.cloud</td>
+      <td>300</td>
+      <td>Zimbra webmail interface (to be deployed)</td>
+      <td><span class="pill pill-fix">UPDATE</span></td>
+    </tr>
+    <tr class="row-fix">
+      <td>2</td>
+      <td><code>webmail</code></td>
+      <td>webmail.i3technologies.co.ke</td>
+      <td>A → CNAME</td>
+      <td>102.130.125.229</td>
+      <td>8eec2322-eu-de.lb.appdomain.cloud</td>
+      <td>300</td>
+      <td>Zimbra webmail alternate URL</td>
+      <td><span class="pill pill-fix">UPDATE</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="ibox a">
+  <strong>Note on mail/webmail:</strong> The current records appear to be A-records pointing to an old IP (<code>102.130.125.229</code>). In cPanel, <strong>delete</strong> the existing A-records for <code>mail</code> and <code>webmail</code>, then create new CNAME records pointing to the IBM LB hostname. Do not just edit the value — change the record type from A to CNAME at the same time.
+</div>
+
+<hr />
+
+
+<h2>Section 3 — CNAMEs Already Correct (18 records — no action needed)</h2>
+<p>These are confirmed resolving to the correct IBM ROKS load balancer IPs via authoritative DNS check. No changes needed.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Subdomain</th>
+      <th>Full FQDN</th>
+      <th>Resolves To</th>
+      <th>Application</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="row-ok"><td>1</td><td><code>sso</code></td><td>sso.i3technologies.co.ke</td><td>149.81.239.32</td><td>Keycloak SSO (primary login URL)</td><td><span class="pill pill-ok">✓ OK</span></td></tr>
+    <tr class="row-ok"><td>2</td><td><code>keycloak</code></td><td>keycloak.i3technologies.co.ke</td><td>158.176.12.150</td><td>Keycloak SSO (alternate URL)</td><td><span class="pill pill-ok">✓ OK</span></td></tr>
+    <tr class="row-ok"><td>3</td><td><code>evalos</code></td><td>evalos.i3technologies.co.ke</td><td>158.176.12.150</td><td>EvalOS Assessment Platform</td><td><span class="pill pill-ok">✓ OK</span></td></tr>
+    <tr class="row-ok"><td>4</td><td><code>litellm</code></td><td>litellm.i3technologies.co.ke</td><td>149.81.239.32</td><td>LiteLLM AI Model Gateway</td><td><span class="pill pill-ok">✓ OK</span></td></tr>
+    <tr class="row-ok"><td>5</td><td><code>langfuse</code></td><td>langfuse.i3technologies.co.ke</td><td>149.81.239.32</td><td>Langfuse LLM Observability &amp; Tracing</td><td><span class="pill pill-ok">✓ OK</span></td></tr>
+    <tr class="row-ok"><td>6</td><td><code>grafana</code></td><td>grafana.i3technologies.co.ke</td><td>149.81.239.32</td><td>Grafana Infrastructure Monitoring</td><td><span class="pill pill-ok">✓ OK</span></td></tr>
+    <tr class="row-ok"><td>7</td><td><code>admissions</code></td><td>admissions.i3technologies.co.ke</td><td>149.81.239.32</td><td>Admissions AI Agent</td><td><span class="pill pill-ok">✓ OK</span></td></tr>
+    <tr class="row-ok"><td>8</td><td><code>onboarding</code></td><td>onboarding.i3technologies.co.ke</td><td>158.176.12.150</td><td>Onboarding AI Agent</td><td><span class="pill pill-ok">✓ OK</span></td></tr>
+    <tr class="row-ok"><td>9</td><td><code>cms</code></td><td>cms.i3technologies.co.ke</td><td>158.176.12.150</td><td>Directus CMS</td><td><span class="pill pill-ok">✓ OK</span></td></tr>
+    <tr class="row-ok"><td>10</td><td><code>directus</code></td><td>directus.i3technologies.co.ke</td><td>149.81.239.32</td><td>Directus CMS (alternate URL)</td><td><span class="pill pill-ok">✓ OK</span></td></tr>
+    <tr class="row-ok"><td>11</td><td><code>n8n</code></td><td>n8n.i3technologies.co.ke</td><td>158.176.12.150</td><td>n8n Workflow Automation</td><td><span class="pill pill-ok">✓ OK</span></td></tr>
+    <tr class="row-ok"><td>12</td><td><code>argocd</code></td><td>argocd.i3technologies.co.ke</td><td>158.176.12.150</td><td>Argo CD GitOps</td><td><span class="pill pill-ok">✓ OK</span></td></tr>
+    <tr class="row-ok"><td>13</td><td><code>moodle</code></td><td>moodle.i3technologies.co.ke</td><td>149.81.239.32</td><td>Moodle LMS / i3 EduBridge — already set ✓</td><td><span class="pill pill-ok">✓ OK</span></td></tr>
+    <tr class="row-ok"><td>14</td><td><code>nextcloud</code></td><td>nextcloud.i3technologies.co.ke</td><td>149.81.239.32</td><td>Nextcloud Hub Collaboration — already set ✓</td><td><span class="pill pill-ok">✓ OK</span></td></tr>
+    <tr class="row-ok"><td>15</td><td><code>vault</code></td><td>vault.i3technologies.co.ke</td><td>158.176.12.150</td><td>OpenBao / Vault Secrets UI — already set ✓</td><td><span class="pill pill-ok">✓ OK</span></td></tr>
+    <tr class="row-ok"><td>16</td><td><code>gitops</code></td><td>gitops.i3technologies.co.ke</td><td>149.81.239.32</td><td>GitOps (Argo CD alternate URL) — already set ✓</td><td><span class="pill pill-ok">✓ OK</span></td></tr>
+    <tr class="row-ok"><td>17</td><td><code>admissions</code></td><td>admissions.i3technologies.co.ke</td><td>149.81.239.32</td><td>Admissions Agent</td><td><span class="pill pill-ok">✓ OK</span></td></tr>
+    <tr class="row-ok"><td>18</td><td><code>onboarding</code></td><td>onboarding.i3technologies.co.ke</td><td>158.176.12.150</td><td>Onboarding Agent</td><td><span class="pill pill-ok">✓ OK</span></td></tr>
+  </tbody>
+</table>
+
+<hr />
+
+
+<h2>Section 4 — TTL Value Guide</h2>
+
+<table>
+  <thead><tr><th>TTL Value</th><th>Seconds</th><th>When to Use</th><th>Recommendation</th></tr></thead>
+  <tbody>
+    <tr><td><strong>300</strong></td><td>5 minutes</td><td>During initial setup, when records are being added or changed for the first time</td><td><span class="pill pill-add">Use Now</span> — set all new and updated records to 300 during cPanel configuration session</td></tr>
+    <tr><td><strong>3600</strong></td><td>1 hour</td><td>After 48 hours of confirmed correct operation, upgrade to this for day-to-day</td><td><span class="pill pill-ok">Use After 48h</span> — reduces DNS query load while still allowing 1-hour correction window</td></tr>
+    <tr><td><strong>14400</strong></td><td>4 hours</td><td>cPanel default — fine for records that never change</td><td><span class="pill pill-chk">Avoid During Setup</span> — a mistake takes 4 hours to propagate globally. Do not use until platform is stable.</td></tr>
+    <tr><td><strong>86400</strong></td><td>24 hours</td><td>Very stable records (MX, SPF, DKIM) that change very rarely</td><td><span class="pill pill-chk">Post-Pilot Only</span> — for MX and email authentication records once Zimbra is confirmed working.</td></tr>
+  </tbody>
+</table>
+
+<div class="ibox b">
+  <strong>TTL Strategy for this setup:</strong>
+  <ul>
+    <li>Set <strong>all 15 new CNAMEs at TTL 300</strong> when adding them in this session</li>
+    <li>Set <strong>both updated records (mail, webmail) at TTL 300</strong> when changing them</li>
+    <li>After 48 hours, run the DNS verification check again — if all 35 resolve correctly, batch-update TTL to <strong>3600</strong></li>
+    <li>The MX record for Zimbra (when added) should be set at <strong>3600</strong> initially, then <strong>86400</strong> once confirmed working</li>
+  </ul>
+</div>
+
+<hr />
+
+
+<h2>Section 5 — cPanel Step-by-Step Instructions</h2>
+
+<h3>Adding New CNAME Records</h3>
+<p>In cPanel → Zone Editor → select <code>i3technologies.co.ke</code> → click <strong>Manage</strong> → <strong>+Add Record</strong>:</p>
+<table>
+  <thead><tr><th>Field</th><th>Value to Enter</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Name</strong></td><td>Enter only the subdomain prefix (e.g. <code>zuri</code> — cPanel appends the domain automatically)</td></tr>
+    <tr><td><strong>TTL</strong></td><td><code>300</code></td></tr>
+    <tr><td><strong>Type</strong></td><td><code>CNAME</code></td></tr>
+    <tr><td><strong>Record</strong> / <strong>CNAME</strong></td><td><code>8eec2322-eu-de.lb.appdomain.cloud.</code> (include the trailing dot if cPanel requires it)</td></tr>
+  </tbody>
+</table>
+<p>Repeat for all 15 missing records in Section 1.</p>
+
+<h3>Updating mail and webmail (Delete old A-record, Create new CNAME)</h3>
+<ol style="font-size:12.5px;padding-left:20px;margin:8px 0 16px">
+  <li>In Zone Editor, find the existing <strong>A record</strong> for <code>mail</code> pointing to <code>102.130.125.229</code> — click <strong>Delete</strong></li>
+  <li>Find the existing <strong>A record</strong> for <code>webmail</code> pointing to <code>102.130.125.229</code> — click <strong>Delete</strong></li>
+  <li>Click <strong>+Add Record</strong> → add <code>mail</code> as CNAME → <code>8eec2322-eu-de.lb.appdomain.cloud.</code> → TTL 300</li>
+  <li>Click <strong>+Add Record</strong> → add <code>webmail</code> as CNAME → <code>8eec2322-eu-de.lb.appdomain.cloud.</code> → TTL 300</li>
+</ol>
+
+<h3>MX Record for Zimbra Email (add after Zimbra pod is deployed and confirmed healthy)</h3>
+<table>
+  <thead><tr><th>Name</th><th>TTL</th><th>Type</th><th>Priority</th><th>Destination</th></tr></thead>
+  <tbody>
+    <tr><td><code>@</code> (root domain)</td><td>3600</td><td>MX</td><td>10</td><td>mail.i3technologies.co.ke</td></tr>
+  </tbody>
+</table>
+<p style="font-size:12px;color:#57606a">Add this only after the Zimbra LoadBalancer Service has a confirmed public IP and port 25 is responding. Adding MX before Zimbra is ready will cause all inbound email to bounce.</p>
+
+<hr />
+
+
+<h2>Section 6 — Verification Commands (Run After Adding All Records)</h2>
+<p>Run these from PowerShell after completing the cPanel changes. Wait 5–10 minutes (TTL 300) before running.</p>
+
+<div class="dns-block"><span class="cm"># Quick spot-check — run from PowerShell after DNS propagation (5-10 min at TTL 300)</span>
+
+<span class="cm"># Check all 15 new records:</span>
+$missing = @("zuri","pmaas","dawa","engage","nuru","engage-webhook",
+             "afroerp","mfumo","jupyter","sage","tts","stt",
+             "tracing","storage","api")
+
+foreach ($s in $missing) {
+    $r = nslookup "$s.i3technologies.co.ke" 8.8.8.8 2&gt;&amp;1 |
+         Select-String "^Address" | Where-Object { $_ -notmatch "8\.8\.8\.8" } |
+         Select-Object -Last 1
+    if ($r) { Write-Host "<span class="c2">[OK ]</span>  $s -&gt; $r" }
+    else    { Write-Host "<span class="c3">[---]</span>  $s NOT RESOLVING" }
+}
+
+<span class="cm"># Check updated records (should now show IBM LB IPs, not 102.130.125.229):</span>
+nslookup mail.i3technologies.co.ke 8.8.8.8
+nslookup webmail.i3technologies.co.ke 8.8.8.8
+
+<span class="cm"># Expected: all return Address: 149.81.239.32 or 158.176.12.150
+# NOT: 102.130.125.229 (old wrong IP)</span></div>
+
+<hr />
+
+
+<h2>Section 7 — Complete DNS Zone Reference (All 35 Records)</h2>
+<p>Copy-paste reference for the full intended state of <code>i3technologies.co.ke</code> CNAMEs.</p>
+
+<div class="dns-block"><span class="cm">; i3technologies.co.ke — Complete CNAME Zone Reference
+; Target: 8eec2322-eu-de.lb.appdomain.cloud (IBM ROKS Frankfurt LB)
+; TTL: 300 during setup → 3600 after 48h stable operation
+; Generated: September 2026 | Verified against live cluster routes
+;
+; Format: &lt;subdomain&gt;  &lt;TTL&gt;  IN  CNAME  &lt;target&gt;
+; ─────────────────────────────────────────────────────────────────────
+</span>
+<span class="cm">; ── CORE PLATFORM (already resolving) ──────────────────────────────</span>
+<span class="c1">sso</span>              <span class="c2">3600</span>  IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>
+<span class="c1">keycloak</span>         <span class="c2">3600</span>  IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>
+<span class="c1">evalos</span>           <span class="c2">3600</span>  IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>
+<span class="c1">litellm</span>          <span class="c2">3600</span>  IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>
+<span class="c1">langfuse</span>         <span class="c2">3600</span>  IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>
+<span class="c1">grafana</span>          <span class="c2">3600</span>  IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>
+<span class="c1">admissions</span>       <span class="c2">3600</span>  IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>
+<span class="c1">onboarding</span>       <span class="c2">3600</span>  IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>
+<span class="c1">cms</span>              <span class="c2">3600</span>  IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>
+<span class="c1">directus</span>         <span class="c2">3600</span>  IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>
+<span class="c1">n8n</span>              <span class="c2">3600</span>  IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>
+<span class="c1">argocd</span>           <span class="c2">3600</span>  IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>
+<span class="c1">vault</span>            <span class="c2">3600</span>  IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>
+<span class="c1">gitops</span>           <span class="c2">3600</span>  IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>
+<span class="c1">moodle</span>           <span class="c2">3600</span>  IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>
+<span class="c1">nextcloud</span>        <span class="c2">3600</span>  IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>
+
+<span class="cm">; ── ADD NOW (currently NXDOMAIN) ────────────────────────────────────</span>
+<span class="c1">zuri</span>             <span class="c2">300</span>   IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>  <span class="cm">; ADD</span>
+<span class="c1">pmaas</span>            <span class="c2">300</span>   IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>  <span class="cm">; ADD</span>
+<span class="c1">dawa</span>             <span class="c2">300</span>   IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>  <span class="cm">; ADD</span>
+<span class="c1">engage</span>           <span class="c2">300</span>   IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>  <span class="cm">; ADD</span>
+<span class="c1">nuru</span>             <span class="c2">300</span>   IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>  <span class="cm">; ADD</span>
+<span class="c1">engage-webhook</span>   <span class="c2">300</span>   IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>  <span class="cm">; ADD</span>
+<span class="c1">afroerp</span>          <span class="c2">300</span>   IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>  <span class="cm">; ADD</span>
+<span class="c1">mfumo</span>            <span class="c2">300</span>   IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>  <span class="cm">; ADD</span>
+<span class="c1">jupyter</span>          <span class="c2">300</span>   IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>  <span class="cm">; ADD</span>
+<span class="c1">sage</span>             <span class="c2">300</span>   IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>  <span class="cm">; ADD</span>
+<span class="c1">tts</span>              <span class="c2">300</span>   IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>  <span class="cm">; ADD</span>
+<span class="c1">stt</span>              <span class="c2">300</span>   IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>  <span class="cm">; ADD</span>
+<span class="c1">tracing</span>          <span class="c2">300</span>   IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>  <span class="cm">; ADD</span>
+<span class="c1">storage</span>          <span class="c2">300</span>   IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>  <span class="cm">; ADD</span>
+<span class="c1">api</span>              <span class="c2">300</span>   IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>  <span class="cm">; ADD</span>
+
+<span class="cm">; ── UPDATE (delete old A-record 102.130.125.229, add new CNAME) ─────</span>
+<span class="c1">mail</span>             <span class="c2">300</span>   IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>  <span class="cm">; UPDATE (was A → 102.130.125.229)</span>
+<span class="c1">webmail</span>          <span class="c2">300</span>   IN  CNAME  <span class="c3">8eec2322-eu-de.lb.appdomain.cloud.</span>  <span class="cm">; UPDATE (was A → 102.130.125.229)</span>
+
+<span class="cm">; ── EMAIL (add AFTER Zimbra is deployed and port 25 confirmed open) ─</span>
+<span class="c1">@</span>                <span class="c2">3600</span>  IN  MX     10 <span class="c3">mail.i3technologies.co.ke.</span>         <span class="cm">; ADD after Zimbra live</span></div>
+
+<div class="footer">
+  <p>i3 Technologies · DNS CNAME Configuration Report · Domain: i3technologies.co.ke · September 2026</p>
+  <p style="margin-top:5px">Made with IBM Bob</p>
+</div>
+
+</div>
+</body>
+</html>

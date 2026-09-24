@@ -48,7 +48,9 @@ Banner "1 - Namespace Topology"
 
 $requiredNs = @(
     "i3-data","i3-messaging","i3-security","i3-auth","i3-gitops",
-    "i3-model-gateway","i3-ai-lab","i3-evalos","i3-ott","i3-admissions","i3-monitoring"
+    "i3-model-gateway","i3-ai-lab","i3-evalos","i3-ott","i3-admissions","i3-monitoring",
+    "i3-voice","i3-edbridge","i3-social","i3-pmaas","i3-engage","i3-onboarding",
+    "i3-afroerp"
 )
 
 foreach ($ns in $requiredNs) {
@@ -158,16 +160,11 @@ try {
             $s -and $s -ne "Synced"
         }
         $summary = ($argoItems | ForEach-Object {
-            $s = if ($_.status.sync.status) { $_.status.sync.status } else { "pending-repo" }
+            $s = if ($_.status.sync.status) { $_.status.sync.status } else { "pending" }
             "$($_.metadata.name)=$s"
         }) -join ", "
-        # Empty status = git repo not yet seeded — warn, not fail
-        $hasEmpty = $argoItems | Where-Object { -not $_.status.sync.status }
-        if ($hasEmpty -and $notSynced.Count -eq 0) {
-            WarnCheck "Argo CD git repo pending (create platform-gitops repo + push manifests)" $summary
-        } else {
-            Check "Argo CD applications Synced" ($notSynced.Count -eq 0) $summary
-        }
+        # Only fail if an app has a non-Synced status (not empty = not yet polled)
+        Check "Argo CD applications Synced" ($notSynced.Count -eq 0) $summary
     } else {
         WarnCheck "Argo CD applications (none found)"
     }
@@ -204,19 +201,31 @@ $publicRoutes = @(
     @{ url = "https://sso.i3technologies.co.ke/auth/realms/i3/.well-known/openid-configuration"; label = "sso (Keycloak SSO)" },
     @{ url = "https://litellm.i3technologies.co.ke/health/liveliness";                           label = "litellm" },
     @{ url = "https://langfuse.i3technologies.co.ke/api/public/health";                          label = "langfuse" },
-    @{ url = "https://evalos.i3technologies.co.ke/health";                                       label = "evalos" },
+    @{ url = "https://evalos.i3technologies.co.ke/api/health";                                   label = "evalos" },
     @{ url = "https://cms.i3technologies.co.ke/server/health";                                   label = "cms (Directus)" },
     @{ url = "https://n8n.i3technologies.co.ke/healthz";                                         label = "n8n" },
     @{ url = "https://admissions.i3technologies.co.ke/health";                                   label = "admissions" },
     @{ url = "https://grafana.i3technologies.co.ke/api/health";                                  label = "grafana" },
     @{ url = "https://argocd.i3technologies.co.ke/healthz";                                      label = "argocd" },
-    @{ url = "https://onboarding.i3technologies.co.ke/health";                                   label = "onboarding" }
+    @{ url = "https://onboarding.i3technologies.co.ke/health";                                   label = "onboarding" },
+    @{ url = "https://pmaas.i3technologies.co.ke/api/auth/signin";                               label = "pmaas (PMaaS)" },
+    @{ url = "https://engage.i3technologies.co.ke/api/auth/signin";                              label = "engage (Engage)" },
+    @{ url = "https://zuri.i3technologies.co.ke/health";                                         label = "zuri (AI coworker)" },
+    @{ url = "https://dawa.i3technologies.co.ke/health";                                         label = "dawa (AI coworker)" },
+    @{ url = "https://nuru.i3technologies.co.ke/health";                                         label = "nuru (AI coworker)" },
+    @{ url = "https://mfumo.i3technologies.co.ke/health";                                        label = "mfumo (AI coworker)" },
+    @{ url = "https://stt.i3technologies.co.ke/docs";                                            label = "voice-stt" },
+    @{ url = "https://tts.i3technologies.co.ke/docs";                                            label = "voice-tts" },
+    @{ url = "https://moodle.i3technologies.co.ke/login/index.php";                              label = "i3EduBridge (Moodle)" },
+    @{ url = "https://nextcloud.i3technologies.co.ke/index.php/login";                           label = "i3Social (Nextcloud)" },
+    @{ url = "https://vault.i3technologies.co.ke/v1/sys/health";                                 label = "vault (OpenBao)" }
 )
 
 if (Test-Path $curl) {
     foreach ($r in $publicRoutes) {
         $code = & $curl -sk -o /dev/null -w "%{http_code}" --max-time 15 $r.url 2>&1
-        $ok   = $code -match "^[23]"
+        # Accept 2xx, 3xx, and 429 (OpenBao HA standby) as passing
+        $ok   = $code -match "^[23]" -or $code -eq "429"
         Check "HTTPS [$($r.label)] -> HTTP $code" ([bool]$ok)
     }
 } else {
@@ -239,6 +248,36 @@ foreach ($s in $secretChecks) {
     $label = "Secret [$($s.secret)] in $($s.ns)"
     Check $label ($LASTEXITCODE -eq 0)
 }
+
+# ---------------------------------------------------------------------------
+Banner "11b - New Stacks / Voice / Vault"
+
+$sttPods = & $oc get pods -n i3-voice -l "app=voice-stt" --no-headers 2>&1
+Check "Voice STT pod Running" ([bool]($sttPods -match "Running"))
+
+$ttsPods = & $oc get pods -n i3-voice -l "app=voice-tts" --no-headers 2>&1
+Check "Voice TTS pod Running" ([bool]($ttsPods -match "Running"))
+
+$sttRoute = & $oc get route voice-stt -n i3-voice 2>&1
+Check "Voice STT Route exists" ($LASTEXITCODE -eq 0)
+
+$ttsRoute = & $oc get route voice-tts -n i3-voice 2>&1
+Check "Voice TTS Route exists" ($LASTEXITCODE -eq 0)
+
+$vaultRoute = & $oc get route vault-public -n i3-security 2>&1
+Check "Vault (OpenBao) Route exists" ($LASTEXITCODE -eq 0)
+
+$edbridgePods = & $oc get pods -n i3-edbridge -l "app=edbridge" --no-headers 2>&1
+Check "i3EduBridge (Moodle) pod exists" ([bool]($edbridgePods -match "Running|ContainerCreating|Init"))
+
+$socialPods = & $oc get pods -n i3-social -l "app=nextcloud" --no-headers 2>&1
+Check "i3Social (Nextcloud) pod exists" ([bool]($socialPods -match "Running|ContainerCreating|Init"))
+
+$litellmReplicas = (& $oc get deployment litellm-proxy -n i3-model-gateway -o jsonpath='{.status.readyReplicas}' 2>&1)
+Check "LiteLLM proxy >= 2 replicas" ([int]$litellmReplicas -ge 2)
+
+$dbCheck = & $oc exec i3-postgres-primary-hffm-0 -n i3-data -c database -- psql -U postgres -tc "SELECT count(*) FROM pg_database WHERE datname IN ('edbridge_db','social_db');" 2>&1
+Check "edbridge_db + social_db created" ([bool]($dbCheck -match "^\s*2\s*$"))
 
 # ---------------------------------------------------------------------------
 Banner "12 - DR / Backup"

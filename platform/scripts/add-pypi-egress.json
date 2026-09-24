@@ -1,0 +1,12 @@
+[
+  {
+    "op": "add",
+    "path": "/spec/egress/-",
+    "value": {
+      "ports": [
+        {"port": 443, "protocol": "TCP"},
+        {"port": 80,  "protocol": "TCP"}
+      ]
+    }
+  }
+]

@@ -14,6 +14,8 @@ LITELLM_BASE = os.getenv("LITELLM_BASE", "http://litellm-proxy.i3-model-gateway.
 LITELLM_KEY  = os.environ["LITELLM_KEY"]
 MODEL        = os.getenv("RAGAS_MODEL", "granite-nano")
 EMBED_MODEL  = os.getenv("RAGAS_EMBED",  "embed")
+# Use CA bundle path when HTTPS is configured; defaults to True (system CAs).
+_CA_BUNDLE: "str | bool" = os.getenv("LITELLM_CA_CERT", True)  # type: ignore[assignment]
 
 QUESTIONS = [
     "What are the undergraduate admission requirements?",
@@ -53,7 +55,7 @@ for i, q in enumerate(QUESTIONS):
                                  "content": f"Answer only from this context: {CONTEXT}"},
                                 {"role": "user", "content": q}],
                   "max_tokens": 300},
-            timeout=60, verify=False,
+            timeout=60, verify=_CA_BUNDLE,
         )
         d = r.json()
         if "error" in d:

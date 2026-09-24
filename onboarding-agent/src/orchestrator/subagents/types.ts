@@ -43,4 +43,6 @@ export interface SubagentInput {
   ragContext:   string;
   /** Specific focus areas the subagent should prioritise */
   focusAreas:   string[];
+  /** Session ID propagated from the top-level plan request (for decision log correlation) */
+  sessionId?:   string;
 }

@@ -1,0 +1,72 @@
+# ============================================================
+# i3-tenant / prometheus.yaml
+# Adds Prometheus scrape configuration for the tenant namespace.
+# Creates a PodMonitor that selects all pods with the
+# prometheus.io/scrape="true" label in this namespace.
+# ============================================================
+---
+# PodMonitor — Prometheus Operator CRD
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ printf "%s-pod-monitor" (include "i3-tenant.namespace" .) }}
+  # Placed in i3-monitoring so the central Prometheus discovers it.
+  namespace: i3-monitoring
+  labels:
+    {{ include "i3-tenant.labels" . | nindent 4 }}
+    # This label causes the Prometheus Operator to pick up this PodMonitor.
+    prometheus: kube-prometheus
+    role: pod-monitor
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ include "i3-tenant.namespace" . }}
+  selector:
+    matchLabels:
+      prometheus.io/scrape: "true"
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      relabelings:
+        # Inject tenant_id and tier into every scraped metric for attribution.
+        - targetLabel: tenant_id
+          replacement: {{ .Values.tenant.id | quote }}
+        - targetLabel: tenant_slug
+          replacement: {{ .Values.tenant.slug | quote }}
+        - targetLabel: tier
+          replacement: {{ .Values.tier | quote }}
+---
+# PrometheusRule — tenant-level alert thresholds.
+# Fires when the tenant's pod count approaches the quota ceiling.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ printf "%s-alerts" (include "i3-tenant.namespace" .) }}
+  namespace: i3-monitoring
+  labels:
+    {{ include "i3-tenant.labels" . | nindent 4 }}
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    - name: {{ printf "tenant.%s" .Values.tenant.slug }}
+      interval: 60s
+      rules:
+        - alert: TenantPodQuotaNearing
+          expr: |
+            kube_resourcequota{namespace={{ include "i3-tenant.namespace" . | quote }},resource="count/pods",type="used"}
+              /
+            kube_resourcequota{namespace={{ include "i3-tenant.namespace" . | quote }},resource="count/pods",type="hard"}
+              > 0.80
+          for: 5m
+          labels:
+            severity: warning
+            tenant_id: {{ .Values.tenant.id | quote }}
+            tenant_slug: {{ .Values.tenant.slug | quote }}
+            tier: {{ .Values.tier | quote }}
+          annotations:
+            summary: "Tenant {{ .Values.tenant.slug }} pod quota above 80%"
+            description: >
+              Namespace {{ include "i3-tenant.namespace" . }} has consumed more than 80% of
+              its pod quota. Current tier: {{ .Values.tier }}.

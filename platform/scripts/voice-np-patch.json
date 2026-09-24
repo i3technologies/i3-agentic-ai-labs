@@ -1,0 +1,8 @@
+[{"op":"replace","path":"/spec/ingress/0/from","value":[
+  {"namespaceSelector":{"matchLabels":{"kubernetes.io/metadata.name":"i3-ai-lab"}}},
+  {"namespaceSelector":{"matchLabels":{"kubernetes.io/metadata.name":"i3-evalos"}}},
+  {"namespaceSelector":{"matchLabels":{"kubernetes.io/metadata.name":"i3-pmaas"}}},
+  {"namespaceSelector":{"matchLabels":{"kubernetes.io/metadata.name":"i3-engage"}}},
+  {"namespaceSelector":{"matchLabels":{"kubernetes.io/metadata.name":"openshift-ingress"}}},
+  {"namespaceSelector":{"matchLabels":{"network.openshift.io/policy-group":"ingress"}}}
+]}]

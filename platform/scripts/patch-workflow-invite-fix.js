@@ -7,7 +7,8 @@ const https = require('https');
 const N8N_BASE = 'n8n.i3technologies.co.ke';
 const WORKFLOW_ID = '319537be-cd59-4645-9b5e-f183acfecf7e';
 const EMAIL = 'snjagi@i3technologies.co.ke';
-const PASSWORD = 'REDACTED-n8n-admin';
+// STEP-P1-01: credential removed — set N8N_ADMIN_PASS env var (vault kv get -field=password i3/n8n/admin)
+const PASSWORD = process.env.N8N_ADMIN_PASS || (() => { console.error('ERROR: N8N_ADMIN_PASS not set'); process.exit(1); })();
 
 function req(method, path, body, cookie) {
   return new Promise((resolve, reject) => {

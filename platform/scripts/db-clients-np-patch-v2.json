@@ -1,0 +1,26 @@
+[
+  {
+    "op": "replace",
+    "path": "/spec/ingress/0/from/0/namespaceSelector/matchExpressions/0/values",
+    "value": [
+      "i3-model-gateway",
+      "i3-admissions",
+      "i3-evalos",
+      "i3-ai-lab",
+      "i3-gitops",
+      "i3-auth",
+      "i3-ott",
+      "i3-sit",
+      "i3-talent",
+      "i3-ar",
+      "i3-ford",
+      "i3-edbridge",
+      "i3-pmaas",
+      "i3-onboarding",
+      "i3-social",
+      "i3-voice",
+      "i3-smartlab",
+      "i3-engage"
+    ]
+  }
+]

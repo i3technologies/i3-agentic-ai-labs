@@ -1,0 +1,69 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ford-allow-ingress
+  namespace: i3-ford
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: openshift-ingress
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-monitoring
+        - podSelector: {}   # intra-namespace (peers talk to each other)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ford-allow-egress
+  namespace: i3-ford
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+  egress:
+    # Intra-namespace (peers, orderers, CAs talk to each other)
+    - to:
+        - podSelector: {}
+    # PostgreSQL (ford_members_db)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-data
+      ports: [{port: 5432, protocol: TCP}]
+    # Keycloak (voter auth)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-auth
+      ports: [{port: 8443, protocol: TCP}]
+    # Engage (recruitment integration)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-engage
+      ports: [{port: 3000, protocol: TCP}]
+    # DNS
+    - ports:
+        - {port: 53, protocol: UDP}
+        - {port: 53, protocol: TCP}
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: openshift-dns
+      ports:
+        - {port: 53, protocol: UDP}
+        - {port: 53, protocol: TCP}
+    # Image registry
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: openshift-image-registry
+      ports: [{port: 5000, protocol: TCP}]
+    # External HTTPS (Fabric images, Africa's Talking USSD)
+    - ports:
+        - {port: 443, protocol: TCP}
+        - {port: 80,  protocol: TCP}

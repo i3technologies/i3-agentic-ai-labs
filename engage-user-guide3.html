@@ -1,0 +1,273 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Engage — User Guide</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.7;background:#fff;color:#1f2328}
+  .wrapper{max-width:820px;margin:0 auto;padding:32px 24px}
+  h1{font-size:22px;font-weight:700;color:#1f2328;border-bottom:2px solid #3b82d4;padding-bottom:8px;margin-bottom:6px}
+  .subtitle{color:#57606a;font-size:13px;margin-bottom:24px}
+  h2{font-size:16px;font-weight:700;color:#1f2328;margin:28px 0 10px;padding:6px 12px;background:#f7f8fa;border-left:4px solid #3b82d4}
+  h3{font-size:14px;font-weight:700;margin:16px 0 7px;color:#1f2328}
+  p{margin-bottom:10px}
+  ul,ol{padding-left:22px;margin-bottom:10px}
+  li{margin-bottom:5px}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px}
+  th{background:#f7f8fa;border:1px solid #e5e7eb;padding:7px 10px;text-align:left;font-weight:700}
+  td{border:1px solid #e5e7eb;padding:7px 10px;vertical-align:top}
+  tr:nth-child(even) td{background:#fafbfc}
+  code{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:3px;padding:1px 5px;font-size:12px;font-family:"Consolas","Courier New",monospace}
+  .step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start}
+  .step-num{min-width:30px;height:30px;background:#3b82d4;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+  .step-body{flex:1}
+  .callout{border-left:4px solid #3b82d4;background:#f0f6ff;padding:10px 14px;margin:12px 0;border-radius:0 4px 4px 0;font-size:13px}
+  .callout-tip{border-left-color:#22c55e;background:#f0fdf4}
+  .callout-warn{border-left-color:#f59e0b;background:#fffbeb}
+  .callout-danger{border-left-color:#ef4444;background:#fef2f2}
+  .app-header{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:14px 18px;margin-bottom:24px;display:flex;gap:18px;flex-wrap:wrap;font-size:13px}
+  .app-header div strong{color:#1f2328;display:block;margin-bottom:2px}
+  .app-header div span{color:#57606a}
+  .divider{border:none;border-top:1px solid #e5e7eb;margin:24px 0}
+  .flow-box{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:5px;padding:12px 16px;margin:12px 0;font-size:13px}
+  footer{border-top:1px solid #e5e7eb;margin-top:40px;padding-top:12px;text-align:center;font-size:12px;color:#57606a}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<h1>Engage — User Guide</h1>
+<p class="subtitle">AI-powered multi-channel campaign management platform with personalisation and consent management</p>
+
+<div class="app-header">
+  <div><strong>Application</strong><span>i3 Engage</span></div>
+  <div><strong>Audience</strong><span>Marketing Teams, Campaign Managers, Communication Officers</span></div>
+  <div><strong>Access URL</strong><span>https://engage.i3technologies.co.ke</span></div>
+  <div><strong>Auth Required</strong><span>Yes — i3 SSO (Keycloak)</span></div>
+</div>
+
+<h2>1. What is Engage?</h2>
+<p>Engage is i3's AI-powered campaign management platform for email, WhatsApp, and SMS communications. It allows marketing teams to create contact lists, design campaigns, and deliver personalised messages at scale — with built-in consent management and AI personalisation powered by the Qwen language model.</p>
+
+<table>
+  <tr><th>Feature</th><th>Description</th></tr>
+  <tr><td>Campaign Management</td><td>Create, schedule, and send email/SMS/WhatsApp campaigns</td></tr>
+  <tr><td>Contact Management</td><td>Import and manage contact lists with segmentation</td></tr>
+  <tr><td>AI Personalisation</td><td>Automatically personalise message body per recipient using AI</td></tr>
+  <tr><td>Consent Gating</td><td>Messages only sent to contacts who have given valid consent</td></tr>
+  <tr><td>Campaign Scheduling</td><td>Schedule campaigns for immediate or future delivery</td></tr>
+  <tr><td>Delivery Analytics</td><td>Track send success, opens, and failures per campaign</td></tr>
+</table>
+
+<hr class="divider" />
+
+<h2>2. Logging In</h2>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body">
+    <h3>Navigate to Engage</h3>
+    <p>Go to <code>https://engage.i3technologies.co.ke</code>.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body">
+    <h3>Sign In via i3 SSO</h3>
+    <p>Click <strong>Sign In</strong>. You will be redirected to the i3 identity portal. Enter your email and password. Use "Forgot Password" if needed.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body">
+    <h3>Access the Dashboard</h3>
+    <p>After login, the Engage dashboard shows recent campaigns, contact totals, and send performance metrics.</p>
+  </div>
+</div>
+
+<hr class="divider" />
+
+<h2>3. Managing Contacts</h2>
+
+<h3>Adding Contacts</h3>
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><p>Navigate to <strong>Contacts</strong> in the left sidebar.</p></div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><p>Click <strong>Add Contact</strong> (or <strong>Import CSV</strong> for bulk uploads).</p></div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><p>Fill in: First Name, Last Name, Email Address, Phone Number, and any custom fields relevant to your organisation.</p></div>
+</div>
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body"><p>Set the <strong>Consent Status</strong> field — contacts must have <code>consent: granted</code> to receive messages via any channel.</p></div>
+</div>
+<div class="step">
+  <div class="step-num">5</div>
+  <div class="step-body"><p>Click <strong>Save</strong>. The contact is now available for campaign targeting.</p></div>
+</div>
+
+<div class="callout callout-danger"><strong>Consent is mandatory:</strong> The system automatically blocks sending to any contact whose consent record is not <code>granted</code>. Ensure all contacts have valid consent before creating campaigns. This is enforced by the platform — it cannot be overridden.</div>
+
+<h3>Importing Contacts from CSV</h3>
+<ol>
+  <li>Go to Contacts → Import.</li>
+  <li>Download the CSV template from the import page.</li>
+  <li>Fill in the template: <code>first_name, last_name, email, phone, consent_channel, consent_status</code>.</li>
+  <li>Upload the completed CSV file.</li>
+  <li>Review the import preview — check for validation errors.</li>
+  <li>Click <strong>Confirm Import</strong>.</li>
+</ol>
+
+<hr class="divider" />
+
+<h2>4. Creating a Campaign</h2>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body">
+    <h3>Go to Campaigns</h3>
+    <p>Click <strong>Campaigns</strong> in the left sidebar, then click <strong>New Campaign</strong>.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body">
+    <h3>Enter Campaign Details</h3>
+    <p>Fill in:</p>
+    <ul>
+      <li><strong>Campaign Name</strong> — internal reference name</li>
+      <li><strong>Subject Line</strong> — email subject (for email campaigns)</li>
+      <li><strong>Channel</strong> — select Email, SMS, or WhatsApp</li>
+      <li><strong>From Name / From Email</strong> — sender identity</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body">
+    <h3>Write Your Message</h3>
+    <p>Enter the message body. You can use personalisation tokens:</p>
+    <ul>
+      <li><code>{{first_name}}</code> — replaced with each contact's first name</li>
+      <li><code>{{organisation}}</code> — contact's organisation name</li>
+      <li>Enable <strong>AI Personalisation</strong> toggle to let the AI enhance each message per recipient automatically.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body">
+    <h3>Select Contact List</h3>
+    <p>Choose one or more contact lists or apply segment filters (e.g. by location, tag, or custom field).</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">5</div>
+  <div class="step-body">
+    <h3>Set Delivery Schedule</h3>
+    <p>Choose <strong>Send Immediately</strong> or set a <strong>Scheduled Date and Time</strong> (EAT timezone). The system will queue the campaign and deliver at the specified time.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">6</div>
+  <div class="step-body">
+    <h3>Review &amp; Send</h3>
+    <p>Review the campaign summary: recipient count, consent-validated count, message preview. Click <strong>Send Campaign</strong> (or <strong>Schedule</strong> if a future time was set).</p>
+  </div>
+</div>
+
+<div class="callout callout-tip"><strong>AI Personalisation:</strong> When enabled, the AI generates a unique introductory paragraph for each recipient based on their name and profile. This typically improves open and engagement rates. The core message you wrote is always preserved.</div>
+
+<hr class="divider" />
+
+<h2>5. Campaign Delivery Flow</h2>
+
+<div class="flow-box">
+  <p><strong>Sync path (small campaigns):</strong></p>
+  <p>Select contacts → Check consent per contact → AI personalise → Send via email/SMS → Log result → Update campaign status</p>
+</div>
+
+<div class="flow-box">
+  <p><strong>Async path (large campaigns, &gt;500 contacts):</strong></p>
+  <p>Campaign queued as a CloudEvent → Kafka consumer picks up → Consent check → AI personalise in batches → Send → Log per-contact result</p>
+</div>
+
+<p>For large campaigns, you will see a <strong>Processing</strong> status indicator while the campaign is being dispatched. Results are updated in real time in the campaign report view.</p>
+
+<hr class="divider" />
+
+<h2>6. Viewing Campaign Results</h2>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><p>Go to <strong>Campaigns</strong> and click on any sent campaign to open its report.</p></div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><p>The report shows: Total Recipients, Delivered, Failed, Bounced, Consent Blocked counts.</p></div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><p>Click on any row to see individual contact delivery status.</p></div>
+</div>
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body"><p>Use the <strong>Export</strong> button to download results as CSV for external reporting.</p></div>
+</div>
+
+<hr class="divider" />
+
+<h2>7. Managing Consent Records</h2>
+
+<p>Engage enforces consent-gated sending. No message can be sent to a contact without a valid consent record for the target channel.</p>
+
+<h3>Consent Channels</h3>
+<table>
+  <tr><th>Channel</th><th>Required Consent Type</th></tr>
+  <tr><td>Email</td><td><code>email</code> consent granted</td></tr>
+  <tr><td>WhatsApp</td><td><code>whatsapp</code> consent granted</td></tr>
+  <tr><td>SMS</td><td><code>sms</code> consent granted</td></tr>
+</table>
+
+<h3>Updating a Contact's Consent</h3>
+<ol>
+  <li>Go to Contacts → search for the contact.</li>
+  <li>Open the contact record.</li>
+  <li>In the <strong>Consent</strong> section, update the channel consent status.</li>
+  <li>Save the record. The change takes effect immediately on the next campaign run.</li>
+</ol>
+
+<div class="callout callout-warn"><strong>Unsubscribe handling:</strong> If a contact replies with "STOP" or clicks an unsubscribe link, their consent is automatically revoked for that channel. Never manually re-add consent for an unsubscribed contact without their explicit re-opt-in.</div>
+
+<hr class="divider" />
+
+<h2>8. Troubleshooting</h2>
+
+<table>
+  <tr><th>Issue</th><th>Cause</th><th>Solution</th></tr>
+  <tr><td>Campaign shows 0 recipients</td><td>All contacts failed consent check</td><td>Review consent records for your contact list; ensure consent is granted</td></tr>
+  <tr><td>Campaign stuck in "Processing"</td><td>Kafka consumer may be lagging</td><td>Wait up to 10 minutes for large campaigns; contact admin if over 30 minutes</td></tr>
+  <tr><td>Emails not received by recipients</td><td>Brevo SMTP delivery issue or spam filters</td><td>Check campaign report for "Bounced" contacts; contact admin to verify Brevo status</td></tr>
+  <tr><td>AI personalisation not working</td><td>AI service temporarily busy</td><td>Disable AI personalisation toggle; send without it; try again later</td></tr>
+  <tr><td>Import CSV fails validation</td><td>Missing required columns or invalid email format</td><td>Download the template again; ensure all columns match exactly</td></tr>
+  <tr><td>Cannot log in</td><td>Expired session or password</td><td>Use "Forgot Password" on the SSO login page</td></tr>
+</table>
+
+<footer>Made with IBM Bob  |  i3 Technologies — Engage User Guide v2.0  |  © 2026</footer>
+</div>
+</body>
+</html>

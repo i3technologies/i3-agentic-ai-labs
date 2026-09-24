@@ -68,6 +68,12 @@ spec:
               value: "false"
             - name: LANGFUSE_METRICS_API_ENABLED
               value: "true"
+            # PII-01: Retention — auto-delete traces older than 90 days.
+            # Langfuse v3 supports LANGFUSE_DEFAULT_TTL_DAYS on the web container.
+            # This prevents indefinite storage of prompt/completion text in langfuse_db.
+            # Review and adjust to meet data-protection obligations (DPA/PDPA).
+            - name: LANGFUSE_DEFAULT_TTL_DAYS
+              value: "90"
           envFrom:
             - secretRef:
                 name: langfuse-secrets

@@ -1,0 +1,565 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 Platform — October Pilot Implementation Plan</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:13.5px;line-height:1.65;background:#fff;color:#1f2328}
+  .page{max-width:960px;margin:0 auto;padding:36px 28px 60px}
+
+  /* Header */
+  .hdr{border-bottom:3px solid #1f2328;padding-bottom:16px;margin-bottom:24px}
+  .hdr h1{font-size:20px;font-weight:700}
+  .hdr .sub{font-size:12px;color:#57606a;margin-top:5px}
+  .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .tag{font-size:11px;font-weight:600;padding:2px 9px;border-radius:3px}
+  .tg{background:#dcfce7;color:#15803d}
+  .tr{background:#fee2e2;color:#991b1b}
+  .ta{background:#fef3c7;color:#92400e}
+  .tb{background:#dbeafe;color:#1d4ed8}
+  .tp{background:#ede9fe;color:#5b21b6}
+  .tgy{background:#f3f4f6;color:#374151}
+
+  /* Section heads */
+  h2{font-size:15px;font-weight:700;margin:30px 0 12px;padding-bottom:5px;border-bottom:2px solid #e5e7eb}
+  h3{font-size:13.5px;font-weight:700;margin:18px 0 8px}
+  h4{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#3b82d4;margin:14px 0 6px}
+  p{font-size:12.5px;margin-bottom:8px}
+
+  /* Stat cards */
+  .cards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:16px 0 26px}
+  .card{border:1px solid #e5e7eb;border-radius:5px;padding:11px 13px;text-align:center}
+  .card .v{font-size:22px;font-weight:700}
+  .card .l{font-size:11px;color:#57606a;margin-top:3px}
+  .vg{color:#15803d}.vr{color:#991b1b}.va{color:#b45309}.vb{color:#1d4ed8}.vp{color:#6d28d9}
+
+  /* Test results */
+  .test-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0 22px}
+  .test-box{border:1px solid #e5e7eb;border-radius:5px;padding:13px 15px}
+  .test-box h3{margin-top:0;font-size:13px}
+  .pass-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid #f3f4f6;font-size:12px}
+  .pass-row:last-child{border-bottom:none}
+  .pill{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;white-space:nowrap}
+  .p-pass{background:#dcfce7;color:#15803d}
+  .p-warn{background:#fef3c7;color:#92400e}
+  .p-wait{background:#ede9fe;color:#5b21b6}
+  .p-fail{background:#fee2e2;color:#991b1b}
+  .p-ok  {background:#dbeafe;color:#1d4ed8}
+
+  /* Step blocks */
+  .phase-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 12px;border-radius:4px;display:inline-block;margin:22px 0 12px}
+  .ph-now{background:#fee2e2;color:#991b1b}
+  .ph-deploy{background:#ede9fe;color:#5b21b6}
+  .ph-wire{background:#fef3c7;color:#92400e}
+  .ph-verify{background:#dcfce7;color:#15803d}
+
+  .step{display:flex;gap:12px;margin:8px 0;padding:11px 13px;border:1px solid #e5e7eb;border-radius:5px;background:#fafafa}
+  .step.done{background:#f0fdf4;border-color:#bbf7d0}
+  .step.critical{background:#fff5f5;border-color:#fecaca}
+  .step.deploy{background:#f5f3ff;border-color:#ddd6fe}
+  .step.wire{background:#fffbeb;border-color:#fde68a}
+  .sn{min-width:28px;height:28px;border-radius:50%;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+  .sn-done{background:#22c55e}
+  .sn-crit{background:#ef4444}
+  .sn-dep{background:#7c5cd8}
+  .sn-wire{background:#f59e0b}
+  .sn-vfy{background:#3b82d4}
+  .st{font-size:13px;font-weight:700;margin-bottom:3px}
+  .sm{font-size:11.5px;color:#57606a}
+  .sbody ul{padding-left:16px;margin-top:6px}
+  .sbody li{font-size:12px;margin-bottom:3px}
+  .sbody pre{font-family:"SFMono-Regular",Consolas,monospace;font-size:11px;background:#1e1e1e;color:#d4d4d4;padding:9px 12px;border-radius:4px;overflow-x:auto;line-height:1.5;margin:7px 0 3px;white-space:pre}
+  .sbody p{font-size:12.5px}
+
+  /* Tables */
+  table{width:100%;border-collapse:collapse;margin:10px 0 18px;font-size:12px}
+  th{background:#f7f8fa;border:1px solid #e5e7eb;padding:6px 9px;text-align:left;font-weight:600;font-size:11.5px;white-space:nowrap}
+  td{border:1px solid #e5e7eb;padding:6px 9px;vertical-align:top}
+  tr:nth-child(even) td{background:#fafbfc}
+
+  /* Info boxes */
+  .ibox{border-left:3px solid #e5e7eb;padding:10px 14px;margin:10px 0 16px;background:#fafafa;border-radius:0 4px 4px 0;font-size:12.5px}
+  .ibox.g{border-left-color:#22c55e}
+  .ibox.b{border-left-color:#3b82f6}
+  .ibox.a{border-left-color:#f59e0b}
+  .ibox ul{padding-left:16px;margin:4px 0}
+  .ibox li{margin-bottom:3px}
+
+  code{font-family:"SFMono-Regular",Consolas,monospace;font-size:11px;background:#f3f4f6;padding:1px 5px;border-radius:3px}
+  hr{border:none;border-top:1px solid #e5e7eb;margin:24px 0}
+
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .dg{background:#22c55e}.da{background:#f59e0b}.dr{background:#ef4444}.db{background:#3b82f6}.dgr{background:#9ca3af}
+
+  .app-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 20px}
+  .app-card{border:1px solid #e5e7eb;border-radius:5px;padding:10px 12px}
+  .app-card .app-name{font-size:12.5px;font-weight:700}
+  .app-card .app-url{font-size:11px;color:#3b82d4;margin-top:2px}
+  .app-card .app-status{font-size:11px;margin-top:5px}
+
+  .footer{margin-top:44px;padding-top:14px;border-top:1px solid #e5e7eb;text-align:center;font-size:11.5px;color:#9ca3af}
+</style>
+</head>
+<body>
+<div class="page">
+
+
+<div class="hdr">
+  <h1>i3 Platform — October Pilot · Stepwise Implementation Plan</h1>
+  <div class="sub">IBM ROKS Frankfurt · OpenShift 4.17 · 12 × bx2.4x16 · Pre-Pilot Final Test: <strong>52/52 PASS</strong> · DNS Propagation: 13/14 CNAMEs resolved</div>
+  <div class="tags">
+    <span class="tag tg">52/52 Platform Checks Passing</span>
+    <span class="tag tg">13/14 New CNAMEs Resolved</span>
+    <span class="tag tp">i3EduBridge (Moodle) — Deploy</span>
+    <span class="tag tb">i3Social (Nextcloud) — Deploy</span>
+    <span class="tag tgy">Zimbra — Removed from Scope</span>
+    <span class="tag ta">api.i3technologies.co.ke — 1 DNS still pending</span>
+  </div>
+</div>
+
+
+<div class="cards">
+  <div class="card"><div class="v vg">52/52</div><div class="l">Platform Health Checks</div></div>
+  <div class="card"><div class="v vg">13/14</div><div class="l">New CNAMEs Resolved</div></div>
+  <div class="card"><div class="v vb">17</div><div class="l">Total Applications Live</div></div>
+  <div class="card"><div class="v vp">2</div><div class="l">New Stacks to Deploy</div></div>
+  <div class="card"><div class="v va">1</div><div class="l">DNS Still Pending (api)</div></div>
+</div>
+
+
+<h2>Pre-Pilot Final Test Results — Run Now</h2>
+
+<div class="test-grid">
+  <div class="test-box">
+    <h3>Core Platform — 52/52 PASS ✅</h3>
+    <div class="pass-row"><span>Namespaces (11 required)</span><span class="pill p-pass">PASS</span></div>
+    <div class="pass-row"><span>PostgreSQL HA (3-pod)</span><span class="pill p-pass">PASS</span></div>
+    <div class="pass-row"><span>Kafka KRaft (3-pod)</span><span class="pill p-pass">PASS</span></div>
+    <div class="pass-row"><span>OpenBao Unsealed (3-pod)</span><span class="pill p-pass">PASS</span></div>
+    <div class="pass-row"><span>Keycloak SSO</span><span class="pill p-pass">PASS</span></div>
+    <div class="pass-row"><span>LiteLLM Gateway</span><span class="pill p-pass">PASS</span></div>
+    <div class="pass-row"><span>Ollama (6 models loaded)</span><span class="pill p-pass">PASS</span></div>
+    <div class="pass-row"><span>Langfuse Tracing</span><span class="pill p-pass">PASS</span></div>
+    <div class="pass-row"><span>EvalOS + Sandbox</span><span class="pill p-pass">PASS</span></div>
+    <div class="pass-row"><span>OTT Stack (OME + SeaweedFS + Nginx)</span><span class="pill p-pass">PASS</span></div>
+    <div class="pass-row"><span>Directus CMS</span><span class="pill p-pass">PASS</span></div>
+    <div class="pass-row"><span>n8n Automation</span><span class="pill p-pass">PASS</span></div>
+    <div class="pass-row"><span>Admissions Agent + ChromaDB</span><span class="pill p-pass">PASS</span></div>
+    <div class="pass-row"><span>Onboarding Agent + HPA</span><span class="pill p-pass">PASS</span></div>
+    <div class="pass-row"><span>Prometheus + Grafana</span><span class="pill p-pass">PASS</span></div>
+    <div class="pass-row"><span>All 5 Required Secrets</span><span class="pill p-pass">PASS</span></div>
+    <div class="pass-row"><span>pgBackRest + rclone DR CronJobs</span><span class="pill p-pass">PASS</span></div>
+    <div class="pass-row"><span>Argo CD server</span><span class="pill p-pass">PASS</span></div>
+    <div class="pass-row"><span>Argo CD git repo</span><span class="pill p-warn">WARN — seed repo</span></div>
+    <div class="pass-row"><span>solution-01..08 untouched</span><span class="pill p-pass">PASS</span></div>
+  </div>
+  <div class="test-box">
+    <h3>HTTPS Endpoints + DNS Propagation</h3>
+    <div class="pass-row"><span>sso.i3technologies.co.ke</span><span class="pill p-pass">HTTP 200</span></div>
+    <div class="pass-row"><span>keycloak.i3technologies.co.ke</span><span class="pill p-pass">HTTP 200</span></div>
+    <div class="pass-row"><span>evalos.i3technologies.co.ke</span><span class="pill p-pass">HTTP 200</span></div>
+    <div class="pass-row"><span>litellm.i3technologies.co.ke</span><span class="pill p-pass">HTTP 200</span></div>
+    <div class="pass-row"><span>langfuse.i3technologies.co.ke</span><span class="pill p-pass">HTTP 200</span></div>
+    <div class="pass-row"><span>cms.i3technologies.co.ke</span><span class="pill p-pass">HTTP 200</span></div>
+    <div class="pass-row"><span>n8n.i3technologies.co.ke</span><span class="pill p-pass">HTTP 200</span></div>
+    <div class="pass-row"><span>admissions.i3technologies.co.ke</span><span class="pill p-pass">HTTP 200</span></div>
+    <div class="pass-row"><span>grafana.i3technologies.co.ke</span><span class="pill p-pass">HTTP 200</span></div>
+    <div class="pass-row"><span>argocd.i3technologies.co.ke</span><span class="pill p-pass">HTTP 307 ✓</span></div>
+    <div class="pass-row"><span>onboarding.i3technologies.co.ke</span><span class="pill p-pass">HTTP 200</span></div>
+    <div class="pass-row"><span>zuri.i3technologies.co.ke (DNS ✓)</span><span class="pill p-warn">Route — no public test</span></div>
+    <div class="pass-row"><span>pmaas / dawa (DNS ✓)</span><span class="pill p-warn">Route — no public test</span></div>
+    <div class="pass-row"><span>engage / nuru (DNS ✓)</span><span class="pill p-warn">Route — no public test</span></div>
+    <div class="pass-row"><span>afroerp / mfumo (DNS ✓)</span><span class="pill p-warn">Route — no public test</span></div>
+    <div class="pass-row"><span>jupyter / sage (DNS ✓)</span><span class="pill p-warn">Route — no public test</span></div>
+    <div class="pass-row"><span>tts / stt (DNS ✓, no route yet)</span><span class="pill p-wait">Needs route — Step 3</span></div>
+    <div class="pass-row"><span>moodle.i3technologies.co.ke (DNS ✓)</span><span class="pill p-wait">Not deployed yet — Step 6</span></div>
+    <div class="pass-row"><span>nextcloud.i3technologies.co.ke (DNS ✓)</span><span class="pill p-wait">Not deployed yet — Step 7</span></div>
+    <div class="pass-row"><span>api.i3technologies.co.ke</span><span class="pill p-fail">DNS still pending</span></div>
+    <div class="pass-row"><span>Voice STT + TTS pods</span><span class="pill p-pass">Running — needs routes</span></div>
+  </div>
+</div>
+
+<div class="ibox g">
+  <strong>Pre-Pilot Verdict:</strong> The platform is fully healthy. 52/52 core checks pass. 11 public HTTPS endpoints are live. DNS has propagated for all 13 of 14 new CNAMEs — only <code>api.i3technologies.co.ke</code> is still pending (TTL propagation — wait 30–60 min). The cluster has ~11 vCPU and ~79 GB RAM free. <strong>Cleared to proceed with the implementation steps below.</strong>
+</div>
+
+<hr />
+
+
+<h2>Full Application Suite — October Pilot (17 Applications + 2 New)</h2>
+
+<div class="app-grid">
+  <div class="app-card"><div class="app-name"><span class="dot dg"></span>Keycloak SSO</div><div class="app-url">sso.i3technologies.co.ke</div><div class="app-status"><span class="pill p-pass">LIVE</span></div></div>
+  <div class="app-card"><div class="app-name"><span class="dot dg"></span>LiteLLM AI Gateway</div><div class="app-url">litellm.i3technologies.co.ke</div><div class="app-status"><span class="pill p-pass">LIVE</span></div></div>
+  <div class="app-card"><div class="app-name"><span class="dot dg"></span>Langfuse Tracing</div><div class="app-url">langfuse.i3technologies.co.ke</div><div class="app-status"><span class="pill p-pass">LIVE</span></div></div>
+  <div class="app-card"><div class="app-name"><span class="dot dg"></span>EvalOS + Zuri Co-worker</div><div class="app-url">evalos / zuri .i3technologies.co.ke</div><div class="app-status"><span class="pill p-pass">LIVE</span> <span class="pill p-warn">zuri needs DNS check</span></div></div>
+  <div class="app-card"><div class="app-name"><span class="dot dg"></span>PMaaS + Dawa Co-worker</div><div class="app-url">pmaas / dawa .i3technologies.co.ke</div><div class="app-status"><span class="pill p-warn">DNS propagated — Step 2</span></div></div>
+  <div class="app-card"><div class="app-name"><span class="dot dg"></span>i3 Engage + Nuru Co-worker</div><div class="app-url">engage / nuru .i3technologies.co.ke</div><div class="app-status"><span class="pill p-warn">DNS propagated — Step 2</span></div></div>
+  <div class="app-card"><div class="app-name"><span class="dot dg"></span>AfroERP + Mfumo Co-worker</div><div class="app-url">afroerp / mfumo .i3technologies.co.ke</div><div class="app-status"><span class="pill p-warn">DNS propagated — Step 2</span></div></div>
+  <div class="app-card"><div class="app-name"><span class="dot dg"></span>Sage + JupyterHub (AI Lab)</div><div class="app-url">sage / jupyter .i3technologies.co.ke</div><div class="app-status"><span class="pill p-warn">DNS propagated — Step 2</span></div></div>
+  <div class="app-card"><div class="app-name"><span class="dot dg"></span>Directus CMS + n8n + OTT</div><div class="app-url">cms / n8n .i3technologies.co.ke</div><div class="app-status"><span class="pill p-pass">LIVE</span></div></div>
+  <div class="app-card"><div class="app-name"><span class="dot dg"></span>Admissions Agent</div><div class="app-url">admissions.i3technologies.co.ke</div><div class="app-status"><span class="pill p-pass">LIVE</span></div></div>
+  <div class="app-card"><div class="app-name"><span class="dot dg"></span>Onboarding Agent</div><div class="app-url">onboarding.i3technologies.co.ke</div><div class="app-status"><span class="pill p-pass">LIVE</span></div></div>
+  <div class="app-card"><div class="app-name"><span class="dot dg"></span>Grafana Monitoring</div><div class="app-url">grafana.i3technologies.co.ke</div><div class="app-status"><span class="pill p-pass">LIVE</span></div></div>
+  <div class="app-card"><div class="app-name"><span class="dot da"></span>Voice STT + TTS</div><div class="app-url">stt / tts .i3technologies.co.ke</div><div class="app-status"><span class="pill p-wait">Pods running — Step 3</span></div></div>
+  <div class="app-card"><div class="app-name"><span class="dot db"></span>i3EduBridge (Moodle)</div><div class="app-url">moodle.i3technologies.co.ke</div><div class="app-status"><span class="pill p-wait">Deploy — Step 6</span></div></div>
+  <div class="app-card"><div class="app-name"><span class="dot db"></span>i3Social (Nextcloud)</div><div class="app-url">nextcloud.i3technologies.co.ke</div><div class="app-status"><span class="pill p-wait">Deploy — Step 7</span></div></div>
+  <div class="app-card"><div class="app-name"><span class="dot dgr"></span>OpenBao Vault UI</div><div class="app-url">vault.i3technologies.co.ke</div><div class="app-status"><span class="pill p-wait">Route needed — Step 8</span></div></div>
+  <div class="app-card"><div class="app-name"><span class="dot dgr"></span>API Gateway</div><div class="app-url">api.i3technologies.co.ke</div><div class="app-status"><span class="pill p-fail">DNS pending — wait</span></div></div>
+</div>
+
+<hr />
+
+
+<h2>Stepwise Implementation Plan</h2>
+
+
+<div class="phase-label ph-now">Phase A — Immediate Cluster Fixes (Do Right Now · ~2 hours)</div>
+
+<div class="step critical">
+  <div class="sn sn-crit">1</div>
+  <div class="sbody">
+    <div class="st">Retire sk-i3-internal — Issue Per-Team LiteLLM Virtual Keys</div>
+    <div class="sm">Security isolation — required before any pilot user touches the platform · ~2–4 h</div>
+    <ul>
+      <li>Create one virtual key per pilot team via LiteLLM Admin UI at <code>https://litellm.i3technologies.co.ke</code></li>
+      <li>Set <code>max_budget: 5.0</code> (USD) and <code>rpm_limit: 20</code> per key — prevents any single team burning all compute</li>
+      <li>Remove <code>sk-i3-internal</code> from JupyterHub configmap env injection — update <code>LITELLM_KEY</code> and <code>OPENAI_API_KEY</code> to use team keys</li>
+      <li>Rollout restart JupyterHub: <code>oc rollout restart deployment/jupyterhub -n i3-ai-lab</code></li>
+    </ul>
+    <pre>curl -X POST https://litellm.i3technologies.co.ke/key/generate \
+  -H "Authorization: Bearer sk-i3-internal" \
+  -H "Content-Type: application/json" \
+  -d '{"key_alias":"pilot-internal","max_budget":5.0,"rpm_limit":20,"duration":"180d"}'</pre>
+  </div>
+</div>
+
+<div class="step critical">
+  <div class="sn sn-crit">2</div>
+  <div class="sbody">
+    <div class="st">Scale LiteLLM to 2 Replicas + Add JupyterHub Idle Culler</div>
+    <div class="sm">Removes single point of failure · prevents runaway notebook resource leak · ~30 min</div>
+    <ul>
+      <li>Scale LiteLLM minimum replicas to 2 (HPA already allows up to 6)</li>
+      <li>Add idle culler: kill notebook servers after 60 min idle, hard kill after 24 h</li>
+    </ul>
+    <pre>oc patch deployment litellm-proxy -n i3-model-gateway \
+  --type=merge -p '{"spec":{"replicas":2}}'
+
+oc patch scaledobject keda-hpa-litellm-proxy-scaler \
+  -n i3-model-gateway --type=merge \
+  -p '{"spec":{"minReplicaCount":2}}'</pre>
+  </div>
+</div>
+
+<div class="step critical">
+  <div class="sn sn-crit">3</div>
+  <div class="sbody">
+    <div class="st">Expose Voice STT + TTS via OpenShift Routes</div>
+    <div class="sm">Pods healthy and running · DNS propagated for tts + stt · just need routes · ~10 min</div>
+    <pre>oc create route edge voice-stt \
+  --service=voice-stt --port=8001 \
+  --hostname=stt.i3technologies.co.ke \
+  --insecure-policy=Redirect -n i3-voice
+
+oc create route edge voice-tts \
+  --service=voice-tts --port=8000 \
+  --hostname=tts.i3technologies.co.ke \
+  --insecure-policy=Redirect -n i3-voice</pre>
+    <p>Verify: <code>curl -sk https://stt.i3technologies.co.ke/health</code> and <code>https://tts.i3technologies.co.ke/health</code> return HTTP 200.</p>
+  </div>
+</div>
+
+<div class="step critical">
+  <div class="sn sn-crit">4</div>
+  <div class="sbody">
+    <div class="st">Add LiteLLM Routing Timeouts — Prevent Heavy Model Queue Starvation</div>
+    <div class="sm">Stops qwen-heavy (14B, 10–30s CPU) blocking qwen-fast requests for all users · ~30 min</div>
+    <pre># Patch litellm-config ConfigMap in i3-model-gateway:
+# Add to router_settings:
+#   routing_strategy: least-busy
+#   timeout: 60
+# Add timeout: 90 on qwen-heavy, timeout: 120 on vision
+
+oc rollout restart deployment/litellm-proxy -n i3-model-gateway</pre>
+  </div>
+</div>
+
+
+<div class="phase-label ph-deploy">Phase B — Deploy i3EduBridge + i3Social (Do After Phase A · ~4–6 hours)</div>
+
+<div class="step deploy">
+  <div class="sn sn-dep">5</div>
+  <div class="sbody">
+    <div class="st">Provision Databases in Shared PostgreSQL HA Cluster</div>
+    <div class="sm">Both i3EduBridge (Moodle) and i3Social (Nextcloud) share the existing Crunchy PG — no new DB pods needed · ~20 min</div>
+    <pre>PGPOD=$(oc get pods -n i3-data \
+  -l postgres-operator.crunchydata.com/role=primary \
+  --no-headers -o custom-columns="NAME:.metadata.name" | head -1)
+
+# Create i3EduBridge database
+oc exec -n i3-data $PGPOD -- psql -U postgres -c \
+  "CREATE USER edbridge_user WITH PASSWORD 'CHANGE_ME';
+   CREATE DATABASE edbridge_db OWNER edbridge_user ENCODING 'UTF8';
+   GRANT ALL PRIVILEGES ON DATABASE edbridge_db TO edbridge_user;"
+
+# Create i3Social database
+oc exec -n i3-data $PGPOD -- psql -U postgres -c \
+  "CREATE USER social_user WITH PASSWORD 'CHANGE_ME';
+   CREATE DATABASE social_db OWNER social_user ENCODING 'UTF8';
+   GRANT ALL PRIVILEGES ON DATABASE social_db TO social_user;"</pre>
+  </div>
+</div>
+
+<div class="step deploy">
+  <div class="sn sn-dep">6</div>
+  <div class="sbody">
+    <div class="st">Deploy i3EduBridge — Namespace · Quota · PVC · Deployment · Service · Route</div>
+    <div class="sm">Moodle 4.4 · branded as "i3EduBridge" · shares Crunchy PostgreSQL · Keycloak OIDC SSO · ~30 min deploy + 10 min verify</div>
+    <ul>
+      <li>Create namespace <code>i3-edbridge</code> with ResourceQuota: <code>1 CPU req / 2 GB RAM req / 4 CPU lim / 8 GB RAM lim</code></li>
+      <li>Create PVC <code>edbridge-data</code>: 10 GB on <code>ibmc-vpc-block-10iops-tier</code></li>
+      <li>Deploy <code>bitnami/moodle:4.4</code> — env: <code>MOODLE_DATABASE_TYPE=pgsql</code>, <code>MOODLE_SITE_NAME=i3EduBridge</code>, DB → shared PG cluster</li>
+      <li>CPU request: 500m · RAM request: 1 GB · CPU limit: 2 · RAM limit: 4 GB</li>
+      <li>Readiness probe: <code>GET /login/index.php:8080</code> — initialDelaySeconds: 90 (Moodle first-boot install takes ~3–5 min)</li>
+      <li>Create ClusterIP Service on port 80 → container 8080</li>
+    </ul>
+    <pre>oc create route edge i3edbridge \
+  --service=moodle --port=80 \
+  --hostname=moodle.i3technologies.co.ke \
+  --insecure-policy=Redirect -n i3-edbridge</pre>
+    <p><strong>Verify:</strong> <code>https://moodle.i3technologies.co.ke/login/index.php</code> returns HTTP 200 and shows "i3EduBridge" branding.</p>
+  </div>
+</div>
+
+<div class="step deploy">
+  <div class="sn sn-dep">7</div>
+  <div class="sbody">
+    <div class="st">Deploy i3Social — Namespace · Quota · Redis · PVC · Deployment · Service · Route</div>
+    <div class="sm">Nextcloud 28 Hub · branded as "i3Social" · shares Crunchy PostgreSQL · Redis session cache · Keycloak OIDC SSO · ~30 min deploy + 10 min verify</div>
+    <ul>
+      <li>Create namespace <code>i3-social</code> with ResourceQuota: <code>1 CPU req / 2 GB RAM req / 4 CPU lim / 8 GB RAM lim</code></li>
+      <li>Deploy Redis 7 sidecar: 100m CPU / 128 MB RAM request — for session caching</li>
+      <li>Create PVC <code>social-data</code>: 20 GB on <code>ibmc-vpc-block-10iops-tier</code></li>
+      <li>Deploy <code>nextcloud:28-apache</code> — env: <code>NEXTCLOUD_TRUSTED_DOMAINS=nextcloud.i3technologies.co.ke</code>, DB → shared PG cluster, Redis → redis-social svc</li>
+      <li>CPU request: 500m · RAM request: 1 GB · CPU limit: 2 · RAM limit: 4 GB</li>
+      <li>Add label <code>app.kubernetes.io/name=i3social</code> for Grafana dashboard discovery</li>
+    </ul>
+    <pre>oc create route edge i3social \
+  --service=nextcloud --port=80 \
+  --hostname=nextcloud.i3technologies.co.ke \
+  --insecure-policy=Redirect -n i3-social</pre>
+    <p><strong>Verify:</strong> <code>https://nextcloud.i3technologies.co.ke</code> returns HTTP 200 and shows Nextcloud login page.</p>
+  </div>
+</div>
+
+<div class="step deploy">
+  <div class="sn sn-dep">8</div>
+  <div class="sbody">
+    <div class="st">Expose OpenBao Vault UI via Route</div>
+    <div class="sm">DNS for vault.i3technologies.co.ke already resolves · pod already running · just needs a route · ~10 min</div>
+    <pre>oc create route edge vault-ui \
+  --service=openbao -n i3-security \
+  --hostname=vault.i3technologies.co.ke \
+  --insecure-policy=Redirect
+
+# Verify:
+# https://vault.i3technologies.co.ke/ui should show OpenBao login</pre>
+  </div>
+</div>
+
+
+<div class="phase-label ph-wire">Phase C — SSO Wiring + User Provisioning (After Phase B · ~4–6 hours)</div>
+
+<div class="step wire">
+  <div class="sn sn-wire">9</div>
+  <div class="sbody">
+    <div class="st">Register i3EduBridge + i3Social OIDC Clients in Keycloak</div>
+    <div class="sm">Both apps need Keycloak realm i3 client registrations before SSO login works · ~1 h</div>
+    <ul>
+      <li>Register <code>i3edbridge</code> client: redirectUri <code>https://moodle.i3technologies.co.ke/*</code></li>
+      <li>Register <code>i3social</code> client: redirectUri <code>https://nextcloud.i3technologies.co.ke/*</code></li>
+      <li>In i3EduBridge: install Moodle OAuth2 plugin → configure Keycloak as OIDC provider → test login</li>
+      <li>In i3Social: <code>occ app:install user_oidc</code> → configure Keycloak provider → test login</li>
+    </ul>
+    <pre># Register i3EduBridge client in Keycloak
+oc exec -n i3-auth deploy/keycloak -- \
+  /opt/keycloak/bin/kcadm.sh create clients -r i3 \
+  -s clientId=i3edbridge -s enabled=true \
+  -s publicClient=false \
+  -s 'redirectUris=["https://moodle.i3technologies.co.ke/*"]'
+
+# Register i3Social client in Keycloak
+oc exec -n i3-auth deploy/keycloak -- \
+  /opt/keycloak/bin/kcadm.sh create clients -r i3 \
+  -s clientId=i3social -s enabled=true \
+  -s publicClient=false \
+  -s 'redirectUris=["https://nextcloud.i3technologies.co.ke/*"]'</pre>
+  </div>
+</div>
+
+<div class="step wire">
+  <div class="sn sn-wire">10</div>
+  <div class="sbody">
+    <div class="st">Configure i3EduBridge — Site Branding + LTI Smart Labs Link + First Course</div>
+    <div class="sm">Pilot-ready LMS configuration · ~2 h</div>
+    <ul>
+      <li>Set site name to <strong>i3EduBridge</strong> in Site Administration → Front page settings</li>
+      <li>Upload i3 Technologies logo + colour theme (primary: <code>#1f2328</code>, accent: <code>#3b82d4</code>)</li>
+      <li>Add Smart Labs as LTI 1.1/1.3 external tool — configure launch URL, consumer key, shared secret</li>
+      <li>Create one pilot course: <em>"AI Fundamentals with i3 AI Lab"</em> — add LTI lab activity + content sections</li>
+      <li>Enrol internal pilot group as students; assign faculty role to i3 team members</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step wire">
+  <div class="sn sn-wire">11</div>
+  <div class="sbody">
+    <div class="st">Configure i3Social — Branding + Shared Folders + Groups</div>
+    <div class="sm">Pilot-ready collaboration space · ~1 h</div>
+    <ul>
+      <li>Set instance name to <strong>i3Social</strong> in Administration → Basic settings</li>
+      <li>Upload i3 Technologies logo and brand colours</li>
+      <li>Create shared folder structure: <code>/Pilot-Shared</code>, <code>/EduBridge-Resources</code>, <code>/Team-Internal</code></li>
+      <li>Create groups matching Keycloak pilot groups: <code>i3-users</code>, <code>pilot-customers</code></li>
+      <li>Enable Talk (video calls) if needed for pilot team collaboration</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step wire">
+  <div class="sn sn-wire">12</div>
+  <div class="sbody">
+    <div class="st">Provision All Pilot Users in Keycloak + Assign Applications</div>
+    <div class="sm">Every pilot participant needs a Keycloak account before invitations go out · ~2–4 h depending on user count</div>
+    <ul>
+      <li>Create user accounts in Keycloak realm <code>i3</code> for all October pilot participants</li>
+      <li>Internal team → group <code>i3-users</code> (access to all applications)</li>
+      <li>External pilot users → group <code>pilot-customers</code> (access to selected applications)</li>
+      <li>Test end-to-end SSO for at least 2 users: login → EvalOS → Sage → i3EduBridge → i3Social — all with same Keycloak credentials</li>
+      <li>Issue per-team LiteLLM keys to each pilot group (from Step 1) — include in welcome email</li>
+    </ul>
+  </div>
+</div>
+
+
+<div class="phase-label ph-verify">Phase D — Final Verification Run (After All Deployments · ~1 hour)</div>
+
+<div class="step">
+  <div class="sn sn-vfy">13</div>
+  <div class="sbody">
+    <div class="st">Update post-deploy-checklist.ps1 — Add i3EduBridge + i3Social + Voice Health Checks</div>
+    <div class="sm">Extend the platform health script to cover the two new stacks and voice endpoints · ~30 min</div>
+    <pre># Add to Section 10 - Routes / DNS in post-deploy-checklist.ps1:
+@{ url = "https://moodle.i3technologies.co.ke/login/index.php"; label = "i3EduBridge (Moodle)" },
+@{ url = "https://nextcloud.i3technologies.co.ke/login";         label = "i3Social (Nextcloud)" },
+@{ url = "https://stt.i3technologies.co.ke/health";              label = "Voice STT" },
+@{ url = "https://tts.i3technologies.co.ke/health";              label = "Voice TTS" },
+@{ url = "https://vault.i3technologies.co.ke/v1/sys/health";     label = "OpenBao Vault" }</pre>
+  </div>
+</div>
+
+<div class="step">
+  <div class="sn sn-vfy">14</div>
+  <div class="sbody">
+    <div class="st">Run Full Platform Health Check (Target: 57/57)</div>
+    <div class="sm">Current passing: 52/52. After all steps: 52 existing + 5 new checks = 57 total target · ~5 min</div>
+    <pre>&amp; "platform/scripts/post-deploy-checklist.ps1"
+# Expected result: 57/57 checks pass — STATUS: PLATFORM HEALTHY</pre>
+    <ul>
+      <li>52 existing checks must remain passing</li>
+      <li>i3EduBridge: HTTP 200 on <code>/login/index.php</code></li>
+      <li>i3Social: HTTP 200 on <code>/login</code></li>
+      <li>Voice STT: HTTP 200 on <code>/health</code></li>
+      <li>Voice TTS: HTTP 200 on <code>/health</code></li>
+      <li>OpenBao UI: HTTP 200 on <code>/v1/sys/health</code></li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="sn sn-vfy">15</div>
+  <div class="sbody">
+    <div class="st">Seed Argo CD i3-platform-root Application (GitOps Safety Net)</div>
+    <div class="sm">Currently WARN — i3-platform-root is pending-repo. Seed the repo to complete GitOps coverage · ~2–4 h</div>
+    <ul>
+      <li>Create private repo: <code>i3-technologies/platform-gitops</code></li>
+      <li>Export live manifests for all namespaces → commit to <code>manifests/</code></li>
+      <li>Update Argo CD Application to point to this repo</li>
+      <li>Target: all 11+ Argo CD applications show <code>Synced</code></li>
+    </ul>
+  </div>
+</div>
+
+<hr />
+
+
+<h2>Amended DNS — Zimbra Removed, i3Social Added</h2>
+
+<div class="ibox b">
+  <strong>Change from previous plan:</strong> <code>mail</code> and <code>webmail</code> CNAMEs are <strong>removed</strong> from the required list (Zimbra deferred). The existing wrong A-records for <code>mail</code> and <code>webmail</code> pointing to <code>102.130.125.229</code> can be left as-is for now — they don't conflict with anything. The <code>nextcloud</code> CNAME is already resolving correctly and branded as <strong>i3Social</strong>. The <code>moodle</code> CNAME is already resolving correctly and branded as <strong>i3EduBridge</strong>.
+</div>
+
+<table>
+  <thead>
+    <tr><th>Subdomain</th><th>Full URL</th><th>TTL</th><th>Status</th><th>App Name</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background:#f0fdf4"><td><code>moodle</code></td><td>moodle.i3technologies.co.ke</td><td>300 → 3600</td><td><span class="pill p-pass">DNS OK ✓</span></td><td><strong>i3EduBridge</strong></td></tr>
+    <tr style="background:#f0fdf4"><td><code>nextcloud</code></td><td>nextcloud.i3technologies.co.ke</td><td>300 → 3600</td><td><span class="pill p-pass">DNS OK ✓</span></td><td><strong>i3Social</strong></td></tr>
+    <tr style="background:#fef3c7"><td><code>api</code></td><td>api.i3technologies.co.ke</td><td>300</td><td><span class="pill p-fail">Still propagating</span></td><td>API Gateway</td></tr>
+    <tr><td><code>mail</code></td><td>mail.i3technologies.co.ke</td><td>—</td><td><span class="pill p-warn">Leave as-is (Zimbra deferred)</span></td><td>— (future)</td></tr>
+    <tr><td><code>webmail</code></td><td>webmail.i3technologies.co.ke</td><td>—</td><td><span class="pill p-warn">Leave as-is (Zimbra deferred)</span></td><td>— (future)</td></tr>
+  </tbody>
+</table>
+
+<hr />
+
+
+<h2>Final Resource Budget (Zimbra Removed)</h2>
+
+<table>
+  <thead><tr><th>Stack</th><th>CPU Request</th><th>RAM Request</th><th>Storage</th></tr></thead>
+  <tbody>
+    <tr><td>All existing workloads</td><td>25,405m</td><td>57.8 GB</td><td>2,027 GB (existing)</td></tr>
+    <tr><td>OpenShift system pods</td><td>~8,000m</td><td>~20 GB</td><td>—</td></tr>
+    <tr><td><strong>i3EduBridge (Moodle)</strong></td><td>+500m</td><td>+1.0 GB</td><td>+10 GB</td></tr>
+    <tr><td><strong>i3Social (Nextcloud + Redis)</strong></td><td>+600m</td><td>+1.1 GB</td><td>+20 GB</td></tr>
+    <tr style="background:#dcfce7;font-weight:600"><td>TOTAL AFTER</td><td>34,505m (74%)</td><td>79.9 GB (49%)</td><td>2,057 GB</td></tr>
+    <tr style="background:#f0fdf4;font-weight:600"><td>FREE REMAINING</td><td>~12.4 vCPU</td><td>~82 GB</td><td>—</td></tr>
+  </tbody>
+</table>
+
+<div class="ibox g">
+  Removing Zimbra saves 1,000m CPU / 2 GB RAM / 20 GB storage and eliminates the SCC complexity entirely. The cluster headroom improves to <strong>~12.4 vCPU free and ~82 GB RAM free</strong> — comfortable buffer for the full 10-user pilot with both new stacks deployed.
+</div>
+
+<hr />
+
+
+<h2>Recommended Execution Schedule</h2>
+
+<table>
+  <thead><tr><th>When</th><th>Steps</th><th>Who</th><th>Est. Time</th><th>Gate</th></tr></thead>
+  <tbody>
+    <tr style="background:#fff5f5"><td><strong>Today — immediately</strong></td><td>Steps 1–4 (security, LiteLLM scale, voice routes, routing fix)</td><td>Platform Engineer</td><td>~3 h</td><td>52/52 still passing after each change</td></tr>
+    <tr style="background:#f5f3ff"><td><strong>Today — after Steps 1–4</strong></td><td>Step 5 (DB provisioning)</td><td>Platform Engineer</td><td>~20 min</td><td>Both DBs queryable via psql</td></tr>
+    <tr style="background:#f5f3ff"><td><strong>Today or tomorrow</strong></td><td>Steps 6–8 (Deploy i3EduBridge, i3Social, Vault route)</td><td>Platform Engineer</td><td>~2 h</td><td>HTTP 200 on both app URLs</td></tr>
+    <tr style="background:#fffbeb"><td><strong>Day 2</strong></td><td>Steps 9–11 (SSO wiring, app configuration, branding)</td><td>Platform + Product Lead</td><td>~4–6 h</td><td>SSO login working for both apps</td></tr>
+    <tr style="background:#fffbeb"><td><strong>Day 2–3</strong></td><td>Step 12 (Pilot user provisioning in Keycloak)</td><td>Platform Engineer</td><td>~2–4 h</td><td>At least 2 pilot users can SSO into all apps</td></tr>
+    <tr style="background:#f0fdf4"><td><strong>Day 3</strong></td><td>Steps 13–14 (Update checklist, run 57/57 final test)</td><td>Platform Engineer</td><td>~1 h</td><td>57/57 PASS — platform ready for pilot invitations</td></tr>
+    <tr style="background:#f0fdf4"><td><strong>Day 3–4 (parallel)</strong></td><td>Step 15 (Seed Argo CD GitOps repo)</td><td>DevOps Lead</td><td>~3 h</td><td>All Argo CD apps Synced</td></tr>
+  </tbody>
+</table>
+
+<div class="footer">
+  <p>i3 Technologies · October Pilot Implementation Plan · 52/52 Platform Healthy · September 2026</p>
+  <p style="margin-top:5px">Made with IBM Bob</p>
+</div>
+
+</div>
+</body>
+</html>

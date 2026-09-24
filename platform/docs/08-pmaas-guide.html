@@ -273,7 +273,7 @@
     <dt>Agent URL (internal)</dt> <dd><code>http://campaign-agent.i3-pmaas.svc.cluster.local:8080</code></dd>
     <dt>ChromaDB Host</dt>        <dd><code>chromadb.i3-ai-lab.svc.cluster.local</code></dd>
     <dt>ChromaDB Token</dt>       <dd><code>fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c</code></dd>
-    <dt>LiteLLM Key</dt>          <dd><code>sk-litellm-i3-f951c9377163a11275864cb92e90ad13</code></dd>
+    <dt>LiteLLM Key</dt>          <dd><code>[REDACTED — rotate via OpenBao i3/model-gateway/litellm]</code></dd>
     <dt>Brevo SMTP Host</dt>      <dd><code>smtp-relay.brevo.com:587</code></dd>
     <dt>Brevo SMTP Login</dt>     <dd><code>b8994d001@smtp-brevo.com</code></dd>
     <dt>Brevo API Key</dt>        <dd><code>BREVO_API_KEY_REDACTED</code></dd>
@@ -441,7 +441,7 @@ oc rollout status  deployment/campaign-agent -n i3-pmaas</code></pre>
 
 <div class="box box-info">
   <strong>â„¹ LiteLLM Key</strong>
-  The agent uses LiteLLM for unified LLM access. The key <code>sk-litellm-i3-f951c9377163a11275864cb92e90ad13</code> is stored in <code>pmaas-secrets</code> as <code>LITELLM_API_KEY</code>. Rotate via the i3-AI-Lab LiteLLM admin console.
+  The agent uses LiteLLM for unified LLM access. The key <code>[REDACTED — rotate via OpenBao i3/model-gateway/litellm]</code> is stored in <code>pmaas-secrets</code> as <code>LITELLM_API_KEY</code>. Rotate via the i3-AI-Lab LiteLLM admin console.
 </div>
 
 <h2 id="a6">A6 â€” Email Notifications via Brevo</h2>

@@ -1,0 +1,247 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Lab (JupyterHub) — User Guide</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.7;background:#fff;color:#1f2328}
+  .wrapper{max-width:820px;margin:0 auto;padding:32px 24px}
+  h1{font-size:22px;font-weight:700;color:#1f2328;border-bottom:2px solid #3b82d4;padding-bottom:8px;margin-bottom:6px}
+  .subtitle{color:#57606a;font-size:13px;margin-bottom:24px}
+  h2{font-size:16px;font-weight:700;color:#1f2328;margin:28px 0 10px;padding:6px 12px;background:#f7f8fa;border-left:4px solid #3b82d4}
+  h3{font-size:14px;font-weight:700;margin:16px 0 7px;color:#1f2328}
+  p{margin-bottom:10px}
+  ul,ol{padding-left:22px;margin-bottom:10px}
+  li{margin-bottom:5px}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px}
+  th{background:#f7f8fa;border:1px solid #e5e7eb;padding:7px 10px;text-align:left;font-weight:700}
+  td{border:1px solid #e5e7eb;padding:7px 10px;vertical-align:top}
+  tr:nth-child(even) td{background:#fafbfc}
+  code{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:3px;padding:1px 5px;font-size:12px;font-family:"Consolas","Courier New",monospace}
+  pre{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:4px;padding:12px 14px;overflow-x:auto;margin-bottom:12px;font-size:12px;font-family:"Consolas","Courier New",monospace}
+  .step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start}
+  .step-num{min-width:30px;height:30px;background:#3b82d4;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+  .step-body{flex:1}
+  .callout{border-left:4px solid #3b82d4;background:#f0f6ff;padding:10px 14px;margin:12px 0;border-radius:0 4px 4px 0;font-size:13px}
+  .callout-tip{border-left-color:#22c55e;background:#f0fdf4}
+  .callout-warn{border-left-color:#f59e0b;background:#fffbeb}
+  .app-header{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:14px 18px;margin-bottom:24px;display:flex;gap:18px;flex-wrap:wrap;font-size:13px}
+  .app-header div strong{color:#1f2328;display:block;margin-bottom:2px}
+  .app-header div span{color:#57606a}
+  .divider{border:none;border-top:1px solid #e5e7eb;margin:24px 0}
+  footer{border-top:1px solid #e5e7eb;margin-top:40px;padding-top:12px;text-align:center;font-size:12px;color:#57606a}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<h1>i3 AI Lab — User Guide</h1>
+<p class="subtitle">JupyterHub notebook environment for data scientists and ML engineers with integrated AI platform access</p>
+
+<div class="app-header">
+  <div><strong>Application</strong><span>i3 AI Lab (JupyterHub 3.3.7)</span></div>
+  <div><strong>Audience</strong><span>Data Scientists, ML Engineers, Researchers</span></div>
+  <div><strong>Access URL</strong><span>https://jupyter.i3technologies.co.ke</span></div>
+  <div><strong>Storage per user</strong><span>5 GB (persistent)</span></div>
+</div>
+
+<h2>1. What is i3 AI Lab?</h2>
+<p>The i3 AI Lab is a managed JupyterHub environment that gives data scientists and ML engineers instant access to scalable notebook compute with full integration to the i3 platform's AI services — including the LiteLLM model gateway, ChromaDB vector database, and Ollama local model serving. Each user gets their own private, persistent Jupyter notebook environment.</p>
+
+<table>
+  <tr><th>Feature</th><th>Description</th></tr>
+  <tr><td>Personal Notebooks</td><td>Private Jupyter server per user with 2 CPU / 4 GB RAM</td></tr>
+  <tr><td>Persistent Storage</td><td>5 GB PVC — your files survive server restarts</td></tr>
+  <tr><td>LiteLLM Integration</td><td>Direct API access to Qwen, Granite, LLaVA, and Coder models</td></tr>
+  <tr><td>ChromaDB Access</td><td>Query and populate vector collections for RAG experiments</td></tr>
+  <tr><td>Ollama Access</td><td>Run models locally within the platform network</td></tr>
+  <tr><td>OpenAI-compatible API</td><td>Use OpenAI Python SDK pointed at i3 LiteLLM gateway</td></tr>
+  <tr><td>Pre-configured Environment</td><td>API keys and endpoints injected automatically — no manual setup</td></tr>
+</table>
+
+<hr class="divider" />
+
+<h2>2. Accessing the AI Lab</h2>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body">
+    <h3>Navigate to AI Lab</h3>
+    <p>Go to <code>https://jupyter.i3technologies.co.ke</code> in your browser.</p>
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body">
+    <h3>Sign In</h3>
+    <p>Click <strong>Sign in with i3 SSO</strong>. You will be redirected to Keycloak. Enter your i3 account credentials.</p>
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body">
+    <h3>Wait for Your Server to Start</h3>
+    <p>JupyterHub will automatically provision your personal notebook server. This takes approximately 30–60 seconds on first start. You will see a progress bar while the server starts.</p>
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body">
+    <h3>Enter the Notebook Interface</h3>
+    <p>Once ready, the JupyterLab interface opens. Your persistent workspace is loaded. Existing files from previous sessions are available immediately.</p>
+  </div>
+</div>
+
+<hr class="divider" />
+
+<h2>3. Pre-Configured Environment Variables</h2>
+
+<p>Your notebook environment automatically has the following variables available — you do not need to configure API keys manually:</p>
+
+<table>
+  <tr><th>Variable</th><th>Value / Purpose</th></tr>
+  <tr><td><code>LITELLM_URL</code></td><td>URL of the i3 LiteLLM model gateway</td></tr>
+  <tr><td><code>LITELLM_KEY</code></td><td>Your tenant-scoped LiteLLM API key (injected from OpenBao)</td></tr>
+  <tr><td><code>OPENAI_API_KEY</code></td><td>Same as LITELLM_KEY (OpenAI SDK compatibility)</td></tr>
+  <tr><td><code>OPENAI_BASE_URL</code></td><td>Same as LITELLM_URL (points to i3 gateway, not OpenAI)</td></tr>
+  <tr><td><code>CHROMA_HOST</code></td><td>ChromaDB server hostname</td></tr>
+  <tr><td><code>CHROMA_TOKEN</code></td><td>ChromaDB authentication token</td></tr>
+  <tr><td><code>OLLAMA_URL</code></td><td>Ollama local model serving URL</td></tr>
+</table>
+
+<h3>Verify your environment</h3>
+<pre>import os
+print("LiteLLM URL:", os.environ.get("LITELLM_URL"))
+print("ChromaDB Host:", os.environ.get("CHROMA_HOST"))
+print("Ollama URL:", os.environ.get("OLLAMA_URL"))</pre>
+
+<hr class="divider" />
+
+<h2>4. Making LLM Calls from Your Notebook</h2>
+
+<h3>Using the OpenAI SDK (Recommended)</h3>
+<pre>from openai import OpenAI
+import os
+
+client = OpenAI(
+    api_key=os.environ["LITELLM_KEY"],
+    base_url=os.environ["LITELLM_URL"]
+)
+
+response = client.chat.completions.create(
+    model="qwen-fast",   # or qwen-heavy, qwen-coder, granite-nano, vision
+    messages=[
+        {"role": "system", "content": "You are a helpful data analyst."},
+        {"role": "user", "content": "Summarise the key metrics in this dataset."}
+    ]
+)
+print(response.choices[0].message.content)</pre>
+
+<h3>Available Models</h3>
+<table>
+  <tr><th>Model Alias</th><th>Best For</th><th>Speed</th></tr>
+  <tr><td><code>granite-nano</code></td><td>Quick tasks, always-warm fallback</td><td>Very fast</td></tr>
+  <tr><td><code>qwen-fast</code></td><td>General Q&amp;A, summarisation, content</td><td>Fast (180s max)</td></tr>
+  <tr><td><code>qwen-coder</code></td><td>Code generation, review, debugging</td><td>Fast (180s max)</td></tr>
+  <tr><td><code>qwen-heavy</code></td><td>Complex reasoning, analysis, reports</td><td>Slower (240s max)</td></tr>
+  <tr><td><code>vision</code></td><td>Image analysis with text output</td><td>Slower (240s max)</td></tr>
+  <tr><td><code>embed-nomic</code></td><td>Text embeddings for RAG</td><td>Very fast (15s)</td></tr>
+</table>
+
+<hr class="divider" />
+
+<h2>5. Working with ChromaDB (Vector Database)</h2>
+
+<h3>Querying an Existing Collection</h3>
+<pre>import chromadb
+import os
+
+client = chromadb.HttpClient(
+    host=os.environ["CHROMA_HOST"],
+    headers={"Authorization": f"Bearer {os.environ['CHROMA_TOKEN']}"}
+)
+
+# List available collections
+print(client.list_collections())
+
+# Query the admissions knowledge base
+collection = client.get_collection("admissions-kb")
+results = collection.query(
+    query_texts=["What are the requirements for Computer Science?"],
+    n_results=3
+)
+print(results["documents"])</pre>
+
+<h3>Creating Your Own Collection</h3>
+<pre># Create a new collection for your experiment
+my_collection = client.create_collection("my-experiment-kb")
+
+# Add documents
+my_collection.add(
+    documents=["Document text here", "Another document"],
+    ids=["doc1", "doc2"]
+)
+
+print("Collection created with", my_collection.count(), "documents")</pre>
+
+<div class="callout callout-warn"><strong>Note:</strong> Do not modify production collections (<code>admissions-kb</code>, <code>pmaas-manifesto</code>, <code>afroerp-kb</code>) from your notebook. Create your own namespaced collection for experiments.</div>
+
+<hr class="divider" />
+
+<h2>6. Managing Your Files</h2>
+
+<ul>
+  <li>Your home directory (<code>/home/jovyan</code>) is mounted on a 5 GB persistent volume. Files are preserved between sessions.</li>
+  <li>Use the JupyterLab file browser (left panel) to upload, download, rename, and organise files.</li>
+  <li>To upload a file: drag and drop into the file browser, or click the Upload button (↑ icon).</li>
+  <li>To download a file: right-click the file in the browser → Download.</li>
+  <li>Do not store sensitive data (passwords, keys, personal data) in notebook files — they may appear in Langfuse traces if passed to LLM calls.</li>
+</ul>
+
+<div class="callout callout-tip"><strong>Storage management:</strong> Monitor your storage usage via the Storage indicator in JupyterLab's status bar. When approaching 5 GB, archive or download old notebooks to free space.</div>
+
+<hr class="divider" />
+
+<h2>7. Installing Additional Python Packages</h2>
+
+<p>You can install packages in your notebook session. To make them persist across server restarts, install to your user directory:</p>
+
+<pre>!pip install --user pandas-profiling seaborn langchain</pre>
+
+<div class="callout callout-warn"><strong>Note:</strong> Installed packages survive server restarts within your personal server, but if your server pod is recreated (e.g. after a platform upgrade), packages may need to be reinstalled. For frequently used packages, ask your administrator to add them to the shared base image.</div>
+
+<hr class="divider" />
+
+<h2>8. Server Management</h2>
+
+<h3>Starting / Stopping Your Server</h3>
+<ul>
+  <li>To stop your server (free up resources when not in use): Click <strong>File → Hub Control Panel → Stop My Server</strong>.</li>
+  <li>To restart: Go back to <code>https://jupyter.i3technologies.co.ke</code> and log in — your server will start automatically.</li>
+  <li>Idle servers are automatically stopped after <strong>1 hour of inactivity</strong> to conserve cluster resources. Your files are not affected.</li>
+</ul>
+
+<h3>Session Timeout</h3>
+<p>If you see "Your server is not running" — click <strong>Start My Server</strong>. Your 5 GB workspace and all saved notebooks will be exactly as you left them.</p>
+
+<hr class="divider" />
+
+<h2>9. Troubleshooting</h2>
+
+<table>
+  <tr><th>Issue</th><th>Cause</th><th>Solution</th></tr>
+  <tr><td>Server takes more than 3 minutes to start</td><td>Node scheduling delay or resource pressure</td><td>Wait a further 2 minutes; if still pending, contact admin</td></tr>
+  <tr><td>LiteLLM API returns 401</td><td>LITELLM_KEY not set or expired</td><td>Run <code>os.environ.get("LITELLM_KEY")</code> to verify; contact admin if empty</td></tr>
+  <tr><td>LLM call times out</td><td>Model busy or request too large</td><td>Try a lighter model (qwen-fast, granite-nano); reduce prompt size</td></tr>
+  <tr><td>ChromaDB connection refused</td><td>ChromaDB service unavailable</td><td>Check readiness probe in admin dashboard; contact admin</td></tr>
+  <tr><td>Disk full error</td><td>5 GB PVC exhausted</td><td>Delete large files or download and remove old notebooks</td></tr>
+  <tr><td>Package import fails after restart</td><td>Package installed to session, not user dir</td><td>Re-install with <code>--user</code> flag</td></tr>
+  <tr><td>Cannot log in</td><td>Keycloak session expired</td><td>Clear browser cookies and try again; use "Forgot Password" if needed</td></tr>
+</table>
+
+<footer>Made with IBM Bob  |  i3 Technologies — AI Lab User Guide v2.0  |  © 2026</footer>
+</div>
+</body>
+</html>

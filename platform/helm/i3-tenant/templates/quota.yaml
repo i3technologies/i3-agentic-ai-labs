@@ -1,0 +1,68 @@
+# ============================================================
+# i3-tenant / quota.yaml
+# ResourceQuota sized by tier: sandbox / standard / dedicated.
+# HC-4: tenant_id label carried on every resource.
+# ============================================================
+{{- $quota := index .Values.quotas .Values.tier }}
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: {{ printf "%s-quota" (include "i3-tenant.namespace" .) }}
+  namespace: {{ include "i3-tenant.namespace" . }}
+  labels:
+    {{ include "i3-tenant.labels" . | nindent 4 }}
+spec:
+  hard:
+    requests.cpu: {{ $quota.cpu_request | default (index $quota "requests.cpu") | quote }}
+    requests.memory: {{ $quota.memory_request | default (index $quota "requests.memory") | quote }}
+    limits.cpu: {{ $quota.cpu_limit | default (index $quota "limits.cpu") | quote }}
+    limits.memory: {{ $quota.memory_limit | default (index $quota "limits.memory") | quote }}
+    count/pods: {{ index $quota "count/pods" | quote }}
+    persistentvolumeclaims: {{ index $quota "persistentvolumeclaims" | quote }}
+---
+# LimitRange — sets default container limits so pods without explicit
+# resource requests are still bounded under the quota.
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: {{ printf "%s-limits" (include "i3-tenant.namespace" .) }}
+  namespace: {{ include "i3-tenant.namespace" . }}
+  labels:
+    {{ include "i3-tenant.labels" . | nindent 4 }}
+spec:
+  limits:
+    {{- if eq .Values.tier "sandbox" }}
+    - type: Container
+      default:
+        cpu: "200m"
+        memory: "256Mi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+      max:
+        cpu: "1"
+        memory: "1Gi"
+    {{- else if eq .Values.tier "standard" }}
+    - type: Container
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "250m"
+        memory: "256Mi"
+      max:
+        cpu: "4"
+        memory: "8Gi"
+    {{- else }}
+    - type: Container
+      default:
+        cpu: "1"
+        memory: "1Gi"
+      defaultRequest:
+        cpu: "500m"
+        memory: "512Mi"
+      max:
+        cpu: "16"
+        memory: "32Gi"
+    {{- end }}

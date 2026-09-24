@@ -138,7 +138,9 @@ foreach ($injection in $INJECTIONS) {
 
 
 # ================================================================
-# BLOCK 3: Plan generation (DEV_BYPASS_AUTH=true, mock LiteLLM)
+# BLOCK 3: Plan generation (mock LiteLLM — requires valid Keycloak token)
+# HC-7: DEV_BYPASS_AUTH has been removed. Tests that hit protected endpoints
+# must supply a real Bearer token via $env:TEST_BEARER_TOKEN.
 # ================================================================
 Write-Host ""
 Write-Host "-- Block 3: Plan generation (all 5 roles) ---" -ForegroundColor Yellow

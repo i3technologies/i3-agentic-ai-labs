@@ -1,0 +1,218 @@
+# ============================================================
+# i3 AI Platform — WORM Audit Tamper-Check CronJob (IMP-09)
+# Namespace: i3-audit
+#
+# Runs platform/audit/tamper_check.py daily to verify HMAC
+# chain integrity across all tenant audit partitions for the
+# preceding day.  Exits non-zero on any discrepancy so that
+# the Kubernetes Job failure alert fires.
+#
+# Apply:
+#   oc apply -f platform/audit/cronjob-tamper-check.yaml
+# ============================================================
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-audit
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+
+---
+# ── Secret projection (OpenBao Agent sidecar injects these) ──────────────
+# The actual Secret is created by the OpenBao Agent injector; this
+# placeholder documents the expected keys.
+#
+# Required keys:
+#   AUDIT_HMAC_SECRET   — 64-char hex string from i3/audit/hmac-secret
+#   AUDIT_S3_BUCKET     — bucket name from i3/audit/s3-bucket
+#   AUDIT_S3_ENDPOINT_URL  (optional) — from i3/audit/s3-endpoint
+#   AUDIT_S3_REGION     (optional) — from i3/audit/s3-region
+#
+# ⚠ OPEN LEGAL QUESTION (IMP-09):
+#   AUDIT_RETENTION_DAYS and AUDIT_LOCK_MODE are configured here as
+#   environment variables.  Their values are NOT confirmed by legal
+#   counsel and must be reviewed before production deployment.
+#   See platform/audit/LEGAL-NOTICE.md.
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: audit-tamper-check
+  namespace: i3-audit
+  labels:
+    app.kubernetes.io/name:    audit-tamper-check
+    app.kubernetes.io/part-of: i3-platform
+    imp: IMP-09
+  annotations:
+    # HC-4: no tenant_id on CronJob itself — it operates across all tenants
+    description: "Daily WORM audit HMAC chain verifier (IMP-09)"
+spec:
+  # Run at 01:30 UTC every day — after midnight UTC partition roll-over
+  schedule: "30 1 * * *"
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 7
+  successfulJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      # Hard limit: 30 minutes max for the full chain verification
+      activeDeadlineSeconds: 1800
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name:    audit-tamper-check
+            app.kubernetes.io/part-of: i3-platform
+          annotations:
+            # OpenBao Agent auto-injector annotations
+            vault.hashicorp.com/agent-inject: "true"
+            vault.hashicorp.com/role:         "i3-audit"
+            vault.hashicorp.com/agent-inject-secret-audit-hmac: "i3/audit/hmac-secret"
+            vault.hashicorp.com/agent-inject-template-audit-hmac: |
+              {{- with secret "i3/audit/hmac-secret" -}}
+              export AUDIT_HMAC_SECRET="{{ .Data.data.secret }}"
+              {{- end }}
+            vault.hashicorp.com/agent-inject-secret-audit-s3: "i3/audit/s3"
+            vault.hashicorp.com/agent-inject-template-audit-s3: |
+              {{- with secret "i3/audit/s3" -}}
+              export AUDIT_S3_BUCKET="{{ .Data.data.bucket }}"
+              export AUDIT_S3_ENDPOINT_URL="{{ .Data.data.endpoint_url }}"
+              export AUDIT_S3_REGION="{{ .Data.data.region }}"
+              {{- end }}
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: audit-tamper-check
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+          containers:
+            - name: tamper-check
+              image: i3platform/audit-tools:latest   # built from platform/audit/Dockerfile
+              imagePullPolicy: Always
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  # Source OpenBao-injected credentials
+                  source /vault/secrets/audit-hmac
+                  source /vault/secrets/audit-s3
+
+                  # Verify yesterday's partition for all tenants
+                  YESTERDAY=$(date -u -d 'yesterday' '+%Y-%m-%d')
+                  python -m platform.audit.tamper_check \
+                    --tenant all \
+                    --start "$YESTERDAY" \
+                    --end   "$YESTERDAY"
+              env:
+                # ⚠ OPEN LEGAL QUESTION (IMP-09) — pending legal sign-off
+                # These defaults are conservative placeholders only.
+                # See platform/audit/LEGAL-NOTICE.md.
+                - name: AUDIT_RETENTION_DAYS
+                  valueFrom:
+                    configMapKeyRef:
+                      name:     audit-config
+                      key:      retention_days
+                      optional: true
+                - name: AUDIT_LOCK_MODE
+                  valueFrom:
+                    configMapKeyRef:
+                      name:     audit-config
+                      key:      lock_mode
+                      optional: true
+              resources:
+                requests:
+                  cpu:    100m
+                  memory: 256Mi
+                limits:
+                  cpu:    500m
+                  memory: 512Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem:   true
+                capabilities:
+                  drop: [ALL]
+
+---
+# ── ConfigMap: retention parameters (OPEN LEGAL QUESTION) ────────────────
+# ⚠ OPEN LEGAL QUESTION (IMP-09):
+#   The retention_days and lock_mode values below are NOT confirmed by
+#   legal counsel.  They must be reviewed and confirmed before any
+#   production deployment that writes audit events subject to regulatory
+#   retention requirements.
+#   See platform/audit/LEGAL-NOTICE.md.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: audit-config
+  namespace: i3-audit
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    imp: IMP-09
+  annotations:
+    legal-review-required: "true"
+    legal-notice: "See platform/audit/LEGAL-NOTICE.md — retention values not yet confirmed"
+data:
+  # ⚠ OPEN LEGAL QUESTION — placeholder value ≈ 7 years
+  retention_days: "2557"
+  # ⚠ OPEN LEGAL QUESTION — placeholder; COMPLIANCE prevents premature deletion
+  lock_mode: "COMPLIANCE"
+
+---
+# ── ServiceAccount for the CronJob ───────────────────────────────────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: audit-tamper-check
+  namespace: i3-audit
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+
+---
+# ── PrometheusRule: alert on tamper-check job failures ───────────────────
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: audit-tamper-check-alerts
+  namespace: i3-monitoring
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    - name: i3.audit.tamper_check
+      interval: 60s
+      rules:
+        - alert: AuditTamperCheckFailed
+          expr: |
+            kube_job_status_failed{namespace="i3-audit",job_name=~"audit-tamper-check-.*"} > 0
+          for: 0m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "WORM audit tamper-check job FAILED"
+            description: >
+              The daily audit tamper-check CronJob in i3-audit has reported
+              one or more job failures.  This indicates a possible tamper
+              event, HMAC secret rotation without log re-signing, or an
+              infrastructure error.  Investigate immediately:
+              kubectl logs -n i3-audit -l app.kubernetes.io/name=audit-tamper-check
+
+        - alert: AuditTamperCheckMissing
+          expr: |
+            (time() - kube_cronjob_status_last_successful_time{
+              namespace="i3-audit",
+              cronjob="audit-tamper-check"
+            }) > 90000
+          for: 0m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "WORM audit tamper-check has not run in >25 hours"
+            description: >
+              The audit-tamper-check CronJob in i3-audit last succeeded more
+              than 25 hours ago.  Check for stuck pods or scheduler issues.

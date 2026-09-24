@@ -1,0 +1,22 @@
+# afroerp-agent-v1 manifest
+agent_id: afroerp-agent-v1
+name: AfroERP Agent
+version: "1.0.0"
+autonomy_tier: L1
+tenant_id: "00000000-0000-0000-0000-000000000001"
+owner: i3-technologies
+state: active
+guardrail_policy: lobster-trap-v1
+cost_budget_tokens: 40000
+# IMP-12: risk_tier 1 — ERP read queries only
+risk_tier: 1
+approval_policy: auto
+allowed_tools:
+  - read_db_schema
+  - query_curriculum_vector
+forbidden_tools:
+  - execute_sandboxed_code
+  - vault_get_secret
+  - delete_record
+  - postgres.members.write
+  - github.pr.create

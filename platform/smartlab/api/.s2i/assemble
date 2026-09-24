@@ -1,0 +1,7 @@
+#!/bin/bash
+# S2I assemble script — called by OpenShift S2I builder
+# Installs Python deps and sets up the app
+pip install --no-cache-dir -r /tmp/src/requirements.txt
+
+# Copy app source into the S2I application directory
+cp -r /tmp/src/* /opt/app-root/src/

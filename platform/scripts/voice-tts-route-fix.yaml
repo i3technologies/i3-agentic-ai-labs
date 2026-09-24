@@ -1,0 +1,15 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: voice-tts
+  namespace: i3-voice
+spec:
+  host: tts.i3technologies.co.ke
+  to:
+    kind: Service
+    name: voice-tts
+  port:
+    targetPort: 8000
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

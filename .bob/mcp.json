@@ -1,0 +1,30 @@
+{
+  "mcpServers": {
+    "i3-platform-guard": {
+      "command": "python",
+      "args": [
+        "platform/tools/i3_bob_mcp_server.py"
+      ],
+      "alwaysAllow": [
+        "test_prompt_injection",
+        "audit_sql_ast",
+        "validate_agent_manifest",
+        "verify_cloudevent_envelope",
+        "scan_for_bypass_auth",
+        "check_rls_policy"
+      ]
+    },
+    "watsonx-orchestrate": {
+      "command": "uvx",
+      "args": [
+        "--with", "ibm-watsonx-orchestrate==2.1.0",
+        "ibm-watsonx-orchestrate-mcp-server==2.1.0"
+      ],
+      "env": {
+        "WXO_MCP_WORKING_DIRECTORY": "${workspaceFolder}",
+        "WXO_URL": "${env:WXO_URL}",
+        "WXO_API_KEY": "${env:WXO_API_KEY}"
+      }
+    }
+  }
+}

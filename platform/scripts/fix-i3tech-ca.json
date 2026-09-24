@@ -1,0 +1,26 @@
+[
+  {
+    "op": "replace",
+    "path": "/spec/template/spec/containers/0/command",
+    "value": ["fabric-ca-server"]
+  },
+  {
+    "op": "replace",
+    "path": "/spec/template/spec/containers/0/args",
+    "value": [
+      "start",
+      "--ca.name", "i3tech-ca",
+      "--csr.cn", "i3tech-ca",
+      "--csr.hosts", "i3tech-ca.i3-ford.svc,i3tech-ca.i3-ford.svc.cluster.local,localhost",
+      "-b", "admin:adminpw"
+    ]
+  },
+  {
+    "op": "replace",
+    "path": "/spec/template/spec/containers/0/resources",
+    "value": {
+      "limits": {"cpu": "500m", "memory": "512Mi"},
+      "requests": {"cpu": "100m", "memory": "256Mi"}
+    }
+  }
+]

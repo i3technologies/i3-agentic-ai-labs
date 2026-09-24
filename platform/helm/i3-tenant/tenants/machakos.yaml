@@ -1,0 +1,46 @@
+# ============================================================
+# Demo tenant: Machakos County Government (FORD-Asili pilot)
+# Deploy:
+#   helm install cust-machakos platform/helm/i3-tenant \
+#     -f platform/helm/i3-tenant/tenants/machakos.yaml
+# ============================================================
+tenant:
+  slug: machakos
+  displayName: "Machakos County Government"
+  id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+
+tier: standard
+
+keycloak:
+  realm: i3
+  clientId: i3-platform
+  roles:
+    - tenant-admin
+    - tenant-member
+    - tenant-viewer
+
+litellm:
+  externalSecret:
+    refreshInterval: 1h
+    secretStoreName: i3-vault-store
+    secretStoreKind: ClusterSecretStore
+    vaultPathPrefix: "i3/tenants"
+
+networkPolicy:
+  allowIngressFromNamespaces:
+    - i3-model-gateway
+    - i3-monitoring
+    - i3-gitops
+  allowEgressToNamespaces:
+    - i3-model-gateway
+    - i3-data
+    - i3-messaging
+
+prometheus:
+  scrapeLabel: "true"
+  additionalLabels:
+    prometheus.io/scrape: "true"
+
+openshift:
+  displayNameAnnotation: true
+  nodeSelector: ""

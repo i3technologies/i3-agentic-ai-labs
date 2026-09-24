@@ -1,0 +1,1 @@
+﻿{"spec":{"template":{"spec":{"containers":[{"env":[{"value":"/models","name":"MODELS_DIR"},{"value":"/clones","name":"CLONES_DIR"},{"value":"en","name":"DEFAULT_LANGUAGE"},{"value":"/tmp/numba_cache","name":"NUMBA_CACHE_DIR"},{"value":"1","name":"NUMBA_DISABLE_JIT"}],"name":"tts","image":"image-registry.openshift-image-registry.svc:5000/i3-voice/voice-tts:latest"}]}}}}

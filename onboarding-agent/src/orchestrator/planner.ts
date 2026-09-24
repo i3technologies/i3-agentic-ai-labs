@@ -16,6 +16,8 @@ import OpenAI from 'openai';
 import { z }  from 'zod';
 import { VerifiedScanResult, VerifiedFinding } from './verify';
 import { OnboardingRole } from './subagents/types';
+import { emitDecision } from './decisionLog';
+import { tracer } from '../tracing';   // OTel — STEP-P1-14
 
 const client = new OpenAI({
   baseURL:    process.env.LITELLM_URL   ?? 'http://localhost:4000/v1',
@@ -127,6 +129,7 @@ function collectStalePaths(verified: VerifiedScanResult[]): string[] {
 async function synthesiseLLM(
   role:     OnboardingRole,
   findings: string,
+  sessionId?: string,
 ): Promise<RampUpTask[]> {
   const systemPrompt = `
 You are a Senior Solutions Architect and Onboarding Mentor for i3 Agentic AI Labs.
@@ -156,41 +159,62 @@ RULES:
     `Synthesise these findings into a 5-day ramp-up plan with 12–15 tasks.\n` +
     `Output ONLY valid JSON with key "tasks". No markdown fences.\n`;
 
-  const completion = await client.chat.completions.create({
-    model:       SYNTH_MODEL,
-    temperature: 0.15,
-    max_tokens:  4000,
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user',   content: userPrompt },
-    ],
-  });
+  return await tracer.startActiveSpan('planner.synthesise', async (span) => {
+    span.setAttribute('ai.model', SYNTH_MODEL);
+    span.setAttribute('ai.role', role);
 
-  const raw     = completion.choices[0]?.message?.content ?? '{"tasks":[]}';
-  const cleaned = raw.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim();
+    const completion = await client.chat.completions.create({
+      model:       SYNTH_MODEL,
+      temperature: 0.15,
+      max_tokens:  4000,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user',   content: userPrompt },
+      ],
+    });
 
-  let parsed: { tasks: unknown[] };
-  try {
-    parsed = JSON.parse(cleaned);
-  } catch {
-    console.warn('[planner] LLM synthesis returned invalid JSON; using empty task list');
-    return [];
-  }
+    span.setAttribute('ai.input_tokens',  completion.usage?.prompt_tokens  ?? 0);
+    span.setAttribute('ai.output_tokens', completion.usage?.completion_tokens ?? 0);
+    span.end();
 
-  if (!Array.isArray(parsed.tasks)) return [];
+    // Emit decision log entry after LLM completion (fire-and-forget)
+    emitDecision({
+      agentId:      'onboarding-planner-v1',
+      sessionId,
+      model:        SYNTH_MODEL,
+      inputTokens:  completion.usage?.prompt_tokens,
+      outputTokens: completion.usage?.completion_tokens,
+      toolsInvoked: ['litellm.chat'],
+      outcome:      'success',
+      correlationId: sessionId,
+    });
 
-  const tasks: RampUpTask[] = [];
-  for (const raw of parsed.tasks) {
-    const result = RampUpTaskSchema.safeParse(raw);
-    if (result.success) {
-      tasks.push(result.data);
-    } else {
-      console.warn('[planner] Dropping malformed task:', result.error.issues[0]?.message);
+    const raw     = completion.choices[0]?.message?.content ?? '{"tasks":[]}';
+    const cleaned = raw.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim();
+
+    let parsed: { tasks: unknown[] };
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch {
+      console.warn('[planner] LLM synthesis returned invalid JSON; using empty task list');
+      return [];
     }
-  }
 
-  // Apply confidence gate
-  return tasks.filter(t => t.confidence >= CONFIDENCE_GATE);
+    if (!Array.isArray(parsed.tasks)) return [];
+
+    const tasks: RampUpTask[] = [];
+    for (const rawTask of parsed.tasks) {
+      const result = RampUpTaskSchema.safeParse(rawTask);
+      if (result.success) {
+        tasks.push(result.data);
+      } else {
+        console.warn('[planner] Dropping malformed task:', result.error.issues[0]?.message);
+      }
+    }
+
+    // Apply confidence gate
+    return tasks.filter(t => t.confidence >= CONFIDENCE_GATE);
+  });
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -258,16 +282,17 @@ function buildFallbackTasks(verified: VerifiedScanResult[]): RampUpTask[] {
 export interface PlannerInput {
   role:          OnboardingRole;
   verifiedScans: VerifiedScanResult[];
+  sessionId?:    string;
 }
 
 export async function generatePlan(input: PlannerInput): Promise<RampUpPlan> {
-  const { role, verifiedScans } = input;
-  const staleWarnings           = collectStalePaths(verifiedScans);
-  const findingsSummary         = buildFindingsSummary(verifiedScans);
+  const { role, verifiedScans, sessionId } = input;
+  const staleWarnings                      = collectStalePaths(verifiedScans);
+  const findingsSummary                    = buildFindingsSummary(verifiedScans);
 
   let tasks: RampUpTask[];
   try {
-    tasks = await synthesiseLLM(role, findingsSummary);
+    tasks = await synthesiseLLM(role, findingsSummary, sessionId);
   } catch (err) {
     console.warn('[planner] LLM synthesis failed, using fallback:', (err as Error).message);
     tasks = buildFallbackTasks(verifiedScans);

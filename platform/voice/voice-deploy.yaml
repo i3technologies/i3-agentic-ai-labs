@@ -82,6 +82,9 @@ spec:
 
 ---
 # ── Secret: voice service credentials ────────────────────────
+# SEC-03: no plaintext values — VOICE_API_KEY injected by OpenBao agent sidecar.
+# OpenBao path: i3/voice/api-key  field: key  → env VOICE_API_KEY
+# All callers must send: Authorization: Bearer <VOICE_API_KEY>
 apiVersion: v1
 kind: Secret
 metadata:
@@ -89,10 +92,16 @@ metadata:
   namespace: i3-voice
   labels:
     app.kubernetes.io/part-of: i3-platform
+  annotations:
+    openbao.org/agent-inject: "true"
+    openbao.org/role: "voice"
+    openbao.org/agent-inject-secret-voice-api-key: "i3/data/voice/api-key"
+    openbao.org/agent-inject-template-voice-api-key: |
+      {{- with secret "i3/data/voice/api-key" -}}
+      export VOICE_API_KEY="{{ .Data.data.key }}"
+      {{- end }}
 type: Opaque
-stringData:
-  # Internal API key — all callers must send: Authorization: Bearer <token>
-  VOICE_API_KEY: "996c39cfc16b10eb1952e76036e1dcb6213f2b56ba28fe96"
+# stringData intentionally empty — all secrets delivered via OpenBao sidecar.
 
 ---
 # ── Deployment: XTTS-v2 TTS + Voice Clone Service ─────────────

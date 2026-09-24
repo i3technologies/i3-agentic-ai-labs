@@ -1,0 +1,7 @@
+[
+  {"op":"replace","path":"/spec/ingress/0/from","value":[
+    {"namespaceSelector":{"matchExpressions":[{"key":"i3.io/managed-by","operator":"In","values":["argocd"]}]}},
+    {"namespaceSelector":{"matchLabels":{"network.openshift.io/policy-group":"ingress"}}},
+    {"namespaceSelector":{"matchLabels":{"kubernetes.io/metadata.name":"openshift-ingress"}}}
+  ]}
+]

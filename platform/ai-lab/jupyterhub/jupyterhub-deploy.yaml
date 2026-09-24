@@ -52,14 +52,16 @@ metadata:
   namespace: i3-ai-lab
 type: Opaque
 stringData:
-  JUPYTERHUB_CRYPT_KEY:        "abce1027cbd09f23430e0afe76bc4bcf93d5ffb19a1fad9d8df93e3413af430e"
-  KEYCLOAK_CLIENT_SECRET:      "5gRZf1CNEAw24mnR5Og7fGmdCa84TcNq"
-  POSTGRES_PASSWORD:           "jh-2026-secure"
-  # Injected into every user notebook environment
+  # STEP-P1-01: All secrets removed from ConfigMap.
+  # Inject via Secret object + secretKeyRef in Deployment env block.
+  # OpenBao paths:
+  #   i3/jupyterhub/crypt-key      → JUPYTERHUB_CRYPT_KEY
+  #   i3/keycloak/jupyterhub-client → KEYCLOAK_CLIENT_SECRET
+  #   i3/jupyterhub/db-password    → POSTGRES_PASSWORD
+  #   i3/litellm/api-key           → LITELLM_KEY
+  #   i3/chromadb/token            → CHROMA_TOKEN
   LITELLM_URL:                 "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1"
-  LITELLM_KEY:                 "sk-litellm-i3-f951c9377163a11275864cb92e90ad13"
   CHROMA_HOST:                 "chromadb.i3-ai-lab.svc.cluster.local"
-  CHROMA_TOKEN:                "fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c"
 
 ---
 # ── ConfigMap: jupyterhub_config.py ──────────────────────────

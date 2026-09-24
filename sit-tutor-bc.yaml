@@ -1,0 +1,25 @@
+﻿apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: sit-tutor
+  namespace: i3-sit
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: sit-tutor:latest
+  source:
+    type: Binary
+  strategy:
+    type: Docker
+    dockerStrategy: {}
+  triggers: []
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: sit-tutor
+  namespace: i3-sit
+spec:
+  lookupPolicy:
+    local: true

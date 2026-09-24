@@ -1,0 +1,189 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Engage User Guide — i3 Technologies</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.6;color:#1f2328;background:#fff}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 24px}
+  h1{font-size:26px;font-weight:700;color:#1f2328;margin-bottom:4px}
+  h2{font-size:18px;font-weight:600;color:#3b82d4;margin:32px 0 10px;padding-bottom:4px;border-bottom:2px solid #e5e7eb}
+  h3{font-size:15px;font-weight:600;color:#1f2328;margin:18px 0 6px}
+  p{margin-bottom:10px}
+  ul,ol{margin:0 0 10px 20px}
+  li{margin-bottom:4px}
+  a{color:#3b82d4;text-decoration:none}
+  a:hover{text-decoration:underline}
+  .cover{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:20px 24px;margin-bottom:28px}
+  .toc{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:16px 20px;margin-bottom:28px}
+  .toc h3{margin-top:0;margin-bottom:10px;font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:#57606a}
+  .toc ol{margin-left:18px}
+  .toc li{margin-bottom:3px;font-size:14px}
+  table{width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:14px}
+  th{background:#f7f8fa;text-align:left;padding:8px 10px;border:1px solid #e5e7eb;font-weight:600}
+  td{padding:8px 10px;border:1px solid #e5e7eb;vertical-align:top}
+  tr:nth-child(even) td{background:#fafafa}
+  .steps{counter-reset:step;list-style:none;margin-left:0}
+  .steps li{counter-increment:step;display:flex;gap:12px;margin-bottom:10px;align-items:flex-start}
+  .steps li::before{content:counter(step);min-width:26px;height:26px;border-radius:50%;background:#3b82d4;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+  .note{background:#eff6ff;border-left:4px solid #3b82d4;padding:10px 14px;margin:12px 0;font-size:14px;border-radius:0 4px 4px 0}
+  .warn{background:#fffbeb;border-left:4px solid #f59e0b;padding:10px 14px;margin:12px 0;font-size:14px;border-radius:0 4px 4px 0}
+  .note strong,.warn strong{display:block;margin-bottom:2px}
+  .tag{display:inline-block;background:#e5e7eb;color:#57606a;font-size:12px;padding:1px 7px;border-radius:3px;font-family:monospace}
+  .footer{text-align:center;font-size:12px;color:#57606a;margin-top:40px;padding-top:16px;border-top:1px solid #e5e7eb}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="cover">
+    <h1>Engage User Guide</h1>
+    <p style="color:#57606a;margin-bottom:12px">SMS &amp; WhatsApp Campaign Management Platform</p>
+    <div style="font-size:13px;color:#57606a">
+      <span><strong>Platform URL:</strong> <a href="https://engage.i3technologies.co.ke">engage.i3technologies.co.ke</a></span>  
+      <span><strong>Support:</strong> <a href="mailto:support@i3technologies.co.ke">support@i3technologies.co.ke</a></span>
+    </div>
+  </div>
+
+  <div class="toc">
+    <h3>Table of Contents</h3>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#login">Login &amp; Workspace Setup</a></li>
+      <li><a href="#contacts">Contact Management</a></li>
+      <li><a href="#sms">SMS Campaigns</a></li>
+      <li><a href="#whatsapp">WhatsApp Campaigns</a></li>
+      <li><a href="#automation">Automation &amp; Flows</a></li>
+      <li><a href="#analytics">Analytics &amp; Delivery Reports</a></li>
+      <li><a href="#nuru">Nuru AI Co-worker</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+    </ol>
+  </div>
+
+  <h2 id="overview">1 — Overview</h2>
+  <p>Engage is i3 Technologies' multi-channel customer engagement platform, enabling organisations to run SMS and WhatsApp campaigns at scale via Africa's Talking (SMS) and WhatsApp Business API (Meta). The platform includes AI-powered message drafting, delivery analytics, and automation flows.</p>
+  <table>
+    <tr><th>Channel</th><th>Provider</th><th>Use Case</th></tr>
+    <tr><td>SMS</td><td>Africa's Talking</td><td>Bulk messaging, OTP, transactional alerts</td></tr>
+    <tr><td>WhatsApp</td><td>Meta WhatsApp Business API</td><td>Rich media messages, template campaigns, customer support</td></tr>
+    <tr><td>Email</td><td>Brevo (Sendinblue)</td><td>Newsletter campaigns and transactional email</td></tr>
+  </table>
+
+  <h2 id="login">2 — Login &amp; Workspace Setup</h2>
+  <ol class="steps">
+    <li>Go to <a href="https://engage.i3technologies.co.ke">https://engage.i3technologies.co.ke</a> and click <strong>Sign In</strong>.</li>
+    <li>Authenticate via the i3 SSO portal with your <span class="tag">@i3technologies.co.ke</span> credentials.</li>
+    <li>Select or create a <strong>Workspace</strong> (e.g. your organisation or department). One workspace = one sender ID / WhatsApp number.</li>
+    <li>Set your workspace timezone (important for scheduled campaigns) and click <strong>Save Settings</strong>.</li>
+  </ol>
+
+  <h2 id="contacts">3 — Contact Management</h2>
+  <h3>3.1 Importing Contacts</h3>
+  <ol class="steps">
+    <li>Click <strong>Contacts</strong> in the sidebar, then <strong>Import Contacts</strong>.</li>
+    <li>Download the CSV template. Required columns: <span class="tag">phone</span> (format: <span class="tag">2547XXXXXXXX</span>), <span class="tag">first_name</span>. Optional: <span class="tag">last_name</span>, <span class="tag">email</span>, custom attributes.</li>
+    <li>Upload the CSV. The system validates phone numbers and removes duplicates. A preview of the first 10 rows is shown.</li>
+    <li>Map CSV columns to Engage fields and click <strong>Confirm Import</strong>.</li>
+  </ol>
+  <h3>3.2 Creating Contact Lists</h3>
+  <ol class="steps">
+    <li>Go to <strong>Contacts</strong> → <strong>Lists</strong> → <strong>New List</strong>.</li>
+    <li>Name the list (e.g. "Nairobi Customers Q3") and either manually add contacts or set filter rules for a dynamic list.</li>
+    <li>Dynamic lists auto-update when contacts match the filter criteria (e.g. county = Nairobi AND last_purchase &gt; 30 days ago).</li>
+  </ol>
+  <div class="note"><strong>Note</strong>All contacts must have opted in to receive communications. Ensure your import file contains only consented contacts in compliance with the Kenya Data Protection Act (2019).</div>
+
+  <h2 id="sms">4 — SMS Campaigns</h2>
+  <h3>4.1 Creating an SMS Campaign</h3>
+  <ol class="steps">
+    <li>Go to <strong>Campaigns</strong> → <strong>New Campaign</strong> → select <strong>SMS</strong>.</li>
+    <li>Enter campaign name, select sender ID, and choose target contact list(s).</li>
+    <li>Compose your message in the text editor. The character counter shows SMS segments (160 chars = 1 SMS; longer messages are split).</li>
+    <li>Use <span class="tag">{{first_name}}</span>, <span class="tag">{{custom_field}}</span> for personalisation. A preview renders with real contact data.</li>
+    <li>Choose <strong>Send Now</strong> or <strong>Schedule</strong> (pick date and time in your workspace timezone).</li>
+    <li>Review the cost estimate (based on Africa's Talking per-SMS rate) and click <strong>Launch Campaign</strong>.</li>
+  </ol>
+  <h3>4.2 SMS Character Limits</h3>
+  <table>
+    <tr><th>Encoding</th><th>Single SMS</th><th>Multi-part SMS (per part)</th></tr>
+    <tr><td>GSM-7 (standard)</td><td>160 characters</td><td>153 characters</td></tr>
+    <tr><td>Unicode (Swahili special chars, Arabic)</td><td>70 characters</td><td>67 characters</td></tr>
+  </table>
+  <div class="warn"><strong>Warning</strong>Using special characters like curly quotes or non-ASCII symbols switches encoding to Unicode, cutting character limits in half. Stick to standard ASCII characters for bulk SMS.</div>
+
+  <h2 id="whatsapp">5 — WhatsApp Campaigns</h2>
+  <p>WhatsApp campaigns require pre-approved <strong>Message Templates</strong> from Meta before bulk sending. The platform manages template submission and approval status.</p>
+  <h3>5.1 Submitting a Template for Approval</h3>
+  <ol class="steps">
+    <li>Go to <strong>WhatsApp</strong> → <strong>Templates</strong> → <strong>New Template</strong>.</li>
+    <li>Choose template category: <em>Marketing</em>, <em>Utility</em>, or <em>Authentication</em>.</li>
+    <li>Write the template body. Use <span class="tag">{{1}}</span>, <span class="tag">{{2}}</span> for variable placeholders.</li>
+    <li>Optionally add header (image / document / text) and footer.</li>
+    <li>Click <strong>Submit to Meta</strong>. Approval typically takes 24–48 hours.</li>
+  </ol>
+  <h3>5.2 Sending a WhatsApp Campaign</h3>
+  <ol class="steps">
+    <li>Go to <strong>Campaigns</strong> → <strong>New Campaign</strong> → select <strong>WhatsApp</strong>.</li>
+    <li>Select an approved template, fill in variable values, and choose target list.</li>
+    <li>Schedule or send immediately, then click <strong>Launch</strong>.</li>
+  </ol>
+  <div class="note"><strong>Note</strong>Only opt-in contacts who have messaged your WhatsApp number within the last 24 hours can receive free-form messages. All other contacts require approved templates.</div>
+
+  <h2 id="automation">6 — Automation &amp; Flows</h2>
+  <p>Automation Flows trigger messages based on contact behaviour or time-based conditions.</p>
+  <table>
+    <tr><th>Trigger</th><th>Example Use Case</th></tr>
+    <tr><td>Contact joins list</td><td>Send a welcome SMS when a voter registers</td></tr>
+    <tr><td>Date-based</td><td>Send a birthday message 1 day before a contact's birthday field</td></tr>
+    <tr><td>Webhook event</td><td>Send confirmation SMS when an M-Pesa payment is received from PMaaS</td></tr>
+    <tr><td>No engagement</td><td>Send a re-engagement WhatsApp after 30 days of silence</td></tr>
+  </table>
+  <h3>Building a Flow</h3>
+  <ol class="steps">
+    <li>Go to <strong>Automation</strong> → <strong>New Flow</strong>.</li>
+    <li>Select a trigger type and configure its conditions.</li>
+    <li>Add steps: <em>Send SMS</em>, <em>Send WhatsApp</em>, <em>Wait</em>, <em>Condition branch</em>, or <em>Update contact field</em>.</li>
+    <li>Toggle the flow to <strong>Active</strong> to start processing.</li>
+  </ol>
+
+  <h2 id="analytics">7 — Analytics &amp; Delivery Reports</h2>
+  <table>
+    <tr><th>Metric</th><th>Description</th></tr>
+    <tr><td>Sent</td><td>Total messages dispatched to the provider</td></tr>
+    <tr><td>Delivered</td><td>Confirmed delivery to handset (requires DLR from carrier)</td></tr>
+    <tr><td>Failed</td><td>Undelivered — invalid number, switched-off phone, or carrier error</td></tr>
+    <tr><td>Opened (WhatsApp)</td><td>Blue double-tick read receipts</td></tr>
+    <tr><td>Clicked</td><td>Link clicks within message body (requires tracked short links)</td></tr>
+    <tr><td>Opt-outs</td><td>Contacts who replied STOP or unsubscribed</td></tr>
+  </table>
+  <p>Export reports as CSV from <strong>Campaigns</strong> → select campaign → <strong>Export Report</strong>.</p>
+
+  <h2 id="nuru">8 — Nuru AI Co-worker</h2>
+  <p>Nuru is Engage's embedded AI assistant, specialised in message copywriting, campaign strategy, and audience segmentation advice.</p>
+  <table>
+    <tr><th>Task</th><th>Sample Prompt</th></tr>
+    <tr><td>Draft SMS copy</td><td>"Write a 160-character SMS announcing a product launch in Swahili."</td></tr>
+    <tr><td>WhatsApp template</td><td>"Create a WhatsApp Utility template for payment reminders with a KES amount variable."</td></tr>
+    <tr><td>Segment strategy</td><td>"What contact list segments should I create for a youth-focused political campaign in Nairobi?"</td></tr>
+    <tr><td>A/B test ideas</td><td>"Suggest 2 subject line variations for a campaign about clean water access."</td></tr>
+    <tr><td>Opt-out reduction</td><td>"How can I reduce opt-outs for my weekly SMS newsletter?"</td></tr>
+  </table>
+  <p>Open Nuru from the chat bubble (bottom-right) on any Engage page.</p>
+
+  <h2 id="troubleshooting">9 — Troubleshooting</h2>
+  <table>
+    <tr><th>Issue</th><th>Fix</th></tr>
+    <tr><td>SMS not delivered</td><td>Check the delivery report for error code. Common codes: <span class="tag">400</span> = invalid number, <span class="tag">401</span> = insufficient credits, <span class="tag">500</span> = carrier error. Verify number format is <span class="tag">2547XXXXXXXX</span>.</td></tr>
+    <tr><td>WhatsApp template rejected</td><td>Common reasons: promotional language in Utility templates, missing variable formatting. Review Meta's template guidelines and resubmit.</td></tr>
+    <tr><td>Campaign stuck in "Sending"</td><td>Large campaigns (&gt;10,000 contacts) process in batches. Allow up to 1 hour. If stuck beyond 2 hours, contact support.</td></tr>
+    <tr><td>Cannot see contacts after import</td><td>Import may still be processing. Refresh after 2 minutes. If contacts still missing, check the import error log under <strong>Contacts → Import History</strong>.</td></tr>
+    <tr><td>Automation flow not triggering</td><td>Ensure the flow status is <strong>Active</strong>. Check trigger conditions — contact must meet all defined criteria.</td></tr>
+  </table>
+  <p><strong>Support:</strong> <a href="mailto:support@i3technologies.co.ke">support@i3technologies.co.ke</a></p>
+
+  <div class="footer">Made with IBM Bob</div>
+</div>
+</body>
+</html>

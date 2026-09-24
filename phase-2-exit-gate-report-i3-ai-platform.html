@@ -1,0 +1,342 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Phase 2 Exit Gate Report — i3 AI Platform</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1f2328;
+    background: #ffffff;
+    padding: 32px 16px 40px;
+  }
+  .container { max-width: 760px; margin: 0 auto; }
+  .header { margin-bottom: 28px; }
+  .header h1 { font-size: 20px; font-weight: 600; color: #1f2328; margin-bottom: 4px; }
+  .header .meta { font-size: 12px; color: #57606a; }
+  .verdict-box {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 22px;
+    border-radius: 6px;
+    margin-bottom: 32px;
+    background: #fdf2f2;
+    border: 1.5px solid #e57373;
+  }
+  .verdict-box.blocked .badge {
+    background: #c62828;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 6px 16px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .verdict-box .summary { font-size: 13.5px; color: #1f2328; }
+  .verdict-box .summary strong { color: #c62828; }
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #57606a;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 28px; }
+  th {
+    background: #f7f8fa;
+    text-align: left;
+    padding: 8px 10px;
+    font-weight: 600;
+    color: #1f2328;
+    border-bottom: 1px solid #e5e7eb;
+    border-top: 1px solid #e5e7eb;
+  }
+  td { padding: 9px 10px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .gate-id { font-family: "Courier New", monospace; font-size: 12px; white-space: nowrap; color: #57606a; }
+  .pass { color: #1a7f37; font-weight: 600; }
+  .fail { color: #c62828; font-weight: 600; }
+  .partial { color: #b45309; font-weight: 600; }
+  .tag-pass { background: #dafbe1; color: #1a7f37; padding: 2px 7px; border-radius: 3px; font-size: 11.5px; font-weight: 600; }
+  .tag-fail { background: #fde8e8; color: #c62828; padding: 2px 7px; border-radius: 3px; font-size: 11.5px; font-weight: 600; }
+  .tag-partial { background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 3px; font-size: 11.5px; font-weight: 600; }
+  .evidence { font-size: 12px; color: #57606a; margin-top: 3px; }
+  .evidence code {
+    background: #f0f0f0;
+    padding: 0px 4px;
+    border-radius: 3px;
+    font-family: "Courier New", monospace;
+    font-size: 11.5px;
+    color: #1f2328;
+  }
+  .remediation-section { margin-top: 4px; }
+  .remediation-section h3 { font-size: 13px; font-weight: 600; color: #c62828; margin-bottom: 8px; }
+  .rem-item { background: #fdf2f2; border-left: 3px solid #e57373; padding: 10px 14px; margin-bottom: 8px; border-radius: 0 4px 4px 0; }
+  .rem-item .rem-gate { font-family: "Courier New", monospace; font-size: 11.5px; color: #c62828; font-weight: 600; }
+  .rem-item .rem-action { font-size: 13px; color: #1f2328; margin-top: 2px; }
+  .footer {
+    text-align: center;
+    font-size: 12px;
+    color: #57606a;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 16px;
+    margin-top: 32px;
+  }
+  .score-bar-wrap { margin-bottom: 24px; }
+  .score-label { font-size: 13px; margin-bottom: 6px; color: #57606a; }
+  .score-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: #e5e7eb; }
+  .score-bar .filled-pass { background: #1a7f37; }
+  .score-bar .filled-fail { background: #c62828; }
+  .score-bar .filled-partial { background: #d97706; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Phase 2 Exit Gate Evaluation — i3 AI Platform</h1>
+    <div class="meta">Gates P2-GATE-01 through P2-GATE-10  ·  Evaluated against live cluster state  ·  Branch: <strong>main</strong></div>
+  </div>
+
+  
+  <div class="verdict-box blocked">
+    <div class="badge">BLOCKED</div>
+    <div class="summary">
+      <strong>5 of 10 gates FAILED.</strong> Phase 3 promotion is not permitted until all blocking gates are resolved.
+      Passing: P2-GATE-05 (partial), P2-GATE-07. Hard failures: P2-GATE-01, P2-GATE-02, P2-GATE-03 (auth gap), P2-GATE-04, P2-GATE-06, P2-GATE-08, P2-GATE-09, P2-GATE-10.
+    </div>
+  </div>
+
+  
+  <div class="score-bar-wrap">
+    <div class="score-label">Gate score: <strong>1.5 / 10</strong>  (1 full pass · 1 partial · 8 fail)</div>
+    <div class="score-bar">
+      <div class="filled-pass" style="width:10%"></div>
+      <div class="filled-partial" style="width:5%"></div>
+      <div class="filled-fail" style="width:85%"></div>
+    </div>
+  </div>
+
+  
+  <div class="section-title">Gate Results</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:110px">Gate ID</th>
+        <th style="width:70px">Result</th>
+        <th>Criterion &amp; Evidence</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <tr>
+        <td class="gate-id">P2-GATE-01</td>
+        <td><span class="tag-fail">FAIL</span></td>
+        <td>
+          <strong>Consent service Running in <code>i3-consent</code>; all 3 consumers check consent</strong>
+          <div class="evidence">
+            ❌ Namespace <code>i3-consent</code> does not exist on the cluster
+            (<code>kubectl get namespace i3-consent</code> → <em>NotFound</em>).
+            No consent-service pod found in any namespace.
+            <br />
+            ⚠️ <code>platform/engage/consumers/kafka_consumers.py</code> contains the <code>_consent_allowed()</code> helper and calls it for the marketing consumer — code is present but the backing service is not deployed.
+            <br />
+            ❌ FORD (<code>ford/api/main.py</code>) and SIT (<code>sit/api/main.py</code>) still enforce only a local boolean field (<code>consent: bool</code>), not a live call to the consent service.
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="gate-id">P2-GATE-02</td>
+        <td><span class="tag-fail">FAIL</span></td>
+        <td>
+          <strong>Agent Registry returns 6 manifests; decision log receiving entries</strong>
+          <div class="evidence">
+            ❌ Namespace <code>i3-agents</code> does not exist
+            (<code>kubectl get namespace i3-agents</code> → <em>NotFound</em>).
+            <br />
+            ❌ <code>ar_db</code> schema has no <code>agent_manifests</code> table
+            (query returned: <em>ERROR: relation "agent_manifests" does not exist</em>).
+            <br />
+            ✅ Agent Registry service source code is present (<code>platform/agent-registry/main.py</code>) and ADR-002 documents it — but the service has not been deployed.
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="gate-id">P2-GATE-03</td>
+        <td><span class="tag-partial">PARTIAL</span></td>
+        <td>
+          <strong>MCP gateway running; forbidden tool call returns HTTP 403</strong>
+          <div class="evidence">
+            ✅ MCP gateway pods Running in <code>i3-ar</code>: <code>mcp-gateway-f4d45d48-dcnmg</code> and <code>mcp-gateway-f4d45d48-lt9dr</code> (2 replicas, 2d uptime).
+            <br />
+            ✅ Route <code>ar.i3technologies.co.ke</code> is active and responds (HTTP 422 on malformed body confirms the service is live).
+            <br />
+            ⚠️ <strong>Auth gap:</strong> The gateway's <code>/tools/*</code> endpoints have <strong>no JWT authentication</strong> — there is no <code>Depends(verify_token)</code> or similar guard on any tool route. The 403 is only returned for disallowed OpenBao vault <em>path prefixes</em>, not for unauthenticated callers. An unauthenticated POST to <code>/tools/read_db_schema</code> returns HTTP 422 (unprocessed) rather than 401/403.
+            <br />
+            ❌ The gate criterion "unauthorized tool call returns 403" is not met — there is no auth enforcement at the gateway layer to produce a 403 for bearer-less requests.
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="gate-id">P2-GATE-04</td>
+        <td><span class="tag-fail">FAIL</span></td>
+        <td>
+          <strong><code>SELECT relrowsecurity FROM pg_class WHERE relname='email_campaigns'</code> → <code>t</code></strong>
+          <div class="evidence">
+            ❌ Live query against <code>engage_db</code> on <code>i3-postgres-primary-hffm-0</code> returned:
+            <code>relrowsecurity = f</code> (RLS is <strong>disabled</strong> on <code>email_campaigns</code>).
+            <br />
+            The required DDL <code>ALTER TABLE email_campaigns ENABLE ROW LEVEL SECURITY;</code> and associated tenant-isolation policies have not been applied.
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="gate-id">P2-GATE-05</td>
+        <td><span class="tag-partial">PARTIAL</span></td>
+        <td>
+          <strong>Grading and Credential services Running in <code>i3-evalos</code>; EvalOS start route uses <code>crypto.getRandomValues()</code></strong>
+          <div class="evidence">
+            ❌ No <code>grading</code> or <code>credential</code> deployment found in <code>i3-evalos</code>
+            or any namespace — only <code>evalos-web</code>, <code>evalos-sandbox</code>, and <code>zuri-coworker</code> are running.
+            <br />
+            Source directories <code>platform/grading/</code> and <code>platform/credential/</code> exist with <code>main.py</code> but no deploy manifests targeting <code>i3-evalos</code>.
+            <br />
+            ✅ <strong><code>crypto.getRandomValues()</code> verified</strong> — <code>platform/evalos/web/src/app/api/exam/[examId]/start/route.ts</code> line 12 uses <code>crypto.getRandomValues(bytes)</code> in a cryptographically secure Fisher-Yates shuffle. This sub-criterion passes.
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="gate-id">P2-GATE-06</td>
+        <td><span class="tag-fail">FAIL</span></td>
+        <td>
+          <strong>Unauthenticated request to <code>api.i3technologies.co.ke/admissions/chat</code> → HTTP 401</strong>
+          <div class="evidence">
+            ❌ <code>curl https://api.i3technologies.co.ke/admissions/chat</code> → <strong>HTTP 000</strong> (DNS/connectivity failure — host not reachable).
+            <br />
+            ❌ Kong API Gateway (<code>i3-gateway</code> namespace) is <strong>not deployed</strong> — namespace not found on cluster.
+            <br />
+            ❌ The <code>/chat</code> endpoint in <code>platform/admissions/admissions_agent.py</code> has <strong>no auth dependency</strong> — no <code>HTTPBearer</code>, no <code>Depends(verify_token)</code>. The FastAPI route is fully open.
+            <br />
+            ⚠️ The admissions route exposed via OpenShift router (<code>admissions.i3technologies.co.ke</code>) returned HTTP 503 (pod not serving external traffic at that path).
+            <br />
+            The gate requires a 401 — the infrastructure to enforce it (Kong JWT plugin) is not deployed and the application has no built-in auth guard.
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="gate-id">P2-GATE-07</td>
+        <td><span class="tag-pass">PASS</span></td>
+        <td>
+          <strong>All 6 ADR files present with required sections</strong>
+          <div class="evidence">
+            ✅ 7 ADR files found under <code>platform/docs/adr/</code> (ADR-001 through ADR-007 — exceeds minimum).
+            <br />
+            ✅ ADR-001 and ADR-006 (sampled) contain all required sections: <code>## Context</code>, <code>## Decision</code>, <code>## Consequences</code>.
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="gate-id">P2-GATE-08</td>
+        <td><span class="tag-fail">FAIL</span></td>
+        <td>
+          <strong>RAGAS faithfulness and relevancy ≥ Phase 1 thresholds in CI</strong>
+          <div class="evidence">
+            ❌ RAGAS evaluation task (<code>platform/testing/ragas/</code>) and Tekton pipeline step exist in source, but no recent CI pipeline run evidence is available — the Tekton pipeline step references <code>pytest platform/testing/ragas/test_ragas_thresholds.py</code>; no run results or threshold-passing artefacts are observable in the cluster.
+            <br />
+            This gate cannot be confirmed as passing without a completed pipeline run record.
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="gate-id">P2-GATE-09</td>
+        <td><span class="tag-fail">FAIL</span></td>
+        <td>
+          <strong>Locust p95 latency not exceeded by &gt;15% vs Phase 1 baseline</strong>
+          <div class="evidence">
+            ❌ No Locust load test configuration or results artefact found under <code>platform/testing/</code>.
+            <br />
+            No Phase 1 baseline p95 latency record is available for comparison. Gate cannot be evaluated.
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="gate-id">P2-GATE-10</td>
+        <td><span class="tag-fail">FAIL</span></td>
+        <td>
+          <strong>Zero new Critical or High security findings introduced</strong>
+          <div class="evidence">
+            ❌ No Trivy/TruffleHog CI run results artefact found. Pipeline YAML references <code>trivy-scan</code> and <code>trufflehog</code> tasks, but no completed pipeline run with a clean scan report is available in the cluster.
+            <br />
+            ❌ <code>.gitleaks.toml</code> not present in repository root — gitleaks is not configured.
+            <br />
+            Gate cannot be confirmed passing without a completed security scan artefact.
+          </div>
+        </td>
+      </tr>
+
+    </tbody>
+  </table>
+
+  
+  <div class="remediation-section">
+    <h3>Required Remediation — Blocking Items</h3>
+
+    <div class="rem-item">
+      <div class="rem-gate">P2-GATE-01</div>
+      <div class="rem-action">Deploy the consent service: apply <code>platform/consent/</code> to a new <code>i3-consent</code> namespace. Run migrations (<code>001_init.sql</code>). Update FORD (<code>ford/api/main.py</code>) and SIT (<code>sit/api/main.py</code>) to call <code>_consent_allowed()</code> against the live service instead of checking a local boolean field.</div>
+    </div>
+
+    <div class="rem-item">
+      <div class="rem-gate">P2-GATE-02</div>
+      <div class="rem-action">Create namespace <code>i3-agents</code> (or <code>i3-agent-mesh</code>). Deploy <code>platform/agent-registry/</code>. Run its DB migration to create the <code>agent_manifests</code> and <code>agent_decisions</code> tables in <code>ar_db</code>. Seed the 6 canonical agent manifests (admissions-agent, onboarding-agent, campaign-agent, pmaas-campaign-agent, sit-tutor-agent, afroerp-agent).</div>
+    </div>
+
+    <div class="rem-item">
+      <div class="rem-gate">P2-GATE-03</div>
+      <div class="rem-action">Add a JWT <code>Depends(verify_token)</code> guard to all <code>/tools/*</code> routes in <code>platform/ar/mcp-gateway/main.py</code> so that bearer-less or invalid-token requests receive HTTP 401/403. Validate the Keycloak JWKS URL is reachable from the pod.</div>
+    </div>
+
+    <div class="rem-item">
+      <div class="rem-gate">P2-GATE-04</div>
+      <div class="rem-action">Execute against <code>engage_db</code>: <code>ALTER TABLE email_campaigns ENABLE ROW LEVEL SECURITY; CREATE POLICY tenant_isolation ON email_campaigns USING (tenant_id = current_setting('app.tenant_id')::uuid);</code></div>
+    </div>
+
+    <div class="rem-item">
+      <div class="rem-gate">P2-GATE-05</div>
+      <div class="rem-action">Create deploy manifests for <code>platform/grading/</code> and <code>platform/credential/</code> targeting the <code>i3-evalos</code> namespace. Apply them and confirm pods reach <code>Running</code> state.</div>
+    </div>
+
+    <div class="rem-item">
+      <div class="rem-gate">P2-GATE-06</div>
+      <div class="rem-action">Deploy Kong (<code>platform/deploy/api-gateway/kong-deploy.yaml</code>) to create the <code>i3-gateway</code> namespace and pods. Apply <code>kong-routes.yaml</code>. Verify the JWT plugin is active on the <code>admissions-route</code>. Confirm <code>curl https://api.i3technologies.co.ke/admissions/chat</code> returns HTTP 401.</div>
+    </div>
+
+    <div class="rem-item">
+      <div class="rem-gate">P2-GATE-08 / P2-GATE-09 / P2-GATE-10</div>
+      <div class="rem-action">Trigger a full Tekton pipeline run and retain the PipelineRun artefact. Confirm RAGAS pytest passes. Add a Locust load test with Phase 1 baseline p95 stored as a ConfigMap. Confirm Trivy + TruffleHog steps report zero Critical/High findings. Add <code>.gitleaks.toml</code> to repo root.</div>
+    </div>
+
+  </div>
+
+  <div class="footer">Made with IBM Bob</div>
+</div>
+</body>
+</html>

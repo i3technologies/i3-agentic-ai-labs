@@ -9,66 +9,86 @@ data:
   config.yaml: |
     model_list:
 
-      # ── Fast / Edge ─────────────────────────────────────────
+      # ── Tier 3: Fast / Edge (always warm, sub-5s) ────────────
       - model_name: granite-nano
         litellm_params:
           model: ollama/granite3.1-dense:2b
           api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
-          timeout: 30
+          # 60s gives cold-load headroom even if granite-nano was briefly unloaded
+          timeout: 60
           max_tokens: 2048
 
       - model_name: embed
         litellm_params:
-          model: ollama/nomic-embed-text:latest
+          # Pinned to v1.5 — must match the pull tag in vllm-deploy.yaml
+          model: ollama/nomic-embed-text:v1.5
           api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
           timeout: 15
 
-      # ── Interactive Chat ─────────────────────────────────────
+      # ── Tier 2: RAG / Interactive Chat (10–45s on CPU) ───────
       - model_name: qwen-fast
         litellm_params:
           model: ollama/qwen2.5:7b-instruct-q4_K_M
           api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
-          timeout: 90
+          # 300s: matches global request_timeout; covers cold-load (~60s) +
+          # worst-case CPU inference (~200s) on a loaded bx2.4x16 node.
+          # Previous 180s was too tight and triggered the fallback chain.
+          timeout: 300
           max_tokens: 4096
 
       - model_name: coder
         litellm_params:
           model: ollama/qwen2.5-coder:7b-instruct-q4_K_M
           api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
-          timeout: 90
+          timeout: 300
           max_tokens: 4096
 
-      # ── Heavy Reasoning ──────────────────────────────────────
+      # ── Tier 1: Heavy Reasoning (30–120s on CPU) ─────────────
       - model_name: qwen-heavy
         litellm_params:
           model: ollama/qwen2.5:14b-instruct-q4_K_M
           api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
-          timeout: 180
+          timeout: 240
           max_tokens: 8192
 
       - model_name: vision
         litellm_params:
-          model: ollama/llava:13b
+          # Pinned tag — must match pull tag in vllm-deploy.yaml
+          model: ollama/llava:13b-v1.6-mistral-q4
           api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
-          timeout: 180
+          timeout: 240
           max_tokens: 2048
 
     # ── Router: fallback chain ─────────────────────────────────
     router_settings:
       routing_strategy: least-busy
       num_retries: 2
-      retry_after: 1
+      retry_after: 5
       fallbacks:
+        # qwen-heavy times out → fall back to qwen-fast
         - qwen-heavy:
             - qwen-fast
+        # qwen-fast times out → fall back to granite-nano
+        # granite-nano is Tier 3 and must always be warm — it is the terminal fallback
         - qwen-fast:
             - granite-nano
         - coder:
             - qwen-fast
         - vision:
             - qwen-heavy
+      # Do NOT add a fallback for granite-nano — it is the terminal fallback.
+      # Adding one would create a circular chain and the router would loop.
       allowed_fails: 3
       cooldown_time: 30
+
+    # ── Redis Semantic Cache (STEP-P3-01) ───────────────────────
+    cache:
+      type: redis
+      host: redis.i3-data.svc.cluster.local
+      port: 6379
+      password: ${REDIS_PASSWORD}
+      ttl: 3600
+      similarity_threshold: 0.95
 
     # ── General settings ────────────────────────────────────────
     general_settings:
@@ -76,6 +96,8 @@ data:
       # database_url intentionally omitted — config-file-only mode.
       # Prisma advisory-lock timeout was preventing model registration at startup.
       store_model_in_db: false
+      # Per-tenant virtual key budget enforcement via Agent Registry API.
+      # Virtual keys: { max_budget: 10.0, budget_duration: "1d" } per tenant_id.
 
     # ── Observability ────────────────────────────────────────────
     litellm_settings:
@@ -84,8 +106,10 @@ data:
       service_callback: ["prometheus"]
       langfuse_public_key: "os.environ/LANGFUSE_PUBLIC_KEY"
       langfuse_secret_key: "os.environ/LANGFUSE_SECRET_KEY"
-      langfuse_host: "http://langfuse.i3-ott.svc.cluster.local:3000"
+      langfuse_host: "http://langfuse.i3-model-gateway.svc.cluster.local:3000"
       set_verbose: false
       json_logs: true
-      request_timeout: 180
+      # Must be >= the largest per-model timeout (240s) to avoid LiteLLM
+      # cancelling the request before Ollama finishes on CPU.
+      request_timeout: 300
       drop_params: true

@@ -11,10 +11,14 @@ const LITELLM_URL   = process.env.LITELLM_URL   ?? ''
 const LITELLM_KEY   = process.env.LITELLM_KEY   ?? ''
 const AGENT_URL     = process.env.AGENT_URL     ?? 'http://campaign-agent.i3-pmaas.svc.cluster.local:8080'
 
-async function getContextData() {
+async function getContextData(tenantId: string) {
   const results: Record<string, unknown> = {}
+  const client = await pool.connect()
   try {
-    const { rows: wardRows } = await pool.query(`
+    // HC-4: set RLS session variable before any tenant-scoped query
+    await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
+
+    const { rows: wardRows } = await client.query(`
       SELECT w.name, wt.priority, wt.registered_voters, wt.target_votes,
              COALESCE(wt.sentiment_score, 50) AS sentiment_score
       FROM ward_targets wt
@@ -25,7 +29,7 @@ async function getContextData() {
     `)
     results.topWards = wardRows
 
-    const { rows: activityRows } = await pool.query(`
+    const { rows: activityRows } = await client.query(`
       SELECT type, description, created_at
       FROM campaign_activity
       ORDER BY created_at DESC
@@ -33,7 +37,7 @@ async function getContextData() {
     `)
     results.recentActivity = activityRows
 
-    const { rows: statsRows } = await pool.query(`
+    const { rows: statsRows } = await client.query(`
       SELECT
         (SELECT COUNT(*) FROM voters)::int                               AS total_voters,
         (SELECT COUNT(*) FROM campaigns WHERE status='active')::int      AS active_campaigns,
@@ -42,6 +46,8 @@ async function getContextData() {
     results.stats = statsRows[0]
   } catch {
     results.error = 'Could not fetch context data'
+  } finally {
+    client.release()
   }
   return results
 }
@@ -84,8 +90,9 @@ Keep the tone strategic, direct, and action-oriented. Total length: 600–800 wo
 export async function POST() {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000001'
 
-  const context  = await getContextData()
+  const context  = await getContextData(tenantId)
   const today    = new Date().toLocaleDateString('en-KE', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   })
@@ -120,8 +127,10 @@ export async function POST() {
     const litellmResp = await fetch(`${LITELLM_URL}/chat/completions`, {
       method: 'POST',
       headers: {
-        'Content-Type':  'application/json',
-        'Authorization': `Bearer ${LITELLM_KEY}`,
+        'Content-Type':           'application/json',
+        'Authorization':          `Bearer ${LITELLM_KEY}`,
+        'x-litellm-max-tokens':   '1200',
+        'x-litellm-metadata':     JSON.stringify({ tenant_id: tenantId, agent_id: 'pmaas-briefing-route' }),
       },
       body: JSON.stringify({
         model:       'qwen-heavy',
@@ -181,13 +190,19 @@ export async function POST() {
     latencyMs: end.getTime() - start.getTime(),
   })
 
-  // Persist briefing for audit
+  // Persist briefing for audit (HC-4: scoped to tenant via SET LOCAL)
   try {
-    await pool.query(
-      `INSERT INTO campaign_activity (type, description, created_at)
-       VALUES ($1, $2, NOW())`,
-      ['ai_briefing', `AI briefing generated (${modelUsed})`]
-    )
+    const auditClient = await pool.connect()
+    try {
+      await auditClient.query('SET LOCAL app.tenant_id = $1', [tenantId])
+      await auditClient.query(
+        `INSERT INTO campaign_activity (type, description, tenant_id, created_at)
+         VALUES ($1, $2, $3, NOW())`,
+        ['ai_briefing', `AI briefing generated (${modelUsed})`, tenantId]
+      )
+    } finally {
+      auditClient.release()
+    }
   } catch { /* non-critical */ }
 
   return NextResponse.json({

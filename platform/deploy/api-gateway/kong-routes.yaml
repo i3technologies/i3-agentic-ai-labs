@@ -1,0 +1,397 @@
+# ============================================================
+# STEP-P2-07 — Kong Declarative Route Configuration
+# Applied as ConfigMap, mounted at /kong/kong.yaml inside the Kong pod.
+#
+# Plugins per route:
+#   jwt          — Keycloak JWKS RS256 validation (all external routes)
+#   rate-limiting — 100 RPM standard, 10 RPM for LLM/AI endpoints (Redis-backed)
+#   cors         — Explicit allow-list replaces the removed allow_origins=["*"]
+#
+# Apply: kubectl apply -f platform/deploy/api-gateway/kong-routes.yaml
+# ============================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-routes
+  namespace: i3-gateway
+  labels:
+    app: kong
+    app.kubernetes.io/part-of: i3-platform
+data:
+  kong.yaml: |
+    _format_version: "3.0"
+    _transform: true
+
+    # ── Consumers are provisioned per-tenant via Kong Admin API at deploy time.
+    # ── JWKS key sets are fetched from Keycloak; consumer credentials reference kid.
+
+    # ─────────────────────────────────────────────────────────────────────────────
+    # SERVICES — upstream cluster-internal DNS
+    # ─────────────────────────────────────────────────────────────────────────────
+    services:
+      - name: engage-web
+        url: http://engage-web.i3-engage.svc.cluster.local:3000
+        connect_timeout: 5000
+        read_timeout: 30000
+        write_timeout: 30000
+
+      - name: evalos-web
+        url: http://evalos-web.i3-evalos.svc.cluster.local:3000
+        connect_timeout: 5000
+        read_timeout: 60000
+        write_timeout: 60000
+
+      - name: admissions-agent
+        url: http://admissions-agent.i3-admissions.svc.cluster.local:8000
+        connect_timeout: 5000
+        read_timeout: 120000
+        write_timeout: 120000
+
+      - name: pmaas-agent
+        url: http://pmaas-agent.i3-pmaas.svc.cluster.local:8000
+        connect_timeout: 5000
+        read_timeout: 120000
+        write_timeout: 120000
+
+      - name: onboarding-agent
+        url: http://onboarding-agent.i3-admissions.svc.cluster.local:3000
+        connect_timeout: 5000
+        read_timeout: 60000
+        write_timeout: 60000
+
+      - name: tts-service
+        url: http://tts-service.i3-voice.svc.cluster.local:8000
+        connect_timeout: 5000
+        read_timeout: 30000
+        write_timeout: 30000
+
+    # ─────────────────────────────────────────────────────────────────────────────
+    # ROUTES — external path prefixes
+    # ─────────────────────────────────────────────────────────────────────────────
+    routes:
+      # ── Engage (standard RPM) ────────────────────────────────────────────────
+      - name: engage-route
+        service: engage-web
+        paths:
+          - /engage
+        strip_path: true
+        protocols:
+          - https
+
+      # ── EvalOS (standard RPM) ────────────────────────────────────────────────
+      - name: evalos-route
+        service: evalos-web
+        paths:
+          - /evalos
+        strip_path: true
+        protocols:
+          - https
+
+      # ── Admissions (LLM RPM — AI inference endpoint) ─────────────────────────
+      - name: admissions-route
+        service: admissions-agent
+        paths:
+          - /admissions
+        strip_path: true
+        protocols:
+          - https
+
+      # ── PMaaS / Campaign Agent (LLM RPM) ─────────────────────────────────────
+      - name: pmaas-route
+        service: pmaas-agent
+        paths:
+          - /pmaas
+        strip_path: true
+        protocols:
+          - https
+
+      # ── Onboarding Agent (standard RPM) ─────────────────────────────────────
+      - name: onboarding-route
+        service: onboarding-agent
+        paths:
+          - /onboarding
+        strip_path: true
+        protocols:
+          - https
+
+      # ── Voice TTS (LLM RPM — AI inference endpoint) ──────────────────────────
+      - name: voice-route
+        service: tts-service
+        paths:
+          - /voice
+        strip_path: true
+        protocols:
+          - https
+
+    # ─────────────────────────────────────────────────────────────────────────────
+    # PLUGINS — attached at the route level
+    # ─────────────────────────────────────────────────────────────────────────────
+    plugins:
+
+      # ── JWT validation — ALL external routes ─────────────────────────────────
+      # Validates RS256 Bearer tokens issued by Keycloak realm i3.
+      # JWKS endpoint: http://keycloak.i3-auth.svc.cluster.local:8080/realms/i3/protocol/openid-connect/certs
+      - name: jwt
+        route: engage-route
+        config:
+          key_claim_name: kid
+          secret_is_base64: false
+          uri_param_names: []
+          cookie_names: []
+          claims_to_verify:
+            - exp
+          header_names:
+            - authorization
+
+      - name: jwt
+        route: evalos-route
+        config:
+          key_claim_name: kid
+          secret_is_base64: false
+          uri_param_names: []
+          cookie_names: []
+          claims_to_verify:
+            - exp
+          header_names:
+            - authorization
+
+      - name: jwt
+        route: admissions-route
+        config:
+          key_claim_name: kid
+          secret_is_base64: false
+          uri_param_names: []
+          cookie_names: []
+          claims_to_verify:
+            - exp
+          header_names:
+            - authorization
+
+      - name: jwt
+        route: pmaas-route
+        config:
+          key_claim_name: kid
+          secret_is_base64: false
+          uri_param_names: []
+          cookie_names: []
+          claims_to_verify:
+            - exp
+          header_names:
+            - authorization
+
+      - name: jwt
+        route: onboarding-route
+        config:
+          key_claim_name: kid
+          secret_is_base64: false
+          uri_param_names: []
+          cookie_names: []
+          claims_to_verify:
+            - exp
+          header_names:
+            - authorization
+
+      - name: jwt
+        route: voice-route
+        config:
+          key_claim_name: kid
+          secret_is_base64: false
+          uri_param_names: []
+          cookie_names: []
+          claims_to_verify:
+            - exp
+          header_names:
+            - authorization
+
+      # ── Rate limiting — standard routes (100 RPM, Redis-backed) ──────────────
+      - name: rate-limiting
+        route: engage-route
+        config:
+          minute: 100
+          policy: redis
+          redis_host: redis.i3-data.svc.cluster.local
+          redis_port: 6379
+          redis_database: 2
+          fault_tolerant: false
+          hide_client_headers: false
+
+      - name: rate-limiting
+        route: evalos-route
+        config:
+          minute: 100
+          policy: redis
+          redis_host: redis.i3-data.svc.cluster.local
+          redis_port: 6379
+          redis_database: 2
+          fault_tolerant: false
+          hide_client_headers: false
+
+      - name: rate-limiting
+        route: onboarding-route
+        config:
+          minute: 100
+          policy: redis
+          redis_host: redis.i3-data.svc.cluster.local
+          redis_port: 6379
+          redis_database: 2
+          fault_tolerant: false
+          hide_client_headers: false
+
+      # ── Rate limiting — LLM/AI routes (10 RPM, Redis-backed) ─────────────────
+      - name: rate-limiting
+        route: admissions-route
+        config:
+          minute: 10
+          policy: redis
+          redis_host: redis.i3-data.svc.cluster.local
+          redis_port: 6379
+          redis_database: 2
+          fault_tolerant: false
+          hide_client_headers: false
+
+      - name: rate-limiting
+        route: pmaas-route
+        config:
+          minute: 10
+          policy: redis
+          redis_host: redis.i3-data.svc.cluster.local
+          redis_port: 6379
+          redis_database: 2
+          fault_tolerant: false
+          hide_client_headers: false
+
+      - name: rate-limiting
+        route: voice-route
+        config:
+          minute: 10
+          policy: redis
+          redis_host: redis.i3-data.svc.cluster.local
+          redis_port: 6379
+          redis_database: 2
+          fault_tolerant: false
+          hide_client_headers: false
+
+      # ── CORS — explicit allow-list (replaces the removed allow_origins=["*"]) ─
+      # Upstream services no longer carry their own CORS headers.
+      - name: cors
+        route: engage-route
+        config:
+          origins:
+            - https://engage.i3technologies.co.ke
+            - https://app.i3technologies.co.ke
+          methods:
+            - GET
+            - POST
+            - PUT
+            - DELETE
+            - OPTIONS
+          headers:
+            - Authorization
+            - Content-Type
+            - Accept
+          exposed_headers:
+            - X-Request-Id
+          max_age: 3600
+          credentials: true
+          preflight_continue: false
+
+      - name: cors
+        route: evalos-route
+        config:
+          origins:
+            - https://evalos.i3technologies.co.ke
+            - https://app.i3technologies.co.ke
+          methods:
+            - GET
+            - POST
+            - OPTIONS
+          headers:
+            - Authorization
+            - Content-Type
+            - Accept
+          exposed_headers:
+            - X-Request-Id
+          max_age: 3600
+          credentials: true
+          preflight_continue: false
+
+      - name: cors
+        route: admissions-route
+        config:
+          origins:
+            - https://admissions.i3technologies.co.ke
+            - https://app.i3technologies.co.ke
+          methods:
+            - GET
+            - POST
+            - OPTIONS
+          headers:
+            - Authorization
+            - Content-Type
+            - Accept
+          exposed_headers:
+            - X-Request-Id
+          max_age: 3600
+          credentials: true
+          preflight_continue: false
+
+      - name: cors
+        route: pmaas-route
+        config:
+          origins:
+            - https://pmaas.i3technologies.co.ke
+            - https://app.i3technologies.co.ke
+          methods:
+            - GET
+            - POST
+            - OPTIONS
+          headers:
+            - Authorization
+            - Content-Type
+            - Accept
+          exposed_headers:
+            - X-Request-Id
+          max_age: 3600
+          credentials: true
+          preflight_continue: false
+
+      - name: cors
+        route: onboarding-route
+        config:
+          origins:
+            - https://admissions.i3technologies.co.ke
+            - https://app.i3technologies.co.ke
+          methods:
+            - GET
+            - POST
+            - OPTIONS
+          headers:
+            - Authorization
+            - Content-Type
+            - Accept
+          exposed_headers:
+            - X-Request-Id
+          max_age: 3600
+          credentials: true
+          preflight_continue: false
+
+      - name: cors
+        route: voice-route
+        config:
+          origins:
+            - https://app.i3technologies.co.ke
+            - https://evalos.i3technologies.co.ke
+          methods:
+            - GET
+            - POST
+            - OPTIONS
+          headers:
+            - Authorization
+            - Content-Type
+            - Accept
+          exposed_headers:
+            - X-Request-Id
+          max_age: 3600
+          credentials: true
+          preflight_continue: false

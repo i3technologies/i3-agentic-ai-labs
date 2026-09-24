@@ -1,0 +1,614 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Platform Security Gate — Phase 2 Exit Go/No-Go</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1f2328;
+    background: #ffffff;
+    padding: 32px 16px 48px;
+  }
+  .page { max-width: 760px; margin: 0 auto; }
+
+  .memo-header { border-bottom: 2px solid #1f2328; padding-bottom: 16px; margin-bottom: 24px; }
+  .memo-header h1 { font-size: 20px; font-weight: 700; }
+  .meta-grid { display: grid; grid-template-columns: 130px 1fr; gap: 4px 12px; margin-top: 12px; font-size: 13px; }
+  .label { color: #57606a; font-weight: 600; }
+
+  .verdict { padding: 14px 20px; border-radius: 4px; margin: 20px 0; font-weight: 700; font-size: 18px; text-align: center; letter-spacing: 0.5px; }
+  .verdict.nogo { background: #fef2f2; border: 2px solid #dc2626; color: #dc2626; }
+  .verdict.go   { background: #f0fdf4; border: 2px solid #16a34a; color: #16a34a; }
+
+  h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #57606a; border-top: 1px solid #e5e7eb; padding-top: 18px; margin-top: 24px; margin-bottom: 12px; }
+  h3 { font-size: 14px; font-weight: 600; margin: 14px 0 6px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 6px; }
+  th { text-align: left; padding: 7px 10px; background: #f7f8fa; border-bottom: 2px solid #e5e7eb; font-weight: 600; color: #57606a; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; }
+  td { padding: 7px 10px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .pass  { color: #16a34a; font-weight: 700; }
+  .fail  { color: #dc2626; font-weight: 700; }
+  .warn  { color: #d97706; font-weight: 700; }
+  .na    { color: #57606a; }
+
+  .finding { border-left: 3px solid #dc2626; background: #fef2f2; padding: 10px 14px; margin: 10px 0; border-radius: 0 4px 4px 0; }
+  .finding.warn { border-left-color: #d97706; background: #fffbeb; }
+  .finding .fid { font-weight: 700; font-size: 12px; color: #dc2626; margin-bottom: 4px; }
+  .finding.warn .fid { color: #d97706; }
+  .finding p { margin-top: 4px; font-size: 13px; }
+
+  code { font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 3px; padding: 1px 5px; }
+  pre { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 4px; padding: 10px 14px; font-size: 12px; overflow-x: auto; margin: 8px 0; }
+
+  .action-list { margin: 0; padding-left: 0; list-style: none; }
+  .action-list li { padding: 7px 0; border-bottom: 1px solid #e5e7eb; font-size: 13px; display: flex; gap: 10px; }
+  .action-list li:last-child { border-bottom: none; }
+  .action-num { background: #1f2328; color: #fff; font-size: 11px; font-weight: 700; border-radius: 10px; min-width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .blocker { background: #dc2626; }
+  .nonblocker { background: #d97706; }
+
+  .sec-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; margin-right: 4px; }
+  .sec-open { background: #fef2f2; color: #dc2626; border: 1px solid #dc2626; }
+  .sec-closed { background: #f0fdf4; color: #16a34a; border: 1px solid #16a34a; }
+  .sec-partial { background: #fffbeb; color: #d97706; border: 1px solid #d97706; }
+
+  .sig-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 16px; }
+  .sig-box { border: 1px solid #e5e7eb; border-radius: 4px; padding: 12px; font-size: 12px; }
+  .sig-box .role { color: #57606a; margin-bottom: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .sig-box .decision-nogo { color: #dc2626; font-weight: 700; font-size: 13px; }
+
+  .footnote { font-size: 11px; color: #57606a; margin-top: 8px; }
+  .footer { border-top: 1px solid #e5e7eb; margin-top: 40px; padding-top: 12px; text-align: center; font-size: 11px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  
+  <div class="memo-header">
+    <h1>Platform Security Gate — Phase 2 Exit Go/No-Go Memo</h1>
+    <div class="meta-grid">
+      <span class="label">Document</span><span>VER-07 / Platform Security Gate</span>
+      <span class="label">Review Date</span><span>2026-10-01 (date of assessment)</span>
+      <span class="label">Scope</span><span>All 9 EXPLORE-GATE SEC findings · Agent Registry 6/6 manifests · ChromaDB per-tenant isolation</span>
+      <span class="label">Reviewer</span><span>Bob — i3 Platform Engineering Agent (L0)</span>
+      <span class="label">Addressee</span><span>CEO · Security Lead · Platform Engineering Lead · AI Safety Lead</span>
+    </div>
+  </div>
+
+  
+  <div class="verdict nogo">🚫   NO-GO  —  4 BLOCKING FINDINGS · 3 OPEN SEC FINDINGS</div>
+
+  <p style="font-size:13px;color:#57606a">
+    The Phase 2 Security Gate cannot be closed. All evidence is sourced from committed code, ADR
+    documents, and deployment manifests. No runtime cluster access was used. The nine EXPLORE-GATE
+    SEC findings have been reconstructed from ADR references, deployment YAMLs, and source-code
+    inspection. 3 remain open or only partially resolved.
+  </p>
+
+  
+  <h2>SEC Findings Register — All 9</h2>
+  <p style="font-size:12px;color:#57606a;margin-bottom:10px">
+    SEC findings were documented across ADR-003, ADR-005, ADR-007, and the dependency map.
+    The table below reconstructs the canonical register with evidence-based status.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Finding</th>
+        <th>Severity</th>
+        <th>Description</th>
+        <th>Evidence / Status</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>SEC-01</strong></td>
+        <td>⚫ Critical</td>
+        <td>DEV_BYPASS_AUTH=true active code path in Onboarding Agent (HC-7)</td>
+        <td><code>keycloak-auth.ts</code> header comment: <em>"DEV_BYPASS_AUTH is permanently removed. JWT validation is mandatory."</em> No bypass pattern found in grep.</td>
+        <td class="pass">✅ CLOSED</td>
+      </tr>
+      <tr>
+        <td><strong>SEC-02</strong></td>
+        <td>⚫ Critical</td>
+        <td>Plaintext DB password in <code>pmaas_setup.sql</code> (HC-7)</td>
+        <td>Cannot verify git history from static analysis alone. File not present in current workspace root. Risk: if ever committed, password value is in git log. Requires <code>git log --all -- pmaas_setup.sql</code> runtime verification. Workspace inventory marks EXP-03b as unresolved.</td>
+        <td class="warn">⚠️ UNVERIFIED</td>
+      </tr>
+      <tr>
+        <td><strong>SEC-03</strong></td>
+        <td>🔴 High</td>
+        <td>VOICE_API_KEY hardcoded literal in pmaas-deploy.yaml (HC-7)</td>
+        <td><code>pmaas-deploy.yaml:61</code> comment: <em>"VOICE_API_KEY removed — inject via OpenBao agent sidecar. OpenBao path: i3/voice/api-key → VOICE_API_KEY"</em>. Literal value removed; sidecar injection comment present. No runtime pod confirmation.</td>
+        <td class="pass">✅ CLOSED (source)</td>
+      </tr>
+      <tr>
+        <td><strong>SEC-04</strong></td>
+        <td>🔴 High</td>
+        <td>7 REPLACE_FROM_VAULT placeholders in admissions-secrets (HC-7)</td>
+        <td><code>admissions-deploy.yaml:219</code>: <em>"REPLACE_FROM_VAULT placeholders removed; sidecar renders env vars at runtime."</em> Full OpenBao injection template present for all 7 variables. <code>stringData</code> intentionally empty.</td>
+        <td class="pass">✅ CLOSED (source)</td>
+      </tr>
+      <tr>
+        <td><strong>SEC-05</strong></td>
+        <td>🟡 Medium</td>
+        <td>OpenBao initialized but root token not persisted — app secrets in K8s Secrets not OpenBao KV (R-06)</td>
+        <td>ADR-007 (Status: <strong>Proposed</strong>) defines the migration scope for 9 K8s Secret → OpenBao KV v2 migrations. Admissions is done (SEC-04 closed). Others (engage, pmaas, evalos, ford, voice, onboarding, consent, agent-registry) are targets not yet confirmed migrated. ADR not Accepted.</td>
+        <td class="fail">❌ OPEN</td>
+      </tr>
+      <tr>
+        <td><strong>SEC-06</strong></td>
+        <td>🔴 High</td>
+        <td>KEYCLOAK_ISSUER absent from admissions-agent — JWT issuer validation missing</td>
+        <td><code>admissions-deploy.yaml:267</code>: OpenBao sidecar template for KEYCLOAK_ISSUER present. SEC-06 comment in deploy YAML confirms this was the resolution. Admissions agent verifies issuer at startup.</td>
+        <td class="pass">✅ CLOSED (source)</td>
+      </tr>
+      <tr>
+        <td><strong>SEC-07</strong></td>
+        <td>🟡 Medium</td>
+        <td>subject_id_hash falls back to raw email in campaigns/send/route.ts (HC-6)</td>
+        <td><code>campaigns/send/route.ts:300–308</code>: raw-email fallback replaced with hard fail. Code comment: <em>"HC-6 violation: contact was not migrated to HMAC column; skip with error record."</em> ADR-005 (Status: <strong>Proposed</strong>) describes the solution but is not Accepted.</td>
+        <td class="warn">⚠️ PARTIAL</td>
+      </tr>
+      <tr>
+        <td><strong>SEC-08</strong></td>
+        <td>🔴 High</td>
+        <td>chromadb==0.5.7 incompatible with llama-index-vector-stores-chroma==0.1.10; admissions agent crashes on RAG path</td>
+        <td>Admissions agent refactored in STEP-P2-04 to route RAG through MCP Gateway (<code>chroma.search</code> tool) eliminating direct ChromaDB imports. ADR-003 AC-4 requires image rebuilt with chromadb==0.4.24. MCP gateway tool uses <code>chromadb.HttpClient</code>. No version pinning confirmed in gateway requirements.</td>
+        <td class="warn">⚠️ PARTIAL</td>
+      </tr>
+      <tr>
+        <td><strong>SEC-09</strong></td>
+        <td>🔴 High</td>
+        <td>PGPASSWORD literal value in platform/docs/03-databases-storage-guide.html</td>
+        <td><code>platform/docs/03-databases-storage-guide.html:485, 492</code>: value <code>?Z-EfajDpq21=G/5iR21&gt;k8f</code> still present in HTML documentation file. EXP-03d (status: unresolved in dependency map). <strong>Password is still committed in non-gitignored file.</strong></td>
+        <td class="fail">❌ OPEN</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:12px;color:#57606a;margin-top:8px">
+    <strong>Summary:</strong> 5 closed · 2 partial · 2 open. P2-GATE-10 requirement is "Zero new Critical or High
+    security findings vs baseline." SEC-09 (High — literal password) is open and violates this gate.
+    SEC-05 (OpenBao migration incomplete) is a Medium but blocks 8 services from proper secret management.
+  </p>
+
+  
+  <h2>Agent Registry — 6/6 Manifests</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Required Agent (ADR-002)</th>
+        <th>Manifest File</th>
+        <th>autonomy_tier</th>
+        <th>guardrail_policy</th>
+        <th>Schema completeness</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>admissions-agent-v1 (Nuru)</td>
+        <td><code>admissions-agent-v1.yaml</code></td>
+        <td>L1</td>
+        <td>lobster-trap-v1</td>
+        <td>Full schema (allowed_tools, forbidden_tools, prompt_firewall, evaluation_spec, threat_model, approval_matrix, rollback_plan)</td>
+        <td class="pass">✅</td>
+      </tr>
+      <tr>
+        <td>campaign-agent-v1 (Engage)</td>
+        <td><code>campaign-agent-v1.yaml</code></td>
+        <td>L1</td>
+        <td>lobster-trap-v1</td>
+        <td><strong>Minimal schema</strong> (agent_id, autonomy_tier, allowed_tools, forbidden_tools, cost_budget_tokens only). Missing: evaluation_spec, threat_model, approval_matrix, rollback_plan, prompt_firewall section.</td>
+        <td class="warn">⚠️ INCOMPLETE</td>
+      </tr>
+      <tr>
+        <td>onboarding-agent-v1</td>
+        <td><code>onboarding-agent-v1.yaml</code></td>
+        <td>L1</td>
+        <td>lobster-trap-v1</td>
+        <td>Minimal schema — same gaps as campaign-agent-v1. No evaluation_spec, threat_model, approval_matrix, rollback_plan.</td>
+        <td class="warn">⚠️ INCOMPLETE</td>
+      </tr>
+      <tr>
+        <td>evalos-zuri-v1</td>
+        <td><strong>ABSENT</strong></td>
+        <td>—</td>
+        <td>—</td>
+        <td>No manifest file in <code>platform/agent-registry/manifests/</code>. ADR-002 requires this manifest. HC-3 non-compliant.</td>
+        <td class="fail">❌ MISSING</td>
+      </tr>
+      <tr>
+        <td>pmaas-agent-v1 (PMaaS Briefing)</td>
+        <td><code>pmaas-campaign-agent-v1.yaml</code></td>
+        <td>L1</td>
+        <td>lobster-trap-v1</td>
+        <td>Minimal schema. Agent ID is pmaas-campaign-agent-v1 (not pmaas-agent-v1 as specified in ADR-002). ID mismatch may break registry lookup.</td>
+        <td class="warn">⚠️ ID MISMATCH</td>
+      </tr>
+      <tr>
+        <td>ford-election-agent-v1</td>
+        <td><strong>ABSENT</strong></td>
+        <td>—</td>
+        <td>—</td>
+        <td>No manifest file. ADR-002 specifies state=suspended, autonomy_tier=L0. Required for Phase 2 gate.</td>
+        <td class="fail">❌ MISSING</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:12px;color:#57606a;margin-top:6px">
+    Additional manifests present that are <em>not</em> required by ADR-002:
+    afroerp-agent-v1, base-scan-agent-v1, engage-campaign-agent-v1, onboarding-planner-v1,
+    sit-tutor-agent-v1, skills-assessor-agent-v1. These are supplementary and do not substitute
+    for the missing required manifests. P2-GATE-02 sensor command (<code>GET /agents</code>)
+    will return manifests for all registered agents, but the required 6 from ADR-002 are
+    not all present or correctly structured.
+  </p>
+
+  
+  <h2>ChromaDB Per-Tenant Isolation</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Component</th>
+        <th>ADR-003 Requirement</th>
+        <th>Code Evidence</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Admissions Agent → chroma.search</td>
+        <td>Collection name = <code>admissions_{tenant_id}</code>; <code>where={"tenant_id": {"$eq": tenant_id}}</code> filter on every query</td>
+        <td>Admissions agent calls MCP Gateway <code>chroma.search</code> with <code>collection: "admissions-docs"</code> (hard-coded). MCP gateway <code>chroma_search.py:56</code> uses caller-supplied <code>collection</code> parameter — does not derive it from <code>tenant_id</code>. No <code>where</code> filter applied. AC-1 and AC-2 both failing.</td>
+        <td class="fail">❌ NOT IMPLEMENTED</td>
+      </tr>
+      <tr>
+        <td>AI Lab embedding pipeline</td>
+        <td>Collections named <code>ailab_{tenant_id}_{project_slug}</code>; tenant_id in metadata</td>
+        <td><code>embedding_pipeline.py:132,189</code>: collections named <code>i3-exam-corpus</code> and <code>onboarding-docs</code> — flat names, no tenant suffix. No <code>tenant_id</code> in upserted metadata. AC-7 failing.</td>
+        <td class="fail">❌ NOT IMPLEMENTED</td>
+      </tr>
+      <tr>
+        <td>ADR-003 status</td>
+        <td>Must be Accepted before production</td>
+        <td>Status: <strong>Proposed</strong>. Not reviewed or accepted by Deciders.</td>
+        <td class="fail">❌ ADR NOT ACCEPTED</td>
+      </tr>
+      <tr>
+        <td>CHROMA_TENANT_ISOLATION feature flag</td>
+        <td>ADR-003: feature flag gates new collection naming</td>
+        <td>Feature flag not present in any deployment manifest or source file.</td>
+        <td class="fail">❌ NOT PRESENT</td>
+      </tr>
+      <tr>
+        <td>chromadb version</td>
+        <td>SEC-08: must use chromadb==0.4.24 in MCP gateway</td>
+        <td>MCP gateway <code>tools/chroma_search.py</code> imports <code>chromadb</code> but no version pin confirmed in <code>requirements.txt</code>. Admissions agent removed direct chromadb dependency (STEP-P2-04 ✅).</td>
+        <td class="warn">⚠️ UNCONFIRMED PIN</td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h2>Blocking Findings</h2>
+
+  <div class="finding">
+    <div class="fid">BLOCKER-1 · SEC-09 (OPEN) · PGPASSWORD literal in docs HTML file</div>
+    <p>
+      <code>platform/docs/03-databases-storage-guide.html</code> lines 485 and 492 contain
+      the literal PostgreSQL password <code>?Z-EfajDpq21=G/5iR21&gt;k8f</code>. This is a
+      non-gitignored tracked file. The password is in the git history regardless of whether
+      the underlying DB credential has been rotated. P2-GATE-10 requires zero new
+      Critical or High security findings.
+    </p>
+    <p><strong>Resolution:</strong> (1) Rotate the i3admin PostgreSQL password immediately.
+    (2) Replace the literal with <code>&lt;REDACTED — use OpenBao i3/postgres/admin-password&gt;</code>
+    in the HTML file. (3) Run <code>git log --all -S "?Z-EfajDpq21" -- platform/docs/03-databases-storage-guide.html</code>
+    to assess history exposure.
+    ETA: ≤ 2 hours.</p>
+  </div>
+
+  <div class="finding">
+    <div class="fid">BLOCKER-2 · ChromaDB — no per-tenant isolation implemented (ADR-003)</div>
+    <p>
+      Both the MCP gateway <code>chroma.search</code> tool and the embedding pipeline use
+      shared, flat collection names (<code>admissions-docs</code>, <code>i3-exam-corpus</code>,
+      <code>onboarding-docs</code>). No tenant-scoped collection name derivation. No
+      <code>where={"tenant_id": …}</code> metadata filter. ADR-003 status is Proposed — not
+      Accepted. This is a Kenya DPA 2019 §25 violation: cross-tenant RAG retrieval is
+      architecturally possible on every similarity search.
+    </p>
+    <p><strong>Resolution:</strong>
+    (1) Update <code>chroma_search.py handle()</code> to derive collection from <code>tenant_id</code>:
+    <code>collection = f"admissions_{tenant_id}"</code> and add <code>where={"tenant_id": {"$eq": tenant_id}}</code>.
+    (2) Update admissions agent to pass collection without hard-coding.
+    (3) Update embedding pipeline to use <code>ailab_{tenant_id}_{project}</code> naming.
+    (4) Accept ADR-003.
+    ETA: ≤ 3 days.</p>
+  </div>
+
+  <div class="finding">
+    <div class="fid">BLOCKER-3 · Agent Registry — 2 required manifests absent; 3 use minimal schema</div>
+    <p>
+      <code>evalos-zuri-v1</code> and <code>ford-election-agent-v1</code> have no manifest files.
+      <code>campaign-agent-v1</code>, <code>onboarding-agent-v1</code>, and <code>pmaas-campaign-agent-v1</code>
+      exist but use a 7-field minimal schema (compared to the 20+ field full schema
+      in <code>admissions-agent-v1.yaml</code>). The MCP gateway enforces agent permissions from
+      the registry; incomplete manifests mean allowed_tools lists are incomplete and HC-3
+      cannot be machine-verified. P2-GATE-02 requires 6 ADR-002-compliant manifests.
+    </p>
+    <p><strong>Resolution:</strong>
+    Author <code>evalos-zuri-v1.yaml</code> (state=suspended until BLOCKER-1 from VER-07 EvalOS memo resolved)
+    and <code>ford-election-agent-v1.yaml</code> (state=suspended, autonomy_tier=L0).
+    Expand the 3 thin manifests to include evaluation_spec, threat_model, approval_matrix, rollback_plan.
+    Accept ADR-002.
+    ETA: ≤ 2 days.</p>
+  </div>
+
+  <div class="finding">
+    <div class="fid">BLOCKER-4 · SEC-05 (OPEN) · OpenBao KV v2 migration not complete for 8 services</div>
+    <p>
+      ADR-007 (Status: Proposed) identifies 9 K8s Secret → OpenBao KV v2 migrations.
+      Only admissions is confirmed migrated (SEC-04 closed, SEC-06 closed). The remaining 8
+      services (engage, pmaas, evalos, ford, voice, onboarding, consent, agent-registry)
+      still use Kubernetes Secrets with no audit log, no rotation TTL, and wide
+      <code>get secret</code> RBAC. On IBM Cloud OpenShift, any service account with namespace
+      access can read plaintext secrets. ADR-007 must be Accepted and the migration executed.
+    </p>
+    <p><strong>Resolution:</strong>
+    Accept ADR-007. Execute migration in priority order: voice-secrets (SEC-03 follow-through),
+    evalos-secrets, onboarding-secrets, engage-secrets, pmaas-secrets, ford-secrets, consent-secrets,
+    agent-registry-secrets. Requires OpenBao agent injector running and KV paths seeded.
+    ETA: ≤ 1 week.</p>
+  </div>
+
+  
+  <h2>Non-Blocking Warnings</h2>
+
+  <div class="finding warn">
+    <div class="fid">WARN-1 · SEC-07 (PARTIAL) · ADR-005 status is Proposed — not Accepted</div>
+    <p>
+      The <code>campaigns/send/route.ts</code> code correctly hard-fails instead of falling back
+      to raw email (the SEC-07 code fix is in place). However ADR-005 remains in Proposed
+      status, meaning the decision has not been formally accepted by the Security Lead and DPO.
+      Until Accepted, the control can be reverted by any PR without a governance escalation.
+    </p>
+  </div>
+
+  <div class="finding warn">
+    <div class="fid">WARN-2 · SEC-02 (UNVERIFIED) · pmaas_setup.sql git history not audited</div>
+    <p>
+      <code>pmaas_setup.sql</code> was identified as containing a plaintext DB password
+      (EXPLORE-GATE §13). EXP-03b was never marked resolved in the dependency map.
+      Even if the file is deleted, the credential may persist in git history.
+      Run: <code>git log --all --oneline -- pmaas_setup.sql</code>; if commits exist,
+      rotate the password and consider BFG repo cleaner for the git history.
+    </p>
+  </div>
+
+  <div class="finding warn">
+    <div class="fid">WARN-3 · NEXTAUTH_SECRET literal in pmaas-deploy.yaml</div>
+    <p>
+      <code>platform/pmaas/pmaas-deploy.yaml:47</code>: <code>NEXTAUTH_SECRET: "5/5acuPp23ZT9+FEP8gnyE2q1HVbD1VLnjIo0TiCHLE="</code>
+      is a literal value in a tracked, non-gitignored file. This is a High severity credential
+      exposure. SEC-05 / ADR-007 migration should rotate and vault this secret before the
+      PMaaS pod restarts.
+    </p>
+  </div>
+
+  <div class="finding warn">
+    <div class="fid">WARN-4 · SEC-08 (PARTIAL) · chromadb version pin not confirmed in MCP gateway requirements.txt</div>
+    <p>
+      ADR-003 AC-4 requires <code>chromadb==0.4.24</code> in the service that calls ChromaDB.
+      The MCP gateway is now the sole ChromaDB caller. Its <code>requirements.txt</code>
+      version pin was not verified. An unpinned requirement will pull the latest chromadb (0.5.x),
+      reintroducing SEC-08.
+    </p>
+  </div>
+
+  <div class="finding warn">
+    <div class="fid">WARN-5 · ADR-006 status Proposed — Lobster Trap not applied to PMaaS + Campaign agents (code is in place)</div>
+    <p>
+      Code-level: <code>campaign_agent.py</code> has <code>guard_input()</code> with 14-pattern
+      Lobster Trap applied to all user-controlled fields. PMaaS briefing endpoint similarly guarded.
+      However ADR-006 remains Proposed. Accept the ADR to formalise the control.
+    </p>
+  </div>
+
+  
+  <h2>What Is Confirmed Passing</h2>
+
+  <table>
+    <thead><tr><th>Item</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>SEC-01 (HC-7 bypass removed)</td>
+        <td><code>keycloak-auth.ts</code> comment + no <code>DEV_BYPASS_AUTH</code> in source. HC-7 closed.</td>
+      </tr>
+      <tr>
+        <td>SEC-03 (VOICE_API_KEY literal)</td>
+        <td><code>pmaas-deploy.yaml:61</code> comment confirms removal + OpenBao path documented.</td>
+      </tr>
+      <tr>
+        <td>SEC-04 (7 REPLACE_FROM_VAULT)</td>
+        <td><code>admissions-deploy.yaml</code> full OpenBao injection templates; <code>stringData</code> empty. Placeholder comment removed.</td>
+      </tr>
+      <tr>
+        <td>SEC-06 (KEYCLOAK_ISSUER)</td>
+        <td>OpenBao sidecar template for KEYCLOAK_ISSUER present in admissions-deploy.yaml.</td>
+      </tr>
+      <tr>
+        <td>SEC-07 code fix (raw email fallback)</td>
+        <td><code>campaigns/send/route.ts:300–308</code>: hard fail on missing subject_id_hash instead of fallback to raw email.</td>
+      </tr>
+      <tr>
+        <td>HC-7 — no DEV_BYPASS_AUTH in any platform file</td>
+        <td>Zero matches across all committed source.</td>
+      </tr>
+      <tr>
+        <td>Admissions direct ChromaDB removed</td>
+        <td>STEP-P2-04 complete: admissions_agent.py routes RAG via MCP Gateway <code>chroma.search</code> tool. No direct <code>chromadb.</code> imports remain.</td>
+      </tr>
+      <tr>
+        <td>Campaign Agent Lobster Trap (code)</td>
+        <td><code>campaign_agent.py</code> has 14-pattern <code>guard_input()</code> applied to prompt, ward_name, key_message, question.</td>
+      </tr>
+      <tr>
+        <td>Agent autonomy ceiling (all existing manifests)</td>
+        <td>All 10 present manifests declare <code>autonomy_tier: L1</code> or lower. HC-3 ceiling respected.</td>
+      </tr>
+      <tr>
+        <td>P2-GATE-11 (admissions deploy vault placeholders)</td>
+        <td><code>grep "REPLACE_FROM_VAULT" platform/admissions/admissions-deploy.yaml</code> → 0 matches.</td>
+      </tr>
+      <tr>
+        <td>P2-GATE-12 (KEYCLOAK_ISSUER non-localhost)</td>
+        <td>KEYCLOAK_ISSUER sourced from OpenBao at <code>i3/data/admissions/keycloak-issuer</code> — not localhost.</td>
+      </tr>
+      <tr>
+        <td>P2-GATE-13 (TODO HMAC in send route)</td>
+        <td><code>grep "TODO.*HMAC" platform/engage/web/src/app/api/campaigns/send/route.ts</code> → 0 matches. Hard-fail implemented.</td>
+      </tr>
+      <tr>
+        <td>Tier 3+ agent approval gates (MCP Gateway)</td>
+        <td>MCP gateway <code>main.py</code> implements risk_tier 3 approval flow with staged tokens. Red-team probe harness <code>redteam_ver03.py</code> covers 16 attack vectors. Tier-0/1/2 tools use auto-approve; Tier 3 requires explicit <code>approval_id</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h2>Required Actions Before Gate Passes</h2>
+  <ul class="action-list">
+    <li>
+      <span class="action-num blocker">1</span>
+      <div>
+        <strong>[BLOCKER] Rotate i3admin PostgreSQL password + redact SEC-09 literal in HTML guide.</strong>
+        Run <code>git log --all -S "?Z-EfajDpq21" -- platform/docs/03-databases-storage-guide.html</code>.
+        Replace literal on lines 485, 492 with <code>&lt;REDACTED — OpenBao i3/postgres/admin&gt;</code>.
+        Rotate the credential. Move to OpenBao KV v2 path.
+        Owner: Security Lead. ETA: ≤ 2 hours.
+      </div>
+    </li>
+    <li>
+      <span class="action-num blocker">2</span>
+      <div>
+        <strong>[BLOCKER] Implement ChromaDB per-tenant collection isolation (ADR-003).</strong>
+        Update <code>chroma_search.py handle()</code> to derive collection from <code>tenant_id</code>
+        parameter. Add <code>where</code> metadata filter. Update embedding pipeline to use
+        <code>ailab_{tenant_id}_{project}</code> collection naming. Pin <code>chromadb==0.4.24</code>
+        in MCP gateway <code>requirements.txt</code>. Accept ADR-003.
+        Owner: Platform Engineering. ETA: ≤ 3 days.
+      </div>
+    </li>
+    <li>
+      <span class="action-num blocker">3</span>
+      <div>
+        <strong>[BLOCKER] Complete Agent Registry — add evalos-zuri-v1 and ford-election-agent-v1 manifests; expand 3 thin manifests.</strong>
+        Author <code>evalos-zuri-v1.yaml</code> (autonomy_tier: L1, state: suspended) and
+        <code>ford-election-agent-v1.yaml</code> (autonomy_tier: L0, state: suspended) using the
+        full schema from <code>admissions-agent-v1.yaml</code>. Expand campaign-agent-v1,
+        onboarding-agent-v1, pmaas-campaign-agent-v1 to include evaluation_spec, threat_model,
+        approval_matrix, rollback_plan. Accept ADR-002.
+        Owner: AI Safety Lead. ETA: ≤ 2 days.
+      </div>
+    </li>
+    <li>
+      <span class="action-num blocker">4</span>
+      <div>
+        <strong>[BLOCKER] Execute OpenBao KV v2 migration for 8 remaining services (ADR-007).</strong>
+        Priority: voice-secrets, evalos-secrets (NEXTAUTH_SECRET literal in pmaas-deploy), onboarding-secrets,
+        engage-secrets, pmaas-secrets, ford-secrets, consent-secrets, agent-registry-secrets.
+        Accept ADR-007 before work begins.
+        Owner: Platform SRE. ETA: ≤ 1 week.
+      </div>
+    </li>
+    <li>
+      <span class="action-num nonblocker">5</span>
+      <div>
+        <strong>[WARN] Verify pmaas_setup.sql git history (SEC-02 / EXP-03b).</strong>
+        Run: <code>git log --all --oneline -- pmaas_setup.sql</code>. If any commits found,
+        rotate password and use BFG repo cleaner or git-filter-repo to scrub history.
+        Owner: Security Lead. ETA: ≤ 0.5 days.
+      </div>
+    </li>
+    <li>
+      <span class="action-num nonblocker">6</span>
+      <div>
+        <strong>[WARN] Accept ADR-005 and ADR-006</strong> to formalise the HMAC enforcement
+        and Lobster Trap controls that are already implemented in code. ADR in Proposed
+        status means any PR can revert the control without a governance escalation.
+        Owner: Security Lead + DPO + AI Safety Lead. ETA: ≤ 0.5 days.
+      </div>
+    </li>
+    <li>
+      <span class="action-num nonblocker">7</span>
+      <div>
+        <strong>[WARN] Fix pmaas-agent ADR-002 agent_id mismatch.</strong>
+        ADR-002 specifies <code>pmaas-agent-v1</code>; manifest file uses
+        <code>pmaas-campaign-agent-v1</code>. Rename or update to match canonical ID
+        so MCP gateway registry lookup is consistent.
+        Owner: Platform Engineering. ETA: ≤ 1 hour.
+      </div>
+    </li>
+  </ul>
+
+  
+  <h2>P2-Gate Sensor Quick Reference</h2>
+  <pre>
+P2-GATE-02  GET /agents → [expect 6 manifests matching ADR-002]          ❌ MISSING 2
+P2-GATE-10  grep "REPLACE_FROM_VAULT" platform/admissions/admissions-deploy.yaml → 0  ✅
+P2-GATE-11  Verify SEC-09 literal removed from 03-databases-storage-guide.html    ❌ OPEN
+P2-GATE-12  KEYCLOAK_ISSUER non-localhost in admissions-deploy.yaml               ✅
+P2-GATE-13  TODO HMAC in campaigns/send/route.ts → 0 matches                      ✅
+
+Additional sensors required for Security Gate:
+CHROMA-AC1  admissions_agent.py: collection uses tenant_id param (not "admissions-docs")  ❌
+CHROMA-AC2  chroma_search.py: where filter applied on every query                          ❌
+ADR-STATUS  ADR-002, ADR-003, ADR-005, ADR-006, ADR-007 all Status: Accepted              ❌ ALL PROPOSED
+SEC-02-HIST git log --all -S "pmaas_password" -- pmaas_setup.sql → 0 commits              UNVERIFIED</pre>
+
+  
+  <h2>Decision Sign-Off</h2>
+  <div class="sig-grid">
+    <div class="sig-box">
+      <div class="role">CEO</div>
+      <div class="name">Decision</div>
+      <div class="decision-nogo">NO-GO</div>
+      <div style="margin-top:6px;font-size:11px;color:#57606a">Pending BLOCKER-1 through BLOCKER-4 closure</div>
+    </div>
+    <div class="sig-box">
+      <div class="role">Security Lead</div>
+      <div class="name">Owns</div>
+      <div style="margin-top:6px;font-size:11px;color:#57606a">BLOCKER-1 (SEC-09 rotation), BLOCKER-4 (OpenBao migration), WARN-2 (git history audit)</div>
+    </div>
+    <div class="sig-box">
+      <div class="role">Platform Engineering Lead</div>
+      <div class="name">Owns</div>
+      <div style="margin-top:6px;font-size:11px;color:#57606a">BLOCKER-2 (ChromaDB isolation), BLOCKER-3 (manifests), BLOCKER-4 (SRE tasks)</div>
+    </div>
+  </div>
+  <p class="footnote" style="margin-top:12px">
+    Review methodology: static code analysis of committed source only (branch main, assessed 2026-10-01).
+    No cluster runtime state accessed. SEC findings reconstructed from ADR documents, deployment YAMLs,
+    and application source. Runtime verification (pod health, OpenBao seal status, actual K8s Secret contents)
+    must be performed by Platform Ops before any VER-07c re-review sign-off.
+  </p>
+
+  <div class="footer">Made with IBM Bob</div>
+</div>
+</body>
+</html>

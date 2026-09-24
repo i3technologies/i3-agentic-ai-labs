@@ -1,0 +1,326 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 Platform — Operator Requirements</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.6;color:#1f2328;background:#fff}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 24px}
+  h1{font-size:24px;font-weight:700;margin-bottom:4px}
+  h2{font-size:16px;font-weight:600;color:#3b82d4;margin:28px 0 10px;padding-bottom:4px;border-bottom:2px solid #e5e7eb}
+  h3{font-size:14px;font-weight:600;margin:14px 0 5px}
+  p{margin-bottom:10px}
+  ul{margin:0 0 10px 20px}
+  li{margin-bottom:4px}
+  a{color:#3b82d4;text-decoration:none}
+  .cover{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:18px 22px;margin-bottom:24px}
+  table{width:100%;border-collapse:collapse;margin:10px 0 18px;font-size:13px}
+  th{background:#f7f8fa;text-align:left;padding:8px 10px;border:1px solid #e5e7eb;font-weight:600}
+  td{padding:8px 10px;border:1px solid #e5e7eb;vertical-align:top}
+  tr:nth-child(even) td{background:#fafafa}
+  .tag{display:inline-block;background:#e5e7eb;color:#57606a;font-size:11px;padding:1px 6px;border-radius:3px;font-family:monospace;white-space:nowrap}
+  .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;white-space:nowrap}
+  .critical{background:#fee2e2;color:#991b1b}
+  .high{background:#fef3c7;color:#92400e}
+  .medium{background:#dbeafe;color:#1e40af}
+  .done{background:#dcfce7;color:#166534}
+  .note{background:#eff6ff;border-left:4px solid #3b82d4;padding:10px 14px;margin:12px 0;font-size:13px;border-radius:0 4px 4px 0}
+  .warn{background:#fff7ed;border-left:4px solid #ea580c;padding:10px 14px;margin:12px 0;font-size:13px;border-radius:0 4px 4px 0}
+  .note strong,.warn strong{display:block;margin-bottom:3px}
+  .section-intro{color:#57606a;margin-bottom:10px;font-size:13px}
+  .footer{text-align:center;font-size:12px;color:#57606a;margin-top:40px;padding-top:16px;border-top:1px solid #e5e7eb}
+  .how{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:4px;padding:10px 14px;margin:6px 0;font-size:13px}
+  .how strong{display:block;margin-bottom:3px;color:#1f2328}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="cover">
+    <h1>i3 Platform — Operator Requirements</h1>
+    <p style="margin-top:6px;color:#57606a">External API keys, third-party accounts, and configurations still required to fully operationalise all platform products.<br />
+    Prepared for: <strong>Sebastian Njagi, Philip Mukiti, Joseph Maina</strong>  |  September 2026</p>
+  </div>
+
+  <div class="warn"><strong>Priority legend</strong>
+    <span class="badge critical">CRITICAL</span> — Platform feature completely non-functional without this  
+    <span class="badge high">HIGH</span> — Feature degraded or partially functional  
+    <span class="badge medium">MEDIUM</span> — Optional enhancement  
+    <span class="badge done">DONE</span> — Already configured
+  </div>
+
+  
+  <h2>1 — PMaaS &amp; Engage: Safaricom Daraja (M-Pesa)</h2>
+  <p class="section-intro">Required for all M-Pesa payment collection (STK Push) and disbursements (B2C) in PMaaS and AfroERP.</p>
+
+  <table>
+    <tr><th>Requirement</th><th>Priority</th><th>Environment Variable</th><th>Products Affected</th></tr>
+    <tr>
+      <td><strong>M-Pesa Shortcode</strong> — your Paybill or Till number</td>
+      <td><span class="badge critical">CRITICAL</span></td>
+      <td><span class="tag">MPESA_SHORTCODE</span></td>
+      <td>PMaaS, AfroERP</td>
+    </tr>
+    <tr>
+      <td><strong>M-Pesa Passkey</strong> — from Daraja portal sandbox/production</td>
+      <td><span class="badge critical">CRITICAL</span></td>
+      <td><span class="tag">MPESA_PASSKEY</span></td>
+      <td>PMaaS, AfroERP</td>
+    </tr>
+    <tr>
+      <td><strong>Consumer Key</strong> <span class="badge done">DONE</span></td>
+      <td><span class="badge done">DONE</span></td>
+      <td><span class="tag">MPESA_CONSUMER_KEY</span></td>
+      <td>Already set: <code>p9MtTHfq0np8OnX…</code></td>
+    </tr>
+    <tr>
+      <td><strong>Consumer Secret</strong> <span class="badge done">DONE</span></td>
+      <td><span class="badge done">DONE</span></td>
+      <td><span class="tag">MPESA_CONSUMER_SECRET</span></td>
+      <td>Already set: <code>BtG0mgEEhtUd40…</code></td>
+    </tr>
+  </table>
+
+  <div class="how">
+    <strong>How to get it</strong>
+    1. Go to <a href="https://developer.safaricom.co.ke">developer.safaricom.co.ke</a> → log in or register.<br />
+    2. Create an App under <strong>My Apps → Create New App</strong>. Enable <em>Lipa Na M-Pesa Online</em> and <em>B2C</em> APIs.<br />
+    3. For production, go to <strong>Go Live</strong> and complete KYB. You will receive your <strong>Shortcode</strong> and <strong>Passkey</strong> in the production credentials.<br />
+    4. Apply the values:<br />
+    <span class="tag">oc patch secret pmaas-secrets -n i3-pmaas --type merge -p '{"stringData":{"MPESA_SHORTCODE":"YOUR_SHORTCODE","MPESA_PASSKEY":"YOUR_PASSKEY"}}'</span>
+  </div>
+
+  
+  <h2>2 — Engage: WhatsApp Business API (Meta)</h2>
+  <p class="section-intro">Required for all WhatsApp message sending in Engage. Without this, only SMS is functional.</p>
+
+  <table>
+    <tr><th>Requirement</th><th>Priority</th><th>Environment Variable</th><th>Notes</th></tr>
+    <tr>
+      <td><strong>WhatsApp Access Token</strong> — permanent system user token</td>
+      <td><span class="badge critical">CRITICAL</span></td>
+      <td><span class="tag">WHATSAPP_TOKEN</span></td>
+      <td>Generate a System User Token in Meta Business Suite → <em>not</em> your personal page token (expires in 60 days)</td>
+    </tr>
+    <tr>
+      <td><strong>WhatsApp Phone Number ID</strong> — numeric ID from Business Manager</td>
+      <td><span class="badge critical">CRITICAL</span></td>
+      <td><span class="tag">WHATSAPP_PHONE_NUMBER_ID</span></td>
+      <td>Found under Meta Business Suite → WhatsApp → Getting Started</td>
+    </tr>
+    <tr>
+      <td><strong>WhatsApp Business Account ID (WABA ID)</strong></td>
+      <td><span class="badge high">HIGH</span></td>
+      <td><span class="tag">WHATSAPP_WABA_ID</span></td>
+      <td>Required for template submission API calls</td>
+    </tr>
+    <tr>
+      <td><strong>Webhook Verify Token</strong> — any random string you choose</td>
+      <td><span class="badge high">HIGH</span></td>
+      <td><span class="tag">WHATSAPP_WEBHOOK_TOKEN</span></td>
+      <td>Set the same value in Meta Developer Console → Webhooks → Verify Token</td>
+    </tr>
+  </table>
+
+  <div class="how">
+    <strong>How to get it</strong>
+    1. Go to <a href="https://developers.facebook.com">developers.facebook.com</a> → My Apps → select or create an App with <em>WhatsApp Business</em> product.<br />
+    2. Under <strong>WhatsApp → Getting Started</strong> find your <strong>Phone Number ID</strong> and <strong>WABA ID</strong>.<br />
+    3. In <strong>Meta Business Suite → Settings → Users → System Users</strong>, create a system user with <em>FULL CONTROL</em> on the WABA, then generate a <strong>permanent token</strong>.<br />
+    4. Apply to cluster:<br />
+    <span class="tag">oc patch secret engage-secrets -n i3-engage --type merge -p '{"stringData":{"WHATSAPP_TOKEN":"YOUR_TOKEN","WHATSAPP_PHONE_NUMBER_ID":"YOUR_ID"}}'</span>
+  </div>
+
+  
+  <h2>3 — Engage: Africa's Talking (SMS)</h2>
+  <p class="section-intro">Required for all SMS sending in Engage. Without this, bulk SMS campaigns cannot be dispatched.</p>
+
+  <table>
+    <tr><th>Requirement</th><th>Priority</th><th>Environment Variable</th><th>Notes</th></tr>
+    <tr>
+      <td><strong>AT API Key</strong></td>
+      <td><span class="badge critical">CRITICAL</span></td>
+      <td><span class="tag">AT_API_KEY</span></td>
+      <td>Found in AT dashboard → Settings → API Key</td>
+    </tr>
+    <tr>
+      <td><strong>AT Username</strong></td>
+      <td><span class="badge critical">CRITICAL</span></td>
+      <td><span class="tag">AT_USERNAME</span></td>
+      <td>Your Africa's Talking account username (not email)</td>
+    </tr>
+    <tr>
+      <td><strong>AT Sender ID</strong> (optional)</td>
+      <td><span class="badge medium">MEDIUM</span></td>
+      <td><span class="tag">AT_SENDER_ID</span></td>
+      <td>Register a custom alphanumeric sender ID at AT portal for branded SMSes; leave blank to use shared short code</td>
+    </tr>
+  </table>
+
+  <div class="how">
+    <strong>How to get it</strong>
+    1. Register at <a href="https://africastalking.com">africastalking.com</a> → Create an account.<br />
+    2. From the dashboard top-right → click your username → <strong>Settings → API Key → Generate</strong>.<br />
+    3. For production SMS, go to <strong>SMS → Sender IDs</strong> and register your approved sender name (takes 1–3 business days with CA approval).<br />
+    4. Apply:<br />
+    <span class="tag">oc patch secret engage-secrets -n i3-engage --type merge -p '{"stringData":{"AT_API_KEY":"YOUR_KEY","AT_USERNAME":"YOUR_USERNAME"}}'</span>
+  </div>
+
+  
+  <h2>4 — Engage: Brevo (Email Campaigns)</h2>
+  <p class="section-intro">Required for email campaign sending from Engage. Without this, email channel is unavailable.</p>
+
+  <table>
+    <tr><th>Requirement</th><th>Priority</th><th>Environment Variable</th><th>Notes</th></tr>
+    <tr>
+      <td><strong>Brevo API Key</strong> (v3)</td>
+      <td><span class="badge high">HIGH</span></td>
+      <td><span class="tag">BREVO_API_KEY</span></td>
+      <td>Brevo (formerly Sendinblue) — needed for transactional email and newsletter campaigns</td>
+    </tr>
+    <tr>
+      <td><strong>Sender Email</strong></td>
+      <td><span class="badge high">HIGH</span></td>
+      <td><span class="tag">BREVO_SENDER_EMAIL</span></td>
+      <td>Must be a verified domain sender in Brevo (e.g. <code>noreply@i3technologies.co.ke</code>)</td>
+    </tr>
+  </table>
+
+  <div class="how">
+    <strong>How to get it</strong>
+    1. Register at <a href="https://www.brevo.com">brevo.com</a> → Log in → top-right menu → <strong>SMTP &amp; API → API Keys → Create a New API Key</strong>.<br />
+    2. Verify your sending domain: <strong>Senders &amp; Domains → Domains → Add a domain</strong>. Add the DNS TXT/DKIM records cPanel provides to <code>i3technologies.co.ke</code>.<br />
+    3. Apply:<br />
+    <span class="tag">oc patch secret engage-secrets -n i3-engage --type merge -p '{"stringData":{"BREVO_API_KEY":"YOUR_KEY","BREVO_SENDER_EMAIL":"noreply@i3technologies.co.ke"}}'</span>
+  </div>
+
+  
+  <h2>5 — AfroERP: KRA eTIMS Integration</h2>
+  <p class="section-intro">Required for electronic tax invoice submission to KRA as mandated by Kenya Tax Procedures Act.</p>
+
+  <table>
+    <tr><th>Requirement</th><th>Priority</th><th>Where to Configure</th><th>Notes</th></tr>
+    <tr>
+      <td><strong>eTIMS Device Serial Number (CU Serial)</strong></td>
+      <td><span class="badge critical">CRITICAL</span></td>
+      <td>AfroERP Settings → KRA eTIMS</td>
+      <td>Issued by KRA after device registration at iTax portal</td>
+    </tr>
+    <tr>
+      <td><strong>Company KRA PIN</strong></td>
+      <td><span class="badge critical">CRITICAL</span></td>
+      <td>AfroERP → Company → Tax ID field</td>
+      <td>Your company's KRA PIN (format: A000000000A)</td>
+    </tr>
+    <tr>
+      <td><strong>eTIMS API Username &amp; Password</strong></td>
+      <td><span class="badge critical">CRITICAL</span></td>
+      <td><span class="tag">ETIMS_USERNAME</span> / <span class="tag">ETIMS_PASSWORD</span></td>
+      <td>Credentials from KRA eTIMS portal (itax.kra.go.ke)</td>
+    </tr>
+  </table>
+
+  <div class="how">
+    <strong>How to get it</strong>
+    1. Log in to <a href="https://itax.kra.go.ke">iTax (itax.kra.go.ke)</a> with your company PIN and password.<br />
+    2. Go to <strong>eTIMS → Device Registration</strong> and register your virtual eTIMS device (VSCU). You will receive a CU Serial Number.<br />
+    3. Download and install the eTIMS VSCU software — AfroERP's API communicates with it locally or via the KRA cloud API endpoint.<br />
+    4. Add the credentials to the AfroERP secrets:<br />
+    <span class="tag">oc patch secret afroerp-secrets -n i3-afroerp --type merge -p '{"stringData":{"ETIMS_USERNAME":"YOUR_PIN","ETIMS_PASSWORD":"YOUR_ITAX_PASS","ETIMS_CU_SERIAL":"YOUR_CU_SERIAL"}}'</span>
+  </div>
+
+  
+  <h2>6 — DNS &amp; Domain (cPanel)</h2>
+  <p class="section-intro">Required to make all platform URLs publicly accessible. See the separate CNAME Mapping Guide.</p>
+
+  <table>
+    <tr><th>Requirement</th><th>Priority</th><th>Action Required</th></tr>
+    <tr>
+      <td><strong>20 CNAME records</strong> in cPanel Zone Editor</td>
+      <td><span class="badge critical">CRITICAL</span></td>
+      <td>Add all subdomains pointing to <code>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</code> — see CNAME Mapping Guide</td>
+    </tr>
+    <tr>
+      <td><strong>Brevo DKIM records</strong> (for email)</td>
+      <td><span class="badge high">HIGH</span></td>
+      <td>Add 2 TXT records provided by Brevo during domain verification (prevents email going to spam)</td>
+    </tr>
+    <tr>
+      <td><strong>SPF record update</strong></td>
+      <td><span class="badge high">HIGH</span></td>
+      <td>Add <code>include:spf.brevo.com</code> and <code>include:spf.africastalking.com</code> to existing SPF TXT record</td>
+    </tr>
+  </table>
+
+  
+  <h2>7 — Platform Administration</h2>
+  <table>
+    <tr><th>Requirement</th><th>Priority</th><th>Action Required</th></tr>
+    <tr>
+      <td><strong>OpenBao Unseal</strong> — 3 key shares held by Sebastian, Philip, Joseph</td>
+      <td><span class="badge high">HIGH</span></td>
+      <td>After any cluster restart, unseal OpenBao by running <span class="tag">vault operator unseal</span> with each key share. Requires 2-of-3 shares (threshold).</td>
+    </tr>
+    <tr>
+      <td><strong>AfroERP custom app install</strong> — <code>afroerp_kenya</code></td>
+      <td><span class="badge high">HIGH</span></td>
+      <td>Run <span class="tag">oc exec -n i3-afroerp deployment/erpnext -- bench install-app afroerp_kenya</span> to activate M-Pesa + eTIMS modules in ERPNext</td>
+    </tr>
+    <tr>
+      <td><strong>Voice stack end-to-end test</strong></td>
+      <td><span class="badge medium">MEDIUM</span></td>
+      <td>Verify TTS (<span class="tag">POST /v1/tts</span>) and STT (<span class="tag">POST /v1/transcribe</span>) endpoints return audio/transcript from a co-worker pod</td>
+    </tr>
+    <tr>
+      <td><strong>JupyterHub Keycloak protocol mapper</strong></td>
+      <td><span class="badge medium">MEDIUM</span></td>
+      <td>In Keycloak <code>i3</code> realm → <code>jupyterhub</code> client → Mappers → Add <code>preferred_username</code> claim. Fixes username deprecation warning in JupyterHub logs.</td>
+    </tr>
+    <tr>
+      <td><strong>ChromaDB version compatibility check</strong></td>
+      <td><span class="badge medium">MEDIUM</span></td>
+      <td>Run <span class="tag">oc exec -n i3-ai-lab chromadb-0 -- python3 -c "import chromadb; print(chromadb.__version__)"</span> and compare with Open WebUI's bundled chromadb client. Re-enable <code>VECTOR_DB: chroma</code> in co-worker ConfigMaps once versions match.</td>
+    </tr>
+    <tr>
+      <td><strong>i3-ott namespace quota</strong> — at 97% utilisation</td>
+      <td><span class="badge high">HIGH</span></td>
+      <td>Do NOT add new models to <code>i3-ott</code> Ollama. To free space: remove unused models with <span class="tag">oc exec -n i3-ott deployment/ollama -- ollama rm MODEL_NAME</span> or request IBM quota increase.</td>
+    </tr>
+  </table>
+
+  
+  <h2>8 — Summary Checklist</h2>
+  <table>
+    <tr><th>#</th><th>Item</th><th>Portal / Source</th><th>Priority</th><th>Status</th></tr>
+    <tr><td>1</td><td>M-Pesa Shortcode + Passkey</td><td>developer.safaricom.co.ke</td><td><span class="badge critical">CRITICAL</span></td><td>Pending</td></tr>
+    <tr><td>2</td><td>WhatsApp System User Token</td><td>developers.facebook.com</td><td><span class="badge critical">CRITICAL</span></td><td>Pending</td></tr>
+    <tr><td>3</td><td>WhatsApp Phone Number ID</td><td>Meta Business Suite</td><td><span class="badge critical">CRITICAL</span></td><td>Pending</td></tr>
+    <tr><td>4</td><td>Africa's Talking API Key + Username</td><td>africastalking.com</td><td><span class="badge critical">CRITICAL</span></td><td>Pending</td></tr>
+    <tr><td>5</td><td>Brevo API Key + Domain Verification</td><td>brevo.com</td><td><span class="badge high">HIGH</span></td><td>Pending</td></tr>
+    <tr><td>6</td><td>KRA eTIMS CU Serial + Credentials</td><td>itax.kra.go.ke</td><td><span class="badge critical">CRITICAL</span></td><td>Pending</td></tr>
+    <tr><td>7</td><td>20 CNAME records in cPanel</td><td>cPanel Zone Editor</td><td><span class="badge critical">CRITICAL</span></td><td>Pending</td></tr>
+    <tr><td>8</td><td>SPF + DKIM records in cPanel</td><td>cPanel Zone Editor</td><td><span class="badge high">HIGH</span></td><td>Pending</td></tr>
+    <tr><td>9</td><td>OpenBao unseal (post-restart)</td><td>On cluster (vault CLI)</td><td><span class="badge high">HIGH</span></td><td>On-demand</td></tr>
+    <tr><td>10</td><td>afroerp_kenya bench install</td><td>On cluster (oc exec)</td><td><span class="badge high">HIGH</span></td><td>Pending</td></tr>
+    <tr><td>11</td><td>JupyterHub protocol mapper</td><td>Keycloak admin console</td><td><span class="badge medium">MEDIUM</span></td><td>Pending</td></tr>
+    <tr><td>12</td><td>ChromaDB compat check + re-enable</td><td>On cluster (oc exec)</td><td><span class="badge medium">MEDIUM</span></td><td>Pending</td></tr>
+    <tr><td>13</td><td>Voice stack E2E test</td><td>On cluster (oc exec)</td><td><span class="badge medium">MEDIUM</span></td><td>Pending</td></tr>
+  </table>
+
+  <div class="note"><strong>Already Configured (no action needed)</strong>
+    M-Pesa Consumer Key &amp; Secret  |  NEXTAUTH_SECRET  | 
+    Keycloak SSO (all 13 clients in <code>i3</code> realm)  | 
+    LiteLLM gateway + all 6 Ollama models  | 
+    Langfuse observability  | 
+    Voice TTS + STT builds &amp; deployments  | 
+    All EvalOS users (Romars, Becky, Petronella + 29 others)  | 
+    HAProxy 120s timeout for Study Coach  | 
+    All platform pods running (evalos, pmaas, engage, afroerp, ai-lab, voice)
+  </div>
+
+  <div class="footer">Made with IBM Bob</div>
+</div>
+</body>
+</html>

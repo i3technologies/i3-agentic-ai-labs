@@ -1,0 +1,173 @@
+# ============================================================
+# i3 SmartLab — Authoring API Deployment
+# Namespace: i3-smartlab
+# Image: quay.io/i3technologies/smartlab-api:1.0.0
+#   (built via OpenShift BuildConfig below)
+# ============================================================
+
+# ── PVC: shared scratch space for SCORM/EPUB builds ──────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: smartlab-scratch
+  namespace: i3-smartlab
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ibmc-vpc-block-retain-10iops-tier
+  resources:
+    requests:
+      storage: 20Gi
+---
+# ── BuildConfig: build the FastAPI image in-cluster ──────────
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: smartlab-api
+  namespace: i3-smartlab
+  labels:
+    app: smartlab-api
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  source:
+    type: Binary
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: smartlab-api:latest
+  triggers:
+    - type: ConfigChange
+---
+# ── ImageStream ───────────────────────────────────────────────
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: smartlab-api
+  namespace: i3-smartlab
+  labels:
+    app: smartlab-api
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  lookupPolicy:
+    local: true
+---
+# ── Deployment ────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smartlab-api
+  namespace: i3-smartlab
+  labels:
+    app: smartlab-api
+    app.kubernetes.io/part-of: i3-platform
+    app.kubernetes.io/component: authoring-api
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: smartlab-api
+  template:
+    metadata:
+      labels:
+        app: smartlab-api
+        app.kubernetes.io/part-of: i3-platform
+    spec:
+      serviceAccountName: smartlab
+      securityContext:
+        runAsUser: 1001
+        runAsNonRoot: true
+        fsGroup: 1001
+      containers:
+        - name: smartlab-api
+          image: image-registry.openshift-image-registry.svc:5000/i3-smartlab/smartlab-api:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: smartlab-secrets
+            - configMapRef:
+                name: smartlab-config
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          volumeMounts:
+            - name: scratch
+              mountPath: /tmp/smartlab
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+      volumes:
+        - name: scratch
+          persistentVolumeClaim:
+            claimName: smartlab-scratch
+      restartPolicy: Always
+---
+# ── Service ───────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: smartlab-api
+  namespace: i3-smartlab
+  labels:
+    app: smartlab-api
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  selector:
+    app: smartlab-api
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+---
+# ── Route: internal API endpoint ──────────────────────────────
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: smartlab-api-public
+  namespace: i3-smartlab
+  labels:
+    app: smartlab-api
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  host: api.smartlab.i3technologies.co.ke
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  to:
+    kind: Service
+    name: smartlab-api
+    weight: 100

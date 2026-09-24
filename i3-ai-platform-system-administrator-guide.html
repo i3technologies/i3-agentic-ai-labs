@@ -1,0 +1,332 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>i3 AI Platform — SysAdmin Guide</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.6;color:#1f2328;background:#fff;display:flex}
+a{color:#3b82d4;text-decoration:none}
+a:hover{text-decoration:underline}
+code,pre{font-family:"Cascadia Code","Fira Code","Consolas",monospace;font-size:12.5px}
+/* Sidebar */
+#toc{width:220px;min-height:100vh;background:#0f1923;color:#c9d1d9;padding:20px 0;position:sticky;top:0;align-self:flex-start;flex-shrink:0;overflow-y:auto;max-height:100vh}
+#toc h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#58a6ff;padding:0 16px 8px;border-bottom:1px solid #21262d;margin-bottom:8px}
+#toc a{display:block;padding:4px 16px;color:#8b949e;font-size:12.5px;border-left:2px solid transparent;transition:all .15s}
+#toc a:hover,#toc a.active{color:#e6edf3;border-left-color:#3b82d4;background:rgba(59,130,212,.08);text-decoration:none}
+#toc .section-head{font-size:11px;text-transform:uppercase;color:#3b82d4;padding:12px 16px 2px;letter-spacing:.06em}
+/* Main */
+#main{flex:1;max-width:860px;padding:32px 40px;overflow-x:hidden}
+.platform-banner{background:#0f1923;color:#e6edf3;padding:20px 24px;border-radius:6px;margin-bottom:28px}
+.platform-banner h1{font-size:20px;font-weight:700;color:#58a6ff;margin-bottom:6px}
+.platform-banner .meta{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:#8b949e;margin-top:8px}
+.platform-banner .meta span{background:#161b22;padding:3px 8px;border-radius:4px;border:1px solid #21262d}
+h2.section{font-size:17px;font-weight:700;color:#0f1923;border-bottom:2px solid #3b82d4;padding-bottom:6px;margin:32px 0 14px}
+h3{font-size:14px;font-weight:700;color:#1f2328;margin:18px 0 8px}
+p{margin-bottom:10px;color:#444d56}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin:12px 0 18px}
+th{background:#f0f4f8;text-align:left;padding:7px 10px;border:1px solid #d0d7de;font-weight:700;color:#1f2328}
+td{padding:6px 10px;border:1px solid #d0d7de;color:#444d56;vertical-align:top}
+tr:nth-child(even) td{background:#f8f9fb}
+.cmd{background:#0d1117;color:#e6edf3;padding:10px 14px;border-radius:5px;font-size:12px;overflow-x:auto;margin:8px 0 12px;border-left:3px solid #3b82d4}
+.cmd .comment{color:#6e7681}
+.tag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700;margin-right:4px}
+.tag.green{background:#d1fae5;color:#065f46}
+.tag.blue{background:#dbeafe;color:#1e3a8a}
+.tag.orange{background:#fef3c7;color:#92400e}
+.tag.red{background:#fee2e2;color:#991b1b}
+.tag.gray{background:#f3f4f6;color:#374151}
+.callout{padding:10px 14px;border-radius:5px;margin:12px 0;font-size:13px}
+.callout.warn{background:#fffbeb;border-left:3px solid #f59e0b;color:#78350f}
+.callout.info{background:#eff6ff;border-left:3px solid #3b82d4;color:#1e3a8a}
+.callout.danger{background:#fef2f2;border-left:3px solid #ef4444;color:#7f1d1d}
+.callout.success{background:#f0fdf4;border-left:3px solid #22c55e;color:#14532d}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.card{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:12px 14px}
+.card h4{font-size:13px;font-weight:700;color:#1f2328;margin-bottom:6px}
+.url-pill{display:inline-block;background:#1a3a5c;color:#93c5fd;padding:2px 8px;border-radius:4px;font-family:monospace;font-size:11.5px}
+footer{margin-top:40px;padding-top:14px;border-top:1px solid #e5e7eb;text-align:center;font-size:11px;color:#8b949e}
+</style>
+</head>
+<body>
+
+<nav id="toc">
+  <h2>i3 AI Platform</h2>
+  <span class="section-head">Navigation</span>
+  <a href="#s1">1. Access &amp; Prerequisites</a>
+  <a href="#s2">2. Namespace Inventory</a>
+  <a href="#s3">3. Builds &amp; Deployments</a>
+  <a href="#s4">4. Secret Management</a>
+  <a href="#s5">5. Database Operations</a>
+  <a href="#s6">6. Model Gateway</a>
+  <a href="#s7">7. Keycloak / SSO</a>
+  <a href="#s8">8. Monitoring</a>
+  <a href="#s9">9. Troubleshooting</a>
+  <a href="#s10">10. Known Limitations</a>
+  <a href="#s11">11. Disaster Recovery</a>
+</nav>
+
+<div id="main">
+
+<div class="platform-banner">
+  <h1>i3 Technologies AI Platform — System Administrator Guide</h1>
+  <p style="color:#8b949e;font-size:13px;margin-top:4px">IBM ROKS 4.17 · Frankfurt (eu-de) · CPU-only on-cluster AI (no GPU)</p>
+  <div class="meta">
+    <span>Repo: github.com/i3technologies/i3-agentic-ai-labs</span>
+    <span>Branch: main · Commit: cafb76f</span>
+    <span>ArgoCD sync: &lt; 3 min after push</span>
+    <span>Admin team: Sebastian Njagi · Philip Mukiti · Joseph Maina</span>
+  </div>
+</div>
+
+
+<h2 class="section" id="s1">1. Access &amp; Prerequisites</h2>
+
+<h3>Required Tools</h3>
+<table>
+  <tr><th>Tool</th><th>Version</th><th>Purpose</th></tr>
+  <tr><td><code>oc</code></td><td>4.17+</td><td>OpenShift CLI — all cluster operations</td></tr>
+  <tr><td><code>git</code></td><td>any</td><td>GitOps — push to main triggers ArgoCD sync</td></tr>
+  <tr><td><code>kubectl</code></td><td>optional</td><td>oc is a superset; kubectl works too</td></tr>
+</table>
+
+<h3>Cluster Login</h3>
+<div class="cmd"><code>oc login https://c113-e.eu-de.containers.cloud.ibm.com:32581 \<br />  --token=&lt;token-from-IBM-Cloud-console&gt;</code></div>
+<p>Token expires every 24h. Refresh via IBM Cloud Console → OpenShift → Copy login command.</p>
+
+<h3>ArgoCD</h3>
+<p>ArgoCD watches <code>platform/</code> directory on <code>main</code>. Any <code>git push origin main</code> is auto-applied within ~3 minutes. <span class="tag orange">CAUTION</span> If YAML contains placeholder <code>REPLACE_WITH_*</code> values, <code>oc apply</code> will overwrite live-patched secrets. Always keep real values in YAML after Phase 8.</p>
+
+
+<h2 class="section" id="s2">2. Namespace Inventory</h2>
+
+<table>
+  <tr><th>Namespace</th><th>Product</th><th>Key Workloads</th><th>Public URL(s)</th></tr>
+  <tr><td><code>i3-evalos</code></td><td>EvalOS — IBM Cert Platform</td><td>evalos-web ×2, evalos-sandbox, zuri-coworker</td><td><span class="url-pill">evalos.i3technologies.co.ke</span> <span class="url-pill">zuri.i3technologies.co.ke</span></td></tr>
+  <tr><td><code>i3-pmaas</code></td><td>PMaaS — Campaign Mgmt</td><td>pmaas-web, campaign-agent, dawa-coworker</td><td><span class="url-pill">pmaas.i3technologies.co.ke</span> <span class="url-pill">dawa.i3technologies.co.ke</span></td></tr>
+  <tr><td><code>i3-engage</code></td><td>i3-Engage — CRM</td><td>engage-web, campaign-agent, sms-consumer, nuru-coworker</td><td><span class="url-pill">engage.i3technologies.co.ke</span> <span class="url-pill">nuru.i3technologies.co.ke</span></td></tr>
+  <tr><td><code>i3-afroerp</code></td><td>AfroERP (ERPNext v15)</td><td>erpnext, mariadb-0, redis, afroerp-agent, mfumo-coworker</td><td><span class="url-pill">afroerp.i3technologies.co.ke</span> <span class="url-pill">mfumo.i3technologies.co.ke</span></td></tr>
+  <tr><td><code>i3-ai-lab</code></td><td>AI Lab — JupyterHub</td><td>jupyterhub (2/2), chromadb-0, open-webui (Sage)</td><td><span class="url-pill">jupyter.i3technologies.co.ke</span> <span class="url-pill">sage.i3technologies.co.ke</span></td></tr>
+  <tr><td><code>i3-model-gateway</code></td><td>AI Model Gateway</td><td>ollama-0 (80Gi PVC), litellm-proxy, langfuse-web</td><td><span class="url-pill">langfuse.i3technologies.co.ke</span></td></tr>
+  <tr><td><code>i3-voice</code></td><td>Voice Stack</td><td>voice-tts (XTTS-v2), voice-stt (faster-whisper)</td><td>Internal only (:8000/:8001)</td></tr>
+  <tr><td><code>i3-auth</code></td><td>Keycloak RHSSO</td><td>keycloak-0, rhsso-operator</td><td><span class="url-pill">sso.i3technologies.co.ke/auth</span></td></tr>
+  <tr><td><code>i3-ott</code></td><td>Platform Services</td><td>n8n, langfuse, directus, seaweedfs, ollama (Mistral)</td><td><span class="url-pill">n8n.i3technologies.co.ke</span></td></tr>
+  <tr><td><code>i3-data</code></td><td>Postgres HA</td><td>postgres-primary ×3 (PGO), pgbouncer</td><td>Internal only (port 5432 via pgbouncer)</td></tr>
+</table>
+
+<div class="callout warn"><strong>Never touch:</strong> Namespaces <code>solution-01</code> through <code>solution-08</code> — these are live customer workloads on a separate server. Also never add models to <code>i3-ott</code> Ollama (at 97% quota ceiling).</div>
+
+
+<h2 class="section" id="s3">3. Builds &amp; Deployments</h2>
+
+<h3>Trigger a Build (Binary S2I)</h3>
+<div class="cmd"><code><span class="comment"># From repo root — uploads local directory as build context</span><br />oc start-build &lt;bc-name&gt; -n &lt;namespace&gt; --from-dir=platform/&lt;product&gt;/&lt;dir&gt;/ --follow</code></div>
+
+<h3>Base Images (internal registry — no internet pull needed)</h3>
+<table>
+  <tr><th>Base Image</th><th>Internal Tag</th></tr>
+  <tr><td>node:20-alpine</td><td><code>image-registry.openshift-image-registry.svc:5000/openshift/node:20-alpine</code></td></tr>
+  <tr><td>python:3.11-slim</td><td><code>image-registry.openshift-image-registry.svc:5000/openshift/python:3.11-slim</code></td></tr>
+</table>
+
+<h3>Apply a YAML Change (GitOps — preferred)</h3>
+<div class="cmd"><code>git add platform/&lt;file&gt;.yaml<br />git commit -m "fix: description"<br />git push origin main<br /><span class="comment"># ArgoCD auto-applies within ~3 min</span></code></div>
+
+<h3>Manual Apply (immediate)</h3>
+<div class="cmd"><code>oc apply -f platform/&lt;namespace&gt;/&lt;file&gt;.yaml</code></div>
+
+<h3>Rolling Restart</h3>
+<div class="cmd"><code>oc rollout restart deployment/&lt;name&gt; -n &lt;namespace&gt;</code></div>
+
+<h3>RWO PVC Multi-Attach Fix (most common issue)</h3>
+<div class="cmd"><code><span class="comment"># Old pod holds RWO volume — new pod stuck ContainerCreating</span><br />oc delete pod &lt;old-pod&gt; -n &lt;ns&gt; --grace-period=0 --force<br /><span class="comment"># If old ReplicaSet keeps respawning:</span><br />oc scale rs &lt;old-rs&gt; --replicas=0 -n &lt;ns&gt;</code></div>
+
+
+<h2 class="section" id="s4">4. Secret Management</h2>
+
+<h3>Patch Pattern (never commit real secrets to git without bypass)</h3>
+<div class="cmd"><code><span class="comment"># Write patch file (stringData = plain text, auto base64-encoded)</span><br />echo '{"stringData":{"KEY":"value"}}' &gt; /tmp/patch.json<br />oc patch secret &lt;secret-name&gt; -n &lt;ns&gt; --type merge --patch-file /tmp/patch.json</code></div>
+
+<h3>Platform Secret Inventory</h3>
+<table>
+  <tr><th>Namespace</th><th>Secret Name</th><th>Key Fields</th></tr>
+  <tr><td><code>i3-evalos</code></td><td>evalos-web-secrets</td><td>DATABASE_URL, NEXTAUTH_SECRET, KEYCLOAK_*, LITELLM_URL/KEY, OLLAMA_URL/MODEL</td></tr>
+  <tr><td><code>i3-pmaas</code></td><td>pmaas-secrets</td><td>DATABASE_URL, NEXTAUTH_SECRET, KEYCLOAK_*, MPESA_*, LITELLM_KEY, VOICE_API_KEY</td></tr>
+  <tr><td><code>i3-engage</code></td><td>engage-secrets</td><td>DATABASE_URL, NEXTAUTH_SECRET, KEYCLOAK_*, BREVO_API_KEY, WHATSAPP_TOKEN, AT_API_KEY, MPESA_*</td></tr>
+  <tr><td><code>i3-ai-lab</code></td><td>jupyterhub-secrets</td><td>JUPYTERHUB_CRYPT_KEY, KEYCLOAK_CLIENT_SECRET, POSTGRES_PASSWORD, LITELLM_KEY, CHROMA_TOKEN</td></tr>
+  <tr><td><code>i3-ai-lab</code></td><td>open-webui-secrets</td><td>OPENAI_API_KEY (=LiteLLM key), OAUTH_CLIENT_ID/SECRET, WEBUI_SECRET_KEY</td></tr>
+  <tr><td><code>i3-ai-lab</code></td><td>chromadb-secrets</td><td>CHROMA_TOKEN: fb4a0f0b619b...a2c98c</td></tr>
+  <tr><td><code>i3-model-gateway</code></td><td>litellm-secrets</td><td>LITELLM_MASTER_KEY: sk-litellm-i3-f951c...</td></tr>
+  <tr><td><code>i3-voice</code></td><td>voice-secrets</td><td>VOICE_API_KEY: 996c39cfc16b...</td></tr>
+  <tr><td><code>i3-auth</code></td><td>credential-i3-keycloak</td><td>ADMIN_USERNAME: admin, ADMIN_PASSWORD: RemE****</td></tr>
+</table>
+
+<div class="callout info"><strong>OpenBao Unseal:</strong> Three keyholders — Sebastian Njagi, Philip Mukiti, Joseph Maina. Any 2-of-3 can unseal. Unseal keys distributed offline.</div>
+
+
+<h2 class="section" id="s5">5. Database Operations</h2>
+
+<h3>Connection (all via PgBouncer)</h3>
+<div class="cmd"><code>Host: i3-postgres-pgbouncer.i3-data.svc.cluster.local<br />Port: 5432<br /><span class="comment"># Direct access from any pod in same cluster:</span><br />psql postgresql://&lt;user&gt;:&lt;password&gt;@i3-postgres-pgbouncer.i3-data.svc:5432/&lt;db&gt;</code></div>
+
+<h3>Database Inventory</h3>
+<table>
+  <tr><th>Database</th><th>User</th><th>Password</th><th>Product</th></tr>
+  <tr><td>evalos_db</td><td>evalos</td><td>(from evalos-web-secrets)</td><td>EvalOS</td></tr>
+  <tr><td>pmaas_db</td><td>pmaas</td><td>pmaas-2026-secure</td><td>PMaaS</td></tr>
+  <tr><td>engage_db</td><td>engage</td><td>engage-2026-secure</td><td>Engage</td></tr>
+  <tr><td>jupyterhub_db</td><td>jupyterhub</td><td>jh-2026-secure</td><td>JupyterHub</td></tr>
+  <tr><td>langfuse_db</td><td>langfuse</td><td>(from langfuse-secret)</td><td>Langfuse (model-gw)</td></tr>
+</table>
+
+<h3>Run Migration from a Temp Pod</h3>
+<div class="cmd"><code>oc run db-migrate --image=postgres:15 -n &lt;ns&gt; --restart=Never \<br />  --env="PGPASSWORD=&lt;pw&gt;" \<br />  --command -- psql -h i3-postgres-pgbouncer.i3-data.svc \<br />  -U &lt;user&gt; -d &lt;db&gt; -f /dev/stdin &lt; migrations/&lt;file&gt;.sql<br />oc delete pod db-migrate -n &lt;ns&gt;</code></div>
+
+<h3>Postgres HA (PGO — Crunchy)</h3>
+<div class="cmd"><code><span class="comment"># Check cluster health</span><br />oc get postgrescluster -n i3-data<br /><span class="comment"># List primary/replica pods</span><br />oc get pods -n i3-data -l postgres-operator.crunchydata.com/role</code></div>
+
+
+<h2 class="section" id="s6">6. Model Gateway</h2>
+
+<h3>Ollama Model Inventory (i3-model-gateway/ollama-0)</h3>
+<table>
+  <tr><th>LiteLLM Alias</th><th>Ollama Model</th><th>Size</th><th>Use Case</th></tr>
+  <tr><td><code>granite-nano</code></td><td>granite3.1-dense:2b</td><td>1.6 GB</td><td>Fast intent routing, classification</td></tr>
+  <tr><td><code>embed</code></td><td>nomic-embed-text:latest</td><td>274 MB</td><td>Embeddings for all RAG pipelines</td></tr>
+  <tr><td><code>qwen-fast</code></td><td>qwen2.5:7b-instruct-q4_K_M</td><td>4.7 GB</td><td>Study Coach, RAG chat, Engage</td></tr>
+  <tr><td><code>coder</code></td><td>qwen2.5-coder:7b-instruct-q4_K_M</td><td>4.7 GB</td><td>AI Lab coding, code review, EvalOS lab</td></tr>
+  <tr><td><code>qwen-heavy</code></td><td>qwen2.5:14b-instruct-q4_K_M</td><td>9.0 GB</td><td>AI interview eval, PMaaS reports</td></tr>
+  <tr><td><code>vision</code></td><td>llava:13b</td><td>8.0 GB</td><td>Multimodal image+text, document OCR</td></tr>
+</table>
+<p>PVC: 80Gi on <code>ollama-0</code> · Current usage ~29 GB · Remaining ~50 GB</p>
+
+<h3>Pull a New Model</h3>
+<div class="cmd"><code>oc exec -n i3-model-gateway ollama-0 -c ollama -- ollama pull &lt;model:tag&gt;<br /><span class="comment"># Verify:</span><br />oc exec -n i3-model-gateway ollama-0 -c ollama -- ollama list</code></div>
+
+<h3>Add Model to LiteLLM Config</h3>
+<div class="cmd"><code><span class="comment"># Edit platform/model-gateway/litellm/litellm-config-oss.yaml</span><br /><span class="comment"># Add entry under model_list, then:</span><br />git add platform/model-gateway/litellm/litellm-config-oss.yaml<br />git commit -m "feat(models): add &lt;model&gt; alias"<br />git push origin main<br /><span class="comment"># ArgoCD applies; LiteLLM hot-reloads config</span></code></div>
+
+<h3>Test LiteLLM via Ollama Pod</h3>
+<div class="cmd"><code>oc exec -n i3-model-gateway ollama-0 -c ollama -- \<br />  wget -qO- http://litellm-proxy.i3-model-gateway.svc:4000/models \<br />  --header "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13"</code></div>
+
+
+<h2 class="section" id="s7">7. Keycloak / SSO</h2>
+
+<h3>Realm &amp; Clients</h3>
+<p>All products share a single realm: <strong>i3</strong><br />
+SSO base: <span class="url-pill">https://sso.i3technologies.co.ke/auth/realms/i3</span></p>
+
+<table>
+  <tr><th>Client ID</th><th>Product</th><th>Redirect URI</th></tr>
+  <tr><td>evalos-spa</td><td>EvalOS</td><td>https://evalos.i3technologies.co.ke/*</td></tr>
+  <tr><td>zuri</td><td>Zuri co-worker</td><td>https://zuri.i3technologies.co.ke/*</td></tr>
+  <tr><td>jupyterhub</td><td>JupyterHub</td><td>https://jupyter.i3technologies.co.ke/hub/oauth_callback</td></tr>
+  <tr><td>open-webui-sage</td><td>Sage AI Lab</td><td>https://sage.i3technologies.co.ke/*</td></tr>
+  <tr><td>pmaas-web</td><td>PMaaS</td><td>https://pmaas.i3technologies.co.ke/api/auth/callback/keycloak</td></tr>
+  <tr><td>engage-web</td><td>Engage</td><td>https://engage.i3technologies.co.ke/api/auth/callback/keycloak</td></tr>
+  <tr><td>dawa / nuru / mfumo</td><td>Co-workers</td><td>https://&lt;name&gt;.i3technologies.co.ke/*</td></tr>
+  <tr><td>ai-lab-workbench</td><td>AI Lab</td><td>—</td></tr>
+  <tr><td>litellm-service</td><td>LiteLLM</td><td>—</td></tr>
+  <tr><td>admissions-widget</td><td>Admissions</td><td>—</td></tr>
+  <tr><td>directus-cms</td><td>Directus</td><td>—</td></tr>
+</table>
+
+<h3>Admin REST API — Get Token</h3>
+<div class="cmd"><code>ADMIN_PW=$(oc get secret credential-i3-keycloak -n i3-auth \<br />  -o jsonpath='{.data.ADMIN_PASSWORD}' | base64 -d)<br /><br />oc exec -n i3-auth keycloak-0 -c keycloak -- bash -c "<br />  curl -sf -X POST http://localhost:8080/auth/realms/master/protocol/openid-connect/token \<br />    -d 'client_id=admin-cli&amp;grant_type=password&amp;username=admin&amp;password=$ADMIN_PW' \<br />    -H 'Content-Type: application/x-www-form-urlencoded' \<br />  | python3 -c 'import sys,json; print(json.load(sys.stdin)[\"access_token\"])'<br />"</code></div>
+
+<h3>Create / Reset a User (via script)</h3>
+<div class="cmd"><code><span class="comment"># Use platform/scripts/ensure_evalos_users.sh as template</span><br />oc cp platform/scripts/ensure_evalos_users.sh i3-auth/keycloak-0:/tmp/script.sh -c keycloak<br />oc exec -n i3-auth keycloak-0 -c keycloak -- bash /tmp/script.sh "$ADMIN_PW"</code></div>
+
+<h3>Rotate a Client Secret</h3>
+<div class="cmd"><code><span class="comment"># Inside keycloak pod:</span><br />TOKEN=... <span class="comment"># (get token as above)</span><br />CID=$(curl -sf -H "Authorization: Bearer $TOKEN" \<br />  "http://localhost:8080/auth/admin/realms/i3/clients?clientId=&lt;clientId&gt;" \<br />  | python3 -c 'import sys,json; print(json.load(sys.stdin)[0]["id"])')<br />NEW_SECRET=$(curl -sf -X POST -H "Authorization: Bearer $TOKEN" \<br />  "http://localhost:8080/auth/admin/realms/i3/clients/$CID/client-secret" \<br />  | python3 -c 'import sys,json; print(json.load(sys.stdin)["value"])')<br />echo "New secret: $NEW_SECRET"<br /><span class="comment"># Then patch the cluster secret:</span><br />oc patch secret &lt;product&gt;-secrets -n &lt;ns&gt; --type merge \<br />  -p "{\"stringData\":{\"KEYCLOAK_CLIENT_SECRET\":\"$NEW_SECRET\"}}"</code></div>
+
+
+<h2 class="section" id="s8">8. Monitoring &amp; Observability</h2>
+
+<div class="two-col">
+  <div class="card"><h4>Langfuse (Model Gateway)</h4><p>LLM traces, latency, token usage across all products.<br /><span class="url-pill">langfuse.i3technologies.co.ke</span></p></div>
+  <div class="card"><h4>Langfuse (i3-ott — EvalOS)</h4><p>EvalOS Study Coach traces from Ollama/Mistral.<br /><span class="url-pill">langfuse-ott.i3technologies.co.ke</span></p></div>
+  <div class="card"><h4>OpenShift Console</h4><p>Pod status, metrics, alerts, PVC usage.<br />IBM Cloud → OpenShift → Console</p></div>
+  <div class="card"><h4>Prometheus / Grafana</h4><p>LiteLLM dashboard in <code>platform/model-gateway/grafana/</code>. EvalOS dashboard included.</p></div>
+</div>
+
+<h3>Quick Health Check</h3>
+<div class="cmd"><code><span class="comment"># All running pods across product namespaces</span><br />for ns in i3-evalos i3-pmaas i3-engage i3-afroerp i3-ai-lab i3-model-gateway i3-voice; do<br />  echo "=== $ns ==="; oc get pods -n $ns --field-selector=status.phase=Running --no-headers;<br />done</code></div>
+
+
+<h2 class="section" id="s9">9. Troubleshooting</h2>
+
+<h3>🔴 RWO PVC Multi-Attach — Pod stuck ContainerCreating</h3>
+<p><em>Symptom:</em> <code>FailedAttachVolume: Multi-Attach error for volume ... already used by pod(s) X</code></p>
+<div class="cmd"><code>oc delete pod &lt;old-pod&gt; -n &lt;ns&gt; --grace-period=0 --force<br />oc scale rs &lt;old-rs&gt; --replicas=0 -n &lt;ns&gt; <span class="comment"># stop RS respawning it</span></code></div>
+
+<h3>🔴 NetworkPolicy DNS failure — Pod can't resolve internal services</h3>
+<p><em>Symptom:</em> Pods with Egress NetworkPolicy fail DNS lookups. Default port 53 rule without <code>to:</code> doesn't work in OVN.</p>
+<div class="cmd"><code><span class="comment"># Fix: Add explicit DNS egress to openshift-dns namespace</span><br />egress:<br />  - to:<br />    - namespaceSelector:<br />        matchLabels:<br />          kubernetes.io/metadata.name: openshift-dns<br />    ports:<br />      - protocol: UDP<br />        port: 5353</code></div>
+
+<h3>🔴 Open WebUI crashes — HuggingFace model download fails (no internet)</h3>
+<p><em>Symptom:</em> <code>LocalEntryNotFoundError: ConnectError: [Errno -3] Temporary failure in name resolution</code></p>
+<div class="cmd"><code><span class="comment"># Fix: Set Ollama as embedding engine in the ConfigMap</span><br />oc patch cm open-webui-&lt;name&gt;-config -n &lt;ns&gt; --type merge \<br />  -p '{"data":{"RAG_EMBEDDING_ENGINE":"ollama","RAG_EMBEDDING_MODEL":"nomic-embed-text:latest","OLLAMA_BASE_URL":"http://ollama.i3-model-gateway.svc.cluster.local:11434","ENABLE_OLLAMA_API":"true"}}'<br /><span class="comment"># Then reset the DB (the config is stored in webui.db):</span><br />oc scale deployment &lt;name&gt; -n &lt;ns&gt; --replicas=0<br /><span class="comment"># Create reset pod, delete webui.db, scale back to 1</span></code></div>
+
+<h3>🔴 ChromaDB crashes — "Unable to configure handler 'file'"</h3>
+<p><em>Symptom:</em> ChromaDB pod CrashLoopBackOff with uvicorn log config error.</p>
+<div class="cmd"><code><span class="comment"># Fix: Override uvicorn cmd with custom stdout-only log-config</span><br />command: ["uvicorn","chromadb.app:app","--workers=1","--host=0.0.0.0","--port=8000","--proxy-headers","--log-config=/etc/chromadb/log_config.yml"]<br /><span class="comment"># Mount a ConfigMap with stdout-only log_config.yml (see platform/ai-lab/chromadb/chromadb-deploy.yaml)</span></code></div>
+
+<h3>🔴 Build fails — "must specify limits.cpu/memory for: &lt;container&gt;"</h3>
+<p><em>Symptom:</em> Pod creation forbidden by ResourceQuota.</p>
+<div class="cmd"><code><span class="comment"># Fix: Patch BuildConfig with resource limits</span><br />oc patch bc &lt;bc-name&gt; -n &lt;ns&gt; --type merge --patch-file platform/scripts/bc-resources-patch.json</code></div>
+
+<h3>🔴 ERPNext permission denied creating symlink in /sites</h3>
+<p><em>Symptom:</em> <code>ln: failed to create symbolic link: Permission denied</code></p>
+<div class="cmd"><code><span class="comment"># Fix: Create ServiceAccount with anyuid SCC</span><br />oc create sa erpnext-sa -n i3-afroerp<br />oc adm policy add-scc-to-user anyuid -z erpnext-sa -n i3-afroerp<br /><span class="comment"># Set serviceAccountName: erpnext-sa in deployment</span></code></div>
+
+<h3>🔴 JupyterHub "configurable-http-proxy not found"</h3>
+<p><em>Symptom:</em> <code>FileNotFoundError: 'configurable-http-proxy'</code> — k8s-hub image doesn't include the proxy.</p>
+<div class="cmd"><code><span class="comment"># Fix: Add proxy sidecar container to the deployment</span><br />image: jupyterhub/configurable-http-proxy:4<br />command: [configurable-http-proxy, --port=8000, --api-ip=127.0.0.1, --api-port=8001, ...]<br /><span class="comment"># In jupyterhub_config.py:</span><br />c.ConfigurableHTTPProxy.should_start = False<br />c.ConfigurableHTTPProxy.api_url = "http://127.0.0.1:8001"</code></div>
+
+
+<h2 class="section" id="s10">10. Known Limitations &amp; Pending Items</h2>
+
+<table>
+  <tr><th>Item</th><th>Status</th><th>Action Required</th></tr>
+  <tr><td>No GPU — all inference CPU only</td><td><span class="tag orange">By Design</span></td><td>Q4/Q5 GGUF only. First token ~10-30s.</td></tr>
+  <tr><td>Single Ollama instance</td><td><span class="tag orange">Limitation</span></td><td>Scale to 2 replicas if traffic grows (requires RWX PVC or model copy)</td></tr>
+  <tr><td>M-Pesa Shortcode + Passkey missing</td><td><span class="tag red">Pending</span></td><td>Patch <code>pmaas-secrets</code>: MPESA_SHORTCODE, MPESA_PASSKEY from Daraja portal</td></tr>
+  <tr><td>WhatsApp Token + Phone ID missing</td><td><span class="tag red">Pending</span></td><td>Patch <code>pmaas-secrets</code> + <code>engage-secrets</code> from Meta Business</td></tr>
+  <tr><td>Brevo API key</td><td><span class="tag red">Pending</span></td><td>Patch <code>engage-secrets</code>: BREVO_API_KEY</td></tr>
+  <tr><td>Africa's Talking key</td><td><span class="tag red">Pending</span></td><td>Patch <code>engage-secrets</code>: AT_API_KEY, AT_USERNAME</td></tr>
+  <tr><td>ChromaDB ↔ Open WebUI version compat</td><td><span class="tag orange">Blocked</span></td><td>Check chromadb Python version in both containers. Re-enable VECTOR_DB: chroma when confirmed.</td></tr>
+  <tr><td>JupyterHub username_claim deprecation</td><td><span class="tag gray">Warning</span></td><td>Change <code>username_key</code> to <code>username_claim</code> in jupyterhub_config.py (GenericOAuthenticator 16.0+)</td></tr>
+  <tr><td>MariaDB (AfroERP) single node</td><td><span class="tag orange">Limitation</span></td><td>No HA. Back up regularly via <code>mysqldump</code> from a temp pod.</td></tr>
+</table>
+
+
+<h2 class="section" id="s11">11. Disaster Recovery</h2>
+
+<h3>Recovery Priority Order</h3>
+<ol style="margin-left:20px;color:#444d56;line-height:2">
+  <li>Postgres HA (i3-data) — data layer first</li>
+  <li>Keycloak (i3-auth) — authentication</li>
+  <li>Model Gateway — Ollama + LiteLLM</li>
+  <li>EvalOS (revenue-critical)</li>
+  <li>Remaining product namespaces</li>
+</ol>
+
+<h3>Re-bootstrap from GitOps</h3>
+<div class="cmd"><code><span class="comment"># 1. Login to new/restored cluster</span><br />oc login https://&lt;new-cluster-api&gt; --token=&lt;token&gt;<br /><span class="comment"># 2. Apply all namespaces + base infra</span><br />oc apply -f platform/ --recursive<br /><span class="comment"># 3. Re-patch all secrets (see platform/scripts/ patch files)</span><br /><span class="comment"># 4. Trigger builds for all products</span><br /><span class="comment"># 5. Re-pull Ollama models (takes ~30 min for all 6)</span><br />oc exec -n i3-model-gateway ollama-0 -c ollama -- ollama pull qwen2.5:7b-instruct-q4_K_M<br /><span class="comment"># ... repeat for all 6 models</span></code></div>
+
+<h3>Keycloak Realm Export</h3>
+<div class="cmd"><code>oc exec -n i3-auth keycloak-0 -c keycloak -- \<br />  /opt/keycloak/bin/kc.sh export --realm i3 --file /tmp/i3-realm-export.json<br />oc cp i3-auth/keycloak-0:/tmp/i3-realm-export.json ./i3-realm-backup-$(date +%Y%m%d).json -c keycloak</code></div>
+
+<h3>Postgres Backup (manual)</h3>
+<div class="cmd"><code><span class="comment"># PGO handles automated backups to repo1. Manual dump:</span><br />oc run pg-dump --image=postgres:15 -n i3-data --restart=Never \<br />  --env="PGPASSWORD=&lt;pw&gt;" \<br />  --command -- pg_dump -h i3-postgres-pgbouncer.i3-data.svc \<br />  -U &lt;user&gt; -d &lt;db&gt; -f /tmp/backup.sql</code></div>
+
+<footer>
+  <p>i3 Technologies AI Platform · System Administrator Guide · Commit cafb76f · IBM ROKS 4.17 eu-de<br />
+  Made with IBM Bob</p>
+</footer>
+
+</div>
+</body>
+</html>

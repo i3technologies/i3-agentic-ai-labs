@@ -1,0 +1,180 @@
+# ============================================================
+# STEP-P2-07 — Kong API Gateway Deployment (i3-gateway namespace)
+# Closes finding H-2: unauthenticated external endpoints
+# Apply: kubectl apply -f platform/deploy/api-gateway/kong-deploy.yaml
+# ============================================================
+
+# ─── Namespace ───────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-gateway
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "1-gateway"
+    i3.io/managed-by: argocd
+
+---
+# ─── Kong Configuration (DB-less, declarative) ───────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-config
+  namespace: i3-gateway
+data:
+  KONG_DATABASE: "off"
+  KONG_DECLARATIVE_CONFIG: "/kong/kong.yaml"
+  KONG_PROXY_ACCESS_LOG: "/dev/stdout"
+  KONG_ADMIN_ACCESS_LOG: "/dev/stdout"
+  KONG_PROXY_ERROR_LOG: "/dev/stderr"
+  KONG_ADMIN_ERROR_LOG: "/dev/stderr"
+  KONG_ADMIN_LISTEN: "0.0.0.0:8001"
+  KONG_PROXY_LISTEN: "0.0.0.0:8000"
+  KONG_LOG_LEVEL: "info"
+
+---
+# ─── Kong Deployment ─────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kong
+  namespace: i3-gateway
+  labels:
+    app: kong
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: kong
+  template:
+    metadata:
+      labels:
+        app: kong
+        app.kubernetes.io/part-of: i3-platform
+    spec:
+      serviceAccountName: kong
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: kong
+          image: kong:3.6-ubuntu
+          ports:
+            - name: proxy
+              containerPort: 8000
+            - name: admin
+              containerPort: 8001
+          envFrom:
+            - configMapRef:
+                name: kong-config
+          volumeMounts:
+            - name: kong-declarative
+              mountPath: /kong
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 8001
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 8001
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+      volumes:
+        - name: kong-declarative
+          configMap:
+            name: kong-routes
+
+---
+# ─── Kong Proxy Service ───────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-proxy
+  namespace: i3-gateway
+  labels:
+    app: kong
+spec:
+  selector:
+    app: kong
+  ports:
+    - name: proxy
+      port: 80
+      targetPort: 8000
+    - name: proxy-ssl
+      port: 443
+      targetPort: 8000
+  type: ClusterIP
+
+---
+# ─── Kong Admin Service (cluster-internal only) ───────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-admin
+  namespace: i3-gateway
+  labels:
+    app: kong
+spec:
+  selector:
+    app: kong
+  ports:
+    - name: admin
+      port: 8001
+      targetPort: 8001
+  type: ClusterIP
+
+---
+# ─── ServiceAccount ───────────────────────────────────────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kong
+  namespace: i3-gateway
+  labels:
+    app: kong
+
+---
+# ─── ResourceQuota ────────────────────────────────────────────
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: i3-gateway-quota
+  namespace: i3-gateway
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "4"
+    limits.memory: 2Gi
+    count/pods: "10"
+
+---
+# ─── Ingress (OpenShift Route / cluster ingress → Kong) ───────
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: kong-external
+  namespace: i3-gateway
+spec:
+  host: api.i3technologies.co.ke
+  to:
+    kind: Service
+    name: kong-proxy
+  port:
+    targetPort: proxy
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

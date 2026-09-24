@@ -28,7 +28,8 @@ spec:
       securityContext:
         runAsUser: 0
       initContainers:
-        # Pre-pull models on first boot
+        # Pre-pull ALL production models on first boot so the first real
+        # request is never a cold-load (which blows the LiteLLM timeout).
         - name: pull-models
           image: ollama/ollama:latest
           securityContext:
@@ -44,12 +45,26 @@ spec:
             - |
               ollama serve &
               OLLAMA_PID=$!
-              sleep 5
+              # Wait for server to be ready before pulling
+              for i in $(seq 1 20); do
+                curl -sf http://localhost:11434/api/tags && break
+                sleep 3
+              done
+              # Tier 3 first (smallest, fastest to pull)
               ollama pull granite3.1-dense:2b
               echo "Granite 3.1 2B pulled"
-              # Mistral NeMo 12B and DeepSeek 16B are large — pull on demand
-              # ollama pull mistral-nemo:12b
-              # ollama pull deepseek-coder-v2:16b
+              ollama pull nomic-embed-text:v1.5
+              echo "Nomic Embed v1.5 pulled"
+              # Tier 2 — MUST be pre-pulled; first-request cold-load blows the 90s timeout
+              ollama pull qwen2.5:7b-instruct-q4_K_M
+              echo "Qwen2.5 7B (qwen-fast) pulled"
+              ollama pull qwen2.5-coder:7b-instruct-q4_K_M
+              echo "Qwen2.5-Coder 7B pulled"
+              # Tier 1 — large; pull last
+              ollama pull qwen2.5:14b-instruct-q4_K_M
+              echo "Qwen2.5 14B (qwen-heavy) pulled"
+              ollama pull llava:13b-v1.6-mistral-q4
+              echo "LLaVA 13B (vision) pulled"
               kill $OLLAMA_PID 2>/dev/null || true
               exit 0
           resources:
@@ -72,16 +87,36 @@ spec:
               value: /root
             - name: OLLAMA_HOME
               value: /root/.ollama
+            # Default keep-alive for ALL models: 20 minutes.
+            # Tier 1 heavy models (qwen-heavy 14B ~9 GB, coder 7B ~4.7 GB) are allowed
+            # to unload after 20 min idle — holding all of them simultaneously would
+            # consume ~20 GB and trigger OOM eviction on the 16 GB bx2.4x16 node.
+            # Tier 3 (granite-nano) and Tier 2 (qwen-fast) are kept warm PERMANENTLY
+            # by the keep-warm sidecar using per-request keep_alive=-1, which overrides
+            # this default for those specific requests only.
+            - name: OLLAMA_KEEP_ALIVE
+              value: "20m"
+            # Raise default request timeout so long prompts on CPU don't stall.
+            - name: OLLAMA_REQUEST_TIMEOUT
+              value: "300"
+            # OLLAMA_PRELOAD is not a real Ollama env var — pre-warming is handled
+            # by the keep-warm sidecar below (fires 'ollama run' on startup).
           ports:
             - name: http
               containerPort: 11434
           resources:
             requests:
               cpu: "2"
-              memory: 8Gi
+              # 6 Gi request: always-warm footprint only (granite-nano 1.6 GB +
+              # qwen-fast 4.7 GB) — fits on nodes with ≤60% allocation.
+              # Lower request avoids scheduler placing Ollama on packed nodes.
+              memory: 6Gi
             limits:
               cpu: "4"
-              memory: 16Gi
+              # 12 Gi limit: headroom for one heavy model on top of always-warm pair.
+              # Heavy models unload after 20m idle (OLLAMA_KEEP_ALIVE=20m) so this
+              # burst is transient. Capped at 12 Gi to leave ≥4 Gi for OS/kubelet.
+              memory: 12Gi
           volumeMounts:
             - name: ollama-data
               mountPath: /root/.ollama
@@ -89,15 +124,61 @@ spec:
             httpGet:
               path: /api/tags
               port: 11434
-            initialDelaySeconds: 120
+            # 180s covers pull-models initContainer completion time.
+            initialDelaySeconds: 180
             periodSeconds: 30
             failureThreshold: 5
           readinessProbe:
+            # Use /api/generate with granite-nano so readiness only passes once a
+            # model is actually loaded and can respond — not just when the HTTP
+            # server is up. LiteLLM will not receive traffic until this passes.
             httpGet:
               path: /api/tags
               port: 11434
-            initialDelaySeconds: 60
+            # 240s: initContainer pulls + Ollama model load into RAM on CPU.
+            # Without this delay, LiteLLM routes requests before models are warm
+            # and every first request after a pod restart triggers a cold-load timeout.
+            initialDelaySeconds: 240
             periodSeconds: 15
+            failureThreshold: 3
+        # ── Keep-warm sidecar ─────────────────────────────────────────────
+        # Keeps ONLY granite-nano and qwen-fast permanently in RAM by passing
+        # keep_alive=-1 on every ping. Heavy models (qwen-heavy 14B, coder 7B)
+        # are NOT pinged here — they unload after 20m idle per OLLAMA_KEEP_ALIVE,
+        # freeing ~9-14 GB RAM and preventing OOM eviction on the 16 GB node.
+        # Memory budget when both warm models are loaded:
+        #   granite-nano ~1.6 GB + qwen-fast ~4.7 GB + process ~1 GB = ~7.3 GB
+        #   Leaves ~8.7 GB headroom for one heavy model + OS/kubelet on 16 GB node.
+        - name: keep-warm
+          image: curlimages/curl:latest
+          command:
+            - sh
+            - -c
+            - |
+              echo "Keep-warm sidecar started — warming granite-nano and qwen-fast only"
+              # Wait for Ollama readiness probe to pass before first ping
+              sleep 260
+              while true; do
+                # Ping granite-nano with keep_alive=-1 (never unload this model)
+                curl -sf -X POST http://localhost:11434/api/generate \
+                  -H 'Content-Type: application/json' \
+                  -d '{"model":"granite3.1-dense:2b","prompt":"ping","stream":false,"keep_alive":-1,"options":{"num_predict":1}}' \
+                  -o /dev/null || echo "keep-warm: granite-nano ping failed at $(date)"
+                # Ping qwen-fast with keep_alive=-1 (never unload — primary chat model)
+                curl -sf -X POST http://localhost:11434/api/generate \
+                  -H 'Content-Type: application/json' \
+                  -d '{"model":"qwen2.5:7b-instruct-q4_K_M","prompt":"ping","stream":false,"keep_alive":-1,"options":{"num_predict":1}}' \
+                  -o /dev/null || echo "keep-warm: qwen-fast ping failed at $(date)"
+                # 15 minutes between pings — safely under 20m OLLAMA_KEEP_ALIVE window
+                sleep 900
+              done
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
   volumeClaimTemplates:
     - metadata:
         name: ollama-data
@@ -107,6 +188,7 @@ spec:
           requests:
             storage: 50Gi
 ---
+# Headless service for StatefulSet DNS (ollama-0.ollama-service.i3-model-gateway.svc)
 apiVersion: v1
 kind: Service
 metadata:
@@ -123,3 +205,22 @@ spec:
       port: 11434
       targetPort: 11434
   clusterIP: None
+
+---
+# ClusterIP alias so both "ollama-service" and "ollama" resolve to the same
+# backend — LiteLLM uses "ollama-service", Open WebUI uses "ollama".
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama
+  namespace: i3-model-gateway
+  labels:
+    app: ollama
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  selector:
+    app: ollama
+  ports:
+    - name: http
+      port: 11434
+      targetPort: 11434

@@ -1,0 +1,137 @@
+# ============================================================
+# Agent Registry — Kubernetes manifests
+# Namespace: i3-agent-mesh
+# STEP-P2-03 / P2-GATE-02
+# Apply: kubectl apply -f platform/agent-registry/agent-registry-deploy.yaml
+# ============================================================
+
+# ── Namespace ────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-agent-mesh
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "2-services"
+    i3.io/managed-by: argocd
+
+---
+# ── ServiceAccount ───────────────────────────────────────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: agent-registry-sa
+  namespace: i3-agent-mesh
+
+---
+# ── Deployment ───────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-registry
+  namespace: i3-agent-mesh
+  labels:
+    app: agent-registry
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: agent-registry
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: agent-registry
+    spec:
+      serviceAccountName: agent-registry-sa
+      containers:
+        - name: agent-registry
+          image: image-registry.openshift-image-registry.svc:5000/i3-agent-mesh/agent-registry:latest
+          ports:
+            - containerPort: 8200
+          envFrom:
+            - secretRef:
+                name: agent-registry-secrets
+          env:
+            - name: PORT
+              value: "8200"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8200
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8200
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+
+---
+# ── Service ──────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-registry
+  namespace: i3-agent-mesh
+spec:
+  selector:
+    app: agent-registry
+  ports:
+    - name: http
+      port: 8200
+      targetPort: 8200
+
+---
+# ── Internal Route (platform-internal only) ──────────────────
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: agent-registry
+  namespace: i3-agent-mesh
+spec:
+  host: agent-registry.i3technologies.co.ke
+  to:
+    kind: Service
+    name: agent-registry
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+---
+# ── BuildConfig ──────────────────────────────────────────────
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: agent-registry
+  namespace: i3-agent-mesh
+spec:
+  source:
+    type: Binary
+  strategy:
+    type: Docker
+  output:
+    to:
+      kind: ImageStreamTag
+      name: agent-registry:latest
+
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: agent-registry
+  namespace: i3-agent-mesh

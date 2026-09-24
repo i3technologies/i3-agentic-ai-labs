@@ -1,0 +1,950 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 Enhancement 2.0 — Master Implementation Plan</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.6; background: #ffffff; color: #1f2328; }
+  .page { max-width: 960px; margin: 0 auto; padding: 40px 32px 60px; }
+
+  /* Header */
+  .header { border-bottom: 2px solid #3b82d4; padding-bottom: 20px; margin-bottom: 32px; }
+  .header h1 { font-size: 22px; font-weight: 700; color: #1f2328; }
+  .header .sub { font-size: 13px; color: #57606a; margin-top: 4px; }
+  .meta-row { display: flex; gap: 24px; margin-top: 14px; flex-wrap: wrap; }
+  .meta-pill { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 4px; padding: 4px 10px; font-size: 12px; color: #57606a; }
+  .meta-pill strong { color: #1f2328; }
+
+  /* Exec Summary */
+  .exec-box { background: #f7f8fa; border-left: 4px solid #3b82d4; padding: 16px 20px; margin-bottom: 32px; border-radius: 0 4px 4px 0; }
+  .exec-box p { font-size: 13.5px; color: #1f2328; margin-bottom: 8px; }
+  .exec-box p:last-child { margin-bottom: 0; }
+
+  /* Section Headers */
+  h2 { font-size: 16px; font-weight: 700; color: #1f2328; margin: 36px 0 14px; padding-bottom: 6px; border-bottom: 1px solid #e5e7eb; }
+  h3 { font-size: 14px; font-weight: 700; color: #1f2328; margin: 22px 0 10px; }
+  h4 { font-size: 13px; font-weight: 600; color: #3b82d4; margin: 16px 0 8px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  /* Stream Cards */
+  .stream-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px; }
+  .stream-card { border: 1px solid #e5e7eb; border-radius: 6px; padding: 14px 16px; }
+  .stream-card .s-num { font-size: 11px; font-weight: 700; color: #fff; background: #3b82d4; border-radius: 3px; padding: 1px 6px; margin-bottom: 6px; display: inline-block; }
+  .stream-card .s-num.purple { background: #7c5cd8; }
+  .stream-card .s-num.green { background: #2da44e; }
+  .stream-card .s-num.orange { background: #bf8700; }
+  .stream-card .s-num.red { background: #cf222e; }
+  .stream-card .s-num.teal { background: #1a7f74; }
+  .stream-card h3 { margin: 4px 0 6px; font-size: 13.5px; }
+  .stream-card p { font-size: 12.5px; color: #57606a; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 12.5px; }
+  th { background: #f7f8fa; border: 1px solid #e5e7eb; padding: 7px 10px; text-align: left; font-weight: 600; color: #1f2328; }
+  td { border: 1px solid #e5e7eb; padding: 7px 10px; color: #1f2328; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+
+  /* Steps */
+  .step-block { border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 14px; overflow: hidden; }
+  .step-header { display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; background: #f7f8fa; }
+  .step-num { min-width: 28px; height: 28px; border-radius: 50%; background: #3b82d4; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .step-num.purple { background: #7c5cd8; }
+  .step-num.green { background: #2da44e; }
+  .step-num.orange { background: #bf8700; }
+  .step-num.red { background: #cf222e; }
+  .step-num.teal { background: #1a7f74; }
+  .step-title { font-size: 13.5px; font-weight: 700; color: #1f2328; }
+  .step-meta { font-size: 11.5px; color: #57606a; margin-top: 2px; }
+  .step-body { padding: 12px 16px; }
+  .step-body ul { padding-left: 18px; margin: 0; }
+  .step-body li { font-size: 12.5px; margin-bottom: 4px; color: #1f2328; }
+  .step-body p { font-size: 12.5px; color: #1f2328; margin-bottom: 6px; }
+
+  /* Tags */
+  .tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 10px; margin: 2px 2px 2px 0; }
+  .tag-blue { background: #dbeafe; color: #1d4ed8; }
+  .tag-green { background: #dcfce7; color: #15803d; }
+  .tag-orange { background: #fef3c7; color: #92400e; }
+  .tag-red { background: #fee2e2; color: #991b1b; }
+  .tag-purple { background: #ede9fe; color: #5b21b6; }
+  .tag-gray { background: #f3f4f6; color: #374151; }
+
+  /* Timeline bar */
+  .timeline { display: flex; gap: 0; margin: 16px 0 24px; overflow-x: auto; }
+  .tl-item { flex: 1; min-width: 100px; border: 1px solid #e5e7eb; border-right: none; padding: 10px 12px; background: #f7f8fa; }
+  .tl-item:last-child { border-right: 1px solid #e5e7eb; border-radius: 0 4px 4px 0; }
+  .tl-item:first-child { border-radius: 4px 0 0 4px; }
+  .tl-item.active { background: #3b82d4; border-color: #3b82d4; }
+  .tl-item.active .tl-phase, .tl-item.active .tl-label { color: #fff; }
+  .tl-phase { font-size: 11px; font-weight: 700; color: #57606a; }
+  .tl-label { font-size: 12px; font-weight: 600; color: #1f2328; margin-top: 2px; }
+  .tl-date { font-size: 11px; color: #57606a; }
+
+  /* KPI row */
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0 24px; }
+  .kpi-card { border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px 14px; text-align: center; }
+  .kpi-val { font-size: 20px; font-weight: 700; color: #3b82d4; }
+  .kpi-val.purple { color: #7c5cd8; }
+  .kpi-val.green { color: #2da44e; }
+  .kpi-val.orange { color: #bf8700; }
+  .kpi-label { font-size: 11.5px; color: #57606a; margin-top: 2px; }
+
+  /* Risk table */
+  .risk-high td:first-child { border-left: 3px solid #cf222e; }
+  .risk-med td:first-child { border-left: 3px solid #bf8700; }
+  .risk-low td:first-child { border-left: 3px solid #2da44e; }
+
+  /* Divider */
+  .divider { border: none; border-top: 1px solid #e5e7eb; margin: 28px 0; }
+
+  /* Footer */
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #57606a; }
+
+  @media (max-width: 680px) {
+    .stream-grid { grid-template-columns: 1fr; }
+    .kpi-row { grid-template-columns: 1fr 1fr; }
+    .timeline { flex-direction: column; }
+    .tl-item { border-right: 1px solid #e5e7eb; border-bottom: none; border-radius: 0; }
+    .tl-item:first-child { border-radius: 4px 4px 0 0; }
+    .tl-item:last-child { border-bottom: 1px solid #e5e7eb; border-radius: 0 0 4px 4px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  
+  <div class="header">
+    <h1>i3 Enhancement 2.0 — Master Implementation Plan</h1>
+    <div class="sub">Comprehensive Upgrade Roadmap · Engineered on the i3-ai Platform · IBM ROKS Frankfurt + Nairobi</div>
+    <div class="meta-row">
+      <span class="meta-pill"><strong>Prepared by:</strong> Solutions Architecture Review</span>
+      <span class="meta-pill"><strong>Source Folder:</strong> i3-enhancement2.0 (22 documents)</span>
+      <span class="meta-pill"><strong>Date:</strong> September 2026</span>
+      <span class="meta-pill"><strong>Status:</strong> Implementation-Ready Draft</span>
+    </div>
+  </div>
+
+  
+  <div class="exec-box">
+    <p><strong>Strategic Premise:</strong> The i3-enhancement2.0 folder contains 22 documents spanning six distinct but deeply interconnected product streams: (1) AfriqAI sovereign frontier AI, (2) i3 AI Lab P0 infrastructure upgrades, (3) PMaaS 6.0 Gen-Z civic platform, (4) i3 EduBridge academic platform, (5) i3 SmartLabs multi-vendor lab commercialization, and (6) Enterprise Email, Collaboration &amp; Web Hosting. Every stream builds on the same IBM ROKS OpenShift cluster already live in Frankfurt, and the same Keycloak → LiteLLM → Langfuse → OpenBao trust spine that is running today.</p>
+    <p><strong>Core Upgrade Philosophy:</strong> Nothing here requires new vendors or unproven technology. The mandate is to wire existing namespaces together in new configurations, add GPU inference, establish metering &amp; billing, extend to Nairobi for data residency, harden multi-tenancy, and layer language-sovereign AI (Swahili, Sheng, Gĩkũyũ) across every product surface. Then commercialise.</p>
+    <p><strong>Combined Revenue Target:</strong> KES 730M+ Year 1 → KES 3.2B+ Year 3 across all streams, with 55–72% EBITDA margins leveraging IBM Cloud credits and partner NFR licenses as zero-cash infrastructure.</p>
+  </div>
+
+  
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-val">22</div><div class="kpi-label">Source Documents Reviewed</div></div>
+    <div class="kpi-card"><div class="kpi-val green">6</div><div class="kpi-label">Product Streams</div></div>
+    <div class="kpi-card"><div class="kpi-val purple">52</div><div class="kpi-label">Implementation Steps</div></div>
+    <div class="kpi-card"><div class="kpi-val orange">18 mo</div><div class="kpi-label">Full Rollout Horizon</div></div>
+  </div>
+
+  
+  <h2>Master Delivery Timeline</h2>
+  <div class="timeline">
+    <div class="tl-item active"><div class="tl-phase">NOW</div><div class="tl-label">Foundation Hardening</div><div class="tl-date">Wks 1–4</div></div>
+    <div class="tl-item"><div class="tl-phase">PHASE 1</div><div class="tl-label">GPU + Metering + RBAC</div><div class="tl-date">Wks 5–12</div></div>
+    <div class="tl-item"><div class="tl-phase">PHASE 2</div><div class="tl-label">Product Suite Build</div><div class="tl-date">Wks 13–24</div></div>
+    <div class="tl-item"><div class="tl-phase">PHASE 3</div><div class="tl-label">Nairobi Region + Scale</div><div class="tl-date">Wks 25–36</div></div>
+    <div class="tl-item"><div class="tl-phase">PHASE 4</div><div class="tl-label">Pan-Africa Expansion</div><div class="tl-date">Wks 37–72</div></div>
+  </div>
+
+  
+  <h2>Product Streams Overview</h2>
+  <div class="stream-grid">
+    <div class="stream-card">
+      <span class="s-num">STREAM 1</span>
+      <h3>i3 AI Lab — P0 Infrastructure Upgrades</h3>
+      <p>GPU inference tier, metering/billing, Nairobi residency, multi-tenancy RBAC, model governance. The platform backbone all other streams depend on.</p>
+    </div>
+    <div class="stream-card">
+      <span class="s-num purple">STREAM 2</span>
+      <h3>AfriqAI Sovereign Frontier</h3>
+      <p>vLLM migration, Afriq-BPE tokenizer, Dynamic Sheng engine, vernacular voice AI, Afriq Desktop, enterprise sovereign appliance.</p>
+    </div>
+    <div class="stream-card">
+      <span class="s-num green">STREAM 3</span>
+      <h3>PMaaS 6.0 — Gen-Z Civic Platform</h3>
+      <p>Dawa Kijana persona, Content Factory, EvalOS Youth Squad gamification, OTT AMAs, Verified Media Vault (C2PA), i3-Engage CDP integration.</p>
+    </div>
+    <div class="stream-card">
+      <span class="s-num orange">STREAM 4</span>
+      <h3>i3 EduBridge — Academic Platform</h3>
+      <p>Moodle LMS, i3 Author Copilot (H5P/Adapt + AI), Lab-as-a-Service API, AI Tutor (RAG-grounded), BigBlueButton OTT, Open Badges 3.0.</p>
+    </div>
+    <div class="stream-card">
+      <span class="s-num red">STREAM 5</span>
+      <h3>i3 SmartLabs — Multi-Vendor LaaS</h3>
+      <p>45-vendor matrix, 3-account IBM Cloud Transit Gateway, KEDA autoscaling, Ansible AAP provisioning, commercial LaaS/EaaS/training launch.</p>
+    </div>
+    <div class="stream-card">
+      <span class="s-num teal">STREAM 6</span>
+      <h3>Enterprise Email, Collaboration &amp; Hosting</h3>
+      <p>Nextcloud Hub + Zimbra deployment, Agentic PDF pipeline, Enterprise Collaboration agents, Web Hosting reseller infrastructure on ROKS.</p>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  
+  
+  
+  <h2>Stream 1 — i3 AI Lab P0 Infrastructure Upgrades</h2>
+  <p style="font-size:12.5px;color:#57606a;margin-bottom:16px">Source: <em>i3_AI_Lab_P0_Technical_Build_Spec.md, i3_AI_Platform_Commercialization_Strategy.pdf, I3_AI_Lab_Commercialization_Strategy_East_Africa.pdf, Agentic_AI_Commercialization_and_Market_Review.pdf</em></p>
+
+  <h4>Workstream B1 — GPU Inference Tier</h4>
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">GPU Node Procurement &amp; Cluster Preparation</div>
+        <div class="step-meta">Owner: Platform Lead + Ops  |  Timeline: Week 1–2  |  Blocker: Hardware lead time</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Label and taint GPU worker nodes: <code>gpu=true:NoSchedule</code> to keep notebook pods off GPU nodes.</li>
+        <li>Install NVIDIA GPU Operator (preferred) or AMD ROCm equivalent; run 2-week bake-off if supply constrained.</li>
+        <li>Verify <code>nvidia-smi</code> from a debug pod before any model workload is scheduled.</li>
+        <li>Target hardware: 1× NVIDIA L4 24GB (GPU-1: qwen-heavy + coder), optional GPU-2 for vision (llava:13B).</li>
+        <li>Decision gate: NVIDIA vs ROCm — do not let hardware procurement block B2/B4 workstreams.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-blue">GPU Operator</span><span class="tag tag-blue">NVIDIA L4</span><span class="tag tag-orange">Week 1–2</span><span class="tag tag-red">Blocker</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">Deploy ollama-gpu StatefulSet &amp; Update LiteLLM Routing Config</div>
+        <div class="step-meta">Owner: Platform Engineers (×2)  |  Timeline: Week 3–5  |  Estimate: 2 engineers × 3–4 weeks</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Deploy <code>ollama-gpu</code> StatefulSet: <code>OLLAMA_KEEP_ALIVE=-1</code>, full GPU resource limits, node affinity per alias.</li>
+        <li>Pre-warm models via <code>/api/generate</code> with <code>"keep_alive": -1</code> in an init container before traffic admission.</li>
+        <li>Update LiteLLM model_list: route <code>qwen-heavy</code> + <code>coder</code> → <code>ollama-gpu:11434</code>; keep <code>qwen-fast</code> + <code>granite-nano</code> + <code>embed</code> on existing <code>ollama-cpu</code>.</li>
+        <li>Implement fallback rule: if <code>ollama-gpu</code> health-check fails, router falls back to CPU pool with a 5× latency warning header logged to Langfuse.</li>
+        <li>Deploy KEDA ScaledObject on LiteLLM queue depth / GPU utilization ≥ 75% for 5 min — scale-to-one warm minimum (not scale-to-zero for GPU).</li>
+      </ul>
+      <p><strong>Acceptance:</strong> B1-1: qwen-heavy p50 first-token &lt;3s warm. B1-2: coder p50 &lt;2s. B1-3: 10 parallel requests — no 5xx. B1-4: GPU failure → CPU fallback within 60s.</p>
+      <div style="margin-top:8px"><span class="tag tag-blue">ollama-gpu</span><span class="tag tag-blue">LiteLLM routing</span><span class="tag tag-blue">KEDA</span><span class="tag tag-green">B1 Acceptance Tests</span></div>
+    </div>
+  </div>
+
+  <h4>Workstream B2 — Metering, Quotas &amp; Billing</h4>
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">Billing Schema, Per-Key Metering &amp; Invoice Export</div>
+        <div class="step-meta">Owner: 1–2 Engineers  |  Timeline: Week 3–8 (parallel with B1)  |  Estimate: 2–3 weeks</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Create billing schema in existing Crunchy PostgreSQL: <code>customers</code>, <code>projects</code>, <code>api_keys</code>, <code>monthly_usage</code> tables with KES currency default.</li>
+        <li>Retire <code>sk-i3-internal</code> master key for client use — issue per-project LiteLLM keys; master key scoped to break-glass service account only with 30-day overlap migration period.</li>
+        <li>Implement hard budget cap per key: requests rejected with JSON <code>429-budget-exceeded</code> response. Soft alerts at 50% / 80% / 95% to project owner email/webhook via n8n.</li>
+        <li>Configure per-key RPM limits to prevent runaway notebook loops.</li>
+        <li>Deploy nightly ETL aggregating <code>spend_logs</code> + kube metrics into <code>monthly_usage</code>; generate per-customer CSV + branded PDF usage statement.</li>
+        <li>Wire Sage per-workspace keys (not master key) — validate B2-5 acceptance: Sage traffic metered per workspace.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-blue">LiteLLM spend_logs</span><span class="tag tag-blue">Postgres billing schema</span><span class="tag tag-green">KES pricing</span><span class="tag tag-orange">Master key retirement</span></div>
+    </div>
+  </div>
+
+  <h4>Workstream B3 — Nairobi Region Deployment</h4>
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num">4</div>
+      <div>
+        <div class="step-title">Nairobi Region Cluster Stand-Up &amp; Data Residency Verification</div>
+        <div class="step-meta">Owner: 2 Engineers + Procurement  |  Timeline: Week 9–18  |  Estimate: 4–6 weeks + hardware lead</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li><strong>Decision (Week 2):</strong> Option B (Nairobi colocation — iColo / Africa Data Centres / Node Africa) for inference + data plane; Frankfurt as DR/control-plane backup.</li>
+        <li>Provision cluster + storage classes (block + object), GPU node (same spec as B1), Nairobi region overlay.</li>
+        <li>GitOps deploy via same Helm/Kustomize as Frankfurt with region overlay — per-region endpoints and storage classes only differ.</li>
+        <li>Enforce residency: customer prompts, uploads, embeddings, and audit logs stay Nairobi-only. No Frankfurt replication for these buckets/PVCs — contractual promise enforced by infra config, not policy.</li>
+        <li>Configure billing replica: Nairobi writes to regional replica; Frankfurt remains billing-of-record until Nairobi GA.</li>
+        <li>Validate ODPC-relevant controls: encryption at rest, access logging, residency tags on object buckets.</li>
+      </ul>
+      <p><strong>Acceptance:</strong> B3-1: Residency audit — all prompts/uploads verified Nairobi-only. B3-2: EA user p95 round-trip ≥60% improvement over Frankfurt. B3-3: DR runbook drill within RTO 4h.</p>
+      <div style="margin-top:8px"><span class="tag tag-blue">Nairobi region</span><span class="tag tag-blue">Kenya DPA 2019</span><span class="tag tag-blue">ODPC</span><span class="tag tag-green">Data residency</span></div>
+    </div>
+  </div>
+
+  <h4>Workstream B4-MVP — Multi-Tenancy, RBAC &amp; Audit Logging</h4>
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num">5</div>
+      <div>
+        <div class="step-title">Enterprise Namespace RBAC, SSO Group Mapping &amp; Audit Store</div>
+        <div class="step-meta">Owner: 1–2 Engineers  |  Timeline: Week 9–12  |  Estimate: 2–3 weeks</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Create OpenShift namespace per enterprise customer: <code>cust-&lt;slug&gt;</code> pattern; kubespawner places JupyterHub user pods in customer namespace via SSO group claims.</li>
+        <li>Keycloak groups: <code>i3-users</code>, <code>cust-acme</code>, etc. → three roles per namespace: <code>admin</code> / <code>developer</code> / <code>viewer</code>.</li>
+        <li>Disable master key for interactive use; scoped to break-glass only (B2 dependency).</li>
+        <li>API audit: LiteLLM request log enriched with <code>project_id</code>, model, token counts, latency → shipped to append-only object-store bucket (WORM policy, 7-year retention).</li>
+        <li>Platform audit: OpenShift API audit events for customer namespaces forwarded to same WORM store.</li>
+        <li>Retention: hot 90 days, cold archive per contract. Legal review of 7-yr WORM promises by Week 4 (ODPC).</li>
+      </ul>
+      <p><strong>Acceptance:</strong> B4-1: SSO isolation verified. B4-2: Cross-project key rejection. B4-3: 100% request attribution in audit sample. B4-4: Offboarding within 5 min incl. revoked sessions.</p>
+      <div style="margin-top:8px"><span class="tag tag-blue">Keycloak groups</span><span class="tag tag-blue">kubespawner</span><span class="tag tag-blue">WORM audit</span><span class="tag tag-orange">cust-&lt;slug&gt; namespaces</span></div>
+    </div>
+  </div>
+
+  <h4>Workstream B5-MVP — Model Governance Pack</h4>
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num">6</div>
+      <div>
+        <div class="step-title">Evaluation Harness, PII Pre-Filter &amp; Model Cards</div>
+        <div class="step-meta">Owner: 1 ML Engineer + Swahili reviewer (part-time)  |  Timeline: Week 3–12 (parallel)  |  Estimate: 3 weeks</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Build <code>eval/</code> repo: task suites per alias — summarization, Q&amp;A faithfulness, code correctness, instruction-following (50–100 gold items each).</li>
+        <li><strong>Swahili/Sheng suite v1:</strong> 100 prompts — comprehension, translation, cultural idiom; human spot-check scoring. This is a genuine regional differentiator.</li>
+        <li>Runner: batch against LiteLLM; BLEU/ROUGE + LLM-judge via <code>qwen-heavy</code> for qualitative rubrics; results versioned in Git.</li>
+        <li>PII pre-filter: LiteLLM pre-call hook using NER model (Presidio-style). Detect KE format: emails, phone numbers, National ID numbers. Mode = <code>detect</code> first, <code>redact</code> after 2 weeks of FP tuning. Target: ≥90% recall on 200-document seeded test set.</li>
+        <li>Model cards: one page per alias — capability, eval scores, Swahili scores, latency GPU/CPU, known limitations, intended use. Published to customer portal.</li>
+        <li>Release gate: model/quant change must pass harness + produce updated model card before promotion to <code>prod</code> alias — enforced as CI gate.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-purple">Swahili/Sheng eval</span><span class="tag tag-blue">PII detection</span><span class="tag tag-blue">Model cards</span><span class="tag tag-green">Release gate CI</span></div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  
+  
+  
+  <h2>Stream 2 — AfriqAI Sovereign Frontier Architecture</h2>
+  <p style="font-size:12.5px;color:#57606a;margin-bottom:16px">Source: <em>AfriqAI_Frontier_Architecture_and_Strategy.pdf, Agentic_AI_Commercialization_and_Market_Review.pdf</em></p>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num purple">7</div>
+      <div>
+        <div class="step-title">vLLM Migration — Replace Ollama for Production Inference</div>
+        <div class="step-meta">Owner: Platform Engineers  |  Timeline: Phase 1 (Months 1–6)  |  Dependency: GPU nodes (Step 1)</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Deploy vLLM with PagedAttention on GPU nodes — targeted at <code>qwen-heavy</code>, <code>coder</code>, <code>vision</code> aliases for distributed inference.</li>
+        <li>LiteLLM proxy continues as the single control plane — route GPU aliases to vLLM endpoint, CPU aliases remain on Ollama.</li>
+        <li>Validate token throughput improvement: target sub-3s first-token latency (GPU warm), sub-20ms for lightweight completions.</li>
+        <li>Keep Ollama for CPU models and offline/edge deployments; vLLM for production GPU serving.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-purple">vLLM</span><span class="tag tag-purple">PagedAttention</span><span class="tag tag-blue">LiteLLM gateway</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num purple">8</div>
+      <div>
+        <div class="step-title">Afriq-BPE Tokenizer v1 — Swahili/Bantu Vocabulary Optimization</div>
+        <div class="step-meta">Owner: ML Engineer  |  Timeline: Months 1–6  |  Part-time: Swahili linguist reviewer</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Build custom Afriq-BPE tokenizer: 64k vocabulary with Swahili/Bantu morphemes targeting 2.8× token reduction vs. standard tokenizers for EA languages.</li>
+        <li>Integrate agglutinative morphological segmentation for Bantu language families (Swahili, Gĩkũyũ, Dholuo, Luhya).</li>
+        <li>Deploy as a custom tokenizer extension in the LiteLLM/vLLM pipeline for language-optimised inference.</li>
+        <li>Validate on the B5 Swahili evaluation suite (Step 6) — tokenizer efficiency must show measurable improvement in benchmark scores.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-purple">Afriq-BPE</span><span class="tag tag-purple">Swahili tokenization</span><span class="tag tag-purple">Bantu morphemes</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num purple">9</div>
+      <div>
+        <div class="step-title">Dynamic Sheng Neural Lexicon — Weekly Fine-Tuning Loop</div>
+        <div class="step-meta">Owner: ML Engineer + Community contributors  |  Timeline: Months 7–12</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Build weekly fine-tuning loop for urban Sheng slang adaptation: scrape approved social corpora (Twitter/X, TikTok captions, WhatsApp anonymized) → dedup → fine-tune LoRA adapter on <code>qwen-fast</code>.</li>
+        <li>Deploy Multi-LoRA dynamic serving for language adapters: Kiswahili, Sheng, Gĩkũyũ swappable at inference time.</li>
+        <li>Monitor vocabulary drift cycles (3–6 months) with automated OOV (out-of-vocabulary) detection alerts.</li>
+        <li>Gate every LoRA adapter through the B5 Swahili eval harness before promotion to production — no untested adapters in prod.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-purple">Dynamic Sheng</span><span class="tag tag-purple">Multi-LoRA</span><span class="tag tag-purple">Weekly fine-tuning</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num purple">10</div>
+      <div>
+        <div class="step-title">Vernacular Voice AI Stack — STT/TTS Production Hardening</div>
+        <div class="step-meta">Owner: Voice + ML Engineers  |  Timeline: Months 4–12  |  Dependency: Nairobi region DNS (Steps 4, DNS CNAME: tts, stt)</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Harden <code>faster-whisper large-v3</code> for production STT: English, Swahili, Gĩkũyũ — expose via <code>stt.i3technologies.co.ke</code> (CNAME now missing — add DNS record).</li>
+        <li>Harden XTTS-v2 (Coqui) for TTS/voice cloning: expose via <code>tts.i3technologies.co.ke</code> (CNAME missing — add DNS record).</li>
+        <li>Integrate Kokoro TTS as lightweight alternative for low-latency mobile contexts.</li>
+        <li>Enforce voice consent architecture: voice_id stored in OpenBao; every cloned voice requires explicit authorization record before serving — mandatory disclosure at every AI-voice touchpoint.</li>
+        <li>Wire voice-note reply flow into WhatsApp Business API: Gen-Z/PMaaS use case (Step 22).</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-purple">faster-whisper</span><span class="tag tag-purple">XTTS-v2</span><span class="tag tag-orange">DNS: tts + stt CNAMEs needed</span><span class="tag tag-red">Consent required</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num purple">11</div>
+      <div>
+        <div class="step-title">Afriq SME Co-worker &amp; Enterprise Sovereign Appliance Launch</div>
+        <div class="step-meta">Owner: Product + Sales  |  Timeline: Months 7–18 (commercial)</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li><strong>SME Co-worker SaaS:</strong> KES 1,500/mo (Starter) → KES 4,500/mo (Growth with eTIMS/WhatsApp CRM); target retailers, clinics, law firms.</li>
+        <li><strong>Enterprise Sovereign Appliance:</strong> Turnkey OpenShift on-prem in Nairobi colo; Setup $25k–60k + Annual SLA $15k; target banks, SACCOs, government MDAs (CBK regulated).</li>
+        <li><strong>Developer API:</strong> Pay-as-you-go $0.20/1M input tokens, $0.60/1M output; M-Pesa billing integration; prepaid bundles KES 1,000–50,000.</li>
+        <li>Deploy M-Pesa Daraja STK Push billing integration for AI API credits via Africa's Talking USSD wallet top-up.</li>
+        <li>eTIMS Tax Co-Pilot: $150–450/mo SaaS — integrate with AfroERP eTIMS module (Step 30).</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-purple">SME Co-worker</span><span class="tag tag-purple">Sovereign appliance</span><span class="tag tag-green">M-Pesa billing</span><span class="tag tag-orange">eTIMS integration</span></div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  
+  
+  
+  <h2>Stream 3 — PMaaS 6.0 "Sauti ya Kizazi" Gen-Z Civic Platform</h2>
+  <p style="font-size:12.5px;color:#57606a;margin-bottom:16px">Source: <em>PMaaS-6.0-GenZ-i3AI-Platform-Technical-Solution.md, PMaaS_5_0_Technical_Business_Implementation_Commercialisation_Review.pdf</em></p>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num green">12</div>
+      <div>
+        <div class="step-title">Dawa Kijana Persona — Second System Prompt Profile (Config Change, Not New Infra)</div>
+        <div class="step-meta">Owner: PMaaS Product Lead  |  Timeline: Week 1–2 (immediate)  |  Effort: 1 day configuration</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Add second system prompt profile to existing Dawa Co-worker (Open WebUI, <code>i3-pmaas</code> namespace): Sheng/English code-switch, WhatsApp-native brevity, <code>qwen-fast</code> model (low latency).</li>
+        <li>Scope grounding to public manifesto + FAQ corpus only (<code>pmaas-manifesto</code> youth-safe subset) — never internal strategy corpus.</li>
+        <li>Set autonomy level: answer FAQs directly; escalate anything persuasive, financial, or sensitive to a human via n8n approval workflow.</li>
+        <li>This is a configuration change — reuses existing LiteLLM routing and Langfuse tracing already in production. Zero new infrastructure.</li>
+        <li>DNS: Confirm <code>dawa.i3technologies.co.ke</code> CNAME is added (currently missing — prioritize).</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-green">Dawa Kijana</span><span class="tag tag-green">qwen-fast</span><span class="tag tag-orange">DNS: dawa CNAME needed</span><span class="tag tag-gray">Config-only</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num green">13</div>
+      <div>
+        <div class="step-title">Gen-Z Content Factory — Vertical-First Short-Form Output</div>
+        <div class="step-meta">Owner: PMaaS Engineers + Content Team  |  Timeline: Week 3–5 (Phase 3 overlay)</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Extend existing Content Agent with vertical-first output: TikTok/Reels/Shorts script + caption + on-screen text pack (not repurposed long-form).</li>
+        <li>Wire LLaVA (vision model, already running) to review thumbnail/meme drafts for brand safety and factual grounding before leaving draft state.</li>
+        <li>Enforce mandatory human-approval gate via n8n workflow state — logged to Kafka <code>pmaas.voter-interactions</code> topic.</li>
+        <li>Youth Ambassador Marketplace: i3-Engage CDP tracks verified ambassador referral codes (aggregate only — no individual persuasion profiling).</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-green">Content Factory</span><span class="tag tag-green">LLaVA brand safety</span><span class="tag tag-green">n8n approval gate</span><span class="tag tag-red">Human approval mandatory</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num green">14</div>
+      <div>
+        <div class="step-title">Youth Squad Gamification — Reuse EvalOS Leaderboard</div>
+        <div class="step-meta">Owner: EvalOS + PMaaS Teams  |  Timeline: Week 5–8 (Phase 4 overlay)</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Relabel EvalOS Leaderboard as "Youth Squad" — ward-level youth volunteer teams compete on verified non-partisan activity: voter registration assists, civic-quiz completions, verified event attendance.</li>
+        <li>Deploy civic literacy quiz bot on WhatsApp: "How does nomination work?", "What is the IEBC's role?" — RAG over public civic-education content only (never manifesto persuasion content).</li>
+        <li>Issue Open Badges 3.0 (W3C verifiable credentials) for civic participation: LinkedIn-linkable, no monetary value attached — keeps it outside campaign-finance concerns.</li>
+        <li>Age-gating: hard technical gate at Keycloak/WhatsApp opt-in layer — under-18 users auto-routed to strictly non-partisan civic-education track. Zero tolerance. Audited weekly.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-green">EvalOS reuse</span><span class="tag tag-green">Open Badges 3.0</span><span class="tag tag-red">Age gate — hard technical</span><span class="tag tag-orange">Under-18 protection</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num green">15</div>
+      <div>
+        <div class="step-title">Verified Media Vault (C2PA) — Youth Trust Feature</div>
+        <div class="step-meta">Owner: Platform + Legal  |  Timeline: Week 3–5 (C2PA manifest layer)  |  Legal review: Week 4</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Add C2PA manifest layer at the SeaweedFS object-store boundary — every official video/audio asset gets a scannable "Verified" QR linking to manifest, timestamp, and original source.</li>
+        <li>XTTS-v2 voice-clone registry in OpenBao already exists — add C2PA provenance metadata wrapper to all generated voice assets.</li>
+        <li>Market explicitly to youth audiences: "If it doesn't have the QR, don't trust it" — turns a defensive legal feature into a Gen-Z engagement mechanic.</li>
+        <li>Every AI-generated voice, video, or text in any youth channel is labelled as AI-generated at first contact, reinforced by Verified QR.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-green">C2PA provenance</span><span class="tag tag-green">Verified QR</span><span class="tag tag-green">SeaweedFS boundary</span><span class="tag tag-red">AI disclosure mandatory</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num green">16</div>
+      <div>
+        <div class="step-title">Nine-Plane PMaaS 5.0 Trust Architecture Implementation</div>
+        <div class="step-meta">Owner: PMaaS Architect  |  Timeline: Phases 0–5 (18 weeks)  |  Prerequisite: Legal validation of ORPP interface</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li><strong>Phase 0 (2 wks):</strong> Architecture baseline, threat model, API contracts, governance charter, legal validation — especially ORPP integration assumptions and party constitution compliance.</li>
+        <li><strong>Phase 1 (6 wks):</strong> Identity vault, PWA shell, Command Hub, membership management, audit ledger, observability.</li>
+        <li><strong>Phase 2 (10 wks):</strong> USSD/WhatsApp/SMS adapters, nominations workflow, consent ledger, content approvals.</li>
+        <li><strong>Phase 3 (14 wks):</strong> AI gateway + RAG agents, media vault + C2PA, forensic deepfake detection pipeline.</li>
+        <li><strong>Phase 4 (18 wks):</strong> PostGIS ward dossier (aggregate only), research engine, commercial tenant layer.</li>
+        <li><strong>Phase 5 (Election peak):</strong> Scale, DR drills, 24/7 operations, incident command.</li>
+        <li><strong>Critical red lines never to cross:</strong> No individual political-opinion profiling of anyone. Commercial Data Diode enforced at aggregate-only query layer — technically, not contractually.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-green">Nine-plane architecture</span><span class="tag tag-green">Ward dossier</span><span class="tag tag-red">No individual profiling</span><span class="tag tag-orange">ORPP legal validation</span></div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  
+  
+  
+  <h2>Stream 4 — i3 EduBridge Academic Platform</h2>
+  <p style="font-size:12.5px;color:#57606a;margin-bottom:16px">Source: <em>i3_EduBridge_Product_Review_and_Technical_Blueprint.md, USIU_i3_Proposal.docx, enterprise_collaboration_agentic_ai_blueprint.pdf</em></p>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num orange">17</div>
+      <div>
+        <div class="step-title">P0 — Moodle LMS Multi-Tenant Deployment + Keycloak SSO</div>
+        <div class="step-meta">Owner: Platform + EdTech Engineers  |  Timeline: Months 1–3  |  USIU pilot: immediate</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Deploy Moodle (GPLv3) self-hosted on OpenShift: one instance per institution namespace (<code>cust-usiu</code>, <code>cust-strathmore</code>, etc.) — same <code>cust-&lt;slug&gt;</code> pattern as B4-MVP.</li>
+        <li>Build i3 Theme &amp; Brand Shell — white-label per institution, i3 co-brand watermark. Consistent with "co-brand with IBM" positioning.</li>
+        <li>Build <strong>i3 Connector Plugin</strong> (Moodle plugin, PHP): LTI 1.3 Deep Linking into Smart Labs, Percipio course passthrough, "Launch AI Tutor" block, OTT video block.</li>
+        <li>Keycloak realm per institution — federate institutional SSO (Shibboleth/SAML/Google Workspace/Microsoft 365 → OIDC). Role mapping: <code>student / faculty / ta / institution-admin / i3-admin</code>.</li>
+        <li>Competency &amp; Certification Mapping: Moodle native Competency Frameworks API → IBM/Red Hat/Anthropic certification tracks.</li>
+        <li><strong>USIU immediate action:</strong> Stand up single-institution Moodle instance, LTI-link to existing Smart Labs and Percipio access already provisioned.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-orange">Moodle</span><span class="tag tag-orange">LTI 1.3</span><span class="tag tag-orange">i3 Connector Plugin</span><span class="tag tag-blue">Keycloak federation</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num orange">18</div>
+      <div>
+        <div class="step-title">P1 — i3 Author Copilot (H5P + Adapt + AI Generation)</div>
+        <div class="step-meta">Owner: EdTech + ML Engineers  |  Timeline: Months 4–7  |  Key IP: AI orchestration layer</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Deploy H5P (open-source, GPLv2) via Moodle plugin or standalone H5P Hub — interactive content with xAPI output.</li>
+        <li>Deploy Adapt Learning Framework for responsive branching scenario modules.</li>
+        <li>Build i3 Lab Scenario Builder: YAML/Git-based spec (VM image + starter files + grading script + hints) compiling to Smart Labs lab definition.</li>
+        <li><strong>i3 Author Copilot (the actual IP):</strong> faculty uploads syllabus/PDF/PPTX → Apache Tika + LangChain chunking → ChromaDB per-course collection → LiteLLM call to <code>coder</code>/<code>qwen-heavy</code> → generates draft quiz bank (H5P JSON), branching scenario outline (Adapt JSON), lab scenario spec (YAML).</li>
+        <li>Export via SCORM 1.2/2004 and xAPI (Tin Can) + Common Cartridge/LTI Resource packaging — portable, not locked to i3.</li>
+        <li>Announce AI Tutor <em>during</em> the USIU pilot (not before) — it becomes the conversion differentiator for Year 1 paid agreement.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-orange">H5P</span><span class="tag tag-orange">Adapt Framework</span><span class="tag tag-orange">AI Copilot</span><span class="tag tag-orange">SCORM/xAPI</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num orange">19</div>
+      <div>
+        <div class="step-title">P1 — Lab-as-a-Service API + LTI AGS Auto-Grading</div>
+        <div class="step-meta">Owner: SmartLabs + EdTech Engineers  |  Timeline: Months 4–7  |  Dependency: SmartLabs provisioning system</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Build REST/GraphQL wrapper: <code>launch_lab(scenario_id, user_id, course_context)</code>, <code>get_session_status()</code>, <code>get_grading_result()</code>.</li>
+        <li>LTI 1.3 Deep Linking + Assignment &amp; Grade Services (AGS): Moodle activity launches lab → receives numeric grade automatically (completion checklist or auto-graded script output).</li>
+        <li>xAPI statement emission per session: <code>(actor, verb, object, result)</code> → Learning Locker LRS (P2 dependency).</li>
+        <li>Map existing 4-year USIU curriculum to default lab catalogue: Year 1 (Linux/AWS/Python), Year 2 (Full-stack/SQL/Docker), Year 3 (AI/ML GPU/SOC/OpenShift), Year 4 (IBM Power/watsonx/LangChain capstone).</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-orange">LaaS API</span><span class="tag tag-orange">LTI AGS grading</span><span class="tag tag-orange">xAPI statements</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num orange">20</div>
+      <div>
+        <div class="step-title">P2 — OTT Virtual Delivery (BigBlueButton + PeerTube) + Open Badges 3.0</div>
+        <div class="step-meta">Owner: OTT + EdTech Engineers  |  Timeline: Months 8–12</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Deploy BigBlueButton (open-source, LGPL) — native Moodle LTI integration, auto-published recordings, breakout rooms for lab sessions. <em>Start here, defer PeerTube to reduce ops burden.</em></li>
+        <li>Deploy PeerTube (Months 10–12) — self-hosted VOD library, adaptive HLS (240p/360p/480p/720p/1080p), playlists = course modules, i3-branded front end.</li>
+        <li>FFmpeg worker pool for transcoding: GPU-accelerated during off-peak hours (shares AI Lab GPU nodes).</li>
+        <li>Whisper-based auto-captioning via existing faster-whisper STT (English + Swahili) — accessibility compliance for accreditation bodies.</li>
+        <li>Deploy Learning Locker LRS (xAPI-native) — ingests all activity: Moodle completions, H5P, lab sessions, OTT watch-time, AI Tutor engagement.</li>
+        <li>Open Badges 3.0: IBM/Red Hat/Anthropic micro-credentials auto-issued on LRS completion events. LinkedIn-postable verifiable credentials.</li>
+        <li>Talent Platform API: anonymized/opt-in competency + badge + capstone profile per graduating student → i3's employer network.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-orange">BigBlueButton</span><span class="tag tag-orange">PeerTube</span><span class="tag tag-orange">Learning Locker LRS</span><span class="tag tag-orange">Open Badges 3.0</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num orange">21</div>
+      <div>
+        <div class="step-title">P3 — Nextcloud Hub + Zimbra Enterprise Collaboration Deployment</div>
+        <div class="step-meta">Owner: Infrastructure + Collaboration Engineers  |  Timeline: Months 9–16</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Deploy Nextcloud Hub (PHP 8.3+) cluster behind HAProxy + ModSecurity/CrowdSec WAF, TLS 1.3 with ACME cert rotation.</li>
+        <li>Deploy Zimbra multi-node (MTA + Directory + Mailstore) for enterprise email, calendaring, and LDAP directory management.</li>
+        <li>Keycloak as unified IdP across Nextcloud, Zimbra, Moodle, Smart Labs, Sage — one login for the entire stack.</li>
+        <li>Deploy <code>student_assistant</code> Nextcloud App: bridges student queries to local LiteLLM AI microservice with ChromaDB course RAG context.</li>
+        <li><strong>Agentic PDF Pipeline:</strong> PaddleOCR/pdfplumber ingestion → bge-large-en-v1.5 Qdrant embeddings → multi-agent evaluation loop (Financial Consistency, Legal Risk, Compliance agents) → interactive PDF with audit trail. Target: sub-second agentic processing.</li>
+        <li>Commercial: Smart RFP Auditor (SaaS per-document $15–50), self-evaluating worksheets (per-student subscription), contract compliance PDFs (enterprise API tier).</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-orange">Nextcloud Hub</span><span class="tag tag-orange">Zimbra</span><span class="tag tag-orange">Agentic PDF</span><span class="tag tag-orange">Qdrant</span><span class="tag tag-orange">PaddleOCR</span></div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  
+  
+  
+  <h2>Stream 5 — i3 SmartLabs Multi-Vendor LaaS Commercialization</h2>
+  <p style="font-size:12.5px;color:#57606a;margin-bottom:16px">Source: <em>i3_SmartLabs_Commercialization_Blueprint.pdf, i3_SmartLabs_Engineering_Runbook.pdf, i3_SmartLabs_Master_Commercialization_Blueprint.pdf, i3_Smart_Labs_MultiVendor_Lab_Strategy.pdf, Cisco_Lab_on_IBM_Cloud_OpenShift_Consulting_Review.pdf</em></p>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num red">22</div>
+      <div>
+        <div class="step-title">IBM Cloud Transit Gateway — 3-Account Cross-VPC Peering</div>
+        <div class="step-meta">Owner: Ops + Platform Engineers  |  Timeline: Days 1–30  |  Dependency: IBM Cloud accounts provisioned</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Create IBM Cloud Transit Gateway (eu-de region) interconnecting 3 accounts: Core Production (AI platform), SmartLabs Compute (student labs), Model Gateway (GPU/inference).</li>
+        <li>Configure Envoy/IBM ALB as unified edge gateway federating all VPCs — single ingress point for lab routing.</li>
+        <li>Apportion IBM Partner Plus credits: USD 9k/quarter across 3 accounts with guardrails and KEDA cron destroy jobs to prevent burndown.</li>
+        <li>Deploy ArgoCD GitOps across all 3 accounts from single control repo; per-account overlays for resource quotas and storage classes.</li>
+        <li>Verify Keycloak federation: evalos-spa, jupyterhub, sage, afroerp, engage, pmaas all federated through Transit Gateway for cross-account SSO.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-red">Transit Gateway</span><span class="tag tag-red">3-account VPC</span><span class="tag tag-red">IBM credits</span><span class="tag tag-blue">ArgoCD GitOps</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num red">23</div>
+      <div>
+        <div class="step-title">45-Vendor Matrix — NFR Licensing + OpenShift Virtualization</div>
+        <div class="step-meta">Owner: Platform + Network Engineers  |  Timeline: Days 31–60  |  Risk: Vendor eval license expiry</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Enroll with vendor partner portals for NFR licenses: Fortinet FortiGate, Palo Alto VM-Series, Cisco CML, VMware nested ESXi, Check Point CloudGuard, F5 BIG-IP, Juniper vSRX/vMX, Arista cEOS.</li>
+        <li>Deploy OpenShift Virtualization (KubeVirt) node pool for full VM appliances: FortiGate, VM-Series, ISE manifests — dedicated tainted nodes, not shared with AI platform.</li>
+        <li>Deploy Containerlab operator for high-density container NOS: FRRouting, freeRtr, cEOS, cRPD, Nokia SR Linux, SONiC — targeted at networking/CCIE tracks.</li>
+        <li>Maintain open-source NOS fallback (FRR, VyOS) for all tracks where vendor license expires mid-course — contingency must be tested per cohort cycle.</li>
+        <li>Integrate NetBox as source of truth for topology inventory and IPAM across all lab deployments.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-red">KubeVirt</span><span class="tag tag-red">Containerlab</span><span class="tag tag-red">45-vendor matrix</span><span class="tag tag-red">NFR licenses</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num red">24</div>
+      <div>
+        <div class="step-title">GitOps Lab Pipeline — Batfish Pre-Validation + Suzieq Post-Deploy</div>
+        <div class="step-meta">Owner: NetOps + DevOps Engineers  |  Timeline: Weeks 6–9</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Implement GitOps CI/CD pipeline: topology YAML → Tekton lint → Batfish pre-change validation → ArgoCD sync → gNMIc telemetry verification → Suzieq digital-twin post-deploy check.</li>
+        <li>Every lab topology is expressed in Containerlab YAML and version-controlled in Git — topology-as-Code first.</li>
+        <li>Deploy Ansible AAP (Red Hat Automation Platform) playbooks for automated namespace provisioning and teardown — 2,500 concurrent student namespaces, ephemeral with TTL auto-cleanup.</li>
+        <li>KEDA cron autoscaling: peak hours 08:00–20:00 EAT (8 worker nodes) → off-hours baseline (2 nodes). No GPU node scale-to-zero.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-red">Batfish validation</span><span class="tag tag-red">Suzieq digital twin</span><span class="tag tag-red">Ansible AAP</span><span class="tag tag-red">KEDA cron</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num red">25</div>
+      <div>
+        <div class="step-title">Commercial Launch — LaaS / EaaS / Training Tiers</div>
+        <div class="step-meta">Owner: Sales + Product  |  Timeline: Days 61–90  |  Target: 10 enterprise pilots + public tracks</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li><strong>Training:</strong> Individual KES 25k (3 labs) → Pro KES 75k (10 labs + exam vouchers) → Enterprise KES 150k (custom labs + analytics). Target: 120 seats Year 1 = KES 6.75M.</li>
+        <li><strong>LaaS:</strong> POC KES 100k/mo → Dev/Test KES 350k/mo → Dedicated Production KES 500k/mo. Target: 26 POC clients Year 1 = KES 43.2M.</li>
+        <li><strong>Implementation Services:</strong> Network Infra KES 2.5M → Security Arch KES 4M → Cloud/DC Virtualization KES 5–7.5M. 40 enterprise projects Year 1 = KES 80M.</li>
+        <li><strong>Managed Services:</strong> Annual SLA retainers KES 2.5M–5M per enterprise client. 10 clients Year 1 = KES 25M.</li>
+        <li>Total Year 1 target: KES 154.95M at 58% EBITDA margin. Year 3: KES 400M at 72% EBITDA.</li>
+        <li>Launch M-Pesa billing for training seats and LaaS subscriptions via Africa's Talking SMS + Daraja STK Push.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-red">LaaS launch</span><span class="tag tag-green">KES 154.95M Year 1</span><span class="tag tag-green">58% EBITDA</span><span class="tag tag-green">M-Pesa billing</span></div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  
+  
+  
+  <h2>Stream 6 — Enterprise Email, Collaboration &amp; Web Hosting</h2>
+  <p style="font-size:12.5px;color:#57606a;margin-bottom:16px">Source: <em>Architectural Blueprint-Enterprise Email and Collaboration.docx, East_Africa_Email_and_Cloud_Services_Guide.pdf, Expanded_Services_East_Africa_Strategy.pdf, i3-Web-Hosting-Provider-Guide-IBM-Cloud.pdf, Kenya_Reseller_Hosting_Competitor_Pricing_Report.xlsx</em></p>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num teal">26</div>
+      <div>
+        <div class="step-title">IBM Cloud Internet Services (CIS) — DNS, CDN, WAF, TLS Edge Setup</div>
+        <div class="step-meta">Owner: Platform + Security Engineers  |  Timeline: Phase 0 (Weeks 1–4)  |  Dependency: All 26 missing CNAMEs (add now)</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li><strong>Immediate:</strong> Add all 16 missing CNAME records in cPanel DNS zone → <code>8eec2322-eu-de.lb.appdomain.cloud</code> (or wildcard <code>*.i3technologies.co.ke</code>). This unblocks all platform access from the public internet today.</li>
+        <li>Configure IBM Cloud Internet Services (CIS) for <code>i3technologies.co.ke</code>: DNS management, WAF rules, DDoS protection, TLS 1.3 edge termination.</li>
+        <li>Deploy cert-manager in cluster for automatic TLS certificate lifecycle across all tenant domains (ACME/Let's Encrypt).</li>
+        <li>Deploy NetworkPolicy templates + ResourceQuota + LimitRange per tenant namespace — isolation foundations for hosting product.</li>
+        <li>ArgoCD ApplicationSet skeleton for tenant provisioning: one ApplicationSet generates per-tenant Applications from a template.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-teal">IBM CIS</span><span class="tag tag-teal">cert-manager</span><span class="tag tag-red">16 CNAMEs needed NOW</span><span class="tag tag-teal">ArgoCD ApplicationSet</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num teal">27</div>
+      <div>
+        <div class="step-title">Web Hosting Reseller Product — Static, WordPress, Container App Tiers</div>
+        <div class="step-meta">Owner: Platform + Sales  |  Timeline: Phase 1–2 (Weeks 4–12)  |  Note: Consider separate hosting cluster to avoid contention</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Deploy IBM Cloud Object Storage (COS) for static/JAMstack hosting — KES 5k–15k/mo per tenant.</li>
+        <li>Deploy containerized WordPress + MariaDB with auto-backup staging environment — KES 10k–25k/mo.</li>
+        <li>Deploy container app tier: git-based deploy (Tekton), auto-scale, custom domains — KES 15k–40k/mo.</li>
+        <li>Add optional managed Postgres (Crunchy PGO) or IBM Cloud Databases add-on — KES 3k–10k/mo.</li>
+        <li><strong>Pricing Strategy (from competitor analysis):</strong> KES-only transparent pricing (no FX surprises vs. international providers); M-Pesa + WHMCS bundled at Standard tier+; publish renewal rates next to promo prices — builds trust vs. SiteGround 6× renewal shock pattern.</li>
+        <li><strong>Domain Reseller:</strong> Integrate domain reseller API (Phase 3 — after hosting is stable). Full ICANN accreditation is a longer-term goal; reseller path is immediate.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-teal">Static hosting</span><span class="tag tag-teal">WordPress</span><span class="tag tag-teal">COS</span><span class="tag tag-green">KES-only pricing</span><span class="tag tag-green">M-Pesa billing</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num teal">28</div>
+      <div>
+        <div class="step-title">Expanded Managed Services — Cloud, ERP Hosting, SOC-as-a-Service</div>
+        <div class="step-meta">Owner: Sales + Managed Services Team  |  Timeline: Phase 2–3 (Months 4–12)</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li><strong>Tier 1 (Startups):</strong> All-in-one kit: domain + email + SSL + cloud backup + WhatsApp Gateway — KES 15k–30k/mo.</li>
+        <li><strong>Tier 2 (Mid-Market SME):</strong> Google/M365 reselling + Managed Odoo ERP hosting + SOC monitoring (EDR, SIEM) + backup — differentiated by ODPC compliance posture.</li>
+        <li><strong>Tier 3 (Enterprise):</strong> Private sovereign cloud (ROKS) + vCISO advisory + Hybrid SD-WAN + Agentic AI workflow automation bespoke.</li>
+        <li>DevOps-as-a-Service: managed Kubernetes/OpenShift for fintechs and software vendors — KES 2.5M–7.5M implementation + KES 2.5M–5M annual SLA.</li>
+        <li>Position ODPC compliance and Nairobi data residency as table-stakes enterprise differentiator versus Safaricom/Simbanet incumbents.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-teal">Managed services</span><span class="tag tag-teal">SOC-as-a-Service</span><span class="tag tag-teal">DevOps-aaS</span><span class="tag tag-green">ODPC differentiator</span></div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  
+  
+  
+  <h2>Cross-Cutting: Security, Secrets, GitOps &amp; Observability</h2>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num">29</div>
+      <div>
+        <div class="step-title">Secrets Hygiene — Remove sk-i3-internal from All Surfaces</div>
+        <div class="step-meta">Owner: Security Lead  |  Timeline: Week 1 (IMMEDIATE)  |  Priority: CRITICAL</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Audit all notebooks, user guides, HTML docs, and env vars for the literal string <code>sk-i3-internal</code> — remove from every surface.</li>
+        <li>Move <code>LITELLM_API_KEY</code> and all DB credentials into OpenBao (HashiCorp Vault fork, 3-node HA, already running). No plaintext credentials in manifests, docs, or environment dumps.</li>
+        <li>IBM Hyper Protect Crypto Services for M-Pesa API key storage (HSM-backed) where applicable.</li>
+        <li>30-day migration overlap: retain master key in break-glass service account only; all clients rotated to per-project keys by end of Week 4.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-red">CRITICAL — Week 1</span><span class="tag tag-blue">OpenBao</span><span class="tag tag-blue">HSM-backed secrets</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num">30</div>
+      <div>
+        <div class="step-title">Observability Baseline — SLI Dashboards, Alerting &amp; GPU Metrics</div>
+        <div class="step-meta">Owner: Platform Engineers  |  Timeline: Week 3–6</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>Deploy Grafana dashboard "GPU Inference — Latency &amp; Throughput": Prometheus scrape of Ollama/vLLM <code>/api/ps</code> + LiteLLM metrics.</li>
+        <li>SLI dashboards: gateway availability, p50/p95 latency per alias, GPU utilization, spend rate vs. budget, per-tenant token consumption.</li>
+        <li>Alertmanager rules: GPU utilization ≥75% for 5 min → KEDA scale trigger; budget 80% → owner email/Slack alert; pod crash → PagerDuty/n8n escalation.</li>
+        <li>One Prometheus + Grafana stack per product (Moodle, BigBlueButton, PeerTube, LiteLLM, Smart Labs provisioning) — one SLI dashboard set for each, not three separate stacks.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-blue">Prometheus</span><span class="tag tag-blue">Grafana</span><span class="tag tag-blue">Alertmanager</span><span class="tag tag-blue">GPU metrics</span></div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-num">31</div>
+      <div>
+        <div class="step-title">GitOps Unification — Single Repo, Frankfurt + Nairobi + SmartLabs Overlays</div>
+        <div class="step-meta">Owner: DevOps Lead  |  Timeline: Week 3–8</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul>
+        <li>All manifests — LiteLLM config, KEDA, Grafana, namespaces, Moodle Helm charts, BigBlueButton/PeerTube manifests, course-content packages — in one GitOps repo.</li>
+        <li>Per-region overlays: Frankfurt (existing), Nairobi (B3), SmartLabs 3-account (Stream 5). Changes via PR with B1–B5 acceptance tests as CI gates.</li>
+        <li>Seed <code>i3-platform-root</code> Argo CD application — currently in <code>pending-repo</code> state (flagged in today's platform health check). This unblocks GitOps for the new workstreams.</li>
+        <li>Runbooks per workstream: GPU failover, budget incident, region failover drill, audit export request — one per stream, committed to the same repo.</li>
+      </ul>
+      <div style="margin-top:8px"><span class="tag tag-blue">ArgoCD ApplicationSet</span><span class="tag tag-blue">Region overlays</span><span class="tag tag-orange">i3-platform-root pending</span></div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  
+  
+  
+  <h2>Commercial Revenue Roadmap</h2>
+
+  <table>
+    <thead>
+      <tr><th>Stream</th><th>Product / Tier</th><th>Year 1 Target</th><th>Year 3 Target</th><th>EBITDA</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>AI Lab (B1–B5)</td><td>Sovereign Appliance + eTIMS Co-pilot + WhatsApp AI + Governance Advisory</td><td>KES 68M ($530k)</td><td>KES 400M ($3.1M)</td><td>65%</td></tr>
+      <tr><td>AfriqAI</td><td>SME Co-worker SaaS + Developer API + Enterprise Appliance + Afriq Box</td><td>KES 120M</td><td>KES 600M</td><td>60%</td></tr>
+      <tr><td>PMaaS 6.0</td><td>Ward Councillor KES 150k · MCA/MP KES 500k · Governor KES 2M + Youth Pack</td><td>KES 45M–65M</td><td>KES 178M–470M</td><td>55%</td></tr>
+      <tr><td>EduBridge</td><td>Foundation $60–80/student · Practical+ $150/student · Multi-Faculty custom</td><td>$500k+ (USIU pilot)</td><td>$5M+ (10 institutions)</td><td>60%</td></tr>
+      <tr><td>SmartLabs</td><td>Training + LaaS + Implementation + Managed Services</td><td>KES 154.95M</td><td>KES 400M</td><td>58–72%</td></tr>
+      <tr><td>Email + Hosting</td><td>Reseller hosting tiers + Managed services + Domain reseller</td><td>KES 30M</td><td>KES 150M</td><td>50%</td></tr>
+    </tbody>
+  </table>
+
+  <hr class="divider" />
+
+  
+  
+  
+  <h2>Master Risk Register</h2>
+
+  <table>
+    <thead>
+      <tr><th>Risk</th><th>Severity</th><th>Stream</th><th>Mitigation</th><th>Owner</th></tr>
+    </thead>
+    <tbody>
+      <tr class="risk-high"><td>sk-i3-internal master key exposure in docs/notebooks</td><td>🔴 Critical</td><td>All</td><td>Immediate audit + move to OpenBao this week</td><td>Security Lead</td></tr>
+      <tr class="risk-high"><td>16 CNAME records missing — platform unreachable from internet</td><td>🔴 Critical</td><td>All</td><td>Add all CNAMEs → 8eec2322-eu-de.lb.appdomain.cloud today</td><td>Ops</td></tr>
+      <tr class="risk-high"><td>GPU hardware lead time in-country (NVIDIA supply)</td><td>🔴 High</td><td>Stream 1, 2</td><td>Start procurement Week 1; ROCm bake-off as fallback; don't block B2/B4</td><td>Ops</td></tr>
+      <tr class="risk-high"><td>Age-gating bypass — under-18 reaching PMaaS persuasive content</td><td>🔴 High</td><td>Stream 3</td><td>Hard technical gate at Keycloak/WhatsApp opt-in layer; quarterly audit</td><td>PMaaS Lead</td></tr>
+      <tr class="risk-high"><td>ORPP integration — unverified interface assumptions in PMaaS</td><td>🔴 High</td><td>Stream 3</td><td>Formal interface discovery + test environment required before Phase 1 coding</td><td>Legal + Architect</td></tr>
+      <tr class="risk-med"><td>LiteLLM Postgres HA sizing at current RPS</td><td>🟡 Medium</td><td>Stream 1</td><td>DBA sizing review by Week 3; add read replicas if needed</td><td>DBA</td></tr>
+      <tr class="risk-med"><td>IBM Cloud credit burndown (GPU + 3-account SmartLabs)</td><td>🟡 Medium</td><td>Stream 5</td><td>KEDA cron scale-down + scheduled destroy jobs; cost guardrails per account</td><td>FinOps</td></tr>
+      <tr class="risk-med"><td>Vendor eval licenses expiring mid-bootcamp cohort</td><td>🟡 Medium</td><td>Stream 5</td><td>Open-source NOS fallback (FRR, VyOS) tested per cohort; contingency in syllabus</td><td>SmartLabs Lead</td></tr>
+      <tr class="risk-med"><td>AI hallucination in grading, financial/legal PDF content</td><td>🟡 Medium</td><td>Streams 4, 6</td><td>Human review mandatory; rubric templates; audit logging; never autonomous on sensitive decisions</td><td>AI Governance</td></tr>
+      <tr class="risk-med"><td>OTT media server operational burden (PeerTube)</td><td>🟡 Medium</td><td>Stream 4</td><td>Start BigBlueButton only (P0/P1); defer PeerTube VOD to P2 once bandwidth allows</td><td>EdTech Lead</td></tr>
+      <tr class="risk-med"><td>Sheng vocabulary drift (3–6 month cycles)</td><td>🟡 Medium</td><td>Stream 2</td><td>Weekly fine-tuning loop + OOV detection alerts; community review panel</td><td>ML Engineer</td></tr>
+      <tr class="risk-low"><td>Faculty resistance to new Moodle LMS</td><td>🟢 Low</td><td>Stream 4</td><td>SCORM/xAPI/Common Cartridge export — content portable to Canvas/Blackboard during transition</td><td>EdTech Lead</td></tr>
+      <tr class="risk-low"><td>Vendor lock-in perception during procurement</td><td>🟢 Low</td><td>Streams 4, 6</td><td>Every layer is open-source and exportable; pitch = "own your data, i3 hosts and integrates it"</td><td>Sales</td></tr>
+    </tbody>
+  </table>
+
+  <hr class="divider" />
+
+  
+  <h2>Immediate Actions — This Week</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Action</th><th>Owner</th><th>Done When</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>Add all 16 missing CNAME records in cPanel DNS → <code>8eec2322-eu-de.lb.appdomain.cloud</code> (vault, gitops, tracing, storage, zuri, dawa, nuru, mfumo, tts, stt, api, pmaas, engage, afroerp, jupyter, sage)</td><td>Ops</td><td>All 26 CNAMEs resolve via 8.8.8.8</td></tr>
+      <tr><td>2</td><td>Audit all docs, notebooks, HTML files for literal string <code>sk-i3-internal</code> — move to OpenBao</td><td>Security Lead</td><td>Zero plaintext occurrences in codebase</td></tr>
+      <tr><td>3</td><td>Seed <code>i3-platform-root</code> Argo CD application (currently pending-repo) with initial manifests</td><td>DevOps Lead</td><td>Argo CD shows Synced status</td></tr>
+      <tr><td>4</td><td>Initiate GPU node procurement (NVIDIA L4 24GB) — get lead time estimate</td><td>Ops</td><td>PO raised or vendor quote in hand</td></tr>
+      <tr><td>5</td><td>Set Dawa Kijana second system prompt profile on existing Open WebUI (<code>i3-pmaas</code> namespace)</td><td>PMaaS Lead</td><td>qwen-fast responds in Sheng/code-switch tone via WhatsApp test number</td></tr>
+      <tr><td>6</td><td>Begin ODPC legal review of 7-year WORM audit-retention promises for enterprise contracts</td><td>Legal/Compliance</td><td>Legal memo received</td></tr>
+      <tr><td>7</td><td>Stand up single-institution Moodle for USIU-Africa pilot (P0)</td><td>EdTech Lead</td><td>USIU staff can log in via Keycloak SSO and see Smart Labs LTI link</td></tr>
+      <tr><td>8</td><td>Enroll Fortinet, Palo Alto, Cisco on partner NFR portals for SmartLabs 45-vendor matrix</td><td>SmartLabs Lead</td><td>At least 3 vendor NFR applications submitted</td></tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <p>i3 Technologies · i3 Enhancement 2.0 Master Implementation Plan · September 2026 · CONFIDENTIAL</p>
+    <p style="margin-top:6px">Made with IBM Bob</p>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,287 +1,301 @@
 # ============================================================
-# Prometheus + Grafana — i3-monitoring namespace
-# Lightweight kube-prometheus-stack via Helm (no OLM)
-# Provides metrics endpoint for KEDA ScaledObjects
+# i3 AI Platform — Prometheus Monitoring Stack
+# Namespace: i3-monitoring
+# Includes: PrometheusRule for LiteLLM token-budget alerts (STEP-P3-01)
+# Apply: oc apply -f platform/monitoring/prometheus-stack.yaml
 # ============================================================
+
 ---
-# Namespace (already exists but kept for idempotency)
 apiVersion: v1
 kind: Namespace
 metadata:
   name: i3-monitoring
   labels:
     app.kubernetes.io/part-of: i3-platform
+
 ---
-# RBAC: Allow Prometheus to scrape all namespaces
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+# ── PrometheusRule: LiteLLM Token Budget Alerts (STEP-P3-01) ──
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
 metadata:
-  name: i3-prometheus-scraper
-rules:
-  - apiGroups: [""]
-    resources: ["nodes", "nodes/metrics", "services", "endpoints", "pods", "configmaps", "namespaces"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["networking.k8s.io"]
-    resources: ["ingresses"]
-    verbs: ["get", "list", "watch"]
-  - nonResourceURLs: ["/metrics", "/metrics/cadvisor"]
-    verbs: ["get"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: i3-prometheus-scraper
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: i3-prometheus-scraper
-subjects:
-  - kind: ServiceAccount
-    name: prometheus
-    namespace: i3-monitoring
----
-# ServiceAccount
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: prometheus
-  namespace: i3-monitoring
----
-# Prometheus ConfigMap
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: prometheus-config
-  namespace: i3-monitoring
-data:
-  prometheus.yml: |
-    global:
-      scrape_interval: 30s
-      evaluation_interval: 30s
-      external_labels:
-        cluster: i3-platform
-        region: eu-de
-
-    scrape_configs:
-      # Kubernetes API server
-      - job_name: kubernetes-apiservers
-        kubernetes_sd_configs:
-          - role: endpoints
-        scheme: https
-        tls_config:
-          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-          insecure_skip_verify: true
-        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-        relabel_configs:
-          - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
-            action: keep
-            regex: default;kubernetes;https
-
-      # Node metrics
-      - job_name: kubernetes-nodes
-        scheme: https
-        tls_config:
-          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-          insecure_skip_verify: true
-        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-        kubernetes_sd_configs:
-          - role: node
-        relabel_configs:
-          - action: labelmap
-            regex: __meta_kubernetes_node_label_(.+)
-          - target_label: __address__
-            replacement: kubernetes.default.svc:443
-          - source_labels: [__meta_kubernetes_node_name]
-            regex: (.+)
-            target_label: __metrics_path__
-            replacement: /api/v1/nodes/$1/proxy/metrics
-
-      # Pod scraping (annotations: prometheus.io/scrape: "true")
-      - job_name: kubernetes-pods
-        kubernetes_sd_configs:
-          - role: pod
-        relabel_configs:
-          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
-            action: keep
-            regex: "true"
-          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
-            action: replace
-            target_label: __metrics_path__
-            regex: (.+)
-          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
-            action: replace
-            regex: ([^:]+)(?::\d+)?;(\d+)
-            replacement: $1:$2
-            target_label: __address__
-          - action: labelmap
-            regex: __meta_kubernetes_pod_label_(.+)
-          - source_labels: [__meta_kubernetes_namespace]
-            action: replace
-            target_label: kubernetes_namespace
-          - source_labels: [__meta_kubernetes_pod_name]
-            action: replace
-            target_label: kubernetes_pod_name
-
-      # LiteLLM metrics
-      - job_name: litellm
-        static_configs:
-          - targets: ["litellm-proxy.i3-model-gateway.svc.cluster.local:4000"]
-        metrics_path: /metrics
-
-      # EvalOS metrics
-      - job_name: evalos
-        static_configs:
-          - targets: ["evalos-sandbox.i3-evalos.svc.cluster.local:8080"]
-        metrics_path: /metrics
-
-      # Admissions agent metrics
-      - job_name: admissions-agent
-        static_configs:
-          - targets: ["admissions-agent.i3-admissions.svc.cluster.local:8000"]
-        metrics_path: /metrics
-
-      # Langfuse metrics
-      - job_name: langfuse
-        static_configs:
-          - targets: ["langfuse-web.i3-model-gateway.svc.cluster.local:3000"]
-        metrics_path: /metrics
-
-      # Kafka metrics (Strimzi JMX exporter)
-      - job_name: kafka
-        static_configs:
-          - targets: ["i3-kafka-kafka-brokers.i3-messaging.svc.cluster.local:9404"]
----
-# Prometheus PersistentVolumeClaim
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: prometheus-data
-  namespace: i3-monitoring
-spec:
-  accessModes: ["ReadWriteOnce"]
-  storageClassName: ibmc-vpc-block-10iops-tier
-  resources:
-    requests:
-      storage: 20Gi
----
-# Prometheus Deployment
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: prometheus
+  name: litellm-token-budget-alerts
   namespace: i3-monitoring
   labels:
-    app: prometheus
     app.kubernetes.io/part-of: i3-platform
+    prometheus: kube-prometheus
+    role: alert-rules
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: prometheus
-  template:
-    metadata:
-      labels:
-        app: prometheus
-    spec:
-      serviceAccountName: prometheus
-      securityContext:
-        runAsUser: 0
-        fsGroup: 0
-      containers:
-        - name: prometheus
-          image: prom/prometheus:v2.53.0
-          args:
-            - "--config.file=/etc/prometheus/prometheus.yml"
-            - "--storage.tsdb.path=/prometheus"
-            - "--storage.tsdb.retention.time=15d"
-            - "--web.enable-lifecycle"
-            - "--web.listen-address=0.0.0.0:9090"
-          ports:
-            - containerPort: 9090
-              name: http
-          resources:
-            requests:
-              cpu: 200m
-              memory: 512Mi
-            limits:
-              cpu: "1"
-              memory: 2Gi
-          volumeMounts:
-            - name: config
-              mountPath: /etc/prometheus
-            - name: data
-              mountPath: /prometheus
-          readinessProbe:
-            httpGet:
-              path: /-/ready
-              port: 9090
-            initialDelaySeconds: 10
-            periodSeconds: 15
-          livenessProbe:
-            httpGet:
-              path: /-/healthy
-              port: 9090
-            initialDelaySeconds: 30
-            periodSeconds: 30
-      volumes:
-        - name: config
-          configMap:
-            name: prometheus-config
-        - name: data
-          persistentVolumeClaim:
-            claimName: prometheus-data
+  groups:
+    - name: litellm.token_budgets
+      interval: 60s
+      rules:
+
+        # SC-P3-01 alert — fires when any tenant's daily token usage exceeds 80 % of budget
+        - alert: TenantTokenBudgetHigh
+          expr: |
+            litellm_token_usage_daily
+              / on(tenant_id)
+            litellm_token_budget
+              > 0.80
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Tenant {{ $labels.tenant_id }} daily token usage above 80 %"
+            description: >
+              Tenant {{ $labels.tenant_id }} has consumed {{ $value | humanizePercentage }}
+              of its daily LiteLLM token budget. Usage will be blocked at 100 %.
+              Consider raising the budget via the Agent Registry API or throttling
+              non-critical agent calls.
+
+        # Companion alert — hard ceiling reached (HTTP 429 will start)
+        - alert: TenantTokenBudgetExhausted
+          expr: |
+            litellm_token_usage_daily
+              / on(tenant_id)
+            litellm_token_budget
+              >= 1.0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "Tenant {{ $labels.tenant_id }} daily token budget exhausted"
+            description: >
+              Tenant {{ $labels.tenant_id }} has reached 100 % of its daily LiteLLM
+              token budget. All further completions are returning HTTP 429.
+              Raise budget immediately via /key/update on the LiteLLM proxy.
+
+        # PII-01: Langfuse row count watchdog — fires if trace rows grow > 500k without TTL purge
+        - alert: LangfuseTraceRetentionStale
+          expr: |
+            pg_stat_user_tables_n_live_tup{relname="traces",datname="langfuse_db"} > 500000
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Langfuse traces table exceeds 500k rows — TTL purge may not be running"
+            description: >
+              Langfuse langfuse_db.traces has {{ $value }} live rows.
+              LANGFUSE_DEFAULT_TTL_DAYS=90 should auto-purge rows older than 90 days.
+              If this alert persists, check the langfuse-worker pod logs for cleanup job errors.
+              Unbounded growth risks storing PII (prompt text) indefinitely (PII-01).
+
+        # Cache hit-rate watchdog — alerts if semantic cache drops below 15 % after warm-up
+        - alert: LiteLLMCacheHitRateLow
+          expr: |
+            rate(litellm_cache_hit_total[10m])
+              / rate(litellm_requests_total[10m])
+              < 0.15
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "LiteLLM semantic cache hit rate below 15 %"
+            description: >
+              Cache hit rate is {{ $value | humanizePercentage }} over the last 10 min.
+              Expected ≥ 20 % after warm-up (SC-P3-01-b). Check Redis connectivity and
+              similarity_threshold setting in litellm-config-oss.yaml.
+
 ---
-# Prometheus Service
-apiVersion: v1
-kind: Service
+# ── PrometheusRule: i3-platform-alerts (P1-GATE-04 sensor target) ─────────────
+# Covers cross-cutting platform alerts: agent error rate, pool exhaustion,
+# Kafka consumer lag, and pod crash-loop guards.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
 metadata:
-  name: prometheus-operated
+  name: i3-platform-alerts
   namespace: i3-monitoring
   labels:
-    app: prometheus
+    app.kubernetes.io/part-of: i3-platform
+    prometheus: kube-prometheus
+    role: alert-rules
 spec:
-  selector:
-    app: prometheus
-  ports:
-    - name: http
-      port: 9090
-      targetPort: 9090
-  type: ClusterIP
+  groups:
+    - name: i3.platform.health
+      interval: 60s
+      rules:
+
+        # Agent HTTP error rate > 5 % over 5 min
+        - alert: AgentHighErrorRate
+          expr: |
+            sum(rate(http_requests_total{namespace=~"i3-.*",code=~"5.."}[5m]))
+              / sum(rate(http_requests_total{namespace=~"i3-.*"}[5m]))
+              > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "i3 platform agent HTTP 5xx rate above 5 %"
+            description: >
+              One or more i3 namespaces are returning HTTP 5xx errors at
+              {{ $value | humanizePercentage }} over the last 5 minutes.
+              Check pod logs in the affected namespace.
+
+        # asyncpg pool exhaustion — no idle connections
+        - alert: AsyncpgPoolExhausted
+          expr: |
+            asyncpg_pool_idle_connections == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "asyncpg connection pool exhausted"
+            description: >
+              The asyncpg pool in {{ $labels.namespace }}/{{ $labels.pod }}
+              has zero idle connections. Queries will block. Increase max_size
+              or reduce query concurrency.
+
+        # Kafka consumer lag > 10 000 messages for more than 10 min
+        - alert: KafkaConsumerLagHigh
+          expr: |
+            kafka_consumergroup_lag_sum > 10000
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Kafka consumer group lag is high"
+            description: >
+              Consumer group {{ $labels.consumergroup }} on topic
+              {{ $labels.topic }} has a lag of {{ $value }} messages.
+              Check consumer health and scaling in the i3-engage or
+              i3-admissions namespace.
+
+        # Pod crash-loop guard — restarts > 5 in 15 min
+        - alert: PodCrashLooping
+          expr: |
+            increase(kube_pod_container_status_restarts_total{namespace=~"i3-.*"}[15m]) > 5
+          for: 0m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is crash-looping"
+            description: >
+              Container {{ $labels.container }} in pod {{ $labels.pod }}
+              (namespace {{ $labels.namespace }}) has restarted more than 5 times
+              in the last 15 minutes. Investigate with:
+              kubectl logs -n {{ $labels.namespace }} {{ $labels.pod }} --previous
+
 ---
-# Grafana Deployment
+# ── PrometheusRule: Engage DLQ + Consent Circuit-Breaker alerts (P3/P1 fix) ──
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: i3-engage-dlq-alerts
+  namespace: i3-monitoring
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    - name: i3.engage.dlq
+      interval: 60s
+      rules:
+
+        # P3 fix — alert immediately when any message lands in the AI personalise DLQ.
+        # The DLQ consumer persists messages to the ai_personalise_dlq table and
+        # emits a structured log line; this rule matches that log-based counter.
+        - alert: EngageAiPersonaliseDLQNonEmpty
+          expr: |
+            increase(engage_ai_personalise_dlq_total[5m]) > 0
+          for: 0m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Engage AI personalise DLQ has new messages"
+            description: >
+              {{ $value }} message(s) were routed to the engage.ai-personalize.dlq
+              in the last 5 minutes. These are failed personalisation jobs that
+              require manual review. Check the ai_personalise_dlq table in engage_db
+              or run: kubectl logs -n i3-engage -l app=kafka-consumers | grep dlq_persisted
+
+        # P1 fix — alert when the consent-service circuit breaker opens.
+        # The circuit-breaker logs a structured WARNING that Prometheus
+        # log-exporter maps to the consent_circuit_breaker_open metric.
+        - alert: ConsentCircuitBreakerOpen
+          expr: |
+            consent_circuit_breaker_open > 0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "Consent service circuit breaker is OPEN"
+            description: >
+              The consent-service circuit breaker has tripped in one or more
+              services (FORD, SIT, Engage consumers). All consent-gated operations
+              are failing closed (default-deny). Check consent-service pod health
+              in i3-consent namespace:
+              kubectl get pods -n i3-consent
+              kubectl logs -n i3-consent -l app=consent-service
+
+---
+# ── Grafana StatefulSet (P1-GATE-05 sensor target) ────────────────────────────
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: grafana
   namespace: i3-monitoring
   labels:
-    app: grafana
+    app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: i3-platform
 spec:
+  serviceName: grafana
   replicas: 1
   selector:
     matchLabels:
-      app: grafana
+      app.kubernetes.io/name: grafana
   template:
     metadata:
       labels:
-        app: grafana
+        app.kubernetes.io/name: grafana
     spec:
       securityContext:
-        runAsUser: 0
+        runAsUser: 472
+        runAsGroup: 472
+        fsGroup: 472
       containers:
         - name: grafana
-          image: grafana/grafana:11.1.0
+          image: grafana/grafana:10.4.3
+          ports:
+            - name: grafana
+              containerPort: 3000
+              protocol: TCP
           env:
             - name: GF_SECURITY_ADMIN_PASSWORD
-              value: "i3-grafana-admin"   # override via OpenBao secret in day-2
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secrets
+                  key: admin_password
+            - name: GF_PATHS_DATA
+              value: /var/lib/grafana
             - name: GF_SERVER_ROOT_URL
-              value: "%(protocol)s://%(domain)s/grafana"
+              value: "https://grafana.i3technologies.co.ke"
+            - name: GF_SERVER_SERVE_FROM_SUB_PATH
+              value: "false"
             - name: GF_INSTALL_PLUGINS
               value: "grafana-piechart-panel"
-          ports:
-            - containerPort: 3000
-              name: http
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 60
+            periodSeconds: 30
           resources:
             requests:
               cpu: 100m
@@ -292,77 +306,51 @@ spec:
           volumeMounts:
             - name: grafana-data
               mountPath: /var/lib/grafana
-            - name: grafana-datasources
-              mountPath: /etc/grafana/provisioning/datasources
-      volumes:
-        - name: grafana-data
-          emptyDir: {}
-        - name: grafana-datasources
-          configMap:
-            name: grafana-datasources
+  volumeClaimTemplates:
+    - metadata:
+        name: grafana-data
+        labels:
+          app.kubernetes.io/name: grafana
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+
 ---
-# Grafana datasource provisioning
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: grafana-datasources
-  namespace: i3-monitoring
-data:
-  prometheus.yaml: |
-    apiVersion: 1
-    datasources:
-      - name: Prometheus
-        type: prometheus
-        access: proxy
-        url: http://prometheus-operated.i3-monitoring.svc.cluster.local:9090
-        isDefault: true
-        editable: false
----
-# Grafana Service
+# ── Grafana Service ────────────────────────────────────────────────────────────
 apiVersion: v1
 kind: Service
 metadata:
   name: grafana
   namespace: i3-monitoring
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/part-of: i3-platform
 spec:
   selector:
-    app: grafana
+    app.kubernetes.io/name: grafana
   ports:
-    - name: http
+    - name: grafana
       port: 3000
       targetPort: 3000
+      protocol: TCP
   type: ClusterIP
+
 ---
-# Grafana Route (OpenShift)
-apiVersion: route.openshift.io/v1
-kind: Route
+# ── Grafana logs PVC (separate from StatefulSet volumeClaimTemplate) ──────────
+apiVersion: v1
+kind: PersistentVolumeClaim
 metadata:
-  name: grafana
+  name: grafana-logs
   namespace: i3-monitoring
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/part-of: i3-platform
 spec:
-  host: grafana.i3technologies.co.ke
-  to:
-    kind: Service
-    name: grafana
-  port:
-    targetPort: http
-  tls:
-    termination: edge
-    insecureEdgeTerminationPolicy: Redirect
----
-# Grant anyuid SCC to i3-monitoring service accounts (OpenShift RBAC pattern)
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: i3-monitoring-anyuid
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:openshift:scc:anyuid
-subjects:
-  - kind: ServiceAccount
-    name: prometheus
-    namespace: i3-monitoring
-  - kind: ServiceAccount
-    name: default
-    namespace: i3-monitoring
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+

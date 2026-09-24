@@ -1,0 +1,29 @@
+# ============================================================
+# i3-tenant / namespace.yaml
+# Creates the OpenShift project namespace for cust-<slug>.
+# HC-4: tenant_id label is mandatory on every resource.
+# ============================================================
+{{ include "i3-tenant.validateTier" . }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ include "i3-tenant.namespace" . }}
+  labels:
+    {{ include "i3-tenant.labels" . | nindent 4 }}
+    kubernetes.io/metadata.name: {{ include "i3-tenant.namespace" . }}
+    {{- if .Values.prometheus.scrapeLabel }}
+    i3.io/prometheus-scrape: {{ .Values.prometheus.scrapeLabel | quote }}
+    {{- end }}
+    {{- with .Values.prometheus.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- if .Values.openshift.displayNameAnnotation }}
+    openshift.io/display-name: {{ .Values.tenant.displayName | default .Values.tenant.slug | quote }}
+    {{- end }}
+    i3.io/tenant-id: {{ .Values.tenant.id | quote }}
+    i3.io/provisioned-by: "i3-tenant-helm"
+    {{- if .Values.openshift.nodeSelector }}
+    openshift.io/node-selector: {{ .Values.openshift.nodeSelector | quote }}
+    {{- end }}

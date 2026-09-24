@@ -1,0 +1,416 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>EvalOS User Guide — IBM watsonx Orchestrate C1000-207</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+  font-size: 14px; line-height: 1.65; background: #ffffff; color: #1f2328;
+  padding: 32px 16px;
+}
+.wrap { max-width: 760px; margin: 0 auto; }
+
+/* Brand header */
+.brand-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+  border-radius: 12px; padding: 28px 32px; margin-bottom: 32px;
+  display: flex; align-items: center; gap: 20px;
+}
+.brand-orb {
+  width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
+  background: radial-gradient(circle at 40% 35%, #8eadd4 0%, #5878a8 55%, #2d4a7a 100%);
+  position: relative; overflow: hidden;
+}
+.brand-orb::before {
+  content: ''; position: absolute; top: 8px; left: 6px;
+  width: 28px; height: 24px;
+  border: 3px solid rgba(255,255,255,0.75); border-radius: 50%;
+  clip-path: inset(0 0 30% 0);
+}
+.brand-orb::after {
+  content: ''; position: absolute; top: 16px; left: 14px;
+  width: 20px; height: 18px;
+  border: 2px solid rgba(255,255,255,0.45); border-radius: 50%;
+}
+.brand-title { color: white; }
+.brand-title h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+.brand-title p { color: #94a3b8; font-size: 13px; margin-top: 3px; }
+
+/* Section */
+h2 {
+  font-size: 16px; font-weight: 700; color: #1f2328;
+  margin: 28px 0 12px; padding-bottom: 6px;
+  border-bottom: 2px solid #e5e7eb;
+}
+h3 { font-size: 14px; font-weight: 600; color: #1f2328; margin: 18px 0 6px; }
+p { margin-bottom: 10px; color: #374151; }
+ul, ol { margin: 8px 0 12px 20px; }
+li { margin-bottom: 5px; color: #374151; }
+
+/* Alert boxes */
+.alert {
+  border-radius: 8px; padding: 12px 16px; margin-bottom: 14px;
+  font-size: 13px; display: flex; gap: 10px; align-items: flex-start;
+}
+.alert-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.alert-orange { background: #fff7ed; border: 1px solid #fed7aa; }
+.alert-orange .alert-icon { color: #c2410c; }
+.alert-blue { background: #eff6ff; border: 1px solid #bfdbfe; }
+.alert-blue .alert-icon { color: #1d4ed8; }
+.alert-green { background: #f0fdf4; border: 1px solid #bbf7d0; }
+.alert-green .alert-icon { color: #15803d; }
+.alert-red { background: #fef2f2; border: 1px solid #fecaca; }
+.alert-red .alert-icon { color: #b91c1c; }
+
+/* Rule card */
+.rule-card {
+  background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 10px;
+  padding: 16px 20px; margin-bottom: 12px;
+}
+.rule-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; color: #1f2328; }
+.rule-card p { font-size: 13px; margin: 0; color: #57606a; }
+
+/* Table */
+table { width: 100%; border-collapse: collapse; margin: 12px 0 16px; }
+th, td { text-align: left; padding: 8px 12px; border: 1px solid #e5e7eb; font-size: 13px; }
+th { background: #f7f8fa; font-weight: 600; }
+tr:nth-child(even) td { background: #fafafa; }
+
+/* Step list */
+.steps { counter-reset: step; list-style: none; margin: 0 0 16px 0; }
+.steps li {
+  counter-increment: step;
+  padding: 10px 14px 10px 44px; position: relative;
+  border-left: 2px solid #e5e7eb; margin-bottom: 6px; border-radius: 0 6px 6px 0;
+}
+.steps li::before {
+  content: counter(step);
+  position: absolute; left: -13px; top: 8px;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: #1e3a5f; color: white; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  font-family: inherit;
+}
+.steps li strong { display: block; font-size: 13px; margin-bottom: 2px; }
+.steps li span { font-size: 12px; color: #57606a; }
+
+/* Feature grid */
+.features { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.feature-card {
+  background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 8px;
+  padding: 14px 16px;
+}
+.feature-card h4 { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.feature-card p { font-size: 12px; color: #57606a; margin: 0; }
+.feat-icon { font-size: 18px; margin-bottom: 6px; display: block; }
+
+/* Badge */
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 9999px;
+  font-size: 11px; font-weight: 700; margin-left: 6px;
+}
+.badge-orange { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+.badge-blue { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.badge-green { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-red { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+
+/* Domain table */
+.domain-bar {
+  height: 8px; border-radius: 4px; background: #3b5a8a; display: inline-block; vertical-align: middle;
+}
+
+footer {
+  text-align: center; color: #9ca3af; font-size: 12px;
+  border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 36px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+
+<div class="brand-header">
+  <div class="brand-orb"></div>
+  <div class="brand-title">
+    <h1>EvalOS — User Guide</h1>
+    <p>IBM watsonx Orchestrate Certification Practice  ·  C1000-207  ·  i3 Technologies</p>
+  </div>
+</div>
+
+
+<div class="alert alert-orange">
+  <span class="alert-icon">⚡</span>
+  <div>
+    <strong>Set 7 — Important Rules (Read Before Starting)</strong>
+    Pass mark is <strong>90%</strong>. You have <strong>1 initial attempt + 2 retakes</strong> (3 total). Each retake must be started within <strong>48 hours</strong> of your first attempt. If 48 hours elapse, your retake window is permanently closed for this set.
+  </div>
+</div>
+
+
+<h2>Contents</h2>
+<ol>
+  <li><a href="#access" style="color:#3b5a8a">Accessing EvalOS</a></li>
+  <li><a href="#dashboard" style="color:#3b5a8a">Your Dashboard</a></li>
+  <li><a href="#set7rules" style="color:#3b5a8a">Practice Set 7 — Rules &amp; Policies</a></li>
+  <li><a href="#taking" style="color:#3b5a8a">Taking an Exam</a></li>
+  <li><a href="#results" style="color:#3b5a8a">Viewing Results &amp; Certificates</a></li>
+  <li><a href="#ai-features" style="color:#3b5a8a">AI-Powered Features</a></li>
+  <li><a href="#domains" style="color:#3b5a8a">Exam Domain Breakdown</a></li>
+  <li><a href="#faq" style="color:#3b5a8a">Frequently Asked Questions</a></li>
+</ol>
+
+
+<h2 id="access">1. Accessing EvalOS</h2>
+<p>EvalOS is available at <strong>https://evalos.i3technologies.co.ke</strong>. Access is restricted to enrolled i3 students and staff only.</p>
+<ol class="steps">
+  <li>
+    <strong>Open the URL in your browser</strong>
+    <span>Chrome or Edge recommended. Disable browser extensions for best experience.</span>
+  </li>
+  <li>
+    <strong>Click "Sign in with i3 SSO"</strong>
+    <span>You will be redirected to the i3 Keycloak identity portal.</span>
+  </li>
+  <li>
+    <strong>Enter your i3 Technologies credentials</strong>
+    <span>Use the username and password issued to you by your i3 programme coordinator.</span>
+  </li>
+  <li>
+    <strong>You are redirected to your Dashboard</strong>
+    <span>All available practice sets are shown with your progress, scores, and attempt counts.</span>
+  </li>
+</ol>
+
+
+<h2 id="dashboard">2. Your Dashboard</h2>
+<p>The Dashboard is your home screen. Each practice set appears as a card showing:</p>
+<ul>
+  <li><strong>Exam code &amp; title</strong> (e.g. C1000-207-SET7)</li>
+  <li><strong>Question count</strong>, <strong>duration</strong>, and <strong>pass mark</strong></li>
+  <li><strong>Your best score</strong> and <strong>last score</strong></li>
+  <li><strong>Attempts used vs maximum</strong> — shown as filled/unfilled circles</li>
+  <li><strong>Retake deadline</strong> — shown as an amber countdown badge for timed-retake exams (e.g. Set 7)</li>
+  <li><strong>Prerequisite lock</strong> — 🔒 icon if a previous set must be passed first</li>
+</ul>
+<div class="alert alert-blue">
+  <span class="alert-icon">ℹ️</span>
+  <div>Sets are sequential. You must score ≥90% on each set to unlock the next. Set 7 is unlocked once you pass Set 6 (or if Set 7 is your first set).</div>
+</div>
+
+
+<h2 id="set7rules">3. Practice Set 7 — Rules &amp; Policies</h2>
+
+<div class="rule-card">
+  <h4>Pass Mark  <span class="badge badge-orange">90%</span></h4>
+  <p>You must answer at least 54 of 60 questions correctly to pass. This matches the rigor of the IBM C1000-207 certification exam.</p>
+</div>
+
+<div class="rule-card">
+  <h4>Attempts  <span class="badge badge-blue">3 total</span></h4>
+  <p>1 initial attempt + 2 retakes. Each attempt presents a fresh randomised draw from the Set 7 question bank with shuffled options.</p>
+</div>
+
+<div class="rule-card">
+  <h4>48-Hour Retake Window  <span class="badge badge-red">Time-Gated</span></h4>
+  <p>Both retakes must be <strong>started within 48 hours of your first attempt</strong>. The clock starts the moment you click "Start Exam" for the first time. You can see the exact deadline on your dashboard card. Once 48 hours have elapsed, no further retakes are permitted regardless of attempts remaining.</p>
+</div>
+
+<div class="rule-card">
+  <h4>Duration  <span class="badge badge-green">90 minutes</span></h4>
+  <p>60 questions · 90 minutes. The timer counts down in the exam interface. Submit before time expires or your answers will be auto-submitted.</p>
+</div>
+
+<table>
+  <tr><th>Parameter</th><th>Set 7 Value</th><th>Other Sets (default)</th></tr>
+  <tr><td>Questions</td><td>60</td><td>60</td></tr>
+  <tr><td>Duration</td><td>90 minutes</td><td>90 minutes</td></tr>
+  <tr><td>Pass mark</td><td><strong>90%</strong></td><td>90%</td></tr>
+  <tr><td>Max attempts</td><td><strong>3</strong> (1 + 2 retakes)</td><td>Up to 5</td></tr>
+  <tr><td>Retake window</td><td><strong>48 hours from first attempt</strong></td><td>Open</td></tr>
+  <tr><td>Question order</td><td>Randomised</td><td>Randomised</td></tr>
+  <tr><td>Option order</td><td>Shuffled</td><td>Shuffled</td></tr>
+</table>
+
+<div class="alert alert-red">
+  <span class="alert-icon">⚠️</span>
+  <div><strong>Retake window is non-negotiable.</strong> The 48-hour window is enforced at the server level. Once it expires you will see a "Retake window expired" message and cannot start another attempt. Plan your study time accordingly.</div>
+</div>
+
+
+<h2 id="taking">4. Taking an Exam</h2>
+<ol class="steps">
+  <li>
+    <strong>Click "Start Exam" (or "Retake") on the dashboard card</strong>
+    <span>For Set 7 retakes, the button only appears while the 48h window is open and you have attempts remaining.</span>
+  </li>
+  <li>
+    <strong>Read the exam brief page</strong>
+    <span>Confirm question count, duration, and pass mark before the timer starts.</span>
+  </li>
+  <li>
+    <strong>Answer each question</strong>
+    <span>MC questions: select ONE answer. MR (multi-response) questions: select ALL correct answers — these are labelled "Select all that apply."</span>
+  </li>
+  <li>
+    <strong>Navigate freely</strong>
+    <span>Use Previous / Next buttons. Revisit any question before submitting. Answered questions are highlighted in the progress bar.</span>
+  </li>
+  <li>
+    <strong>Submit when ready</strong>
+    <span>Click "Submit Exam" and confirm. Your attempt is graded instantly. The timer auto-submits at 00:00.</span>
+  </li>
+</ol>
+
+<h3>During the Exam — Important Rules</h3>
+<ul>
+  <li><strong>Stay on the exam tab.</strong> Tab switching is recorded as an integrity event and may trigger an admin review flag.</li>
+  <li><strong>Full-screen is recommended.</strong> Exiting full-screen is logged.</li>
+  <li><strong>No copy-paste.</strong> Clipboard events are monitored.</li>
+  <li><strong>Stable internet required.</strong> Your answers are auto-saved every 30 seconds. If you lose connection, reopen the exam URL — your progress is preserved for 30 minutes.</li>
+</ul>
+
+<h3>Question Types</h3>
+<table>
+  <tr><th>Type</th><th>Label</th><th>How to Answer</th></tr>
+  <tr><td>Multiple Choice (MC)</td><td>No special label</td><td>Select exactly ONE answer from A–D</td></tr>
+  <tr><td>Multiple Response (MR)</td><td>"Select all that apply"</td><td>Select ALL correct answers; partial selections score 0</td></tr>
+</table>
+
+
+<h2 id="results">5. Viewing Results &amp; Certificates</h2>
+<p>After submitting, you are taken to the Results page automatically.</p>
+<ul>
+  <li><strong>Overall score</strong> — percentage and pass/fail verdict</li>
+  <li><strong>Domain breakdown</strong> — score per domain so you know where to focus</li>
+  <li><strong>Correct / incorrect per question</strong> — with the right answer and explanation shown</li>
+  <li><strong>AI Study Coach panel</strong> — a personalised 3-day study plan generated from your weak domains (see Section 6)</li>
+</ul>
+
+<div class="alert alert-green">
+  <span class="alert-icon">🏅</span>
+  <div><strong>Digital Certificate.</strong> If you pass with ≥90%, a "Get Certificate" button appears. Click it to generate a PDF certificate with a unique verification code. Share the URL <em>https://evalos.i3technologies.co.ke/verify/[code]</em> so employers can verify your credential online.</div>
+</div>
+
+<p>Past results are always accessible from the dashboard Recent Attempts table → "View Results".</p>
+
+
+<h2 id="ai-features">6. AI-Powered Features</h2>
+<div class="features">
+  <div class="feature-card">
+    <span class="feat-icon">🤖</span>
+    <h4>AI Study Coach</h4>
+    <p>Available on every results page. Analyses your domain-by-domain performance and generates a personalised 3-day study plan with specific topics to review and practice questions to focus on.</p>
+  </div>
+  <div class="feature-card">
+    <span class="feat-icon">🎤</span>
+    <h4>AI Interview Round</h4>
+    <p>5-question mock interview: 3 technical + 2 coding challenges. AI evaluates your answers against IBM watsonx Orchestrate rubrics and gives a structured score with feedback. Access from Dashboard → "Start Interview".</p>
+  </div>
+  <div class="feature-card">
+    <span class="feat-icon">💻</span>
+    <h4>Coding Labs</h4>
+    <p>Monaco editor with live execution. Build IBM watsonx integrations in JavaScript, Python, or SQL. AI reviews your code for correctness, patterns, and best practices. Access from Dashboard → "Open Labs".</p>
+  </div>
+  <div class="feature-card">
+    <span class="feat-icon">🔒</span>
+    <h4>Integrity Monitoring</h4>
+    <p>EvalOS monitors focus loss, clipboard events, and tab switches to maintain exam integrity. All signals feed a human review queue — the system flags, never auto-fails. Only admins make final decisions.</p>
+  </div>
+</div>
+
+
+<h2 id="domains">7. Exam Domain Breakdown (C1000-207 Set 7)</h2>
+<table>
+  <tr><th>#</th><th>Domain</th><th>Weight (approx)</th><th>Questions in Set 7</th></tr>
+  <tr>
+    <td>1</td>
+    <td>Platform Architecture and Core Concepts</td>
+    <td><div class="domain-bar" style="width:48px"></div> ~16%</td>
+    <td>Q1–Q8 (8 questions)</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>Agent and Assistant Integration</td>
+    <td><div class="domain-bar" style="width:60px"></div> <strong>~20%</strong></td>
+    <td>Q9–Q21 (13 questions) — <em>heaviest domain</em></td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>Workflow and Orchestration Design</td>
+    <td><div class="domain-bar" style="width:48px"></div> ~16%</td>
+    <td>Q22–Q29 (8 questions)</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td>Agent Development</td>
+    <td><div class="domain-bar" style="width:54px"></div> ~18%</td>
+    <td>Q30–Q40 (11 questions)</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td>Model Management</td>
+    <td><div class="domain-bar" style="width:48px"></div> ~15%</td>
+    <td>Q41–Q48 (8 questions)</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td>Security, Compliance, and Observability</td>
+    <td><div class="domain-bar" style="width:42px"></div> ~14%</td>
+    <td>Q49–Q55 (7 questions)</td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td>Deployment, Scaling, Optimization, and Resiliency</td>
+    <td><div class="domain-bar" style="width:15px"></div> ~5%</td>
+    <td>Q56–Q60 (5 questions)</td>
+  </tr>
+</table>
+
+<div class="alert alert-blue">
+  <span class="alert-icon">📌</span>
+  <div><strong>Study tip:</strong> Domain 2 (Agent &amp; Assistant Integration) and Domain 4 (Agent Development) together account for ~38% of the exam. Prioritise these if your time is limited. Domain 2 questions frequently test the difference between <em>External Agent</em>, <em>Collaborator Agent</em>, and <em>Assistant</em> — know these distinctions precisely.</div>
+</div>
+
+
+<h2 id="faq">8. Frequently Asked Questions</h2>
+
+<h3>Can I pause Set 7 mid-exam?</h3>
+<p>Yes. If you close the browser, your in-progress attempt is saved for up to 30 minutes. Return to the exam URL and click Resume. The countdown timer continues in the background — it does not pause.</p>
+
+<h3>I scored 89% on Set 7. Can I retake immediately?</h3>
+<p>Yes, as long as you have retake attempts remaining AND the 48-hour window has not closed. The retake button appears on your dashboard card with the deadline shown.</p>
+
+<h3>The "Retake window expired" message appeared but I still have attempts left. What do I do?</h3>
+<p>The 48-hour window is a hard rule set by your programme. Once it closes, remaining attempts cannot be used. Contact your i3 programme coordinator if you believe there was an error.</p>
+
+<h3>What is the difference between MC and MR questions?</h3>
+<p><strong>MC (Multiple Choice)</strong> — exactly one correct answer. A wrong answer scores 0.<br />
+<strong>MR (Multiple Response)</strong> — two or more correct answers. You must select ALL correct answers for full marks; a partial selection scores 0.</p>
+
+<h3>Can I see the correct answers during the exam?</h3>
+<p>No. Correct answers and explanations are revealed only after you submit. This maintains the integrity of the practice environment.</p>
+
+<h3>How are multi-response (MR) questions scored?</h3>
+<p>Each MR question is all-or-nothing: you must select every correct option to receive the mark. Selecting some but not all correct options, or any wrong option, scores 0.</p>
+
+<h3>Can I retake an exam I already passed?</h3>
+<p>Yes — passed exams show a "Retake Exam" button. For Set 7 the 48-hour retake window applies to ALL retakes regardless of pass/fail on the initial attempt.</p>
+
+<h3>Where does my certificate go after I pass?</h3>
+<p>It is stored permanently in your account. Access it any time from your Results page or the Dashboard "Recent Attempts" table. A unique verification URL is included so employers can confirm it online.</p>
+
+<h3>Is my exam data private?</h3>
+<p>Yes. All data is stored within i3's private OpenShift cluster in Kenya. i3 Technologies complies with the Kenya Data Protection Act 2019. Exam monitoring signals are used solely for academic integrity and are reviewed only by authorised i3 staff.</p>
+
+<h3>I found a question that seems incorrect. How do I report it?</h3>
+<p>Use the AI Study Coach panel on the Results page — it includes a "Flag this question" option. Admin staff review all flags within 48 hours.</p>
+
+<footer>
+  <p>EvalOS · i3 Technologies Limited · Nairobi, Kenya · Made with IBM Bob</p>
+</footer>
+
+</div>
+</body>
+</html>

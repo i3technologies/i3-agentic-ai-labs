@@ -1,0 +1,151 @@
+# MCP Tool Gateway — Kubernetes Deployment
+# Namespace: i3-agent-mesh
+# Port: 8100
+# Applied by: kubectl apply -f platform/mcp-gateway/deploy.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-gateway
+  namespace: i3-agent-mesh
+  labels:
+    app: mcp-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mcp-gateway
+  template:
+    metadata:
+      labels:
+        app: mcp-gateway
+    spec:
+      serviceAccountName: mcp-gateway
+      containers:
+        - name: mcp-gateway
+          image: registry.i3technologies.co.ke/i3/mcp-gateway:latest
+          ports:
+            - containerPort: 8100
+          env:
+            - name: MCP_GATEWAY_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: mcp-gateway-secrets
+                  key: db_url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: mcp-gateway-secrets
+                  key: redis_url
+            - name: AGENT_REGISTRY_URL
+              value: "http://agent-registry.i3-agent-mesh.svc.cluster.local:8200"
+            - name: LITELLM_URL
+              value: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000"
+            # AUTH-01: per-service virtual key injected as LITELLM_MASTER_KEY env
+            # so the litellm_chat tool can use os.environ["LITELLM_MASTER_KEY"].
+            # Issue: POST litellm /key/generate {"metadata": {"service": "mcp-gateway"}}
+            # OpenBao path: i3/litellm/virtual-keys/mcp-gateway
+            - name: LITELLM_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mcp-gateway-secrets
+                  key: litellm_key
+            - name: CHROMA_HOST
+              value: "chromadb.i3-admissions.svc.cluster.local"
+            - name: CHROMA_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: mcp-gateway-secrets
+                  key: chroma_token
+                  optional: true
+            - name: ODOO_URL
+              valueFrom:
+                secretKeyRef:
+                  name: mcp-gateway-secrets
+                  key: odoo_url
+                  optional: true
+            - name: ODOO_DB
+              value: "i3_crm"
+            - name: ODOO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mcp-gateway-secrets
+                  key: odoo_username
+                  optional: true
+            - name: ODOO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mcp-gateway-secrets
+                  key: odoo_password
+                  optional: true
+            - name: GOOGLE_CALENDAR_CREDENTIALS
+              valueFrom:
+                secretKeyRef:
+                  name: mcp-gateway-secrets
+                  key: google_calendar_credentials
+                  optional: true
+            - name: N8N_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: mcp-gateway-secrets
+                  key: n8n_webhook_url
+                  optional: true
+            - name: N8N_ONBOARDING_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: mcp-gateway-secrets
+                  key: n8n_onboarding_webhook_url
+                  optional: true
+            - name: DIRECTUS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: mcp-gateway-secrets
+                  key: directus_url
+                  optional: true
+            - name: DIRECTUS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: mcp-gateway-secrets
+                  key: directus_token
+                  optional: true
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8100
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8100
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-gateway
+  namespace: i3-agent-mesh
+  labels:
+    app: mcp-gateway
+spec:
+  selector:
+    app: mcp-gateway
+  ports:
+    - name: http
+      port: 8100
+      targetPort: 8100
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mcp-gateway
+  namespace: i3-agent-mesh

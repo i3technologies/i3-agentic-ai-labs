@@ -1,0 +1,201 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AfroERP User Guide — i3 Technologies</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.6;color:#1f2328;background:#fff}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 24px}
+  h1{font-size:26px;font-weight:700;color:#1f2328;margin-bottom:4px}
+  h2{font-size:18px;font-weight:600;color:#3b82d4;margin:32px 0 10px;padding-bottom:4px;border-bottom:2px solid #e5e7eb}
+  h3{font-size:15px;font-weight:600;color:#1f2328;margin:18px 0 6px}
+  p{margin-bottom:10px}
+  ul,ol{margin:0 0 10px 20px}
+  li{margin-bottom:4px}
+  a{color:#3b82d4;text-decoration:none}
+  a:hover{text-decoration:underline}
+  .cover{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:20px 24px;margin-bottom:28px}
+  .toc{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:16px 20px;margin-bottom:28px}
+  .toc h3{margin-top:0;margin-bottom:10px;font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:#57606a}
+  .toc ol{margin-left:18px}
+  .toc li{margin-bottom:3px;font-size:14px}
+  table{width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:14px}
+  th{background:#f7f8fa;text-align:left;padding:8px 10px;border:1px solid #e5e7eb;font-weight:600}
+  td{padding:8px 10px;border:1px solid #e5e7eb;vertical-align:top}
+  tr:nth-child(even) td{background:#fafafa}
+  .steps{counter-reset:step;list-style:none;margin-left:0}
+  .steps li{counter-increment:step;display:flex;gap:12px;margin-bottom:10px;align-items:flex-start}
+  .steps li::before{content:counter(step);min-width:26px;height:26px;border-radius:50%;background:#3b82d4;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+  .note{background:#eff6ff;border-left:4px solid #3b82d4;padding:10px 14px;margin:12px 0;font-size:14px;border-radius:0 4px 4px 0}
+  .warn{background:#fffbeb;border-left:4px solid #f59e0b;padding:10px 14px;margin:12px 0;font-size:14px;border-radius:0 4px 4px 0}
+  .note strong,.warn strong{display:block;margin-bottom:2px}
+  .tag{display:inline-block;background:#e5e7eb;color:#57606a;font-size:12px;padding:1px 7px;border-radius:3px;font-family:monospace}
+  .footer{text-align:center;font-size:12px;color:#57606a;margin-top:40px;padding-top:16px;border-top:1px solid #e5e7eb}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="cover">
+    <h1>AfroERP User Guide</h1>
+    <p style="color:#57606a;margin-bottom:12px">ERPNext with Kenya M-Pesa &amp; KRA eTIMS Integration</p>
+    <div style="font-size:13px;color:#57606a">
+      <span><strong>Platform URL:</strong> <a href="https://afroerp.i3technologies.co.ke">afroerp.i3technologies.co.ke</a></span>  
+      <span><strong>Support:</strong> <a href="mailto:support@i3technologies.co.ke">support@i3technologies.co.ke</a></span>
+    </div>
+  </div>
+
+  <div class="toc">
+    <h3>Table of Contents</h3>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#login">Login &amp; Initial Setup</a></li>
+      <li><a href="#accounting">Accounting</a></li>
+      <li><a href="#sales">Sales &amp; Invoicing</a></li>
+      <li><a href="#mpesa">M-Pesa Payments</a></li>
+      <li><a href="#etims">KRA eTIMS Integration</a></li>
+      <li><a href="#inventory">Inventory Management</a></li>
+      <li><a href="#hr">HR &amp; Payroll</a></li>
+      <li><a href="#mfumo">Mfumo AI Co-worker</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+    </ol>
+  </div>
+
+  <h2 id="overview">1 — Overview</h2>
+  <p>AfroERP is a fully localised enterprise resource planning system built on ERPNext v15, extended with Kenya-specific modules for M-Pesa payment collection (Safaricom Daraja API) and KRA eTIMS electronic tax invoicing compliance. It handles accounting, sales, procurement, inventory, HR, and payroll in a single integrated platform.</p>
+  <table>
+    <tr><th>Module</th><th>Description</th></tr>
+    <tr><td>Accounting</td><td>Chart of accounts, journal entries, financial statements (P&amp;L, Balance Sheet)</td></tr>
+    <tr><td>Sales &amp; Invoicing</td><td>Quotations, sales orders, invoices, and credit notes</td></tr>
+    <tr><td>M-Pesa Payments</td><td>STK Push collection, B2C disbursements, automatic ledger posting</td></tr>
+    <tr><td>KRA eTIMS</td><td>E-invoice generation and submission to KRA in compliance with Kenya tax law</td></tr>
+    <tr><td>Inventory</td><td>Warehousing, stock transfers, purchase orders, and supplier management</td></tr>
+    <tr><td>HR &amp; Payroll</td><td>Employee records, leave management, payroll runs, P9 forms (Kenya PAYE)</td></tr>
+    <tr><td>Mfumo Co-worker</td><td>AI assistant for financial analysis, compliance queries, and report drafting</td></tr>
+  </table>
+
+  <h2 id="login">2 — Login &amp; Initial Setup</h2>
+  <ol class="steps">
+    <li>Navigate to <a href="https://afroerp.i3technologies.co.ke">https://afroerp.i3technologies.co.ke</a>.</li>
+    <li>Click <strong>Login with SSO</strong> and authenticate via the i3 portal.</li>
+    <li>On first login, the Setup Wizard runs — complete your Company Name, Country (Kenya), Currency (KES), and Financial Year start date.</li>
+    <li>Upload your company logo and configure the default bank account.</li>
+  </ol>
+  <div class="note"><strong>Note</strong>ERPNext uses role-based access. Your administrator must assign you a role (Accounts Manager, Sales User, Stock Manager, etc.) before you can access specific modules.</div>
+
+  <h2 id="accounting">3 — Accounting</h2>
+  <h3>3.1 Chart of Accounts</h3>
+  <p>AfroERP ships with a Kenya-localised Chart of Accounts pre-loaded. Navigate to <strong>Accounting → Chart of Accounts</strong> to review or add accounts. Standard categories follow KRA's prescribed structure for VAT and corporate tax returns.</p>
+
+  <h3>3.2 Journal Entries</h3>
+  <ol class="steps">
+    <li>Go to <strong>Accounting → Journal Entry → New</strong>.</li>
+    <li>Select the entry type (Journal Entry, Debit Note, Credit Note, etc.).</li>
+    <li>Add debit and credit rows — each must reference an account from the Chart of Accounts.</li>
+    <li>Total debits must equal total credits. Click <strong>Submit</strong> to post.</li>
+  </ol>
+
+  <h3>3.3 Financial Statements</h3>
+  <p>Go to <strong>Accounting → Financial Statements</strong> and select <em>Profit and Loss Statement</em>, <em>Balance Sheet</em>, or <em>Cash Flow Statement</em>. Filter by date range, company, and cost centre. Export as PDF or Excel.</p>
+
+  <h2 id="sales">4 — Sales &amp; Invoicing</h2>
+  <h3>4.1 Raising a Sales Invoice</h3>
+  <ol class="steps">
+    <li>Go to <strong>Selling → Sales Invoice → New</strong>.</li>
+    <li>Select the Customer. If they don't exist, click <strong>Create New Customer</strong> and enter name, PIN, and KRA PIN.</li>
+    <li>Add line items: select items from the Item master, enter quantity and rate. VAT (16%) is calculated automatically if the item is taxable.</li>
+    <li>Click <strong>Save</strong> to review, then <strong>Submit</strong> to post. The invoice is now payable.</li>
+    <li>If eTIMS is enabled, the invoice is automatically submitted to KRA on submission (see Section 6).</li>
+  </ol>
+  <h3>4.2 Credit Notes</h3>
+  <p>To reverse a posted invoice, open the invoice and click <strong>Create → Return / Credit Note</strong>. Enter the reason and click Submit. The credit note posts and reverses the ledger entries.</p>
+
+  <h2 id="mpesa">5 — M-Pesa Payments</h2>
+  <h3>5.1 Collecting Payment via STK Push</h3>
+  <ol class="steps">
+    <li>Open a submitted Sales Invoice. Click <strong>Payment → M-Pesa STK Push</strong>.</li>
+    <li>Confirm or enter the customer's phone number (<span class="tag">2547XXXXXXXX</span>) and the invoice amount.</li>
+    <li>Click <strong>Send STK Push</strong>. The customer receives a M-Pesa payment prompt.</li>
+    <li>Once the customer enters their PIN, the payment is confirmed and a Payment Entry is automatically created and reconciled against the invoice.</li>
+  </ol>
+  <h3>5.2 Paying Suppliers via B2C</h3>
+  <ol class="steps">
+    <li>Go to <strong>Accounts Payable → Payment Entry → New</strong>.</li>
+    <li>Set Payment Type to <em>Pay</em>, Party Type to <em>Supplier</em>, and select the supplier.</li>
+    <li>Select payment mode <em>M-Pesa B2C</em> and enter the supplier's phone number.</li>
+    <li>Click <strong>Submit</strong>. The disbursement is sent via Daraja API and the ledger is updated.</li>
+  </ol>
+  <div class="warn"><strong>Warning</strong>M-Pesa transactions are irreversible once confirmed. Verify all amounts and phone numbers before submitting.</div>
+
+  <h2 id="etims">6 — KRA eTIMS Integration</h2>
+  <p>AfroERP's eTIMS module automatically submits electronic tax invoices to the Kenya Revenue Authority in real time, as required by the Tax Procedures Act (Digital Services).</p>
+  <table>
+    <tr><th>Document Type</th><th>KRA Submission</th></tr>
+    <tr><td>Sales Invoice (VAT applicable)</td><td>Auto-submitted on Submit. CU Invoice Number returned from KRA and printed on invoice PDF.</td></tr>
+    <tr><td>Credit Note</td><td>Auto-submitted as a credit to KRA. References original CU Invoice Number.</td></tr>
+    <tr><td>Stock movement (applicable items)</td><td>Goods declaration submitted on warehouse release.</td></tr>
+  </table>
+  <div class="note"><strong>Note</strong>eTIMS submission requires your company's eTIMS Device Serial Number and PIN to be configured in <strong>AfroERP Settings → KRA eTIMS</strong> by your system administrator.</div>
+  <h3>Checking Submission Status</h3>
+  <p>On any Sales Invoice, click the <strong>eTIMS</strong> tab to see submission status (<em>Pending</em>, <em>Submitted</em>, <em>Failed</em>), the KRA CU Invoice Number, and a link to the signed e-invoice XML.</p>
+
+  <h2 id="inventory">7 — Inventory Management</h2>
+  <h3>7.1 Creating Items</h3>
+  <ol class="steps">
+    <li>Go to <strong>Stock → Item → New</strong>.</li>
+    <li>Enter item code, name, item group, and unit of measure.</li>
+    <li>Under <strong>Tax</strong>, set the KRA HS Code and whether VAT applies (Standard 16% or Zero-rated).</li>
+    <li>Click <strong>Save</strong>. The item is now available in invoices and purchase orders.</li>
+  </ol>
+  <h3>7.2 Purchase Orders &amp; Stock Receipts</h3>
+  <ol class="steps">
+    <li>Go to <strong>Buying → Purchase Order → New</strong>. Select supplier and add items.</li>
+    <li>Submit the PO. When goods arrive, open the PO and click <strong>Create → Purchase Receipt</strong>.</li>
+    <li>Confirm received quantities and click Submit. Stock levels update automatically.</li>
+  </ol>
+
+  <h2 id="hr">8 — HR &amp; Payroll</h2>
+  <h3>8.1 Employee Setup</h3>
+  <ol class="steps">
+    <li>Go to <strong>HR → Employee → New</strong>. Enter personal details, Department, Designation, and KRA PIN.</li>
+    <li>Set the Salary Structure (Basic, House Allowance, Transport). Configure NHIF, NSSF, and PAYE deductions.</li>
+    <li>Save and submit the employee record.</li>
+  </ol>
+  <h3>8.2 Running Payroll</h3>
+  <ol class="steps">
+    <li>Go to <strong>Payroll → Payroll Entry → New</strong>.</li>
+    <li>Select the frequency (Monthly), date range, and department.</li>
+    <li>Click <strong>Get Employees</strong> then <strong>Create Salary Slips</strong>. Review individual slips if needed.</li>
+    <li>Click <strong>Submit</strong> to finalise. Optionally click <strong>Bank File</strong> to export for bank bulk payment.</li>
+  </ol>
+  <div class="note"><strong>Note</strong>P9 forms (annual PAYE certificate) for KRA filing are generated under <strong>Payroll → P9 Report</strong>. Export as PDF per employee or as a CSV for iTax bulk upload.</div>
+
+  <h2 id="mfumo">9 — Mfumo AI Co-worker</h2>
+  <p>Mfumo is AfroERP's embedded AI assistant, specialised in Kenyan tax and accounting, ERP operations, and financial analysis.</p>
+  <table>
+    <tr><th>Task</th><th>Sample Prompt</th></tr>
+    <tr><td>Tax compliance query</td><td>"What is the current VAT withholding rate for services in Kenya and how do I configure it in AfroERP?"</td></tr>
+    <tr><td>Report interpretation</td><td>"My gross profit margin dropped from 42% to 34% this quarter. What could be the main causes?"</td></tr>
+    <tr><td>Payroll calculation</td><td>"Calculate PAYE for an employee earning KES 85,000 basic salary with a KES 15,000 housing allowance."</td></tr>
+    <tr><td>Inventory advice</td><td>"What reorder point should I set for an item that sells 200 units/month with a 7-day lead time?"</td></tr>
+    <tr><td>Reconciliation help</td><td>"Walk me through reconciling M-Pesa Paybill transactions against my Sales Invoice ledger."</td></tr>
+  </table>
+  <p>Open Mfumo from the chat bubble (bottom-right) on any AfroERP page.</p>
+
+  <h2 id="troubleshooting">10 — Troubleshooting</h2>
+  <table>
+    <tr><th>Issue</th><th>Fix</th></tr>
+    <tr><td>eTIMS submission failed</td><td>Check the eTIMS Status tab on the invoice. Common error: <em>Invalid PIN</em> — verify the customer KRA PIN in the Customer master. Retry using <strong>Resubmit to KRA</strong>.</td></tr>
+    <tr><td>M-Pesa STK Push not received</td><td>Verify the phone number format (<span class="tag">2547XXXXXXXX</span>). Ensure the customer has sufficient M-Pesa float. Check <strong>AfroERP → M-Pesa Logs</strong> for the error code.</td></tr>
+    <tr><td>Salary slip not generating</td><td>Ensure the employee has a valid Salary Structure assigned and the employment start date falls within the payroll period.</td></tr>
+    <tr><td>Stock balance negative after receipt</td><td>Open the Purchase Receipt and verify the target warehouse is correctly set. Check <strong>Stock → Stock Ledger</strong> to trace the discrepancy.</td></tr>
+    <tr><td>Cannot submit invoice (validation error)</td><td>Mandatory fields missing — check Customer KRA PIN, item HS Code, and that all accounts in the invoice exist in the Chart of Accounts.</td></tr>
+  </table>
+  <p><strong>Support:</strong> <a href="mailto:support@i3technologies.co.ke">support@i3technologies.co.ke</a></p>
+
+  <div class="footer">Made with IBM Bob</div>
+</div>
+</body>
+</html>

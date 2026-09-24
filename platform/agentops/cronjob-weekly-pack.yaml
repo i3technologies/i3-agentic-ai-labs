@@ -1,0 +1,239 @@
+# =============================================================================
+# platform/agentops/cronjob-weekly-pack.yaml
+#
+# Kubernetes CronJob — i3 AgentOps Weekly Review Pack Generator
+# Namespace: i3-agentops
+#
+# Schedule: every Monday at 07:00 EAT (04:00 UTC) — delivers the pack
+#           to tenant leads before the start of the working week.
+#
+# The job:
+#   1. Queries decision_log, billing, and audit stores.
+#   2. Reads the latest RAGAS gate-evidence JSON from S3.
+#   3. Reads live sensor env vars (pre-populated by the init container).
+#   4. Writes agentops-<week>.html + .json to /tmp/agentops-pack.
+#   5. Uploads both files to s3://${AGENTOPS_S3_BUCKET}/agentops/<week>/.
+#   6. Exits non-zero if any DEGRADING risk is detected (alertable).
+#
+# Secrets / env var sources
+# -------------------------
+#   agentops-db           AGENTOPS_DB_URL (agent-registry + billing DB URL)
+#   agentops-s3           AGENTOPS_S3_BUCKET, AGENTOPS_S3_ENDPOINT_URL
+#   audit-s3              AUDIT_S3_BUCKET, AUDIT_S3_ENDPOINT_URL
+#   agentops-sensors      SENSOR_* vars — pre-populated by init container
+#                         from Prometheus Pushgateway (see initContainers)
+#
+# Apply: oc apply -f platform/agentops/cronjob-weekly-pack.yaml
+# =============================================================================
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-agentops
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+
+---
+# ── ConfigMap: sensor scrape script ──────────────────────────────────────────
+# A tiny shell script run in the initContainer to query Prometheus for the
+# five sensor values and write them as an env-var file consumed by the main pod.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agentops-sensor-scrape
+  namespace: i3-agentops
+data:
+  scrape.sh: |
+    #!/bin/sh
+    set -e
+    PROM="${PROMETHEUS_URL:-http://prometheus-operated.i3-monitoring.svc.cluster.local:9090}"
+
+    # Helper: query Prometheus and extract scalar value, default to 0
+    prom_scalar() {
+      local query="$1"
+      curl -sf --data-urlencode "query=${query}" "${PROM}/api/v1/query" \
+        | python3 -c "
+    import sys, json
+    d = json.load(sys.stdin)
+    r = d.get('data',{}).get('result',[])
+    print(r[0]['value'][1] if r else '0')
+    " 2>/dev/null || echo "0"
+    }
+
+    DENY_RATE=$(prom_scalar \
+      'rate(lobster_trap_denied_total[7d]) / rate(lobster_trap_requests_total[7d]) * 100')
+    RLS_VIOLATIONS=$(prom_scalar \
+      'sum(increase(rls_violation_total[7d]))')
+    L2L3_MANIFESTS=$(prom_scalar \
+      'count(agent_registry_manifest_info{autonomy_tier=~"L2|L3"}) or vector(0)')
+    TENANTS_80PCT=$(prom_scalar \
+      'count(litellm_token_usage_daily / on(tenant_id) litellm_token_budget > 0.80) or vector(0)')
+    RAGAS_PASSING=$(prom_scalar \
+      'agentops_ragas_passing or vector(0)')
+
+    cat > /sensor-env/sensors.env <<EOF
+    SENSOR_LOBSTER_DENY_RATE_PCT=${DENY_RATE}
+    SENSOR_RLS_VIOLATION_COUNT=${RLS_VIOLATIONS}
+    SENSOR_L2_L3_MANIFEST_COUNT=${L2L3_MANIFESTS}
+    SENSOR_TENANTS_OVER_80PCT_BUDGET=${TENANTS_80PCT}
+    SENSOR_RAGAS_PASSING=${RAGAS_PASSING}
+    EOF
+    echo "Sensor values written to /sensor-env/sensors.env"
+    cat /sensor-env/sensors.env
+
+---
+# ── CronJob ───────────────────────────────────────────────────────────────────
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: agentops-weekly-pack
+  namespace: i3-agentops
+  labels:
+    app.kubernetes.io/name:      agentops-weekly-pack
+    app.kubernetes.io/part-of:   i3-platform
+    app.kubernetes.io/component: agentops
+spec:
+  # Monday 04:00 UTC (07:00 EAT)
+  schedule: "0 4 * * 1"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 4
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 900    # fail the job if it runs >15 min
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: agentops-weekly-pack
+        spec:
+          restartPolicy: Never
+          serviceAccountName: agentops-pack-sa
+
+          # ── Shared volumes ─────────────────────────────────────────────
+          volumes:
+            - name: sensor-env
+              emptyDir: {}
+            - name: sensor-scrape-script
+              configMap:
+                name: agentops-sensor-scrape
+                defaultMode: 0755
+
+          # ── Init container: scrape Prometheus sensor values ───────────
+          initContainers:
+            - name: sensor-scrape
+              image: curlimages/curl:8.8.0
+              command: ["/bin/sh", "/scripts/scrape.sh"]
+              env:
+                - name: PROMETHEUS_URL
+                  value: "http://prometheus-operated.i3-monitoring.svc.cluster.local:9090"
+              volumeMounts:
+                - name: sensor-env
+                  mountPath: /sensor-env
+                - name: sensor-scrape-script
+                  mountPath: /scripts
+
+          # ── Main container: generate and upload the pack ──────────────
+          containers:
+            - name: pack-generator
+              image: python:3.11-slim
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+                  # Load sensor env vars written by init container
+                  [ -f /sensor-env/sensors.env ] && . /sensor-env/sensors.env
+
+                  pip install --quiet asyncpg==0.29.0 boto3==1.34.131 pydantic==2.7.1
+
+                  cd /workspace
+                  python -m platform.agentops.cli --upload
+
+              env:
+                # DB connection (injected from secret)
+                - name: AGENTOPS_DB_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: agentops-db
+                      key: url
+
+                # S3 — review pack output bucket
+                - name: AGENTOPS_S3_BUCKET
+                  valueFrom:
+                    secretKeyRef:
+                      name: agentops-s3
+                      key: bucket
+                - name: AGENTOPS_S3_ENDPOINT_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: agentops-s3
+                      key: endpoint_url
+                      optional: true
+                - name: AGENTOPS_S3_REGION
+                  valueFrom:
+                    secretKeyRef:
+                      name: agentops-s3
+                      key: region
+                      optional: true
+
+                # S3 — WORM audit store (read RAGAS evidence)
+                - name: AUDIT_S3_BUCKET
+                  valueFrom:
+                    secretKeyRef:
+                      name: audit-s3
+                      key: bucket
+                - name: AUDIT_S3_ENDPOINT_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: audit-s3
+                      key: endpoint_url
+                      optional: true
+
+                # RAGAS evidence path (S3 URI or local path)
+                - name: RAGAS_EVIDENCE_PATH
+                  value: "platform/testing/ragas-gate-evidence.json"
+
+                # Tenant scope (all tenants if unset)
+                - name: AGENTOPS_TENANT_IDS
+                  valueFrom:
+                    configMapKeyRef:
+                      name: agentops-config
+                      key: tenant_ids
+                      optional: true
+
+              volumeMounts:
+                - name: sensor-env
+                  mountPath: /sensor-env
+
+              resources:
+                requests:
+                  cpu:    "100m"
+                  memory: "256Mi"
+                limits:
+                  cpu:    "500m"
+                  memory: "512Mi"
+
+---
+# ── ServiceAccount ────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: agentops-pack-sa
+  namespace: i3-agentops
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+
+---
+# ── ConfigMap: optional static config ────────────────────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agentops-config
+  namespace: i3-agentops
+data:
+  # Leave empty to scope report to all tenants;
+  # or provide a comma-separated UUID list.
+  tenant_ids: ""

@@ -12,3 +12,6 @@ google-auth==2.32.0
 google-auth-httplib2==0.2.0
 
 # n8n webhooks via httpx (already included)
+
+# Redis
+redis==5.0.8

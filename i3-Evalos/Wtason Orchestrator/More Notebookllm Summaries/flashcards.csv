@@ -1,0 +1,50 @@
+What is the primary purpose of AI orchestration in watsonx Orchestrate?,"It coordinates multiple agents, tools, and data sources to achieve an end-to-end business outcome."
+How does IBM Software Hub interact with watsonx Orchestrate in hybrid deployments?,"It serves as the foundational platform providing identity, storage, licensing, and deployment management."
+Which business process characteristic makes it a suitable candidate for automation with watsonx Orchestrate?,"The process is repetitive, rule-based, and produces predictable outcomes from standardised inputs."
+Why is a highly custom deep-learning computer vision pipeline considered a poor fit for watsonx Orchestrate?,Orchestrate is designed for task automation and cross-system orchestration rather than complex ML model training.
+"What is the operational purpose of using separate Dev, Test, and Prod environments?","They isolate configurations, credentials, and data to ensure changes are promoted safely through the lifecycle."
+How does the architectural logic of an AI Assistant differ from that of an AI Agent?,"Assistants follow designer-defined deterministic flows, whereas Agents use LLMs to reason, plan, and choose tools dynamically."
+Define the role of a 'Collaborator Agent' within a multi-agent system.,It is a specialised agent that an orchestrator agent delegates specific sub-tasks to.
+What is the specific function of the Agent2Agent (A2A) protocol?,It provides an open standard for interoperability between agents running on different frameworks or platforms.
+Which tool would a developer use to extend platform functionality with custom code-based components?,The Agent Development Kit (ADK) provides the CLI and SDK for building custom agents and tools.
+How does Langflow integration benefit teams that prefer visual composition over coding?,It allows the creation of complex LLM flows through a drag-and-drop interface that can be imported as tools.
+What is the standard structural sequence of an Agentic Workflow?,"A workflow begins with a trigger, followed by a sequence of actions, decision points, and final outcomes."
+"In an agentic workflow, what is the purpose of a 'user activity' node?","It incorporates a human-in-the-loop step to pause the flow for manual input, approval, or review."
+When should a generative prompt be inserted into a deterministic workflow?,"It is used when a specific step requires natural language understanding, such as summarising a document."
+What is the role of the Model Context Protocol (MCP) in AI agent architecture?,It provides a standardised interface for agents to discover and interact with external tools across different frameworks.
+Which utility is used to confirm the schema and behaviour of an MCP tool before importing it into watsonx Orchestrate?,The MCP Inspector is used to call tools directly and validate their functionality.
+What business value does the ContextForge MCP Gateway provide?,"It centralises the exposure and consumption of MCP tools through a managed, secured gateway layer."
+How do pre-built domain agents accelerate time-to-value for organisations?,They provide ready-to-use capabilities for specific functions like HR or Sales with pre-configured connectors.
+"During agent design, when is it appropriate to rely solely on LLM reasoning?","Reasoning is used for tasks involving language understanding, creative drafting, or brainstorming without precise data requirements."
+Why should an agent call a tool instead of relying on its internal LLM knowledge for a calculation?,"Tools provide the accuracy, precision, and auditability required for execution that LLMs alone cannot guarantee."
+What are the four primary metadata elements included in an agent's configuration?,"The metadata includes the agent's name, description, owner, and permissions."
+"In the context of agent development, what does a 'connection' represent?",It is a secured object containing the credentials and endpoints needed for an agent to reach external systems.
+What is the distinction between 'recording' and 'generating' user stories in the ADK evaluation framework?,"Recording captures real interaction transcripts, while generating creates synthetic scenarios to broaden test coverage."
+How does agent evaluation differ from standard software testing regarding 'reasoning trajectories'?,"Evaluation checks if the agent called the correct tools in the right order, not just if the final answer was correct."
+Explain the concept of 'agentic prompting'.,"It is the practice of writing instructions to shape how an agent plans, handles failures, and uses tools autonomously."
+What is the 'ReAct' prompting technique?,It is a method that interleaves reasoning thoughts with tool-calling actions to improve selection accuracy.
+Define 'prompt injection' as a security risk for AI agents.,It is an attack where malicious input attempts to override the agent's system instructions to perform unauthorised actions.
+How do input and output plug-ins enhance agent security?,They inspect and redact or block messages to enforce safety and regulatory guardrails automatically.
+What is the purpose of connecting an AI agent to a 'channel'?,"Channels allow users to interact with agents through existing platforms like Slack, Microsoft Teams, or web chat."
+Which IDE extension assists developers in scaffolding and refining agent development workspaces?,The Orchestrate Copilot for Visual Studio Code provides integrated commands for building agents and tools.
+What does 'input modality' refer to in the context of LLM selection?,"It specifies the types of data the model can process, such as text, images, or vision input."
+How does the AI Gateway enable multi-provider orchestration?,It provides a unified interface to route requests across different model providers without changing agent code.
+What is the function of a 'model policy' regarding failover?,Policies define the alternate models to use if the primary model is unavailable or rate-limited.
+How is Role-Based Access Control (RBAC) applied within watsonx Orchestrate?,"It governs user permissions for tasks such as building agents, deploying assets, or accessing specific workspaces."
+What is the primary use of audit logs in an enterprise AI environment?,"They provide a detailed record of system events for monitoring behaviour, diagnosing issues, and ensuring compliance."
+Explain 'Security and Privacy by Design' (SPbD) in agent development.,It is the proactive embedding of data protection and access controls into the agent's design from the outset.
+Which observability platform has a native integration with the ADK for tracing agent executions?,"Langfuse is the open-source platform used to monitor prompts, tool calls, and reasoning steps."
+"In a knowledge base, what is the role of 'chunking strategies'?",Chunking defines how documents are split into smaller segments to optimise retrieval relevance and accuracy.
+Why are vector embeddings essential for knowledge base functionality?,They represent content numerically to enable semantic search based on similarity rather than just keyword matching.
+What is 'skill chaining' in the context of agent orchestration?,"It is the process of connecting multiple pre-built or custom tools to accomplish complex, multi-step tasks."
+How does A/B testing support the deployment of AI agents?,It allows organisations to route traffic between different agent versions to compare performance before a full rollout.
+What is the benefit of integrating version control (Git) into a CI/CD pipeline for Orchestrate?,It allows developers to track configuration changes and manage branching strategies for agent YAML definitions.
+Why should an agent's description be written with high precision?,Orchestrator agents use these descriptions to decide when to route a specific user request to that agent.
+Which ADK CLI command is used to scaffold a new native agent definition?,The command 'orchestrate agents create' is used to initialize the agent YAML file.
+What is the recommended ceiling for the number of tools or collaborators attached to a single agent?,The recommended limit is approximately 10 tools to maintain reliable selection accuracy by the LLM.
+How do environment variables assist in promoting agents from Dev to Prod?,They allow the same agent definition to use different credentials and endpoints based on the active environment.
+"In process analysis, what does identifying 'dependencies and handoffs' reveal?","It clarifies where work passes between different people, teams, or enterprise systems."
+What is the function of a 'planner-style' prompt for complex tasks?,It directs the agent to generate an explicit multi-step plan before executing any actions.
+Which capability ensures that knowledge bases only expose authorised documents to a specific user?,Document-level permissions and data isolation configurations within the knowledge base settings.
+What is the primary business value of using a governed Agent Catalog?,"It promotes the reuse of proven, secured assets across the organisation to reduce duplicated effort."
+How does external logging support enterprise monitoring?,It feeds Orchestrate's audit and activity data into centralised SIEM or monitoring tools for unified visibility.

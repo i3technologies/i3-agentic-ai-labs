@@ -250,11 +250,16 @@ export interface AssessmentResult {
  * Run all subagents for the given role in parallel.
  * Each subagent fetches its own RAG context via the retriever.
  */
-export async function assessRole(role: OnboardingRole): Promise<AssessmentResult> {
+export async function assessRole(
+  role:       OnboardingRole,
+  sessionId?: string,
+): Promise<AssessmentResult> {
   const t0    = Date.now();
   const plans = SCAN_PLANS[role] ?? SCAN_PLANS['platform_engineer'];
 
-  const scanResults = await Promise.all(
+  // FINDING-OA-2: Promise.allSettled prevents a single scan failure from
+  // cancelling all parallel scans (02-architecture-standards.md §TypeScript).
+  const settled = await Promise.allSettled(
     plans.map(async (plan) => {
       const ragContext = await retrieveAsContext(plan.query, {
         roleTag:    plan.roleTag,
@@ -267,11 +272,18 @@ export async function assessRole(role: OnboardingRole): Promise<AssessmentResult
         contextQuery: plan.query,
         ragContext,
         focusAreas:   plan.focusAreas,
+        sessionId,
       };
 
       return plan.scanner.run(input);
     }),
   );
+
+  const scanResults: SubagentScanResult[] = settled.flatMap((result, i) => {
+    if (result.status === 'fulfilled') return [result.value];
+    console.warn(`[skills-assessor] Subagent '${plans[i].subagentName}' failed:`, result.reason);
+    return [];  // drop failed scans; plan synthesis continues with remaining results
+  });
 
   return {
     role,

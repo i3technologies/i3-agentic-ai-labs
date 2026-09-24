@@ -1,0 +1,11 @@
+# DNS CNAME Records to Add at cPanel (ns1.host-ww.net / ns2.host-ww.net)
+# Target for all: 8eec2322-eu-de.lb.appdomain.cloud
+#
+# Name                              Type    Value
+# ar.i3technologies.co.ke           CNAME   8eec2322-eu-de.lb.appdomain.cloud
+# api.talent.i3technologies.co.ke   CNAME   8eec2322-eu-de.lb.appdomain.cloud
+# talent.i3technologies.co.ke       CNAME   8eec2322-eu-de.lb.appdomain.cloud
+# sit.i3technologies.co.ke          CNAME   8eec2322-eu-de.lb.appdomain.cloud
+# api.sit.i3technologies.co.ke      CNAME   8eec2322-eu-de.lb.appdomain.cloud
+# verify.sit.i3technologies.co.ke   CNAME   8eec2322-eu-de.lb.appdomain.cloud
+# ford.i3technologies.co.ke         CNAME   8eec2322-eu-de.lb.appdomain.cloud

@@ -276,7 +276,8 @@ return [{ json: { ...item.body, inviteStatus: result.status } }];
     }
 
     api('POST', '/rest/login',
-      { email: 'snjagi@i3technologies.co.ke', password: 'REDACTED-n8n-admin' }, null,
+      // STEP-P1-01: credential removed — use N8N_ADMIN_PASS env var (vault kv get -field=password i3/n8n/admin)
+      { email: 'snjagi@i3technologies.co.ke', password: process.env.N8N_ADMIN_PASS || (() => { throw new Error('N8N_ADMIN_PASS not set'); })() }, null,
       (s, h) => {
         if (s !== 200) { process.stderr.write('LOGIN FAILED\n'); process.exit(1); }
         const ck = (h['set-cookie']||[]).map(c=>c.split(';')[0]).join('; ');

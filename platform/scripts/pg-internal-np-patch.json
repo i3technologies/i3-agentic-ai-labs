@@ -1,0 +1,11 @@
+[
+  {
+    "op": "replace",
+    "path": "/spec/ingress/0/ports",
+    "value": [
+      { "port": 5432, "protocol": "TCP" },
+      { "port": 8008, "protocol": "TCP" },
+      { "port": 8432, "protocol": "TCP" }
+    ]
+  }
+]

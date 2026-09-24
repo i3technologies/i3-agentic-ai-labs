@@ -69,15 +69,22 @@ function createPool(): Pool {
     connectionTimeoutMillis: 5_000,
   }
 
-  // SSL configuration — always encrypt in production, never reject
-  // self-signed certificates (Crunchy operator issues its own CA).
-  // rejectUnauthorized: false is intentional and safe for a cluster-internal
-  // PgBouncer endpoint; traffic never leaves the OpenShift SDN.
+  // SSL configuration — STEP-P1-03: enforce certificate validation in production.
+  // PG_CA_CERT_PATH must be set to the Crunchy operator CA cert path
+  // (mounted from the crunchy-postgres-ca Secret by the EvalOS Deployment).
+  // If PG_CA_CERT_PATH is not set in production the pool will fail to start,
+  // which is the intended fail-safe behaviour (fail closed).
   const caCertPath = process.env.PG_CA_CERT_PATH
   if (process.env.NODE_ENV === 'production') {
+    if (!caCertPath) {
+      throw new Error(
+        'PG_CA_CERT_PATH is not set. Mount the crunchy-postgres-ca Secret and set ' +
+        'PG_CA_CERT_PATH=/etc/ssl/certs/postgres-ca.crt in the EvalOS Deployment.'
+      )
+    }
     config.ssl = {
-      rejectUnauthorized: false,
-      ...(caCertPath ? { ca: readCaCert(caCertPath) } : {}),
+      rejectUnauthorized: true,   // STEP-P1-03: validate Crunchy operator CA
+      ca: readCaCert(caCertPath),
     }
   } else {
     // Development: allow plaintext or self-signed

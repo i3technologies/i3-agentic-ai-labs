@@ -1,0 +1,151 @@
+---
+# ── Namespace ────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-edbridge
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+
+---
+# ── Secrets ──────────────────────────────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: edbridge-secrets
+  namespace: i3-edbridge
+type: Opaque
+# SCRUBBED (STEP-P1-01): plaintext credentials removed.
+# Retrieve at runtime via OpenBao:
+#   MOODLE_DATABASE_PASSWORD → vault kv get -field=password i3/edbridge/db
+#   MOODLE_PASSWORD          → vault kv get -field=password i3/edbridge/admin
+stringData:
+  MOODLE_DATABASE_TYPE: "pgsql"
+  MOODLE_DATABASE_HOST: "i3-postgres-pgbouncer.i3-data.svc"
+  MOODLE_DATABASE_PORT_NUMBER: "5432"
+  MOODLE_DATABASE_NAME: "edbridge_db"
+  MOODLE_DATABASE_USER: "edbridge"
+  MOODLE_DATABASE_PASSWORD: ""  # vault kv get -field=password i3/edbridge/db
+  MOODLE_USERNAME: "i3admin"
+  MOODLE_PASSWORD: ""           # vault kv get -field=password i3/edbridge/admin
+  MOODLE_EMAIL: "admin@i3technologies.co.ke"
+  MOODLE_SITE_NAME: "i3EduBridge"
+  MOODLE_SKIP_BOOTSTRAP: "no"
+
+---
+# ── PVC for Moodle data ────────────────────────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: edbridge-data
+  namespace: i3-edbridge
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: ibmc-vpc-block-retain-10iops-tier
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+# ── Deployment ────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: edbridge
+  namespace: i3-edbridge
+  labels:
+    app: edbridge
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: edbridge
+  template:
+    metadata:
+      labels:
+        app: edbridge
+    spec:
+      initContainers:
+        - name: wait-for-db
+          image: postgres:16-alpine
+          command: ["sh", "-c", "until pg_isready -h i3-postgres-pgbouncer.i3-data.svc -p 5432; do echo waiting for db; sleep 3; done"]
+      containers:
+        - name: moodle
+          image: bitnami/moodle:4.4
+          ports:
+            - containerPort: 8080
+              name: http
+          envFrom:
+            - secretRef:
+                name: edbridge-secrets
+          env:
+            - name: MOODLE_HOST
+              value: "moodle.i3technologies.co.ke"
+            - name: PHP_MEMORY_LIMIT
+              value: "512m"
+            - name: PHP_MAX_EXECUTION_TIME
+              value: "300"
+            - name: BITNAMI_DEBUG
+              value: "false"
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/moodle
+            - name: moodledata
+              mountPath: /bitnami/moodledata
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+          readinessProbe:
+            httpGet:
+              path: /login/index.php
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: edbridge-data
+        - name: moodledata
+          emptyDir: {}
+
+---
+# ── Service ───────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: edbridge
+  namespace: i3-edbridge
+spec:
+  selector:
+    app: edbridge
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+
+---
+# ── Route ─────────────────────────────────────────────────────
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: edbridge-public
+  namespace: i3-edbridge
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  host: moodle.i3technologies.co.ke
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  to:
+    kind: Service
+    name: edbridge

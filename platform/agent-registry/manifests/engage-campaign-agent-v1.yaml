@@ -1,0 +1,23 @@
+agent_id: engage-campaign-agent-v1
+name: i3 Engage Email Campaign Agent
+version: "1.0.0"
+autonomy_tier: L1          # L0=human-in-loop, L1=supervised; HC-3 ceiling
+# IMP-12: risk_tier 1 — reads consent + DB; no PII or code writes
+risk_tier: 1
+approval_policy: auto
+allowed_tools:
+  - litellm.chat
+  - engage_db.read
+  - consent.check
+forbidden_tools:
+  - engage_db.write
+  - kafka.produce
+  - postgres.members.write
+  - admissions_db.write
+  - pmaas_db.write
+  - github.pr.create
+cost_budget_tokens: 40000  # per campaign batch — personalisation fan-out
+guardrail_policy: lobster-trap-v1
+owner: i3-technologies
+state: active
+tenant_id: "00000000-0000-0000-0000-000000000001"

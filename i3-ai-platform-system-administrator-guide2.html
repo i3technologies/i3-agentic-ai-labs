@@ -1,0 +1,572 @@
+
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>i3 AI Platform — System Administrator Guide</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:13.5px;line-height:1.65;background:#fff;color:#1f2328}
+.page{max-width:760px;margin:0 auto;padding:36px 22px 56px}
+h1{font-size:24px;font-weight:800;margin-bottom:4px}
+.meta{color:#57606a;font-size:12px;margin-bottom:28px;border-bottom:1px solid #e5e7eb;padding-bottom:14px}
+h2{font-size:15px;font-weight:700;margin:32px 0 10px;padding-bottom:5px;border-bottom:2px solid #e5e7eb;color:#1f2328}
+h3{font-size:13px;font-weight:700;margin:18px 0 6px;color:#3b82d4}
+p{margin-bottom:8px}
+table{width:100%;border-collapse:collapse;margin-bottom:10px;font-size:12.5px}
+th{text-align:left;padding:5px 8px;background:#f7f8fa;border:1px solid #e5e7eb;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#57606a}
+td{padding:5px 8px;border:1px solid #e5e7eb;vertical-align:top}
+.mono{font-family:monospace;font-size:11.5px;background:#f6f8fa;padding:1px 4px;border-radius:3px}
+code{font-family:monospace;font-size:12px;background:#f6f8fa;padding:2px 6px;border-radius:4px;border:1px solid #e5e7eb}
+pre{font-family:monospace;font-size:12px;background:#f6f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:12px 14px;margin:8px 0 12px;overflow-x:auto;white-space:pre-wrap;line-height:1.5}
+.tag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600;margin-right:3px}
+.tag-green{background:#dafbe1;color:#116329}
+.tag-blue{background:#ddf4ff;color:#0550ae}
+.tag-amber{background:#fff8c5;color:#9a6700}
+.tag-red{background:#ffebe9;color:#cf222e}
+.tag-purple{background:#fbefff;color:#6639ba}
+.warn{background:#fff8c5;border-left:3px solid #e3b341;padding:8px 12px;border-radius:0 4px 4px 0;margin:8px 0;font-size:12.5px}
+.info{background:#ddf4ff;border-left:3px solid #54aeff;padding:8px 12px;border-radius:0 4px 4px 0;margin:8px 0;font-size:12.5px}
+.toc{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:14px 18px;margin-bottom:28px}
+.toc h3{margin:0 0 8px;font-size:13px;color:#1f2328}
+.toc ol{padding-left:18px;font-size:12.5px;line-height:2}
+.toc a{color:#0550ae;text-decoration:none}
+.section-num{display:inline-block;background:#1f2328;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;margin-right:6px;vertical-align:middle}
+ul.runbook{list-style:none;padding:0}
+ul.runbook li{padding:3px 0 3px 16px;position:relative;font-size:12.5px}
+ul.runbook li::before{content:"›";position:absolute;left:0;color:#3b82d4;font-weight:700}
+footer{margin-top:44px;padding-top:14px;border-top:1px solid #e5e7eb;text-align:center;font-size:11px;color:#57606a}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>i3 AI Platform</h1>
+<h1 style="font-size:18px;font-weight:400;margin-top:2px;margin-bottom:10px">System Administrator Guide</h1>
+<div class="meta">
+  Version 2.0  ·  IBM ROKS Frankfurt (eu-de)  ·  OpenShift 4.17  ·  Last updated: September 2026  ·  Classification: Internal — Restricted
+</div>
+
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <ol>
+    <li><a href="#s1">Cluster Infrastructure</a></li>
+    <li><a href="#s2">Namespace Architecture</a></li>
+    <li><a href="#s3">Application Inventory &amp; URLs</a></li>
+    <li><a href="#s4">DNS &amp; Ingress Configuration</a></li>
+    <li><a href="#s5">Secrets Management</a></li>
+    <li><a href="#s6">Database Administration (Crunchy PostgreSQL HA)</a></li>
+    <li><a href="#s7">AI Model Gateway (LiteLLM)</a></li>
+    <li><a href="#s8">Identity &amp; Access Management (Keycloak)</a></li>
+    <li><a href="#s9">Storage Architecture</a></li>
+    <li><a href="#s10">Network Policies</a></li>
+    <li><a href="#s11">Auto-scaling Configuration</a></li>
+    <li><a href="#s12">Backup &amp; Disaster Recovery</a></li>
+    <li><a href="#s13">Monitoring &amp; Observability</a></li>
+    <li><a href="#s14">GitOps &amp; CI/CD (Argo CD)</a></li>
+    <li><a href="#s15">Operational Runbooks</a></li>
+    <li><a href="#s16">Security Hardening Reference</a></li>
+    <li><a href="#s17">Common Admin Commands</a></li>
+  </ol>
+</div>
+
+
+<h2 id="s1"><span class="section-num">1</span> Cluster Infrastructure</h2>
+
+<h3>IBM ROKS Cluster Specifications</h3>
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Platform</td><td>IBM Red Hat OpenShift Kubernetes Service (ROKS)</td></tr>
+  <tr><td>Region</td><td>Frankfurt, Germany (eu-de)</td></tr>
+  <tr><td>OpenShift Version</td><td>4.17</td></tr>
+  <tr><td>Node Count</td><td>12 worker nodes</td></tr>
+  <tr><td>Node Flavour</td><td>bx2.4x16 (4 vCPU / 16 GB RAM each)</td></tr>
+  <tr><td>Total Allocatable</td><td>~46.9 vCPU / ~162 GB RAM</td></tr>
+  <tr><td>Current Usage</td><td>~35 vCPU / ~85 GB RAM (idle)</td></tr>
+  <tr><td>Available Headroom</td><td>~12 vCPU / ~77 GB RAM</td></tr>
+  <tr><td>Availability Zones</td><td>eu-de-1, eu-de-2, eu-de-3 (4 nodes each)</td></tr>
+  <tr><td>GPU</td><td>None (CPU-only; GPU deferred to post-pilot)</td></tr>
+  <tr><td>Load Balancer FQDN</td><td><span class="mono">8eec2322-eu-de.lb.appdomain.cloud</span></td></tr>
+  <tr><td>Load Balancer IPs</td><td><span class="mono">149.81.239.32</span> / <span class="mono">158.176.12.150</span></td></tr>
+  <tr><td>Ingress Router</td><td><span class="mono">router-default.i3-platform-bcc5f5bc822da314835720fd0c9856ce-0000.eu-de.containers.appdomain.cloud</span></td></tr>
+</table>
+
+<h3>Node Layout</h3>
+<table>
+  <tr><th>Node IP</th><th>AZ</th><th>CPU (alloc)</th><th>RAM (alloc)</th></tr>
+  <tr><td>10.240.0.18–21</td><td>eu-de-1</td><td>3910m each</td><td>~13 GB each</td></tr>
+  <tr><td>10.240.64.17–21</td><td>eu-de-2</td><td>3910m each</td><td>~13 GB each</td></tr>
+  <tr><td>10.240.128.17–21</td><td>eu-de-3</td><td>3910m each</td><td>~13 GB each</td></tr>
+</table>
+
+<h3>Node Utilisation (live)</h3>
+<table>
+  <tr><th>Node</th><th>CPU %</th><th>RAM %</th><th>AZ</th></tr>
+  <tr><td>10.240.0.18</td><td>12%</td><td>66%</td><td>eu-de-1</td></tr>
+  <tr><td>10.240.64.17</td><td>7%</td><td>60%</td><td>eu-de-2</td></tr>
+  <tr><td>10.240.128.21</td><td>9%</td><td>49%</td><td>eu-de-3</td></tr>
+  <tr><td colspan="4" style="color:#57606a;font-size:11px">Remaining 9 nodes: 2–7% CPU, 16–49% RAM</td></tr>
+</table>
+
+
+<h2 id="s2"><span class="section-num">2</span> Namespace Architecture</h2>
+<table>
+  <tr><th>Namespace</th><th>Purpose</th><th>Key Pods</th><th>Quota</th></tr>
+  <tr><td><span class="mono">i3-data</span></td><td>Crunchy PostgreSQL HA + pgBouncer</td><td>3× primary, pgbouncer, pgo</td><td>i3-data-quota</td></tr>
+  <tr><td><span class="mono">i3-messaging</span></td><td>Strimzi Kafka KRaft (3-node combined)</td><td>kafka-combined-0/1/2, entity-operator</td><td>i3-messaging-quota</td></tr>
+  <tr><td><span class="mono">i3-security</span></td><td>OpenBao (HashiCorp Vault fork) HA</td><td>openbao-0/1/2</td><td>i3-security-quota</td></tr>
+  <tr><td><span class="mono">i3-auth</span></td><td>Keycloak / RHSSO via operator</td><td>keycloak-0, rhsso-operator</td><td>i3-auth-quota</td></tr>
+  <tr><td><span class="mono">i3-model-gateway</span></td><td>LiteLLM proxy, Ollama, Langfuse</td><td>litellm-proxy ×2, ollama-0, langfuse-web</td><td>i3-model-gateway-quota</td></tr>
+  <tr><td><span class="mono">i3-ai-lab</span></td><td>JupyterHub, Open WebUI (Sage), ChromaDB</td><td>jupyterhub, open-webui, chromadb-0</td><td>i3-ai-lab-quota</td></tr>
+  <tr><td><span class="mono">i3-evalos</span></td><td>EvalOS platform + sandbox + Zuri AI</td><td>evalos-web ×2, sandbox, zuri-coworker</td><td>i3-evalos-quota</td></tr>
+  <tr><td><span class="mono">i3-ott</span></td><td>OTT/media: OvenMedia, HLS, SeaweedFS, Directus, N8N, Langfuse OTT</td><td>ome, nginx-hls ×2, seaweedfs-*, directus, n8n, ollama-ott</td><td>i3-ott-quota</td></tr>
+  <tr><td><span class="mono">i3-admissions</span></td><td>Admissions AI agent + ChromaDB + MCP connectors</td><td>admissions-agent, chromadb, mcp-connectors</td><td>i3-admissions-quota</td></tr>
+  <tr><td><span class="mono">i3-onboarding</span></td><td>Onboarding Agent (HPA)</td><td>onboarding-agent</td><td>—</td></tr>
+  <tr><td><span class="mono">i3-pmaas</span></td><td>PMaaS web + Dawa AI + Campaign Agent</td><td>pmaas-web, dawa-coworker, campaign-agent</td><td>pmaas-quota</td></tr>
+  <tr><td><span class="mono">i3-engage</span></td><td>Engage CRM + Nuru AI + SMS consumer</td><td>engage-web, nuru-coworker, sms-consumer, campaign-agent</td><td>engage-quota</td></tr>
+  <tr><td><span class="mono">i3-afroerp</span></td><td>AfroERP (ERPNext) + MariaDB + Mfumo AI</td><td>erpnext, mariadb-0, mfumo-coworker, redis</td><td>afroerp-quota</td></tr>
+  <tr><td><span class="mono">i3-monitoring</span></td><td>Prometheus + Grafana</td><td>prometheus, grafana</td><td>i3-monitoring-quota</td></tr>
+  <tr><td><span class="mono">i3-gitops</span></td><td>GitHub webhook EventListener (Tekton)</td><td>el-i3-github-listener</td><td>i3-gitops-quota</td></tr>
+  <tr><td><span class="mono">i3-voice</span></td><td>Voice STT + Voice TTS (FastAPI)</td><td>voice-stt, voice-tts</td><td>voice-quota</td></tr>
+  <tr><td><span class="mono">i3-edbridge</span></td><td>i3EduBridge — Moodle 4.4</td><td>edbridge (moodlehq/moodle-php-apache:8.2)</td><td>—</td></tr>
+  <tr><td><span class="mono">i3-social</span></td><td>i3Social — Nextcloud 28 + Redis</td><td>nextcloud, redis</td><td>—</td></tr>
+  <tr><td><span class="mono">openshift-gitops</span></td><td>Argo CD (platform GitOps)</td><td>openshift-gitops-server, repo-server, etc.</td><td>—</td></tr>
+</table>
+
+
+<h2 id="s3"><span class="section-num">3</span> Application Inventory &amp; URLs</h2>
+<table>
+  <tr><th>Application</th><th>URL</th><th>Namespace</th><th>Auth</th><th>Admin Credentials</th></tr>
+  <tr><td>Keycloak / SSO</td><td><span class="mono">sso.i3technologies.co.ke</span></td><td>i3-auth</td><td>—</td><td>admin / <em>see credential-i3-keycloak secret</em></td></tr>
+  <tr><td>EvalOS</td><td><span class="mono">evalos.i3technologies.co.ke</span></td><td>i3-evalos</td><td>OIDC</td><td>Keycloak i3 realm</td></tr>
+  <tr><td>PMaaS</td><td><span class="mono">pmaas.i3technologies.co.ke</span></td><td>i3-pmaas</td><td>NextAuth + OIDC</td><td>Keycloak i3 realm</td></tr>
+  <tr><td>Engage</td><td><span class="mono">engage.i3technologies.co.ke</span></td><td>i3-engage</td><td>NextAuth + OIDC</td><td>Keycloak i3 realm</td></tr>
+  <tr><td>LiteLLM Gateway</td><td><span class="mono">litellm.i3technologies.co.ke</span></td><td>i3-model-gateway</td><td>API Key</td><td>Master key in <span class="mono">litellm-secrets</span></td></tr>
+  <tr><td>Langfuse (tracing)</td><td><span class="mono">langfuse.i3technologies.co.ke</span></td><td>i3-ott</td><td>Built-in</td><td>See langfuse-secrets</td></tr>
+  <tr><td>Grafana</td><td><span class="mono">grafana.i3technologies.co.ke</span></td><td>i3-monitoring</td><td>Built-in</td><td>See grafana-secrets</td></tr>
+  <tr><td>JupyterHub</td><td><span class="mono">jupyter.i3technologies.co.ke</span></td><td>i3-ai-lab</td><td>OIDC (Keycloak)</td><td>Keycloak i3 realm</td></tr>
+  <tr><td>Sage (Open WebUI)</td><td><span class="mono">sage.i3technologies.co.ke</span></td><td>i3-ai-lab</td><td>Built-in</td><td>See open-webui-secrets</td></tr>
+  <tr><td>CMS / Directus</td><td><span class="mono">cms.i3technologies.co.ke</span></td><td>i3-ott</td><td>Built-in</td><td>See directus-secrets</td></tr>
+  <tr><td>N8N Automation</td><td><span class="mono">n8n.i3technologies.co.ke</span></td><td>i3-ott</td><td>Built-in</td><td>See n8n-secrets</td></tr>
+  <tr><td>Admissions Agent</td><td><span class="mono">admissions.i3technologies.co.ke</span></td><td>i3-admissions</td><td>API Key</td><td>See admissions-secrets</td></tr>
+  <tr><td>Onboarding Agent</td><td><span class="mono">onboarding.i3technologies.co.ke</span></td><td>i3-onboarding</td><td>API Key</td><td>See onboarding-agent-secrets</td></tr>
+  <tr><td>Zuri AI</td><td><span class="mono">zuri.i3technologies.co.ke</span></td><td>i3-evalos</td><td>API Key</td><td>See zuri-secrets</td></tr>
+  <tr><td>Dawa AI</td><td><span class="mono">dawa.i3technologies.co.ke</span></td><td>i3-pmaas</td><td>API Key</td><td>—</td></tr>
+  <tr><td>Nuru AI</td><td><span class="mono">nuru.i3technologies.co.ke</span></td><td>i3-engage</td><td>API Key</td><td>—</td></tr>
+  <tr><td>Mfumo AI</td><td><span class="mono">mfumo.i3technologies.co.ke</span></td><td>i3-afroerp</td><td>API Key</td><td>—</td></tr>
+  <tr><td>AfroERP</td><td><span class="mono">afroerp.i3technologies.co.ke</span></td><td>i3-afroerp</td><td>ERPNext</td><td>admin / see afroerp-secrets ADMIN_PASSWORD</td></tr>
+  <tr><td>Voice STT</td><td><span class="mono">stt.i3technologies.co.ke</span></td><td>i3-voice</td><td>API Key</td><td>See voice-secrets</td></tr>
+  <tr><td>Voice TTS</td><td><span class="mono">tts.i3technologies.co.ke</span></td><td>i3-voice</td><td>API Key</td><td>See voice-secrets</td></tr>
+  <tr><td>i3EduBridge (Moodle)</td><td><span class="mono">moodle.i3technologies.co.ke</span></td><td>i3-edbridge</td><td>Moodle + OIDC</td><td>i3admin / i3-Moodle-Admin-2026!</td></tr>
+  <tr><td>i3Social (Nextcloud)</td><td><span class="mono">nextcloud.i3technologies.co.ke</span></td><td>i3-social</td><td>Nextcloud + OIDC</td><td>i3admin / i3-Social-Admin-2026!</td></tr>
+  <tr><td>Vault / OpenBao</td><td><span class="mono">vault.i3technologies.co.ke</span></td><td>i3-security</td><td>Vault tokens</td><td>Root token in data-openbao PVC; unseal keys in init output</td></tr>
+  <tr><td>Argo CD</td><td><span class="mono">argocd.i3technologies.co.ke</span></td><td>openshift-gitops</td><td>OIDC / built-in</td><td>See Argo CD admin secret</td></tr>
+</table>
+
+
+<h2 id="s4"><span class="section-num">4</span> DNS &amp; Ingress Configuration</h2>
+
+<h3>DNS Architecture</h3>
+<p>All public subdomains are CNAME records pointing to the IBM Cloud VPC Load Balancer FQDN: <code>8eec2322-eu-de.lb.appdomain.cloud</code> (resolves to <code>149.81.239.32</code> and <code>158.176.12.150</code>).</p>
+<p>TLS is terminated at the OpenShift Router (HAProxy) via <strong>Edge</strong> termination for all apps except Keycloak which uses <strong>Re-encrypt</strong>. The wildcard TLS certificate <span class="mono">i3technologies-wildcard-tls</span> is stored in multiple namespaces.</p>
+
+<h3>Complete DNS Records</h3>
+<table>
+  <tr><th>Subdomain</th><th>Type</th><th>Target</th><th>TLS Mode</th><th>Namespace</th></tr>
+  <tr><td>sso</td><td>CNAME</td><td>IBM LB</td><td>Reencrypt</td><td>i3-auth</td></tr>
+  <tr><td>keycloak</td><td>CNAME</td><td>IBM LB</td><td>Reencrypt</td><td>i3-auth</td></tr>
+  <tr><td>evalos</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-evalos</td></tr>
+  <tr><td>pmaas</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-pmaas</td></tr>
+  <tr><td>engage</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-engage</td></tr>
+  <tr><td>litellm</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-model-gateway</td></tr>
+  <tr><td>langfuse</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-ott</td></tr>
+  <tr><td>grafana</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-monitoring</td></tr>
+  <tr><td>jupyter</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-ai-lab</td></tr>
+  <tr><td>sage</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-ai-lab</td></tr>
+  <tr><td>cms / directus</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-ott</td></tr>
+  <tr><td>n8n</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-ott</td></tr>
+  <tr><td>admissions</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-admissions</td></tr>
+  <tr><td>onboarding</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-onboarding</td></tr>
+  <tr><td>zuri / dawa / nuru / mfumo</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>respective ns</td></tr>
+  <tr><td>afroerp</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-afroerp</td></tr>
+  <tr><td>stt / tts</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-voice</td></tr>
+  <tr><td>moodle</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-edbridge</td></tr>
+  <tr><td>nextcloud</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-social</td></tr>
+  <tr><td>vault</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-security</td></tr>
+  <tr><td>argocd</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>openshift-gitops</td></tr>
+  <tr><td>storage</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-ott (SeaweedFS S3)</td></tr>
+  <tr><td>tracing</td><td>CNAME</td><td>IBM LB</td><td>Edge</td><td>i3-ott (Jaeger/Langfuse)</td></tr>
+  <tr><td>mail / webmail</td><td>A</td><td>102.130.125.229</td><td>—</td><td>External (not ROKS)</td></tr>
+</table>
+<div class="warn">All CNAMEs currently have TTL=300 (5 min). After 48 h of stability, increase to TTL=3600 to reduce DNS query load.</div>
+
+
+<h2 id="s5"><span class="section-num">5</span> Secrets Management</h2>
+<h3>Secret Inventory by Namespace</h3>
+<table>
+  <tr><th>Namespace</th><th>Secret Name</th><th>Contents</th></tr>
+  <tr><td>i3-auth</td><td>credential-i3-keycloak</td><td>ADMIN_USERNAME, ADMIN_PASSWORD (Keycloak console)</td></tr>
+  <tr><td>i3-auth</td><td>keycloak-db-secret</td><td>Keycloak → Postgres credentials</td></tr>
+  <tr><td>i3-model-gateway</td><td>litellm-secrets</td><td>LITELLM_MASTER_KEY, DATABASE_URL, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY</td></tr>
+  <tr><td>i3-data</td><td>i3-postgres-pguser-* (×5)</td><td>Per-user PG credentials (admissions, evalos, i3admin, keycloak, langfuse)</td></tr>
+  <tr><td>i3-data</td><td>pgbackrest-cos-secret</td><td>IBM COS HMAC key for pgBackRest WAL archiving</td></tr>
+  <tr><td>i3-ott</td><td>rclone-secrets</td><td>IBM COS credentials for SeaweedFS → COS DR sync</td></tr>
+  <tr><td>i3-ott</td><td>directus-secrets</td><td>Directus admin token, DB URL, secret key</td></tr>
+  <tr><td>i3-monitoring</td><td>grafana-secrets</td><td>GF_SECURITY_ADMIN_PASSWORD, datasource tokens</td></tr>
+  <tr><td>i3-onboarding</td><td>onboarding-agent-secrets</td><td>API keys, LiteLLM URL/key, ChromaDB auth</td></tr>
+  <tr><td>i3-evalos</td><td>evalos-web-secrets</td><td>DB URL, OIDC client secret, LiteLLM key</td></tr>
+  <tr><td>i3-pmaas</td><td>pmaas-secrets</td><td>DB URL, NEXTAUTH_SECRET, LITELLM_URL, Brevo key, voice keys</td></tr>
+  <tr><td>i3-engage</td><td>engage-secrets</td><td>DB URL, NEXTAUTH_SECRET, Brevo key, AT API key</td></tr>
+  <tr><td>i3-afroerp</td><td>afroerp-secrets</td><td>MariaDB credentials, admin PW, KRA/MPesa keys, LiteLLM key</td></tr>
+  <tr><td>i3-voice</td><td>voice-secrets</td><td>Voice API key, model paths</td></tr>
+  <tr><td>i3-edbridge</td><td>edbridge-secrets</td><td>Moodle DB credentials, admin password, site name</td></tr>
+  <tr><td>i3-social</td><td>social-secrets</td><td>Nextcloud DB credentials, admin password, Redis host</td></tr>
+  <tr><td>i3-ai-lab</td><td>jupyterhub-secrets</td><td>LITELLM_KEY (virtual key), KEYCLOAK_CLIENT_SECRET, POSTGRES_PASSWORD, JUPYTERHUB_CRYPT_KEY</td></tr>
+  <tr><td>i3-gitops</td><td>github-webhook-secret</td><td>HMAC token for GitHub → Tekton webhook</td></tr>
+  <tr><td>i3-messaging</td><td>i3-kafka-clients-ca</td><td>Kafka client CA for mTLS</td></tr>
+</table>
+
+<h3>Retrieving a Secret Value</h3>
+<pre>oc get secret &lt;name&gt; -n &lt;namespace&gt; -o jsonpath='{.data.&lt;key&gt;}' | base64 -d</pre>
+<div class="warn">Never commit secret values to Git. All secrets are managed directly in the cluster. Use OpenBao (Vault) for any secrets that need rotation workflows.</div>
+
+
+<h2 id="s6"><span class="section-num">6</span> Database Administration (Crunchy PostgreSQL HA)</h2>
+<h3>Architecture</h3>
+<p>3-node HA cluster managed by the Crunchy PGO operator. Primary elected via Patroni. pgBouncer in transaction-pool mode handles all client connections. WAL archiving to IBM COS via pgBackRest.</p>
+<table>
+  <tr><th>Component</th><th>Pod</th><th>Namespace</th></tr>
+  <tr><td>Primary 1</td><td>i3-postgres-primary-hffm-0</td><td>i3-data</td></tr>
+  <tr><td>Primary 2</td><td>i3-postgres-primary-mwll-0</td><td>i3-data</td></tr>
+  <tr><td>Primary 3</td><td>i3-postgres-primary-nt6l-0</td><td>i3-data</td></tr>
+  <tr><td>pgBouncer</td><td>i3-postgres-pgbouncer-*</td><td>i3-data</td></tr>
+  <tr><td>HA Service</td><td colspan="2">i3-postgres-ha.i3-data.svc:5432 (write endpoint)</td></tr>
+  <tr><td>pgBouncer Service</td><td colspan="2">i3-postgres-pgbouncer.i3-data.svc:5432 (pooled; TLS required)</td></tr>
+</table>
+
+<h3>Databases</h3>
+<table>
+  <tr><th>Database</th><th>Owner</th><th>Application</th></tr>
+  <tr><td>admissions_db</td><td>admissions</td><td>Admissions Agent</td></tr>
+  <tr><td>directus</td><td>directus</td><td>CMS / Directus</td></tr>
+  <tr><td>edbridge_db</td><td>edbridge</td><td>i3EduBridge (Moodle 4.4)</td></tr>
+  <tr><td>engage_db</td><td>engage</td><td>Engage CRM</td></tr>
+  <tr><td>evalos_db</td><td>evalos</td><td>EvalOS</td></tr>
+  <tr><td>i3_platform</td><td>i3admin</td><td>Platform core</td></tr>
+  <tr><td>jupyterhub_db</td><td>jupyterhub</td><td>JupyterHub</td></tr>
+  <tr><td>keycloak_db</td><td>keycloak</td><td>Keycloak SSO</td></tr>
+  <tr><td>langfuse_db</td><td>langfuse</td><td>Langfuse observability</td></tr>
+  <tr><td>litellm_db</td><td>litellm</td><td>LiteLLM key management</td></tr>
+  <tr><td>n8n</td><td>n8n</td><td>N8N automation</td></tr>
+  <tr><td>pmaas_db</td><td>pmaas</td><td>PMaaS</td></tr>
+  <tr><td>social_db</td><td>socialapp</td><td>i3Social (Nextcloud 28)</td></tr>
+</table>
+
+<h3>Running psql as Admin</h3>
+<pre>oc exec i3-postgres-primary-hffm-0 -n i3-data -c database -- psql -U postgres</pre>
+
+<h3>Backup Schedule</h3>
+<table>
+  <tr><th>Job</th><th>Schedule</th><th>Target</th></tr>
+  <tr><td>WAL diff backup</td><td>Every 6 hours</td><td>IBM COS (pgbackrest-cos-secret)</td></tr>
+  <tr><td>Full backup</td><td>Daily at 01:00 UTC</td><td>IBM COS</td></tr>
+</table>
+
+
+<h2 id="s7"><span class="section-num">7</span> AI Model Gateway (LiteLLM)</h2>
+<h3>Configuration</h3>
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Deployment</td><td>litellm-proxy, namespace i3-model-gateway</td></tr>
+  <tr><td>Replicas</td><td>2 (KEDA ScaledObject: min=2, max=6)</td></tr>
+  <tr><td>Scale trigger</td><td>Prometheus metric litellm_proxy_total_requests, threshold=20 rps</td></tr>
+  <tr><td>Database</td><td>litellm_db in Crunchy PG (key management, spend logs)</td></tr>
+  <tr><td>Routing strategy</td><td>least-busy with fallback chains</td></tr>
+  <tr><td>Observability</td><td>Success + failure callbacks → Langfuse; metrics → Prometheus</td></tr>
+</table>
+
+<h3>Loaded Models (Ollama CPU backend)</h3>
+<table>
+  <tr><th>Alias</th><th>Model</th><th>Timeout</th><th>Use Case</th></tr>
+  <tr><td>granite-nano</td><td>granite3.1-dense:2b</td><td>30s</td><td>Fast edge tasks, summaries</td></tr>
+  <tr><td>embed</td><td>nomic-embed-text:latest</td><td>15s</td><td>Embeddings / RAG</td></tr>
+  <tr><td>qwen-fast</td><td>qwen2.5:7b-instruct-q4_K_M</td><td>90s</td><td>Interactive chat</td></tr>
+  <tr><td>coder</td><td>qwen2.5-coder:7b-instruct-q4_K_M</td><td>90s</td><td>Code generation</td></tr>
+  <tr><td>qwen-heavy</td><td>qwen2.5:14b-instruct-q4_K_M</td><td>180s</td><td>Complex reasoning</td></tr>
+  <tr><td>vision</td><td>llava:13b</td><td>180s</td><td>Image understanding</td></tr>
+</table>
+
+<h3>Virtual Keys (Pilot)</h3>
+<table>
+  <tr><th>Alias</th><th>Key Prefix</th><th>Allowed Models</th><th>Budget</th></tr>
+  <tr><td>pilot-internal</td><td>sk-QZzBs3G3...</td><td>All</td><td>$100 / year</td></tr>
+  <tr><td>pilot-customers</td><td>sk-tVxkHdGg...</td><td>granite-nano, qwen-fast, embed</td><td>$50 / year</td></tr>
+  <tr><td>pilot-jupyterhub</td><td>sk-MZnyMw4N...</td><td>All</td><td>$200 / year</td></tr>
+</table>
+
+<h3>Generating a New Virtual Key</h3>
+<pre>curl -X POST https://litellm.i3technologies.co.ke/key/generate \
+  -H "Authorization: Bearer &lt;MASTER_KEY&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{"key_alias":"team-name","duration":"8760h","max_budget":50}'</pre>
+
+
+<h2 id="s8"><span class="section-num">8</span> Identity &amp; Access Management (Keycloak)</h2>
+<h3>Realm Structure</h3>
+<table>
+  <tr><th>Realm</th><th>Purpose</th><th>Users</th></tr>
+  <tr><td>master</td><td>Keycloak admin only</td><td>admin</td></tr>
+  <tr><td>i3</td><td>All platform users + OIDC clients</td><td>42 users (incl. 10 pilot)</td></tr>
+</table>
+
+<h3>OIDC Clients in i3 Realm</h3>
+<table>
+  <tr><th>Client ID</th><th>Application</th><th>Redirect URI</th></tr>
+  <tr><td>evalos-spa</td><td>EvalOS</td><td>https://evalos.i3technologies.co.ke/*</td></tr>
+  <tr><td>pmaas-web</td><td>PMaaS</td><td>https://pmaas.i3technologies.co.ke/*</td></tr>
+  <tr><td>engage-web</td><td>Engage</td><td>https://engage.i3technologies.co.ke/*</td></tr>
+  <tr><td>jupyterhub</td><td>JupyterHub</td><td>https://jupyter.i3technologies.co.ke/*</td></tr>
+  <tr><td>open-webui-sage</td><td>Sage</td><td>https://sage.i3technologies.co.ke/*</td></tr>
+  <tr><td>admissions-widget</td><td>Admissions</td><td>https://admissions.i3technologies.co.ke/*</td></tr>
+  <tr><td>litellm-service</td><td>LiteLLM service account</td><td>—</td></tr>
+  <tr><td>directus-cms</td><td>Directus</td><td>https://cms.i3technologies.co.ke/*</td></tr>
+  <tr><td>zuri / dawa / nuru / mfumo</td><td>AI coworkers</td><td>respective URLs</td></tr>
+  <tr><td>ai-lab-workbench</td><td>JupyterHub workbench</td><td>https://jupyter.i3technologies.co.ke/*</td></tr>
+  <tr><td>i3edbridge</td><td>Moodle 4.4 (NEW)</td><td>https://moodle.i3technologies.co.ke/*</td></tr>
+  <tr><td>i3social</td><td>Nextcloud 28 (NEW)</td><td>https://nextcloud.i3technologies.co.ke/*</td></tr>
+</table>
+
+<h3>Pilot User Groups</h3>
+<table>
+  <tr><th>Group</th><th>Users</th><th>LiteLLM Key</th></tr>
+  <tr><td>i3-internal</td><td>pilot.admin, petronella.k, developer1, analyst1, trainer1</td><td>pilot-internal (all models, $100)</td></tr>
+  <tr><td>pilot-external</td><td>pilot.user1 through pilot.user5</td><td>pilot-customers (limited models, $50)</td></tr>
+</table>
+
+<h3>Admin Access to Keycloak Console</h3>
+<pre># Get admin password
+oc get secret credential-i3-keycloak -n i3-auth -o jsonpath='{.data.ADMIN_PASSWORD}' | base64 -d
+# URL: https://sso.i3technologies.co.ke/auth/admin</pre>
+
+
+<h2 id="s9"><span class="section-num">9</span> Storage Architecture</h2>
+<h3>Storage Classes</h3>
+<table>
+  <tr><th>Class</th><th>Type</th><th>Use</th></tr>
+  <tr><td>ibmc-vpc-block-10iops-tier</td><td>IBM VPC Block (default)</td><td>App data, model weights, logs — deleted on PVC deletion</td></tr>
+  <tr><td>ibmc-vpc-block-retain-10iops-tier</td><td>IBM VPC Block (retain)</td><td>Critical data (SeaweedFS, Moodle, Nextcloud, ChromaDB) — persists after PVC deletion</td></tr>
+</table>
+
+<h3>Object Storage (SeaweedFS)</h3>
+<p>SeaweedFS provides S3-compatible object storage at <span class="mono">storage.i3technologies.co.ke</span>. It consists of:</p>
+<ul style="padding-left:18px;font-size:12.5px;line-height:2">
+  <li>1× Master node (i3-ott/seaweedfs-master-0) — retain PVC 20Gi</li>
+  <li>3× Volume nodes (seaweedfs-volume-0/1/2) — retain PVC 100Gi each</li>
+  <li>1× Filer (seaweedfs-filer) + S3 gateway (seaweedfs-s3-gw)</li>
+</ul>
+<p>DR sync: nightly rclone CronJob (<span class="mono">0 2 * * *</span>) pushes SeaweedFS data to IBM COS bucket.</p>
+
+
+<h2 id="s10"><span class="section-num">10</span> Network Policies</h2>
+<div class="info">All application namespaces follow a deny-all-ingress default with explicit allow rules. This is the zero-trust network model.</div>
+<table>
+  <tr><th>Namespace</th><th>Policy</th><th>Allows From</th></tr>
+  <tr><td>i3-data</td><td>allow-db-clients</td><td>i3-model-gateway, i3-admissions, i3-evalos, i3-ai-lab, i3-gitops, i3-auth, i3-ott, i3-edbridge, i3-social, i3-pmaas, i3-engage, i3-onboarding, i3-afroerp, i3-voice, i3-security</td></tr>
+  <tr><td>i3-security</td><td>allow-vault-clients</td><td>ArgoCD namespaces + openshift-ingress (router)</td></tr>
+  <tr><td>i3-voice</td><td>voice-ingress</td><td>i3-ai-lab, i3-evalos, i3-pmaas, i3-engage, openshift-ingress</td></tr>
+  <tr><td>i3-model-gateway</td><td>allow-gateway-clients</td><td>All i3-* namespaces</td></tr>
+  <tr><td>i3-messaging</td><td>allow-kafka-clients</td><td>i3-engage, i3-pmaas, other consumers</td></tr>
+  <tr><td>i3-auth</td><td>allow-keycloak-clients</td><td>All i3-* namespaces + openshift-ingress</td></tr>
+</table>
+
+
+<h2 id="s11"><span class="section-num">11</span> Auto-scaling Configuration</h2>
+<table>
+  <tr><th>Deployment</th><th>Namespace</th><th>Min</th><th>Max</th><th>Trigger</th></tr>
+  <tr><td>litellm-proxy</td><td>i3-model-gateway</td><td>2</td><td>6</td><td>Prometheus: litellm_proxy_total_requests threshold=20</td></tr>
+  <tr><td>admissions-agent</td><td>i3-admissions</td><td>1</td><td>4</td><td>Prometheus: custom metric threshold=10</td></tr>
+  <tr><td>evalos-sandbox</td><td>i3-evalos</td><td>1</td><td>4</td><td>CPU 75%</td></tr>
+  <tr><td>onboarding-agent</td><td>i3-onboarding</td><td>1</td><td>3</td><td>CPU 70% (standard HPA)</td></tr>
+  <tr><td>ollama</td><td>i3-model-gateway</td><td>1</td><td>4</td><td>KEDA ScaledObject (probe failing = unknown)</td></tr>
+</table>
+<p>JupyterHub idle culler is configured at <strong>1 hour timeout</strong> (3600s) with max-age 24h. Inactive notebooks are culled automatically.</p>
+
+
+<h2 id="s12"><span class="section-num">12</span> Backup &amp; Disaster Recovery</h2>
+<h3>PostgreSQL (pgBackRest → IBM COS)</h3>
+<table>
+  <tr><th>Job</th><th>CronJob Name</th><th>Schedule</th><th>Retention</th></tr>
+  <tr><td>WAL diff backup</td><td>i3-postgres-repo1-diff</td><td>0 */6 * * *</td><td>7 days</td></tr>
+  <tr><td>Full backup</td><td>i3-postgres-repo1-full</td><td>0 1 * * *</td><td>30 days</td></tr>
+</table>
+
+<h3>SeaweedFS (rclone → IBM COS)</h3>
+<table>
+  <tr><th>CronJob</th><th>Schedule</th><th>Target</th></tr>
+  <tr><td>seaweedfs-cos-dr-sync</td><td>0 2 * * * (nightly 02:00 UTC)</td><td>IBM COS bucket</td></tr>
+</table>
+
+<h3>Restore Procedure (PostgreSQL)</h3>
+<pre># Point-in-time restore via pgBackRest
+oc exec i3-postgres-primary-hffm-0 -n i3-data -c database -- \
+  pgbackrest --stanza=db restore --target="2026-09-13 12:00:00" \
+  --target-action=promote --repo1-path=/var/lib/pgbackrest</pre>
+
+
+<h2 id="s13"><span class="section-num">13</span> Monitoring &amp; Observability</h2>
+<table>
+  <tr><th>Tool</th><th>URL</th><th>Purpose</th></tr>
+  <tr><td>Grafana</td><td>grafana.i3technologies.co.ke</td><td>Dashboards: cluster, Kafka, LiteLLM, app metrics</td></tr>
+  <tr><td>Prometheus</td><td>Internal (i3-monitoring ns)</td><td>Metrics scraping, alerting rules, KEDA source</td></tr>
+  <tr><td>Langfuse</td><td>langfuse.i3technologies.co.ke</td><td>LLM call tracing, cost tracking, quality scoring</td></tr>
+  <tr><td>OpenShift Monitoring</td><td>OCP console → Observe</td><td>Node/pod resource usage, alerts</td></tr>
+</table>
+<p>LiteLLM sends all API calls to Langfuse via <code>success_callback</code> and <code>failure_callback</code>. The Langfuse host is the internal OTT namespace instance: <span class="mono">http://langfuse.i3-ott.svc.cluster.local:3000</span>.</p>
+
+
+<h2 id="s14"><span class="section-num">14</span> GitOps &amp; CI/CD (Argo CD)</h2>
+<table>
+  <tr><th>Application</th><th>Git Repo</th><th>Path</th><th>Status</th></tr>
+  <tr><td>i3-platform-root</td><td rowspan="11">github.com/i3technologies/platform-gitops</td><td>apps/</td><td>Synced ✓</td></tr>
+  <tr><td>i3-admissions</td><td>namespaces/i3-admissions</td><td>Synced ✓</td></tr>
+  <tr><td>i3-ai</td><td>namespaces/i3-ai-lab</td><td>Synced ✓</td></tr>
+  <tr><td>i3-auth</td><td>namespaces/i3-auth</td><td>Synced ✓</td></tr>
+  <tr><td>i3-data</td><td>namespaces/i3-data</td><td>Synced ✓</td></tr>
+  <tr><td>i3-evalos</td><td>namespaces/i3-evalos</td><td>Synced ✓</td></tr>
+  <tr><td>i3-litellm</td><td>namespaces/i3-model-gateway</td><td>Synced ✓</td></tr>
+  <tr><td>i3-monitoring</td><td>namespaces/i3-monitoring</td><td>Synced ✓</td></tr>
+  <tr><td>i3-onboarding</td><td>namespaces/i3-onboarding</td><td>Synced ✓</td></tr>
+  <tr><td>i3-ott</td><td>namespaces/i3-ott</td><td>Synced ✓</td></tr>
+  <tr><td>i3-security</td><td>namespaces/i3-security</td><td>Synced ✓</td></tr>
+</table>
+<p>GitHub → Tekton webhook: EventListener at <span class="mono">i3-gitops</span> namespace, secret in <span class="mono">github-webhook-secret</span>.</p>
+
+
+<h2 id="s15"><span class="section-num">15</span> Operational Runbooks</h2>
+
+<h3>Restart a Deployment</h3>
+<pre>oc rollout restart deployment/&lt;name&gt; -n &lt;namespace&gt;
+oc rollout status deployment/&lt;name&gt; -n &lt;namespace&gt;</pre>
+
+<h3>Scale a Deployment Manually</h3>
+<pre>oc scale deployment/&lt;name&gt; --replicas=2 -n &lt;namespace&gt;</pre>
+
+<h3>View Pod Logs</h3>
+<pre>oc logs -f deployment/&lt;name&gt; -n &lt;namespace&gt;
+oc logs -f &lt;pod-name&gt; -n &lt;namespace&gt; --previous  # crashed container</pre>
+
+<h3>Open a Shell into a Pod</h3>
+<pre>oc exec -it &lt;pod-name&gt; -n &lt;namespace&gt; -- /bin/bash</pre>
+
+<h3>Run the Health Check</h3>
+<pre>cd C:\Users\Admin\Documents\i3-Agentic-AI-Labs
+.\platform\scripts\post-deploy-checklist.ps1</pre>
+
+<h3>Check OpenBao Seal Status</h3>
+<pre>oc exec openbao-0 -n i3-security -- sh -c \
+  "VAULT_ADDR=http://127.0.0.1:8200 vault status"</pre>
+
+<h3>Unseal OpenBao (if sealed after restart)</h3>
+<pre>oc exec openbao-0 -n i3-security -- sh -c \
+  "VAULT_ADDR=http://127.0.0.1:8200 vault operator unseal &lt;UNSEAL_KEY&gt;"
+# Repeat for openbao-1 and openbao-2 with each quorum key</pre>
+
+<h3>Check Kafka Broker Health</h3>
+<pre>oc get kafka i3-kafka -n i3-messaging -o jsonpath='{.status.conditions}'</pre>
+
+<h3>Add a New Keycloak User</h3>
+<pre>curl -X POST https://sso.i3technologies.co.ke/auth/admin/realms/i3/users \
+  -H "Authorization: Bearer &lt;ADMIN_TOKEN&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"newuser","email":"user@example.com","enabled":true,
+       "credentials":[{"type":"password","value":"TempPass123!","temporary":true}]}'</pre>
+
+<h3>Generate a New LiteLLM API Key</h3>
+<pre>curl -X POST https://litellm.i3technologies.co.ke/key/generate \
+  -H "Authorization: Bearer &lt;MASTER_KEY&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{"key_alias":"team-name","duration":"8760h","max_budget":50,
+       "metadata":{"team":"team-name"}}'</pre>
+
+<h3>Trigger Manual pgBackRest Backup</h3>
+<pre>oc exec i3-postgres-primary-hffm-0 -n i3-data -c database -- \
+  pgbackrest --stanza=db backup --type=full</pre>
+
+<h3>Moodle CLI Admin Operations</h3>
+<pre># Run as www-data inside the edbridge pod
+oc exec &lt;edbridge-pod&gt; -n i3-edbridge -- \
+  su -s /bin/sh www-data -c "php /var/www/html/occ &lt;command&gt;"
+
+# Examples:
+# php occ maintenance:mode --enable
+# php occ user:create username --password-from-env
+# php occ cache:clear</pre>
+
+<h3>Nextcloud CLI Admin Operations</h3>
+<pre>oc exec &lt;nextcloud-pod&gt; -n i3-social -- \
+  su -s /bin/sh www-data -c "php /var/www/html/occ &lt;command&gt;"
+
+# Examples:
+# php occ maintenance:mode --on
+# php occ user:add username
+# php occ files:scan --all</pre>
+
+
+<h2 id="s16"><span class="section-num">16</span> Security Hardening Reference</h2>
+<ul class="runbook">
+  <li><strong>Zero-trust network model:</strong> All namespaces have <span class="mono">deny-all-ingress</span> NetworkPolicy. Only explicitly whitelisted sources can connect.</li>
+  <li><strong>TLS everywhere:</strong> All public routes use TLS (edge or re-encrypt). HTTP traffic is auto-redirected to HTTPS by <span class="mono">insecureEdgeTerminationPolicy: Redirect</span>.</li>
+  <li><strong>No shared master keys in apps:</strong> JupyterHub uses virtual key <span class="mono">pilot-jupyterhub</span> (not the LiteLLM master key). Each team has a scoped key with budget limits.</li>
+  <li><strong>OIDC SSO enforced:</strong> All major apps authenticate through Keycloak i3 realm. Direct password login is disabled where possible.</li>
+  <li><strong>Secrets in cluster only:</strong> No secret values in Git. All managed as Kubernetes Opaque secrets.</li>
+  <li><strong>OpenBao HA:</strong> 3-node Raft HA, auto-unseal configured. Root token and unseal keys must be stored offline (not in cluster).</li>
+  <li><strong>ResourceQuotas:</strong> All i3-* namespaces have ResourceQuota objects limiting CPU/memory/PVC. Prevents runaway pods from starving the cluster.</li>
+  <li><strong>ImagePullSecrets:</strong> <span class="mono">icr-pull-secret</span> is set in namespaces that pull from IBM ICR. Docker Hub rate limits are handled by using pre-pulled images where possible.</li>
+  <li><strong>SCC (Security Context Constraints):</strong> Pods run with restricted-v2 SCC by default. Only i3-edbridge and i3-social have <span class="mono">anyuid</span> granted to their default SA (required by Apache-based images).</li>
+  <li><strong>Audit logging:</strong> OpenShift audit logs are enabled at the API server level (IBM ROKS managed).</li>
+</ul>
+
+
+<h2 id="s17"><span class="section-num">17</span> Common Admin Commands Quick Reference</h2>
+<pre># List all running pods in i3-* namespaces
+oc get pods -A --field-selector=status.phase=Running | grep "i3-"
+
+# Check resource usage across nodes
+oc adm top nodes
+
+# Check resource usage for a namespace
+oc adm top pods -n &lt;namespace&gt;
+
+# List all secrets (names only)
+oc get secrets -n &lt;namespace&gt; --no-headers | grep Opaque
+
+# Check all routes
+oc get routes -A --no-headers | grep i3technologies
+
+# Watch a rollout
+oc rollout status deployment/&lt;name&gt; -n &lt;namespace&gt; -w
+
+# Get events (last 10 min)
+oc get events -n &lt;namespace&gt; --sort-by='.lastTimestamp' | tail -20
+
+# Check Argo CD sync status
+oc get applications -n openshift-gitops
+
+# Describe a failing pod
+oc describe pod &lt;pod-name&gt; -n &lt;namespace&gt;
+
+# Force delete a stuck pod
+oc delete pod &lt;pod-name&gt; -n &lt;namespace&gt; --force --grace-period=0
+
+# Check KEDA ScaledObjects
+oc get scaledobject -A | grep i3-
+
+# Check network policies
+oc get networkpolicy -n &lt;namespace&gt;
+
+# Run health check script
+.\platform\scripts\post-deploy-checklist.ps1</pre>
+
+</div>
+<footer>Made with IBM Bob  ·  i3 Technologies AI Platform v2.0  ·  September 2026</footer>
+</body>
+</html>

@@ -1,0 +1,548 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EvalOS — Complete User Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system,"Segoe UI",system-ui,sans-serif; font-size: 14px; line-height: 1.7; background: #ffffff; color: #1f2328; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 32px 24px 56px; }
+
+  /* Hero */
+  .hero { background: #0f172a; color: #ffffff; border-radius: 12px; padding: 32px 28px; margin-bottom: 40px; }
+  .hero h1 { font-size: 26px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 6px; }
+  .hero p  { color: #94a3b8; font-size: 13px; }
+  .hero .badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .hero .tag { display: inline-block; background: rgba(255,255,255,.1); color: #e2e8f0; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,.15); }
+
+  /* TOC */
+  .toc { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px 24px; margin-bottom: 36px; }
+  .toc h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #57606a; margin-bottom: 12px; font-weight: 700; }
+  .toc ol { padding-left: 18px; }
+  .toc li { margin: 4px 0; font-size: 13px; }
+  .toc a  { color: #3b82d4; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* Section headings */
+  h2.sec { font-size: 18px; font-weight: 700; color: #1f2328; margin: 40px 0 16px; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb; }
+  h3 { font-size: 15px; font-weight: 700; color: #1f2328; margin: 24px 0 10px; }
+  h4 { font-size: 13px; font-weight: 700; color: #57606a; margin: 16px 0 8px; text-transform: uppercase; letter-spacing: .04em; }
+  p  { margin-bottom: 12px; }
+
+  /* Steps */
+  .steps { counter-reset: step; }
+  .step  { counter-increment: step; display: flex; gap: 16px; margin-bottom: 20px; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; background: #0f172a; color: #fff; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .step-body { flex: 1; }
+  .step-body strong { display: block; margin-bottom: 4px; font-size: 14px; }
+
+  /* Feature cards */
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .card  { border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; }
+  .card .icon { font-size: 20px; margin-bottom: 8px; }
+  .card h4 { font-size: 13px; font-weight: 700; color: #1f2328; text-transform: none; letter-spacing: 0; margin-bottom: 6px; }
+  .card p  { font-size: 12px; color: #57606a; margin: 0; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 13px; }
+  th { background: #f7f8fa; text-align: left; padding: 8px 12px; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #57606a; border-bottom: 1px solid #e5e7eb; }
+  td { padding: 8px 12px; border-bottom: 1px solid #f0f1f3; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+
+  /* Callouts */
+  .tip   { background: #ddf4ff; border-left: 3px solid #3b82d4; border-radius: 0 6px 6px 0; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; }
+  .warn  { background: #fff8c5; border-left: 3px solid #d4a017; border-radius: 0 6px 6px 0; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; }
+  .good  { background: #dafbe1; border-left: 3px solid #2da44e; border-radius: 0 6px 6px 0; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; }
+  .callout-title { font-weight: 700; margin-bottom: 4px; }
+
+  /* Inline code */
+  code { font-family: ui-monospace,monospace; font-size: 12px; background: #f7f8fa; padding: 2px 6px; border-radius: 4px; border: 1px solid #e5e7eb; }
+
+  /* Badge */
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+  .b-blue  { background: #ddf4ff; color: #0550ae; }
+  .b-green { background: #dafbe1; color: #1a7f37; }
+  .b-red   { background: #ffebe9; color: #cf222e; }
+  .b-orange{ background: #fff1e5; color: #9a3700; }
+
+  /* Screenshot placeholder */
+  .screen { background: #f7f8fa; border: 1px dashed #d0d7de; border-radius: 8px; text-align: center; padding: 28px 16px; font-size: 12px; color: #57606a; margin: 12px 0 20px; }
+
+  ul, ol { padding-left: 20px; margin-bottom: 12px; }
+  li { margin-bottom: 4px; }
+
+  /* Section divider line for print */
+  .divider { border: none; border-top: 1px solid #e5e7eb; margin: 32px 0; }
+
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  
+  <div class="hero">
+    <h1>EvalOS User Guide</h1>
+    <p>IBM watsonx Orchestrate C1000-207 — Practice Examination Platform  ·  i3 Technologies</p>
+    <div class="badge-row">
+      <span class="tag">Sets 1 – 7</span>
+      <span class="tag">60 Questions / Set</span>
+      <span class="tag">90-Minute Exams</span>
+      <span class="tag">AI Study Coach</span>
+      <span class="tag">PDF Certificates</span>
+      <span class="tag">Anti-Cheat Engine</span>
+      <span class="tag">Next.js 14 · OpenShift</span>
+    </div>
+  </div>
+
+  
+  <div class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#s1">What is EvalOS?</a></li>
+      <li><a href="#s2">Signing In</a></li>
+      <li><a href="#s3">Dashboard Overview</a></li>
+      <li><a href="#s4">Exam Sets — C1000-207 (Sets 1–7)</a></li>
+      <li><a href="#s5">Starting an Exam</a></li>
+      <li><a href="#s6">Taking an Exam</a></li>
+      <li><a href="#s7">Submitting &amp; Viewing Results</a></li>
+      <li><a href="#s8">Retakes &amp; Attempt Rules</a></li>
+      <li><a href="#s9">AI Study Coach</a></li>
+      <li><a href="#s10">PDF Certificate</a></li>
+      <li><a href="#s11">AI Interview Round</a></li>
+      <li><a href="#s12">Coding Labs</a></li>
+      <li><a href="#s13">Leaderboard</a></li>
+      <li><a href="#s14">Admin Panel</a></li>
+      <li><a href="#s15">Anti-Cheat &amp; Integrity</a></li>
+      <li><a href="#s16">Troubleshooting</a></li>
+      <li><a href="#s17">Frequently Asked Questions</a></li>
+    </ol>
+  </div>
+
+  
+  <h2 class="sec" id="s1">1. What is EvalOS?</h2>
+  <p>EvalOS is the <strong>i3 Technologies AI-powered practice examination platform</strong> designed to prepare candidates for the <strong>IBM Certified Associate Developer – watsonx Orchestrate (C1000-207)</strong> certification exam. It provides:</p>
+  <div class="cards">
+    <div class="card">
+      <div class="icon">📋</div>
+      <h4>7 Practice Sets</h4>
+      <p>60 timed questions per set, mapped to all 7 IBM C1000-207 exam domains — from Platform Architecture to Deployment &amp; Resiliency.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🤖</div>
+      <h4>AI Study Coach</h4>
+      <p>After each exam, an on-cluster LLM analyses your wrong answers and generates a personalised 3-day study plan.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🏅</div>
+      <h4>PDF Certificates</h4>
+      <p>Downloadable, verifiable completion certificates for every passing attempt — shareable with employers and LinkedIn.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🔒</div>
+      <h4>Integrity Engine</h4>
+      <p>Real-time anti-cheat monitoring: fullscreen enforcement, tab-switch detection, clipboard blocking, and keystroke entropy analysis.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🎤</div>
+      <h4>AI Interview Round</h4>
+      <p>5 questions (3 technical + 2 coding) evaluated live by AI against IBM rubrics — simulates a real technical interview.</p>
+    </div>
+    <div class="card">
+      <div class="icon">💻</div>
+      <h4>Coding Labs</h4>
+      <p>Monaco editor with JS, Python, and SQL exercises focused on IBM watsonx integration — includes live AI code review.</p>
+    </div>
+  </div>
+  <p>EvalOS is deployed at <strong>evalos.i3technologies.co.ke</strong> on OpenShift, backed by Keycloak SSO and a Crunchy Postgres cluster.</p>
+
+  
+  <h2 class="sec" id="s2">2. Signing In</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Navigate to EvalOS</strong>
+        Open your browser and go to <code>https://evalos.i3technologies.co.ke</code>. You will see the i3 EvalOS landing page with a <strong>Sign In</strong> button.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Click Sign In</strong>
+        Click the <em>Sign in with i3 SSO</em> button. You will be redirected to the Keycloak SSO portal at <code>sso.i3technologies.co.ke</code>.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Enter your credentials</strong>
+        Log in with your i3 Technologies institutional username and password. If you have multi-factor authentication enabled, complete the MFA challenge.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>You're in!</strong>
+        You will be redirected back to the EvalOS Dashboard. Your session lasts 8 hours. You will be automatically signed out after inactivity.
+      </div>
+    </div>
+  </div>
+  <div class="tip"><span class="callout-title">Tip</span> If you don't yet have an i3 SSO account, contact your programme administrator. First-time accounts are provisioned via the Keycloak admin console.</div>
+
+  
+  <h2 class="sec" id="s3">3. Dashboard Overview</h2>
+  <p>The Dashboard is your home base. It shows three sections:</p>
+  <table>
+    <tr><th>Section</th><th>What you'll see</th></tr>
+    <tr><td><strong>Practice Exam Sets</strong></td><td>Cards for each exam set (SET1–SET7) showing: title, code, question count, duration, pass threshold, attempt usage dots, and a Start / Retake / Locked button.</td></tr>
+    <tr><td><strong>AI-Powered Features</strong></td><td>Quick-launch cards for AI Study Coach, AI Interview Round, and Coding Labs.</td></tr>
+    <tr><td><strong>Recent Attempts</strong></td><td>A table of your last 10 exam attempts with scores, pass/fail status, dates, and links to View Results or Get Certificate.</td></tr>
+  </table>
+  <h4>Exam Card Status Indicators</h4>
+  <ul>
+    <li><span class="badge b-green">✓ Passed</span> — You have passed this set. You can still retake it for extra practice.</li>
+    <li><span class="badge b-red">XX% Fail</span> — Your last attempt did not reach the pass threshold.</li>
+    <li><span class="badge b-orange">🔒 Locked</span> — You must pass the prerequisite set first (e.g., pass SET6 before SET7 unlocks).</li>
+    <li><span class="badge b-red">No attempts remaining</span> — You have used all allowed attempts without passing.</li>
+    <li><span class="badge b-orange">⏰ Retake window expired</span> — The timed retake window (48 hours for SET7) has closed.</li>
+  </ul>
+
+  
+  <h2 class="sec" id="s4">4. Exam Sets — C1000-207 (Sets 1–7)</h2>
+  <p>EvalOS covers all 7 IBM C1000-207 exam domains across 7 progressive practice sets:</p>
+  <table>
+    <tr><th>Set</th><th>Code</th><th>Questions</th><th>Duration</th><th>Pass</th><th>Attempts</th><th>Retake Window</th></tr>
+    <tr><td>1</td><td>C1000-207-SET1</td><td>60</td><td>90 min</td><td>68%</td><td>5</td><td>Open</td></tr>
+    <tr><td>2</td><td>C1000-207-SET2</td><td>60</td><td>90 min</td><td>68%</td><td>5</td><td>Open</td></tr>
+    <tr><td>3</td><td>C1000-207-SET3</td><td>60</td><td>90 min</td><td>68%</td><td>5</td><td>Open</td></tr>
+    <tr><td>4</td><td>C1000-207-SET4</td><td>60</td><td>90 min</td><td>68%</td><td>5</td><td>Open</td></tr>
+    <tr><td>5</td><td>C1000-207-SET5</td><td>60</td><td>90 min</td><td>68%</td><td>5</td><td>Open</td></tr>
+    <tr><td>6</td><td>C1000-207-SET6</td><td>60</td><td>90 min</td><td>68%</td><td>5</td><td>Open</td></tr>
+    <tr><td>7 ⚡</td><td>C1000-207-SET7</td><td>60</td><td>90 min</td><td><strong>90%</strong></td><td><strong>3</strong></td><td><strong>48 hours</strong></td></tr>
+  </table>
+  <div class="warn"><span class="callout-title">⚡ SET7 is different</span> The final set has a <strong>90% pass threshold</strong>, only <strong>3 attempts</strong> (1 initial + 2 retakes), and a strict <strong>48-hour retake window</strong> starting from your first attempt. Plan carefully — if you don't pass within 48 hours, the window closes.</div>
+  <h4>7 IBM C1000-207 Domains</h4>
+  <ol>
+    <li>Platform Architecture and Core Concepts (~14%)</li>
+    <li>Agent and Assistant Integration (~20%) — highest weight</li>
+    <li>Workflow and Orchestration Design (~17%)</li>
+    <li>Agent Development (~18%)</li>
+    <li>Model Management and AI Gateway (~11%)</li>
+    <li>Security and Compliance (~10%)</li>
+    <li>Deployment and Resiliency (~10%)</li>
+  </ol>
+  <div class="tip"><span class="callout-title">Tip</span> SET7 uses a <strong>rotating question bank</strong> — each attempt draws a different proportional sample per domain, so no two attempts are the same. Memorising previous answers won't help.</div>
+
+  
+  <h2 class="sec" id="s5">5. Starting an Exam</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Check prerequisites</strong>
+        Each set requires the previous set to be <em>passed</em> (not just attempted). The card will show a 🔒 lock if the prerequisite is not met.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Click Start Exam (or Retake)</strong>
+        Click the dark button on the exam card. The server will create an attempt record and load your question set.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Allow fullscreen</strong>
+        EvalOS will request fullscreen mode automatically. <strong>Allow it</strong> — exiting fullscreen is logged as an integrity event. On macOS, grant fullscreen permission if prompted.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Exam loads</strong>
+        The exam interface appears with a countdown timer (90:00), a progress bar, and Question 1 of 60.
+      </div>
+    </div>
+  </div>
+  <div class="warn"><span class="callout-title">Important — Attempt is counted on start</span> Once you click Start Exam and the server creates your attempt, that counts as one attempt. If you close the browser tab, the attempt is saved and you can resume it — but the timer is still counting.</div>
+
+  
+  <h2 class="sec" id="s6">6. Taking an Exam</h2>
+  <h3>Exam Interface</h3>
+  <table>
+    <tr><th>Element</th><th>Description</th></tr>
+    <tr><td><strong>Top bar — Exam code &amp; title</strong></td><td>Shows the exam code (e.g., <code>C1000-207-SET7</code>) and full title.</td></tr>
+    <tr><td><strong>Progress bar</strong></td><td>Fills as you answer questions. Shows "X of 60 answered."</td></tr>
+    <tr><td><strong>Timer</strong></td><td>Counts down from 90:00. Turns yellow at 10 minutes, red at 5 minutes. Auto-submits at 0:00.</td></tr>
+    <tr><td><strong>Question number &amp; domain</strong></td><td>Shows "Question X of 60" and the domain name (e.g., "Agent and Assistant Integration").</td></tr>
+    <tr><td><strong>Select all that apply badge</strong></td><td>Appears in amber on multiple-response (MR) questions. You must select <em>all</em> correct answers.</td></tr>
+    <tr><td><strong>Answer options</strong></td><td>Radio buttons for single-choice (MC); checkboxes for multiple-response (MR). Options may be shuffled.</td></tr>
+    <tr><td><strong>Navigation dots (1–12+)</strong></td><td>Click any dot to jump to that question. Green = answered, blue = current, grey = unanswered.</td></tr>
+    <tr><td><strong>Previous / Next buttons</strong></td><td>Navigate questions. On the last question, Next becomes Submit Exam.</td></tr>
+    <tr><td><strong>Submit exam now link</strong></td><td>Available on any question. Click to trigger the submission confirm modal.</td></tr>
+  </table>
+  <h3>Answering Questions</h3>
+  <ul>
+    <li><strong>Single choice (MC):</strong> Click a radio button. Your answer is saved automatically after each selection.</li>
+    <li><strong>Multiple response (MR):</strong> Check all boxes that apply. You must get ALL correct — partial credit is not given.</li>
+    <li>You can change your answer at any time before submitting.</li>
+    <li>Unanswered questions count as incorrect.</li>
+  </ul>
+  <div class="tip"><span class="callout-title">Tip</span> Your answers are saved to the server after each selection. If your connection drops, your progress is preserved. Reload the page — the attempt will resume automatically.</div>
+  <h3>What NOT to do during an exam</h3>
+  <ul>
+    <li>Do not switch tabs or open another window — tab switches are logged.</li>
+    <li>Do not exit fullscreen — exits are counted against your trust score.</li>
+    <li>Do not copy or paste — clipboard events are blocked and logged.</li>
+    <li>Do not right-click (context menu is disabled).</li>
+    <li>Do not close the browser — your attempt stays in-progress but the timer keeps running.</li>
+  </ul>
+
+  
+  <h2 class="sec" id="s7">7. Submitting &amp; Viewing Results</h2>
+  <h3>Manual Submission</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Click Submit Exam (or Submit exam now)</strong>
+        A confirmation modal appears showing how many questions you've answered. If any are unanswered, a warning appears in amber.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Confirm or continue</strong>
+        Click <em>Submit</em> to finalise or <em>Continue exam</em> to go back and answer more questions.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Grading</strong>
+        The submission is sent to the grading service. You are redirected to the Results page automatically.
+      </div>
+    </div>
+  </div>
+  <h3>Results Page</h3>
+  <p>The results page shows:</p>
+  <ul>
+    <li><strong>Score hero:</strong> Your percentage score in large font, coloured green (PASS) or red (FAIL), with the passing score and correct count.</li>
+    <li><strong>Score by Domain table:</strong> Per-domain breakdown — correct/total count, percentage, and a mini progress bar. Domains above the pass threshold are shown in green; below in red.</li>
+    <li><strong>AI Study Coach panel:</strong> Click to generate your personalised coaching report (see Section 9).</li>
+    <li><strong>Question Review:</strong> Every question with correct/incorrect highlight, your answer vs. the correct answer, and the explanation.</li>
+    <li><strong>Actions:</strong> Download Certificate (if passed), Retake Exam, or Back to Dashboard.</li>
+  </ul>
+  <div class="good"><span class="callout-title">Passed? 🎉</span> If you passed, a certificate download button appears at the bottom of the results page. Click it to issue and download your PDF certificate.</div>
+
+  
+  <h2 class="sec" id="s8">8. Retakes &amp; Attempt Rules</h2>
+  <table>
+    <tr><th>Rule</th><th>Sets 1–6</th><th>Set 7</th></tr>
+    <tr><td>Maximum attempts</td><td>5</td><td>3</td></tr>
+    <tr><td>Retake window</td><td>None (open)</td><td>48 hours from first attempt</td></tr>
+    <tr><td>Pass threshold</td><td>68%</td><td>90%</td></tr>
+    <tr><td>Prerequisite</td><td>Previous set passed</td><td>SET6 passed</td></tr>
+    <tr><td>Question order</td><td>Randomised (Fisher-Yates)</td><td>New random draw per attempt (rotating bank)</td></tr>
+  </table>
+  <h4>Retake Window Enforcement (SET7)</h4>
+  <ul>
+    <li>Your <strong>first attempt</strong> starts the 48-hour retake window clock.</li>
+    <li>If you fail, you have until the deadline to start your next attempt.</li>
+    <li>If the deadline passes before you start attempt 2 or 3, the window is closed and the exam is locked.</li>
+    <li>The Dashboard shows a countdown badge: <code>Retake deadline: DD/MM, HH:MM (48h window)</code>.</li>
+  </ul>
+  <div class="warn"><span class="callout-title">Warning</span> The retake window enforcement is server-side. Do not rely on the browser clock — the server checks the timestamp of your first attempt at the moment you press Start.</div>
+
+  
+  <h2 class="sec" id="s9">9. AI Study Coach</h2>
+  <p>The AI Study Coach analyses your exam performance and generates a <strong>personalised 300–400 word coaching report</strong> with:</p>
+  <ul>
+    <li><strong>Overall Assessment</strong> — Two sentences summarising your performance.</li>
+    <li><strong>Domain Focus Areas</strong> — Two actionable tips per weak domain, referencing specific IBM watsonx Orchestrate features.</li>
+    <li><strong>Key Misconceptions</strong> — 2–3 patterns identified from your wrong answers.</li>
+    <li><strong>3-Day Study Plan</strong> — Concrete daily tasks to close your knowledge gaps before the next attempt.</li>
+    <li><strong>Encouragement</strong> — A personalised closing sentence.</li>
+  </ul>
+  <h4>How to Access</h4>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body"><strong>Go to your Results page</strong> after submitting any exam.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body"><strong>Click "Generate Study Coaching Report"</strong> in the AI Study Coach panel.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body"><strong>Wait 15–30 seconds</strong> — the on-cluster LLM (qwen-fast via LiteLLM) generates your report.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body"><strong>Read and act on it</strong> — copy or screenshot the report for offline study.</div>
+    </div>
+  </div>
+  <div class="tip"><span class="callout-title">Tip</span> The study coach focuses on your <strong>3 weakest domains</strong> and up to 5 wrong answers. It's most useful when you're close to the pass threshold. If you score &lt;50%, focus on the IBM documentation for Domain 2 (Agent &amp; Assistant Integration) first — it's the highest-weighted domain.</div>
+
+  
+  <h2 class="sec" id="s10">10. PDF Certificate</h2>
+  <p>After passing any exam set, EvalOS generates a <strong>verifiable PDF certificate</strong> containing:</p>
+  <ul>
+    <li>Your full name and email address</li>
+    <li>Exam code and full title</li>
+    <li>Percentage score achieved</li>
+    <li>Issue date</li>
+    <li>Unique 16-character verify code</li>
+    <li>i3 Technologies branding</li>
+  </ul>
+  <h4>Issuing Your Certificate</h4>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">On the Results page (after a passing attempt), click <strong>Download Certificate</strong>.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">EvalOS issues a unique verify code and generates the PDF. This happens automatically — no manual admin step required.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">A PDF file named <code>i3-evalos-certificate-[VERIFYCODE].pdf</code> is downloaded to your device.</div>
+    </div>
+  </div>
+  <h4>Verifying a Certificate</h4>
+  <p>Anyone can verify a certificate by visiting <code>https://evalos.i3technologies.co.ke/verify/[VERIFYCODE]</code> — no login required. The verification page confirms the student name, exam, score, and issue date.</p>
+  <div class="tip"><span class="callout-title">Tip</span> Re-downloading: If you need the PDF again, navigate to your Dashboard, find the attempt in Recent Attempts, click <em>Get Certificate</em>, and download again. The same verify code is reused (idempotent).</div>
+
+  
+  <h2 class="sec" id="s11">11. AI Interview Round</h2>
+  <p>The AI Interview Round simulates a technical job interview for a watsonx Orchestrate developer role:</p>
+  <table>
+    <tr><th>Section</th><th>Questions</th><th>Format</th></tr>
+    <tr><td>Technical Round</td><td>3 questions</td><td>Free-text answers evaluated against IBM rubrics</td></tr>
+    <tr><td>Coding Challenge</td><td>2 exercises</td><td>Monaco editor (JS/Python) with live test execution</td></tr>
+    <tr><td>Total</td><td>5 questions</td><td>AI-scored with detailed feedback per question</td></tr>
+  </table>
+  <h4>How to Start</h4>
+  <ol>
+    <li>From the Dashboard, click <strong>Start Interview →</strong> in the AI-Powered Features section (purple card).</li>
+    <li>Read each question carefully. Technical answers are open-ended — write 2–5 sentences.</li>
+    <li>For coding challenges, write your solution in the Monaco editor and click Run to test.</li>
+    <li>Click Submit after completing all 5 questions to receive your AI-generated feedback report.</li>
+  </ol>
+  <div class="tip"><span class="callout-title">Tip</span> The AI evaluator focuses on: correct use of watsonx Orchestrate terminology, identification of correct platform constructs (Tools vs. Connections, Agent vs. Assistant), and demonstration of understanding of multi-agent orchestration patterns.</div>
+
+  
+  <h2 class="sec" id="s12">12. Coding Labs</h2>
+  <p>Coding Labs provide hands-on IBM watsonx integration exercises in a browser-based Monaco editor.</p>
+  <table>
+    <tr><th>Feature</th><th>Details</th></tr>
+    <tr><td>Editor</td><td>Monaco (same as VS Code) with syntax highlighting</td></tr>
+    <tr><td>Languages</td><td>JavaScript (Node.js), Python, SQL</td></tr>
+    <tr><td>Execution</td><td>Code runs in a sandboxed Python/Node.js daemon via the <code>/api/lab/run</code> endpoint</td></tr>
+    <tr><td>AI Code Review</td><td>After running, AI reviews your code for correctness, style, and adherence to IBM patterns</td></tr>
+    <tr><td>Topics</td><td>watsonx Orchestrate API calls, skill integration, tool wiring, agent configuration patterns</td></tr>
+  </table>
+  <h4>How to Access</h4>
+  <ol>
+    <li>From the Dashboard, click <strong>Open Labs →</strong> in the AI-Powered Features section (dark card).</li>
+    <li>Select an exercise from the lab list.</li>
+    <li>Write your solution in the editor, then click <strong>Run</strong>.</li>
+    <li>Review the execution output and the AI code review panel.</li>
+  </ol>
+  <div class="warn"><span class="callout-title">Sandbox</span> Lab execution is sandboxed and limited to 30 seconds per run. Network calls to external systems are not permitted from the sandbox environment.</div>
+
+  
+  <h2 class="sec" id="s13">13. Leaderboard</h2>
+  <p>The Leaderboard shows top-scoring candidates across the platform. Navigate to <code>/leaderboard</code> from the header. Rankings are based on best score per set. Your ranking is tenant-scoped — you only see candidates in your organisation.</p>
+
+  
+  <h2 class="sec" id="s14">14. Admin Panel</h2>
+  <p>The Admin Panel is available to users with the <code>i3-admin</code> Keycloak role. Access it via the header or navigate to <code>/admin</code>.</p>
+  <table>
+    <tr><th>Admin Feature</th><th>Location</th><th>Description</th></tr>
+    <tr><td>Analytics Dashboard</td><td><code>/admin</code></td><td>Attempt counts, pass rates, score distributions, top performers by exam</td></tr>
+    <tr><td>All Attempts</td><td><code>/api/admin/attempts</code></td><td>Paginated list of all attempts with integrity scores, trust scores, and requires_review flags</td></tr>
+    <tr><td>Integrity Flags</td><td><code>/api/admin/integrity-flags</code></td><td>Attempts flagged for human review (trust score &lt; 60)</td></tr>
+    <tr><td>Question Bank</td><td><code>/admin/questions</code></td><td>View, edit, and manage all exam questions across all sets</td></tr>
+    <tr><td>AI Question Generator</td><td><code>/admin</code></td><td>Generate new practice questions for a given set using LLM (questions created as ai_generated=true, is_active=true)</td></tr>
+    <tr><td>Variant Generator</td><td><code>/api/admin/generate-variants</code></td><td>Generate reworded variants of existing questions</td></tr>
+    <tr><td>CSV Export</td><td><code>/api/admin/export</code></td><td>Download all attempt results as a CSV file for offline analysis</td></tr>
+    <tr><td>Interview Questions</td><td><code>/api/admin/interview-questions</code></td><td>Manage the AI interview question bank</td></tr>
+  </table>
+  <div class="warn"><span class="callout-title">Admin access only</span> All admin routes require the <code>i3-admin</code> role in Keycloak. Users without this role receive a 403 Forbidden response.</div>
+
+  
+  <h2 class="sec" id="s15">15. Anti-Cheat &amp; Integrity Engine</h2>
+  <p>EvalOS runs a real-time integrity monitoring system during every exam. Understanding it helps you avoid accidentally triggering integrity flags.</p>
+  <h4>Events Monitored</h4>
+  <table>
+    <tr><th>Event</th><th>How it's detected</th><th>Impact</th></tr>
+    <tr><td>Focus lost</td><td>Window blur event (clicking outside the browser)</td><td>-5 pts from Behavior Score per occurrence (max -25)</td></tr>
+    <tr><td>Tab switch</td><td>document.visibilitychange (tab becomes hidden)</td><td>-6 pts per switch (max -30)</td></tr>
+    <tr><td>Fullscreen exit</td><td>fullscreenchange event</td><td>-8 pts per exit (max -20)</td></tr>
+    <tr><td>Clipboard copy/paste</td><td>copy/paste events (blocked by default)</td><td>-10 pts from Integrity Confidence per event (max -40)</td></tr>
+    <tr><td>Device fingerprint change</td><td>FingerprintJS on resume</td><td>-35 pts from Identity Score</td></tr>
+    <tr><td>Low keystroke entropy</td><td>Keystroke pattern analysis</td><td>-8 to -15 pts from Behavior Score</td></tr>
+  </table>
+  <h4>Trust Score Calculation</h4>
+  <p>Trust Score = <strong>Identity (30%)</strong> + <strong>Behavior (40%)</strong> + <strong>Integrity Confidence (30%)</strong></p>
+  <p>If your Trust Score falls below 60, your attempt is flagged as <code>requires_review = true</code> and queued for human review by an administrator. <strong>Your exam result is not automatically cancelled</strong> — a human must review and make that decision.</p>
+  <div class="tip"><span class="callout-title">Best practice</span> Take your exam in a quiet environment, on a stable device, with fullscreen mode active and no other applications running. This will maximise your trust score and ensure your results are never questioned.</div>
+
+  
+  <h2 class="sec" id="s16">16. Troubleshooting</h2>
+  <table>
+    <tr><th>Problem</th><th>Likely Cause</th><th>Fix</th></tr>
+    <tr><td>Exam won't start — "Failed to start exam"</td><td>Attempt limit reached or prerequisite not met</td><td>Check your attempt count on the Dashboard card. If locked, pass the prerequisite set first.</td></tr>
+    <tr><td>Timer shows wrong time</td><td>Browser clock drift or timezone mismatch</td><td>The remaining time is calculated server-side from started_at. Reload the page to resync.</td></tr>
+    <tr><td>Grading service unavailable (503)</td><td>Grading pod is temporarily down</td><td>Your answers are saved. Wait 2–5 minutes and click Submit again. The 503 response says "retryable: true".</td></tr>
+    <tr><td>Study Coach shows error (502)</td><td>LiteLLM gateway is congested or model is loading</td><td>Wait 60 seconds and try again. The model may be cold-starting.</td></tr>
+    <tr><td>Certificate download fails</td><td>Attempt not in passed state, or certificate service error</td><td>Ensure you are on a results page for a passing attempt. Try again after 30 seconds.</td></tr>
+    <tr><td>Page is blank after sign-in</td><td>Session cookie not set / redirect loop</td><td>Clear cookies for <code>evalos.i3technologies.co.ke</code> and sign in again. If persistent, contact admin.</td></tr>
+    <tr><td>SET7 button says "Retake window expired"</td><td>48-hour retake window has closed</td><td>This is enforced server-side and cannot be overridden. Contact your programme administrator for a policy exception review.</td></tr>
+    <tr><td>"Prerequisite not met" error on start</td><td>You haven't passed the previous set with ≥90%</td><td>Complete the prerequisite set (check the pass threshold for that set) before attempting this one.</td></tr>
+  </table>
+
+  
+  <h2 class="sec" id="s17">17. Frequently Asked Questions</h2>
+
+  <h4>Q: Do I need to answer all 60 questions?</h4>
+  <p>No, but unanswered questions count as incorrect. The best strategy is to answer all questions — even a guess is better than leaving it blank. You can mark questions by navigating back using the dots.</p>
+
+  <h4>Q: Can I pause an exam?</h4>
+  <p>There is no formal pause. If you close the browser, your attempt remains in-progress and the timer continues running. When you return, the exam resumes from where you left off with the remaining time. <strong>Do not close the tab during an exam unless it's an emergency.</strong></p>
+
+  <h4>Q: Are the question options shuffled each time?</h4>
+  <p>Yes. For Sets 1–6, options within each question are shuffled using a cryptographically secure Fisher-Yates algorithm. For SET7, both the questions themselves and their options are re-drawn and shuffled on every attempt.</p>
+
+  <h4>Q: Will passing SET6 automatically enrol me in the programme?</h4>
+  <p>Yes. Passing SET6 (≥68%) automatically triggers an enrolment record in the i3 Admissions system and dispatches an <code>ASSESSMENT_COMPLETED</code> event to the Admissions service. Your admissions coordinator will be notified. This is fully automated.</p>
+
+  <h4>Q: My certificate verify code — is it case-sensitive?</h4>
+  <p>Yes. The verify code is an uppercase 16-character alphanumeric string (e.g., <code>A3F9BC14E7D20581</code>). Enter it exactly as shown on your certificate. The verification URL is: <code>evalos.i3technologies.co.ke/verify/[CODE]</code></p>
+
+  <h4>Q: Can I share my certificate on LinkedIn?</h4>
+  <p>Yes. Download the PDF and upload it as a Licence &amp; Certification on LinkedIn. Include the verify URL in the credential URL field so recruiters can confirm it directly.</p>
+
+  <h4>Q: Why does SET7 have a 90% pass threshold?</h4>
+  <p>SET7 is the final certification-readiness assessment. It mirrors the rigour of the actual IBM C1000-207 exam, which requires a high standard of mastery across all 7 domains. The 90% threshold ensures candidates are truly exam-ready before sitting the live IBM exam.</p>
+
+  <h4>Q: I got flagged for integrity review — does that mean I failed?</h4>
+  <p>No. An integrity flag (<code>requires_review</code>) means an administrator will manually review your attempt. Your score stands unless the administrator determines a policy violation. You will be contacted if action is taken.</p>
+
+  <h4>Q: Can I access EvalOS on a mobile device?</h4>
+  <p>EvalOS is designed for desktop/laptop use. While the interface is responsive, fullscreen enforcement and the Monaco code editor in Coding Labs do not work well on mobile browsers. <strong>Recommended: Chrome or Edge on a Windows/macOS laptop.</strong></p>
+
+  <hr class="divider" />
+
+  <p style="text-align:center;font-size:13px;color:#57606a">For technical support, contact the i3 Technologies Platform Team at <strong>support@i3technologies.co.ke</strong> or raise a ticket via the Admin portal.</p>
+
+  <footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>

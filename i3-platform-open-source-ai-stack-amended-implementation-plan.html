@@ -1,0 +1,420 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 Platform — Open-Source AI Orchestration Plan</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:13.5px;line-height:1.65;color:#1f2328;background:#fff;padding:28px 16px 60px}
+.page{max-width:820px;margin:0 auto}
+h1{font-size:22px;font-weight:700;margin-bottom:3px}
+.meta{font-size:12px;color:#57606a;border-bottom:2px solid #1f2328;padding-bottom:10px;margin-bottom:24px}
+h2{font-size:15px;font-weight:700;color:#fff;background:#1f2328;padding:7px 14px;margin:30px 0 0;border-radius:4px 4px 0 0;letter-spacing:.3px}
+.block{border:1px solid #e5e7eb;border-top:none;border-radius:0 0 4px 4px;margin-bottom:6px;padding:0}
+h3{font-size:13px;font-weight:700;color:#1f2328;padding:10px 14px 2px;border-bottom:1px solid #f0f1f3}
+p{padding:0 14px;margin:6px 0 8px;font-size:13px;color:#1f2328}
+ul{padding:4px 14px 8px 30px}
+li{margin-bottom:3px;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{background:#f0f1f3;text-align:left;padding:6px 10px;font-weight:600;font-size:11px;color:#57606a;border:1px solid #e5e7eb}
+td{padding:6px 10px;border:1px solid #e5e7eb;vertical-align:top;word-break:break-word}
+tr:nth-child(even) td{background:#fafafa}
+code{font-family:ui-monospace,monospace;font-size:11.5px;background:#f3f4f6;padding:1px 5px;border-radius:3px}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap}
+.ok{background:#d1fae5;color:#065f46}
+.warn{background:#fef9c3;color:#854d0e}
+.red{background:#fee2e2;color:#991b1b}
+.blue{background:#dbeafe;color:#1e40af}
+.purple{background:#ede9fe;color:#5b21b6}
+.gray{background:#f3f4f6;color:#374151}
+.phase{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:4px;padding:12px 14px;margin:10px 14px 12px}
+.phase-title{font-size:13px;font-weight:700;color:#1e40af;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.phase-days{font-size:11px;background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:10px;font-weight:700}
+.arch-box{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:4px;margin:10px 14px 12px;padding:12px 14px;font-size:12.5px}
+.arch-row{display:flex;align-items:flex-start;gap:10px;padding:5px 0;border-bottom:1px solid #e5e7eb}
+.arch-row:last-child{border-bottom:none}
+.arch-label{min-width:160px;font-weight:600;color:#57606a;font-size:12px}
+.arch-val{flex:1;color:#1f2328}
+.before-after{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid #e5e7eb;border-radius:4px;overflow:hidden;margin:10px 14px 12px}
+.ba-col{padding:10px 12px}
+.ba-col.before{background:#fff1f2;border-right:2px solid #e5e7eb}
+.ba-col.after{background:#f0fdf4}
+.ba-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.ba-col.before .ba-title{color:#991b1b}
+.ba-col.after .ba-title{color:#065f46}
+.ba-item{font-size:12px;padding:2px 0;display:flex;gap:6px}
+.ba-item::before{content:"•";color:#94a3b8}
+.ba-col.after .ba-item::before{content:"→";color:#059669}
+.cap-bar{height:12px;border-radius:6px;background:#e5e7eb;overflow:hidden;margin-top:2px}
+.cap-fill{height:100%;border-radius:6px;background:#3b82d4}
+.cap-fill.tight{background:#f59e0b}
+.cap-fill.full{background:#ef4444}
+.kv{display:flex;gap:8px;padding:3px 0;font-size:12.5px;border-bottom:1px dotted #e5e7eb}
+.kv:last-child{border-bottom:none}
+.kv .k{font-weight:600;min-width:200px;color:#57606a}
+.kv .v{flex:1;font-family:ui-monospace,monospace;font-size:11.5px;color:#1f2328}
+.decision-box{border-left:4px solid #3b82d4;background:#eff6ff;padding:10px 14px;margin:10px 14px 12px;border-radius:0 4px 4px 0;font-size:13px}
+.warning-box{border-left:4px solid #f59e0b;background:#fffbeb;padding:10px 14px;margin:10px 14px 12px;border-radius:0 4px 4px 0;font-size:13px}
+footer{margin-top:48px;padding-top:12px;border-top:1px solid #e5e7eb;text-align:center;font-size:12px;color:#57606a}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>i3 Platform — Open-Source AI Orchestration Stack</h1>
+<div class="meta">
+  Replaces: watsonx.ai SaaS (unavailable under IBM Compute-only credits)  · 
+  Cluster: IBM ROKS 4.17, eu-de, 12 × bx2.4x16 (192 GB RAM total)  · 
+  Generated: 10 September 2026
+</div>
+
+
+<h2>Why This Change</h2>
+<div class="block">
+  <div class="decision-box">
+    IBM Cloud credits are <strong>Compute-only</strong> — they cover ROKS worker nodes, VPC, COS and ICR registry. They do <strong>not</strong> cover watsonx.ai SaaS (a separate paid service). The current LiteLLM config has two Tier-1 models (<code>granite-3-8b-instruct</code> and <code>granite-vision-3-2-2b</code>) pointing to <code>eu-de.ml.cloud.ibm.com</code> with placeholders for <code>WATSONX_API_KEY</code> and <code>WATSONX_PROJECT_ID</code> that will never be filled under the current credit structure.
+  </div>
+  <div class="warning-box">
+    <strong>Constraint:</strong> All AI inference must run <strong>inside the ROKS cluster</strong> on CPU-only workers (bx2.4x16 = 4 vCPU / 16 GB each). No GPU nodes available in eu-de. All models must be quantised (Q4/Q5 GGUF) to fit within CPU memory budgets. IBM Granite models can still be used — they are fully open-weight on HuggingFace and run perfectly through Ollama.
+  </div>
+</div>
+
+
+<h2>Cluster Capacity Analysis</h2>
+<div class="block">
+  <p>12 worker nodes × 4 vCPU / 16 GB RAM = <strong>48 vCPU / 192 GB RAM</strong> total. Current utilisation leaves headroom for on-cluster LLMs.</p>
+  <table>
+    <tr><th>Namespace</th><th>Memory Quota</th><th>Currently Used</th><th>Headroom</th><th>Usable For</th></tr>
+    <tr><td><code>i3-model-gateway</code></td><td>64 Gi</td><td>21 Gi (33%)</td><td><strong>43 Gi</strong></td><td>Ollama large models + LiteLLM</td></tr>
+    <tr><td><code>i3-ai-lab</code></td><td>48 Gi</td><td>0 Gi (empty)</td><td><strong>48 Gi</strong></td><td>RAG pipeline, ChromaDB, vector work</td></tr>
+    <tr><td><code>i3-ott</code></td><td>64 Gi</td><td>62 Gi (97%)</td><td>~2 Gi only</td><td>No new models here</td></tr>
+    <tr><td><code>i3-evalos</code></td><td>32 Gi</td><td>~3 Gi</td><td>~29 Gi</td><td>App only</td></tr>
+  </table>
+  <div class="warning-box" style="margin:10px 0 4px">
+    <strong>i3-ott is near its quota ceiling.</strong> The Ollama instance for EvalOS Study Coach (Mistral 7B, 4.4 GB) must stay there — no additional models should be added to i3-ott. All new model work goes to <code>i3-model-gateway</code> or <code>i3-ai-lab</code>.
+  </div>
+</div>
+
+
+<h2>Architecture: Before vs After</h2>
+<div class="block">
+  <div class="before-after">
+    <div class="ba-col before">
+      <div class="ba-title">❌ Before (watsonx.ai SaaS)</div>
+      <div class="ba-item">Tier 1: granite-3-8b-instruct → eu-de.ml.cloud.ibm.com (SaaS, $$$)</div>
+      <div class="ba-item">Tier 1: granite-vision-3-2-2b → watsonx.ai (SaaS, $$$)</div>
+      <div class="ba-item">Tier 2: mistral-nemo:12b → Ollama (not yet pulled)</div>
+      <div class="ba-item">Tier 2: deepseek-coder-v2:16b → Ollama (not yet pulled)</div>
+      <div class="ba-item">Tier 3: granite3.1-dense:2b → Ollama ✓ running</div>
+      <div class="ba-item">Tier 3: distilbert-base → HuggingFace service (not deployed)</div>
+      <div class="ba-item">Embeddings: none configured</div>
+      <div class="ba-item">RAG: no vector DB deployed</div>
+      <div class="ba-item">LiteLLM keys: all placeholders</div>
+      <div class="ba-item">Langfuse (gateway): NEXTAUTH_SECRET = placeholder</div>
+    </div>
+    <div class="ba-col after">
+      <div class="ba-title">✅ After (100% On-Cluster OSS)</div>
+      <div class="ba-item">Tier 1 Heavy: <strong>Qwen2.5:14B-Q4</strong> → Ollama (9 GB, strong reasoning)</div>
+      <div class="ba-item">Tier 1 Vision: <strong>llava:13b-Q4</strong> → Ollama (8 GB, multimodal)</div>
+      <div class="ba-item">Tier 2 RAG: <strong>Qwen2.5:7B-Q4</strong> → Ollama (5 GB, fast reasoning)</div>
+      <div class="ba-item">Tier 2 Code: <strong>Qwen2.5-Coder:7B-Q4</strong> → Ollama (5 GB)</div>
+      <div class="ba-item">Tier 3 Fast: granite3.1-dense:2b → Ollama ✓ already running</div>
+      <div class="ba-item">Tier 3 Intent: <strong>nomic-embed-text</strong> via Ollama (274 MB, replaces DistilBERT)</div>
+      <div class="ba-item">Embeddings: <strong>nomic-embed-text</strong> (768-dim, Apache 2.0)</div>
+      <div class="ba-item">RAG: <strong>ChromaDB</strong> in i3-ai-lab (already referenced by onboarding-agent)</div>
+      <div class="ba-item">LiteLLM: fully configured, master key set, Langfuse wired</div>
+      <div class="ba-item">Langfuse (gateway): secrets properly set</div>
+    </div>
+  </div>
+</div>
+
+
+<h2>Model Selection Rationale</h2>
+<div class="block">
+  <table>
+    <tr><th>Role</th><th>Model</th><th>VRAM/RAM</th><th>Licence</th><th>Why This Model</th></tr>
+    <tr>
+      <td><span class="badge blue">Tier 1 — Heavy Reasoning</span></td>
+      <td><code>qwen2.5:14b-instruct-q4_K_M</code></td>
+      <td>~9.0 GB</td>
+      <td>Apache 2.0</td>
+      <td>Strongest open model that fits on CPU at Q4. Outperforms Llama 3 8B on reasoning benchmarks. Replaces watsonx granite-3-8b (which was 8B anyway). Handles: onboarding agent complex queries, exam evaluation rubrics, admin reports.</td>
+    </tr>
+    <tr>
+      <td><span class="badge blue">Tier 1 — Vision</span></td>
+      <td><code>llava:13b-v1.6-mistral-q4</code></td>
+      <td>~8.0 GB</td>
+      <td>Apache 2.0</td>
+      <td>Replaces granite-vision. Handles image + text queries. Used for: certificate QR validation, document uploads in Directus, future AI interview screenshots.</td>
+    </tr>
+    <tr>
+      <td><span class="badge purple">Tier 2 — RAG / Reasoning</span></td>
+      <td><code>qwen2.5:7b-instruct-q4_K_M</code></td>
+      <td>~4.7 GB</td>
+      <td>Apache 2.0</td>
+      <td>Replaces mistral-nemo:12b (too large for CPU). Same quality at half the RAM. Primary model for: EvalOS Study Coach (upgrade from Mistral 7B), RAG-augmented answers, onboarding Q&amp;A.</td>
+    </tr>
+    <tr>
+      <td><span class="badge purple">Tier 2 — Code</span></td>
+      <td><code>qwen2.5-coder:7b-instruct-q4_K_M</code></td>
+      <td>~4.7 GB</td>
+      <td>Apache 2.0</td>
+      <td>Replaces deepseek-coder-v2:16b. State-of-the-art at 7B for code. Used for: AI Interview Round code challenges, n8n workflow generation, Directus field scripting.</td>
+    </tr>
+    <tr>
+      <td><span class="badge gray">Tier 3 — Fast/Edge</span></td>
+      <td><code>granite3.1-dense:2b</code></td>
+      <td>~1.6 GB</td>
+      <td>Apache 2.0</td>
+      <td>Already pulled. Intent routing, short classifications, fast pre-screening. Keep as-is.</td>
+    </tr>
+    <tr>
+      <td><span class="badge gray">Tier 3 — Embeddings</span></td>
+      <td><code>nomic-embed-text:v1.5</code></td>
+      <td>~274 MB</td>
+      <td>Apache 2.0</td>
+      <td>Replaces DistilBERT HuggingFace service (complex to deploy). 768-dim embeddings via Ollama /api/embed. Powers ChromaDB RAG for onboarding-agent. MIT/Apache, runs on any CPU.</td>
+    </tr>
+  </table>
+
+  <div class="arch-box" style="margin-top:8px">
+    <strong>Total new model memory on i3-model-gateway Ollama:</strong><br />
+    9.0 (Qwen14B) + 8.0 (LLaVA) + 4.7 (Qwen7B) + 4.7 (Qwen-Coder) + 1.6 (Granite) + 0.3 (Nomic) = <strong>~28.3 GB</strong><br />
+    i3-model-gateway quota headroom: 43 Gi ✓ — fits with room to spare. Ollama loads models on-demand and unloads after 5 min idle, so peak RAM ≈ largest 2 models loaded = ~18 GB.
+  </div>
+</div>
+
+
+<h2>Full Amended Stack Architecture</h2>
+<div class="block">
+  <h3>Request Flow</h3>
+  <div class="arch-box">
+    <div class="arch-row">
+      <span class="arch-label">Applications</span>
+      <span class="arch-val">EvalOS Web · Onboarding Agent · n8n workflows · Future: AI Interview Round · Directus hooks</span>
+    </div>
+    <div class="arch-row">
+      <span class="arch-label">AI Gateway (LiteLLM)</span>
+      <span class="arch-val"><code>litellm.i3technologies.co.ke</code> — unified OpenAI-compatible API. Routes by model name, handles retries, fallbacks, rate limiting. Logs every call to Langfuse.</span>
+    </div>
+    <div class="arch-row">
+      <span class="arch-label">Observability (Langfuse)</span>
+      <span class="arch-val">i3-ott Langfuse (EvalOS traces) + i3-model-gateway Langfuse (LiteLLM traces) — both use same Postgres DB, separate projects.</span>
+    </div>
+    <div class="arch-row">
+      <span class="arch-label">Inference (Ollama)</span>
+      <span class="arch-val">i3-model-gateway: Qwen2.5 14B + 7B + Coder, LLaVA 13B, Granite 2B, Nomic-embed · i3-ott: Mistral 7B (EvalOS only)</span>
+    </div>
+    <div class="arch-row">
+      <span class="arch-label">RAG (ChromaDB)</span>
+      <span class="arch-val"><code>i3-admissions / i3-ai-lab</code> — ChromaDB vector store, populated via nomic-embed-text embeddings. Already referenced by onboarding-agent.</span>
+    </div>
+    <div class="arch-row">
+      <span class="arch-label">Monitoring</span>
+      <span class="arch-val">Prometheus (i3-monitoring) scrapes LiteLLM <code>/metrics</code> endpoint. Grafana dashboards for latency, token throughput, error rates per model.</span>
+    </div>
+  </div>
+
+  <h3>LiteLLM New Model Config (Amended)</h3>
+  <div class="arch-box" style="font-family:ui-monospace,monospace;font-size:11.5px;white-space:pre-wrap;color:#1f2328">model_list:
+  # Tier 3 — Fast/Edge (sub-second, always warm)
+  - model_name: granite-nano
+    litellm_params:
+      model: ollama/granite3.1-dense:2b
+      api_base: http://ollama.i3-model-gateway.svc.cluster.local:11434
+
+  - model_name: embed
+    litellm_params:
+      model: ollama/nomic-embed-text:v1.5
+      api_base: http://ollama.i3-model-gateway.svc.cluster.local:11434
+
+  # Tier 2 — RAG / Reasoning (5s–15s on CPU)
+  - model_name: qwen-fast
+    litellm_params:
+      model: ollama/qwen2.5:7b-instruct-q4_K_M
+      api_base: http://ollama.i3-model-gateway.svc.cluster.local:11434
+      timeout: 90
+
+  - model_name: coder
+    litellm_params:
+      model: ollama/qwen2.5-coder:7b-instruct-q4_K_M
+      api_base: http://ollama.i3-model-gateway.svc.cluster.local:11434
+      timeout: 90
+
+  # Tier 1 — Heavy (30s–90s on CPU, use for batch/async)
+  - model_name: qwen-heavy
+    litellm_params:
+      model: ollama/qwen2.5:14b-instruct-q4_K_M
+      api_base: http://ollama.i3-model-gateway.svc.cluster.local:11434
+      timeout: 180
+
+  - model_name: vision
+    litellm_params:
+      model: ollama/llava:13b-v1.6-mistral-q4
+      api_base: http://ollama.i3-model-gateway.svc.cluster.local:11434
+      timeout: 180
+
+router_settings:
+  routing_strategy: least-busy
+  fallbacks:
+    - qwen-heavy: [qwen-fast]
+    - qwen-fast:  [granite-nano]
+    - coder:      [qwen-fast]
+
+litellm_settings:
+  success_callback: ["langfuse"]
+  failure_callback: ["langfuse"]
+  langfuse_host: "http://langfuse.i3-ott.svc.cluster.local:3000"
+  langfuse_public_key: "os.environ/LANGFUSE_PUBLIC_KEY"
+  langfuse_secret_key: "os.environ/LANGFUSE_SECRET_KEY"</div>
+</div>
+
+
+<h2>Phased Implementation Plan</h2>
+<div class="block">
+
+  
+  <div class="phase">
+    <div class="phase-title"><span class="badge ok">Phase 0</span> Immediate Fixes — Unblock Everything <span class="phase-days">Day 1</span></div>
+    <table>
+      <tr><th>#</th><th>Action</th><th>Command / Detail</th></tr>
+      <tr><td>0.1</td><td>Fix Langfuse route conflict</td><td><code>oc delete route langfuse-public -n i3-model-gateway</code></td></tr>
+      <tr><td>0.2</td><td>Set real NEXTAUTH_SECRET + SALT for i3-model-gateway Langfuse</td><td>Generate 32-byte base64 values, patch <code>langfuse-secrets</code> in i3-model-gateway</td></tr>
+      <tr><td>0.3</td><td>Register Philip Mukiti + Joseph Maina in Langfuse</td><td>Manual: visit <code>https://langfuse.i3technologies.co.ke</code> after route fix</td></tr>
+      <tr><td>0.4</td><td>Close Langfuse signup</td><td><code>oc set env deployment/langfuse -n i3-ott NEXT_PUBLIC_SIGN_UP_DISABLED=true</code></td></tr>
+      <tr><td>0.5</td><td>Generate LiteLLM master key</td><td>Random 32-char: patch <code>litellm-secrets.LITELLM_MASTER_KEY</code></td></tr>
+      <tr><td>0.6</td><td>Fix SeaweedFS HMAC keys</td><td>Configure HMAC in SeaweedFS, set real keys in <code>seaweedfs-hmac</code></td></tr>
+      <tr><td>0.7</td><td>Change OME API token</td><td><code>oc set data secret/ome-secrets -n i3-ott api-token=&lt;new-32-char&gt;</code></td></tr>
+      <tr><td>0.8</td><td>Generate Directus static token → set in n8n</td><td>Directus admin → Settings → Access Tokens → Create → patch <code>n8n-secrets.DIRECTUS_TOKEN</code></td></tr>
+    </table>
+  </div>
+
+  
+  <div class="phase">
+    <div class="phase-title"><span class="badge blue">Phase 1</span> OSS Model Pull + LiteLLM Go-Live <span class="phase-days">Days 2–4</span></div>
+    <table>
+      <tr><th>#</th><th>Action</th><th>Detail</th></tr>
+      <tr><td>1.1</td><td>Expand Ollama PVC in i3-model-gateway</td><td>Resize <code>ollama-data-ollama-0</code> from 50 Gi → 80 Gi (need space for all models: ~30 GB)</td></tr>
+      <tr><td>1.2</td><td>Pull Tier-3 models (fast — already partially done)</td><td><code>ollama pull nomic-embed-text:v1.5</code> (~274 MB) — granite already pulled</td></tr>
+      <tr><td>1.3</td><td>Pull Tier-2 models</td><td><code>ollama pull qwen2.5:7b-instruct-q4_K_M</code> (~4.7 GB) · <code>ollama pull qwen2.5-coder:7b-instruct-q4_K_M</code> (~4.7 GB)</td></tr>
+      <tr><td>1.4</td><td>Pull Tier-1 models</td><td><code>ollama pull qwen2.5:14b-instruct-q4_K_M</code> (~9.0 GB) · <code>ollama pull llava:13b-v1.6-mistral-q4</code> (~8.0 GB)</td></tr>
+      <tr><td>1.5</td><td>Update litellm-config ConfigMap</td><td>Replace watsonx model entries with new Qwen/LLaVA model list (see config above)</td></tr>
+      <tr><td>1.6</td><td>Set LiteLLM Langfuse keys</td><td>Use i3-ott Langfuse keys: PK <code>pk-lf-i3evalos-8ed2998c3f68449b</code> / SK <code>sk-lf-i3evalos-b7905eaf49904cc5</code></td></tr>
+      <tr><td>1.7</td><td>Fix LiteLLM DATABASE_URL to pgbouncer</td><td>Change from direct primary → <code>i3-postgres-pgbouncer.i3-data.svc:5432</code></td></tr>
+      <tr><td>1.8</td><td>Rollout + smoke-test LiteLLM</td><td><code>curl https://litellm.i3technologies.co.ke/v1/chat/completions -H "Authorization: Bearer sk-..." -d '{"model":"granite-nano","messages":[{"role":"user","content":"hi"}]}'</code></td></tr>
+    </table>
+  </div>
+
+  
+  <div class="phase">
+    <div class="phase-title"><span class="badge purple">Phase 2</span> Upgrade EvalOS Study Coach to LiteLLM <span class="phase-days">Days 5–7</span></div>
+    <p style="padding:0">Currently EvalOS calls Ollama directly. Routing through LiteLLM gives fallback, observability and model-swap without code changes.</p>
+    <table>
+      <tr><th>#</th><th>Action</th><th>Detail</th></tr>
+      <tr><td>2.1</td><td>Add <code>LITELLM_URL</code> + <code>LITELLM_KEY</code> to evalos-web-secrets</td><td><code>http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1</code></td></tr>
+      <tr><td>2.2</td><td>Update study-coach route to call LiteLLM</td><td>Change <code>OLLAMA_URL/api/generate</code> → <code>LITELLM_URL/chat/completions</code>. Use <code>qwen-fast</code> as default model (upgrade from Mistral 7B). Keep Langfuse tracing.</td></tr>
+      <tr><td>2.3</td><td>Add <code>OLLAMA_MODEL=qwen-fast</code> fallback</td><td>If LiteLLM unreachable, fall back directly to i3-ott Ollama (existing path)</td></tr>
+      <tr><td>2.4</td><td>Build + deploy evalos-web #21</td><td><code>oc start-build evalos-web -n i3-evalos --from-dir=platform/evalos/web --follow</code></td></tr>
+    </table>
+  </div>
+
+  
+  <div class="phase">
+    <div class="phase-title"><span class="badge blue">Phase 3</span> RAG Pipeline — ChromaDB + Embeddings <span class="phase-days">Days 8–12</span></div>
+    <p style="padding:0">Deploy ChromaDB in <code>i3-ai-lab</code> (already referenced by onboarding-agent). Wire nomic-embed-text for document ingestion. Power: onboarding corpus, IBM cert exam knowledge base.</p>
+    <table>
+      <tr><th>#</th><th>Action</th><th>Detail</th></tr>
+      <tr><td>3.1</td><td>Deploy ChromaDB to i3-ai-lab</td><td>StatefulSet with 20Gi PVC, ClusterIP service on 8000. No auth initially (internal-only)</td></tr>
+      <tr><td>3.2</td><td>Add embedding pipeline job</td><td>Python job: fetch Directus question content → nomic-embed-text → upsert into ChromaDB <code>i3-exam-corpus</code> collection</td></tr>
+      <tr><td>3.3</td><td>Fix onboarding-agent CHROMA_HOST</td><td>Currently points to <code>chromadb.i3-admissions.svc.cluster.local</code> — update to <code>chromadb.i3-ai-lab.svc.cluster.local</code></td></tr>
+      <tr><td>3.4</td><td>Add RAG to Study Coach</td><td>Before calling LiteLLM, embed the student's weak domain → ChromaDB similarity search → inject top-3 docs into prompt. Improves answer quality significantly.</td></tr>
+      <tr><td>3.5</td><td>Add RAG to Onboarding Agent</td><td>Onboarding agent already has ChromaDB wired — populate corpus with company docs, HR policies, EvalOS how-to guides</td></tr>
+    </table>
+  </div>
+
+  
+  <div class="phase">
+    <div class="phase-title"><span class="badge gray">Phase 4</span> AI Interview Round <span class="phase-days">Days 13–20</span></div>
+    <table>
+      <tr><th>#</th><th>Action</th><th>Detail</th></tr>
+      <tr><td>4.1</td><td>Design interview flow</td><td>Keycloak-gated page → 5 technical questions (3 text, 2 code) → student answers → LiteLLM <code>qwen-heavy</code> evaluates each against rubric → score + feedback</td></tr>
+      <tr><td>4.2</td><td>Create <code>/app/interview</code> page</td><td>New EvalOS route. Uses existing Keycloak session. Questions stored in <code>ai_interviews</code> table (already exists in evalos_db).</td></tr>
+      <tr><td>4.3</td><td>Create <code>/api/interview/evaluate</code> route</td><td>Calls LiteLLM <code>qwen-heavy</code> for rubric evaluation. Calls <code>coder</code> model for code questions. Traces all inferences via Langfuse.</td></tr>
+      <tr><td>4.4</td><td>Code editor integration</td><td>Monaco Editor (MIT) embedded for code questions. Syntax highlighting for JavaScript/Python.</td></tr>
+    </table>
+  </div>
+
+  
+  <div class="phase">
+    <div class="phase-title"><span class="badge gray">Phase 5</span> Grafana Dashboards + Full Observability <span class="phase-days">Days 21–25</span></div>
+    <table>
+      <tr><th>#</th><th>Action</th><th>Detail</th></tr>
+      <tr><td>5.1</td><td>Add Postgres data source to Grafana</td><td>Connect to <code>i3-postgres-pgbouncer.i3-data.svc:5432</code> → evalos_db. Show: attempts/day, pass rate, domain weakness heatmap, certificate issuance.</td></tr>
+      <tr><td>5.2</td><td>Add LiteLLM Prometheus source</td><td>LiteLLM already annotated for Prometheus scrape at <code>:4000/metrics</code>. Add data source → dashboards for: model request count, P95 latency, error rate per model, token throughput.</td></tr>
+      <tr><td>5.3</td><td>Add Langfuse trace dashboard</td><td>Langfuse has built-in dashboard at <code>langfuse.i3technologies.co.ke</code> — configure project/user breakdown for study coach usage.</td></tr>
+      <tr><td>5.4</td><td>Add public Grafana route</td><td>Route already configured at <code>grafana.i3technologies.co.ke</code> — configure auth via Keycloak OIDC</td></tr>
+    </table>
+  </div>
+
+  
+  <div class="phase">
+    <div class="phase-title"><span class="badge gray">Phase 6</span> Directus CMS Question Management <span class="phase-days">Days 26–30</span></div>
+    <table>
+      <tr><th>#</th><th>Action</th><th>Detail</th></tr>
+      <tr><td>6.1</td><td>Create Directus collection: <code>exam_questions</code></td><td>Fields: text, type (MC/MR), options (JSON), correct_answers, domain, topic, set, explanation, active</td></tr>
+      <tr><td>6.2</td><td>Build n8n sync workflow</td><td>Webhook trigger: Directus item.create/update → n8n → normalise → upsert into evalos_db <code>questions</code> table. Uses real Directus token (Phase 0.8).</td></tr>
+      <tr><td>6.3</td><td>AI question generation</td><td>n8n workflow: admin triggers → LiteLLM <code>qwen-heavy</code> generates 5 questions on a topic → n8n formats → pushes to Directus draft → human review → approve → sync to evalos_db</td></tr>
+      <tr><td>6.4</td><td>Embed new questions into ChromaDB</td><td>On question approval, n8n triggers embedding job (nomic-embed-text → ChromaDB) so RAG stays current</td></tr>
+    </table>
+  </div>
+
+</div>
+
+
+<h2>Complete Secrets Register — Post Implementation</h2>
+<div class="block">
+  <table>
+    <tr><th>Service</th><th>Secret / Key</th><th>Value / Action</th><th>Status</th></tr>
+    <tr><td>LiteLLM</td><td><code>LITELLM_MASTER_KEY</code></td><td>Generate: <code>sk-litellm-i3-[random-32]</code></td><td><span class="badge red">To Generate</span></td></tr>
+    <tr><td>LiteLLM</td><td><code>LANGFUSE_PUBLIC_KEY</code></td><td><code>pk-lf-i3evalos-8ed2998c3f68449b</code></td><td><span class="badge warn">To Set</span></td></tr>
+    <tr><td>LiteLLM</td><td><code>LANGFUSE_SECRET_KEY</code></td><td><code>sk-lf-i3evalos-b7905eaf49904cc5</code></td><td><span class="badge warn">To Set</span></td></tr>
+    <tr><td>LiteLLM</td><td><code>DATABASE_URL</code></td><td>Change to pgbouncer URL</td><td><span class="badge warn">To Fix</span></td></tr>
+    <tr><td>LiteLLM</td><td><code>WATSONX_API_KEY</code></td><td><strong>Remove entirely</strong> — no longer needed</td><td><span class="badge ok">Delete</span></td></tr>
+    <tr><td>LiteLLM</td><td><code>WATSONX_PROJECT_ID</code></td><td><strong>Remove entirely</strong></td><td><span class="badge ok">Delete</span></td></tr>
+    <tr><td>Langfuse (gateway)</td><td><code>NEXTAUTH_SECRET</code></td><td>Generate 32-byte base64 random</td><td><span class="badge red">To Generate</span></td></tr>
+    <tr><td>Langfuse (gateway)</td><td><code>SALT</code></td><td>Generate 32-byte base64 random</td><td><span class="badge red">To Generate</span></td></tr>
+    <tr><td>Langfuse (i3-ott)</td><td><code>NEXTAUTH_SECRET</code></td><td><code>XY/DP1FB2BkupdvsOFdevCbMmymZVj8hh4vjliaSJio=</code></td><td><span class="badge ok">Set ✓</span></td></tr>
+    <tr><td>Langfuse (i3-ott)</td><td><code>SALT</code></td><td><code>Di8axSeAjg66ljWfKLuhxq6y2vVbn/xKYOIV2YxBdNk=</code></td><td><span class="badge ok">Set ✓</span></td></tr>
+    <tr><td>evalos-web</td><td><code>LANGFUSE_HOST/PK/SK</code></td><td>All set to i3-ott Langfuse</td><td><span class="badge ok">Set ✓</span></td></tr>
+    <tr><td>evalos-web</td><td><code>LITELLM_URL</code></td><td><code>http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1</code></td><td><span class="badge warn">To Add</span></td></tr>
+    <tr><td>evalos-web</td><td><code>LITELLM_KEY</code></td><td>Same as LITELLM_MASTER_KEY above</td><td><span class="badge warn">To Add</span></td></tr>
+    <tr><td>n8n</td><td><code>DIRECTUS_TOKEN</code></td><td>Generate from Directus → set in n8n-secrets</td><td><span class="badge red">To Generate (human)</span></td></tr>
+    <tr><td>OME</td><td><code>api-token</code></td><td>Replace <code>i3-ome-api-token-changeme-32chars</code></td><td><span class="badge red">To Replace</span></td></tr>
+    <tr><td>SeaweedFS</td><td><code>ACCESS_KEY_ID</code> / <code>SECRET_ACCESS_KEY</code></td><td>Configure HMAC in SeaweedFS, set real values</td><td><span class="badge red">To Configure</span></td></tr>
+    <tr><td>ChromaDB (new)</td><td><code>CHROMA_TOKEN</code></td><td>Generate for onboarding-agent auth</td><td><span class="badge gray">New</span></td></tr>
+  </table>
+</div>
+
+
+<h2>Summary: What Changes vs What Stays</h2>
+<div class="block">
+  <table>
+    <tr><th>Component</th><th>Before</th><th>After</th><th>Effort</th></tr>
+    <tr><td>Tier-1 Heavy Model</td><td>watsonx.ai granite-3-8b (SaaS, blocked)</td><td>Qwen2.5:14B-Q4 on-cluster Ollama</td><td><span class="badge blue">Low — pull model, update config</span></td></tr>
+    <tr><td>Tier-1 Vision Model</td><td>watsonx.ai granite-vision (SaaS, blocked)</td><td>LLaVA:13B on-cluster Ollama</td><td><span class="badge blue">Low — pull model, update config</span></td></tr>
+    <tr><td>Tier-2 RAG Model</td><td>mistral-nemo:12b (too large for CPU)</td><td>Qwen2.5:7B-Q4 (same quality, half RAM)</td><td><span class="badge blue">Low — pull model, update config</span></td></tr>
+    <tr><td>Tier-2 Code Model</td><td>deepseek-coder-v2:16b (too large)</td><td>Qwen2.5-Coder:7B-Q4</td><td><span class="badge blue">Low — pull model, update config</span></td></tr>
+    <tr><td>Embeddings</td><td>DistilBERT HuggingFace service (not deployed)</td><td>nomic-embed-text via Ollama</td><td><span class="badge blue">Very Low — already in Ollama</span></td></tr>
+    <tr><td>Vector DB (RAG)</td><td>Not deployed</td><td>ChromaDB in i3-ai-lab</td><td><span class="badge warn">Medium — new deployment + ingestion job</span></td></tr>
+    <tr><td>Study Coach LLM</td><td>Direct Ollama Mistral 7B call</td><td>LiteLLM → Qwen2.5 7B (upgrade)</td><td><span class="badge warn">Medium — code change + rebuild</span></td></tr>
+    <tr><td>LiteLLM config</td><td>Placeholders for watsonx</td><td>Fully configured OSS models</td><td><span class="badge blue">Low — ConfigMap update</span></td></tr>
+    <tr><td>Keycloak · n8n · Postgres · SeaweedFS · OME</td><td>As-is</td><td>No change to these services</td><td><span class="badge ok">None</span></td></tr>
+    <tr><td>IBM Cloud credits</td><td>Would need SaaS add-on</td><td>Compute-only — fully covered</td><td><span class="badge ok">✓ Zero additional cost</span></td></tr>
+  </table>
+</div>
+
+<footer>Made with IBM Bob  ·  i3 Technologies  ·  10 September 2026</footer>
+</div>
+</body>
+</html>

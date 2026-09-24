@@ -1,0 +1,67 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ford-allow-egress
+  namespace: i3-ford
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+  egress:
+    # Intra-namespace (peers, orderers, CAs, and the API itself)
+    - to:
+        - podSelector: {}
+    # PostgreSQL (ford_members_db)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-data
+      ports: [{port: 5432, protocol: TCP}]
+    # Keycloak
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-auth
+      ports: [{port: 8443, protocol: TCP}]
+    # Engage
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-engage
+      ports: [{port: 3000, protocol: TCP}]
+    # Image registry (by namespace)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: openshift-image-registry
+      ports: [{port: 5000, protocol: TCP}]
+    # Image registry (by IP — cluster internal)
+    - to:
+        - ipBlock:
+            cidr: "172.21.59.183/32"
+      ports:
+        - {port: 5000, protocol: TCP}
+        - {port: 443, protocol: TCP}
+    # DNS — open to all destinations on port 53 (needed for cluster DNS)
+    - ports:
+        - {port: 53, protocol: UDP}
+        - {port: 53, protocol: TCP}
+    # DNS — by namespace selector
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: openshift-dns
+      ports:
+        - {port: 53, protocol: UDP}
+        - {port: 53, protocol: TCP}
+        - {port: 5353, protocol: UDP}
+    # DNS — by IP
+    - to:
+        - ipBlock:
+            cidr: "172.21.0.10/32"
+      ports:
+        - {port: 53, protocol: UDP}
+        - {port: 53, protocol: TCP}
+    # External HTTPS/HTTP (Fabric peer images, Africa's Talking, PyPI)
+    - ports:
+        - {port: 443, protocol: TCP}
+        - {port: 80, protocol: TCP}

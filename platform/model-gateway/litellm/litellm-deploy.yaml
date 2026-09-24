@@ -1,11 +1,14 @@
 # ============================================================
-# LiteLLM Proxy — OSS Tiered Model Gateway
+# LiteLLM Proxy — OSS Tiered Model Gateway  [CANONICAL CONFIG]
 # Namespace:    i3-model-gateway
 # Tier 3 (Edge):   Granite 3.1 2B + Nomic Embed v1.5
 # Tier 2 (Chat):   Qwen2.5 7B + Qwen2.5-Coder 7B
 # Tier 1 (Heavy):  Qwen2.5 14B + LLaVA 13B
+# Aliases:      mistral-nemo → qwen-fast (ALI-01)
+#               granite-heavy → qwen-heavy (ALI-02)
 # Updated:      10 September 2026 — removed watsonx SaaS deps,
 #               replaced with 100% on-cluster Ollama models.
+# Remediations: ALI-01, ALI-02, CFG-01 applied.
 # ============================================================
 
 # ── ConfigMap: LiteLLM routing config (also in litellm-config-oss.yaml)
@@ -21,12 +24,13 @@ data:
   config.yaml: |
     model_list:
 
-      # ── Tier 3: Fast / Edge (sub-second to 5s, always warm) ──
+      # ── Tier 3: Fast / Edge (always warm, sub-5s) ─────────────
       - model_name: granite-nano
         litellm_params:
           model: ollama/granite3.1-dense:2b
           api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
-          timeout: 30
+          # 60s: cold-load headroom even if granite-nano was briefly unloaded
+          timeout: 60
           max_tokens: 2048
         model_info:
           tier: 3
@@ -41,22 +45,26 @@ data:
           tier: 3
           description: "Nomic Embed Text v1.5 — 768-dim embeddings for all RAG pipelines"
 
-      # ── Tier 2: RAG / Interactive Chat (10–45s on CPU) ───────
+      # ── Tier 2: RAG / Interactive Chat (10–45s on CPU) ────────
       - model_name: qwen-fast
         litellm_params:
           model: ollama/qwen2.5:7b-instruct-q4_K_M
           api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
-          timeout: 90
+          # 300s: matches global request_timeout; covers cold-load (~60s) +
+          # worst-case CPU inference (~200s) on a loaded bx2.4x16 node.
+          # Previous 180s was too tight — exhausted before inference finished,
+          # triggering fallback to granite-nano which also timed out.
+          timeout: 300
           max_tokens: 4096
         model_info:
           tier: 2
-          description: "Qwen2.5 7B — Study Coach (upgrade), RAG chat, Onboarding, i3-Engage, Zuri"
+          description: "Qwen2.5 7B — Study Coach, RAG chat, Sage, Onboarding, i3-Engage, Zuri"
 
       - model_name: coder
         litellm_params:
           model: ollama/qwen2.5-coder:7b-instruct-q4_K_M
           api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
-          timeout: 90
+          timeout: 300
           max_tokens: 4096
         model_info:
           tier: 2
@@ -67,7 +75,7 @@ data:
         litellm_params:
           model: ollama/qwen2.5:14b-instruct-q4_K_M
           api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
-          timeout: 180
+          timeout: 240
           max_tokens: 8192
         model_info:
           tier: 1
@@ -77,33 +85,81 @@ data:
         litellm_params:
           model: ollama/llava:13b-v1.6-mistral-q4
           api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
-          timeout: 180
+          timeout: 240
           max_tokens: 2048
         model_info:
           tier: 1
           description: "LLaVA 13B — image+text, doc OCR, invoice parsing, certificate validation"
 
+      # ── Backward-compatibility aliases ─────────────────────────
+      # ALI-01: mistral-nemo — referenced by admissions-agent DEFAULT_MODEL and
+      #         mcp-gateway litellm.chat default. Maps to qwen-fast (same tier).
+      - model_name: mistral-nemo
+        litellm_params:
+          model: ollama/qwen2.5:7b-instruct-q4_K_M
+          api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
+          timeout: 300
+          max_tokens: 4096
+        model_info:
+          tier: 2
+          description: "Alias → qwen-fast (Qwen2.5 7B). Retained for admissions-agent and MCP gateway compat."
+
+      # ALI-02: granite-heavy — referenced by onboarding-agent LITELLM_MODEL_SYNTH.
+      #         Maps to qwen-heavy (same tier, closest capability match).
+      - model_name: granite-heavy
+        litellm_params:
+          model: ollama/qwen2.5:14b-instruct-q4_K_M
+          api_base: http://ollama-service.i3-model-gateway.svc.cluster.local:11434
+          timeout: 240
+          max_tokens: 8192
+        model_info:
+          tier: 1
+          description: "Alias → qwen-heavy (Qwen2.5 14B). Retained for onboarding-agent planner compat."
+
     # ── Router: fallback chain ──────────────────────────────────
     router_settings:
       routing_strategy: least-busy
       num_retries: 2
-      retry_after: 1
+      retry_after: 5
       fallbacks:
+        # qwen-heavy slow → fall to qwen-fast
         - qwen-heavy:
             - qwen-fast
+        # qwen-fast slow → fall to granite-nano (terminal fallback — always warm)
         - qwen-fast:
             - granite-nano
         - coder:
             - qwen-fast
         - vision:
             - qwen-heavy
+        # Aliases share fallback chains with their canonical counterparts
+        - mistral-nemo:
+            - granite-nano
+        - granite-heavy:
+            - qwen-fast
+      # granite-nano has NO fallback — it IS the terminal. Adding one causes a loop.
       allowed_fails: 3
       cooldown_time: 30
+
+    # ── Redis Semantic Cache (CFG-01) ────────────────────────────
+    # TTL 3600s = 1h; similarity_threshold 0.95 keeps only near-identical hits.
+    # REDIS_PASSWORD injected from OpenBao via litellm-secrets Secret.
+    cache:
+      type: redis
+      host: redis.i3-data.svc.cluster.local
+      port: 6379
+      password: ${REDIS_PASSWORD}
+      ttl: 3600
+      similarity_threshold: 0.95
 
     # ── General settings ────────────────────────────────────────
     general_settings:
       master_key: "os.environ/LITELLM_MASTER_KEY"
+      # database_url retained for virtual-key enforcement (AUTH-01).
+      # Prisma connection pool limited to avoid advisory-lock contention.
       database_url: "os.environ/DATABASE_URL"
+      database_connection_pool_limit: 5
+      database_connection_timeout: 30
       store_model_in_db: true
 
     # ── Observability ────────────────────────────────────────────
@@ -113,34 +169,50 @@ data:
       service_callback: ["prometheus"]
       langfuse_public_key: "os.environ/LANGFUSE_PUBLIC_KEY"
       langfuse_secret_key: "os.environ/LANGFUSE_SECRET_KEY"
-      langfuse_host: "http://langfuse.i3-ott.svc.cluster.local:3000"
+      # CFG-01: corrected to i3-model-gateway (was i3-ott in previous version)
+      langfuse_host: "http://langfuse.i3-model-gateway.svc.cluster.local:3000"
       set_verbose: false
       json_logs: true
-      request_timeout: 180
+      # Must be >= largest per-model timeout (300s). Prevents LiteLLM from
+      # cancelling Ollama CPU inference before it completes.
+      request_timeout: 300
+      # drop_params strips unsupported provider params but does NOT scrub prompt text.
+      # PII redaction must be enforced upstream (Lobster Trap + application layer).
       drop_params: true
 
----
-# ── Secret: LiteLLM credentials (real values from OpenBao/oc patch)
-apiVersion: v1
-kind: Secret
-metadata:
-  name: litellm-secrets
-  namespace: i3-model-gateway
-  labels:
-    app: litellm-proxy
-    app.kubernetes.io/part-of: i3-platform
-  annotations:
-    openbao.org/agent-inject: "true"
-    openbao.org/role: "model-gateway"
-type: Opaque
-stringData:
-  # Generate: openssl rand -hex 24 | tr -a-z A-Z | sed 's/^/sk-litellm-i3-/'
-  LITELLM_MASTER_KEY: "REPLACE_WITH_SECURE_KEY"
-  # Langfuse keys from i3-ott Langfuse (EvalOS project)
-  LANGFUSE_PUBLIC_KEY: "pk-lf-i3evalos-8ed2998c3f68449b"
-  LANGFUSE_SECRET_KEY: "REPLACE_WITH_LANGFUSE_SECRET"
-  # pgbouncer URL (NOT direct primary — avoids connection saturation)
-  DATABASE_URL: "postgresql://langfuse:LangfuseDB2026i3@i3-postgres-pgbouncer.i3-data.svc:5432/langfuse_db?pgbouncer=true&connection_limit=5"
+# ── Secret: LiteLLM credentials
+# ⚠️  DO NOT apply this block with `oc apply` — it contains placeholder values only.
+# Real values are managed exclusively via:
+#   oc patch secret litellm-secrets -n i3-model-gateway \
+#     --type=merge --patch-file=platform/scripts/litellm-secrets-patch.json
+# OpenBao paths:
+#   LITELLM_MASTER_KEY  → i3/litellm/master-key
+#   DATABASE_URL        → i3/litellm/database-url
+#   LANGFUSE_PUBLIC_KEY → i3/langfuse/public-key
+#   LANGFUSE_SECRET_KEY → i3/langfuse/secret-key
+#   REDIS_PASSWORD      → i3/redis/password
+#
+# To bootstrap a new cluster, run:
+#   oc create secret generic litellm-secrets -n i3-model-gateway \
+#     --from-literal=LITELLM_MASTER_KEY=$(bao kv get -field=key i3/litellm/master-key) \
+#     --from-literal=DATABASE_URL=$(bao kv get -field=url i3/litellm/database-url) \
+#     --from-literal=LANGFUSE_PUBLIC_KEY=$(bao kv get -field=key i3/langfuse/public-key) \
+#     --from-literal=LANGFUSE_SECRET_KEY=$(bao kv get -field=key i3/langfuse/secret-key) \
+#     --from-literal=REDIS_PASSWORD=$(bao kv get -field=password i3/redis/password)
+#
+# ---
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: litellm-secrets
+#   namespace: i3-model-gateway
+# type: Opaque
+# stringData:
+#   LITELLM_MASTER_KEY: "RETRIEVE_FROM_OPENBAO"
+#   LANGFUSE_PUBLIC_KEY: "RETRIEVE_FROM_OPENBAO"
+#   LANGFUSE_SECRET_KEY: "RETRIEVE_FROM_OPENBAO"
+#   DATABASE_URL:        "RETRIEVE_FROM_OPENBAO"
+#   REDIS_PASSWORD:      "RETRIEVE_FROM_OPENBAO"
 
 ---
 # ── Deployment: LiteLLM Proxy ────────────────────────────────

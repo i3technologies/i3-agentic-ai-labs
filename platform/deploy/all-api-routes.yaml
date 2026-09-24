@@ -1,0 +1,64 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: mcp-gateway
+  namespace: i3-ar
+spec:
+  host: ar.i3technologies.co.ke
+  to:
+    kind: Service
+    name: mcp-gateway
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: talent-api
+  namespace: i3-talent
+spec:
+  host: api.talent.i3technologies.co.ke
+  to:
+    kind: Service
+    name: talent-api
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: sit-api
+  namespace: i3-sit
+spec:
+  host: api.sit.i3technologies.co.ke
+  to:
+    kind: Service
+    name: sit-api
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: sit-verify
+  namespace: i3-sit
+spec:
+  host: verify.sit.i3technologies.co.ke
+  path: /api/v1/credentials/verify
+  to:
+    kind: Service
+    name: sit-api
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

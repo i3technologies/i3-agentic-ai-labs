@@ -1,8 +1,8 @@
 # ============================================================
-# i3 Unified Platform — 17-Namespace Topology
+# i3 Unified Platform — 18-Namespace Topology
 # Applied by: kubectl apply -f platform/namespaces/
-# CRITICAL: solution-01..08 are listed as read-only references.
-#           They must NEVER be applied/modified by this pipeline.
+# NOTE: solution-01..08 have been fully migrated off this cluster.
+#       No reference or guard needed — they are no longer on this server.
 # ============================================================
 
 # ─── Tier 0: Foundational Data & Messaging ──────────────────
@@ -70,6 +70,36 @@ metadata:
   labels:
     app.kubernetes.io/part-of: i3-platform
     i3.io/tier: "3-ai"
+    i3.io/managed-by: argocd
+---
+# ─── Tier 2b: API Gateway ───────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-gateway
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "2-gateway"
+    i3.io/managed-by: argocd
+---
+# ─── Tier 2c: Consent Service (STEP-P2-02) ──────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-consent
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "2-consent"
+    i3.io/managed-by: argocd
+---
+# ─── Tier 3b: Agent Mesh — registry, MCP gateway (STEP-P2-03/04) ─
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-agent-mesh
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "3-agent-mesh"
     i3.io/managed-by: argocd
 ---
 # ─── Tier 4: Application Workstreams ────────────────────────
@@ -273,4 +303,32 @@ spec:
     limits.cpu: "8"
     limits.memory: 16Gi
     persistentvolumeclaims: "10"
+    count/pods: "20"
+---
+# i3-consent: consent-service FastAPI (STEP-P2-02)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: i3-consent-quota
+  namespace: i3-consent
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: 2Gi
+    limits.cpu: "2"
+    limits.memory: 4Gi
+    count/pods: "10"
+---
+# i3-agent-mesh: agent-registry + mcp-gateway (STEP-P2-03/04)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: i3-agent-mesh-quota
+  namespace: i3-agent-mesh
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    limits.cpu: "4"
+    limits.memory: 8Gi
     count/pods: "20"

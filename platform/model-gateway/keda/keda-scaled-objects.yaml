@@ -1,10 +1,20 @@
 ---
 # ============================================================
 # KEDA ScaledObjects — Model Gateway Autoscaling
-# Scales LiteLLM and Ollama based on HTTP request queue depth
+# Scales LiteLLM based on HTTP request queue depth.
+#
+# KEDA-01: Ollama ScaledObject REMOVED.
+#   Rationale: Ollama is a StatefulSet with RWO PVC (ollama-data).
+#   Multiple replicas each load a full independent copy of all model
+#   weights (~28 GB worst-case), exhausting the 50 Gi PVC and 16 Gi
+#   RAM limit. Horizontal scaling of Ollama is not viable on this
+#   bx2.4x16 CPU-only cluster. Vertical scaling (larger worker node)
+#   or model sharding would be required.
+#   Ollama remains at replicas:1 (fixed in vllm-deploy.yaml StatefulSet).
 # ============================================================
 
-# ── LiteLLM Proxy: scale 1→6 on queue depth via Prometheus ──────────────────
+# ── LiteLLM Proxy: scale 1→8 on queue depth via Prometheus ──────────────────
+# KEDA-01: maxReplicaCount aligned to 8 (matching litellm-deploy.yaml KEDA block).
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -16,7 +26,7 @@ spec:
   pollingInterval: 15
   cooldownPeriod: 120
   minReplicaCount: 1
-  maxReplicaCount: 6
+  maxReplicaCount: 8
   triggers:
     - type: prometheus
       metadata:
@@ -25,25 +35,6 @@ spec:
         threshold: "20"
         query: >
           sum(rate(litellm_proxy_total_requests[1m]))
----
-# ── Ollama (Granite 3.1 2B): scale 1→4 on CPU saturation ────────────────────
-apiVersion: keda.sh/v1alpha1
-kind: ScaledObject
-metadata:
-  name: ollama-scaler
-  namespace: i3-model-gateway
-spec:
-  scaleTargetRef:
-    name: ollama
-  pollingInterval: 30
-  cooldownPeriod: 180
-  minReplicaCount: 1
-  maxReplicaCount: 4
-  triggers:
-    - type: cpu
-      metricType: Utilization
-      metadata:
-        value: "80"
 ---
 # ── EvalOS Sandbox: scale 1→10 on CPU (Prometheus trigger added when metrics live) ─
 # Using cpu trigger as primary since EvalOS Prometheus metrics not yet scraped.
@@ -90,3 +81,94 @@ spec:
         threshold: "10"
         query: >
           sum(rate(http_requests_total{namespace="i3-admissions"}[1m]))
+---
+# ── Engage Email Events Consumer: scale 1→4 on Kafka lag (FIX-12) ────────────
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: engage-email-consumer-scaler
+  namespace: i3-engage
+spec:
+  scaleTargetRef:
+    name: email-consumer
+  pollingInterval: 15
+  cooldownPeriod: 120
+  minReplicaCount: 1
+  maxReplicaCount: 4
+  triggers:
+    - type: kafka
+      metadata:
+        topic: engage.email-events
+        bootstrapServers: kafka-bootstrap.i3-messaging.svc.cluster.local:9092
+        consumerGroup: engage-email-events
+        lagThreshold: "10"
+        offsetResetPolicy: latest
+
+---
+# ── Engage SMS Events Consumer: scale 1→4 on Kafka lag (FIX-12) ─────────────
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: engage-sms-consumer-scaler
+  namespace: i3-engage
+spec:
+  scaleTargetRef:
+    name: sms-consumer
+  pollingInterval: 15
+  cooldownPeriod: 120
+  minReplicaCount: 1
+  maxReplicaCount: 4
+  triggers:
+    - type: kafka
+      metadata:
+        topic: engage.sms-events
+        bootstrapServers: kafka-bootstrap.i3-messaging.svc.cluster.local:9092
+        consumerGroup: engage-sms-events
+        lagThreshold: "10"
+        offsetResetPolicy: latest
+
+---
+# ── Engage Send-Queue Consumer: scale 1→6 on Kafka lag (FIX-04 / FIX-12) ────
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: engage-send-queue-scaler
+  namespace: i3-engage
+spec:
+  scaleTargetRef:
+    name: send-queue-consumer
+  pollingInterval: 15
+  cooldownPeriod: 120
+  minReplicaCount: 1
+  maxReplicaCount: 6
+  triggers:
+    - type: kafka
+      metadata:
+        topic: engage.send-queue
+        bootstrapServers: kafka-bootstrap.i3-messaging.svc.cluster.local:9092
+        consumerGroup: engage-send-queue
+        lagThreshold: "5"
+        offsetResetPolicy: latest
+
+---
+# ── Engage Campaign Trigger Consumer: scale 1→6 on Kafka lag (STEP-P3-02) ────
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: engage-campaign-consumer-scaler
+  namespace: i3-engage
+spec:
+  scaleTargetRef:
+    name: kafka-consumer
+  pollingInterval: 15
+  cooldownPeriod: 120
+  minReplicaCount: 1
+  maxReplicaCount: 6
+  triggers:
+    - type: kafka
+      metadata:
+        topic: engage.campaign-trigger
+        bootstrapServers: kafka-bootstrap.i3-messaging.svc.cluster.local:9092
+        consumerGroup: engage-campaign-trigger
+        lagThreshold: "5"
+        offsetResetPolicy: latest

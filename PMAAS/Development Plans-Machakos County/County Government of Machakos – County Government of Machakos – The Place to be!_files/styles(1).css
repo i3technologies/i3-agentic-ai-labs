@@ -1,0 +1,523 @@
+.ova-dir-category .title {
+  position: relative;
+  margin: 0 0 30px 0;
+}
+.ova-dir-category .directory-cat-list {
+  margin: 0;
+  list-style-type: disc;
+}
+.ova-dir-category .directory-cat-list li {
+  padding: 5px 0;
+}
+.ova-dir-category .directory-cat-list li::marker {
+  color: #ff3514;
+}
+.ova-dir-category .directory-cat-list li a {
+  color: #62718d;
+}
+.ova-dir-category .directory-cat-list li a:hover {
+  color: var(--primary);
+}
+
+.ova-dir-single .ova_dir_content .title {
+  font-size: 22.5px;
+}
+.ova-dir-single .ova_dir_content .thumbnail img {
+  display: block;
+  width: 100%;
+}
+.ova-dir-single .ova_dir_content .content {
+  margin-top: 30px;
+}
+.ova-dir-single .ova_dir_content .contact-box .contact-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ova-dir-single .ova_dir_content .contact-box .contact-list .item {
+  display: flex;
+  align-items: center;
+  column-gap: 10px;
+}
+.ova-dir-single .ova_dir_content .contact-box .contact-list .item a:hover {
+  text-decoration: underline;
+}
+.ova-dir-single .ova_dir_content .contact-box .contact-list .item i {
+  color: #333;
+}
+.ova-dir-single .ova_dir_content .opening_hours .table {
+  border: 0;
+}
+.ova-dir-single .ova_dir_content .opening_hours .table tr:nth-child(odd) {
+  background-color: rgba(240, 240, 240, 0.4);
+}
+.ova-dir-single .ova_dir_content .opening_hours .table tr {
+  border: none;
+}
+.ova-dir-single .ova_dir_content .opening_hours .table tr td {
+  width: 50%;
+  border: 0;
+}
+.ova-dir-single .ova_dir_content .opening_hours .table .time {
+  text-transform: lowercase;
+}
+.ova-dir-single .ova_dir_content #ova_dir_single_google_map {
+  height: 400px;
+}
+.ova-dir-single .ova_dir_content .gallery .gallery-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  grid-gap: 5px;
+}
+@media (max-width: 1200px) {
+  .ova-dir-single .ova_dir_content .gallery .gallery-inner {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+.ova-dir-single .ova_dir_content .gallery .gallery-inner .gallery-item {
+  position: relative;
+  overflow: hidden;
+}
+.ova-dir-single .ova_dir_content .gallery .gallery-inner .gallery-item:hover img {
+  transform: scale(1.1);
+}
+.ova-dir-single .ova_dir_content .gallery .gallery-inner .gallery-item img {
+  display: block;
+  width: 100%;
+  transition: all 0.3s linear;
+}
+.ova-dir-single .ova_dir_content .metabox {
+  margin: 40px 0px 0px 0px;
+  padding: 24px 0;
+  list-style: none;
+  border-top: 1px solid #f0f0f0;
+}
+.ova-dir-single .ova_dir_content .metabox .item {
+  display: flex;
+  column-gap: 10px;
+  align-items: center;
+}
+.ova-dir-single .ova_dir_content .metabox .item a:hover {
+  text-decoration: underline;
+}
+.ova-dir-single .ova_dir_content .share-social-icons {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  list-style: none;
+  padding: 30px 0;
+  margin: 0;
+}
+.ova-dir-single .ova_dir_content .share-social-icons li {
+  display: inline-block;
+}
+.ova-dir-single .ova_dir_content .share-social-icons li.share {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+.ova-dir-single .ova_dir_content .share-social-icons li a {
+  transition: all 0.3s ease;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  font-family: var(--secondary-font);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.2;
+  font-feature-settings: "pnum" on, "lnum" on, "ordn" on;
+  color: #333;
+}
+.ova-dir-single .ova_dir_content .share-social-icons li a:hover {
+  transition: all 0.3s ease;
+  background-color: var(--primary);
+  color: #fff;
+}
+.ova-dir-single .ova_dir_content .share-social-icons li a i {
+  display: inline-flex;
+}
+.ova-dir-single .share-social-icons {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  list-style: none;
+  padding: 30px 0;
+  margin: 0;
+  margin-top: 30px;
+}
+.ova-dir-single .share-social-icons li {
+  display: inline-block;
+}
+.ova-dir-single .share-social-icons li a {
+  transition: all 0.3s ease;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  font-family: var(--secondary-font);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.2;
+  font-feature-settings: "pnum" on, "lnum" on, "ordn" on;
+  color: #333;
+}
+.ova-dir-single .share-social-icons li a:hover {
+  transition: all 0.3s ease;
+  background-color: var(--primary);
+  color: #fff;
+}
+.ova-dir-single .share-social-icons li a i {
+  display: inline-flex;
+}
+.ova-dir-single .share-social-icons .share {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.fancybox__container {
+  z-index: 9999;
+}
+
+.ova-dir-archive .ova_dir_archive_content {
+  width: 100%;
+}
+.ova-dir-archive .ova_dir_archive_content.overlay {
+  opacity: 0.5;
+}
+.ova-dir-archive .list-cat-dir {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 60px;
+}
+.ova-dir-archive .list-cat-dir .item.active .cate_name {
+  color: #fff;
+  background: #ff3514;
+}
+.ova-dir-archive .list-cat-dir .item .cate_name {
+  transition: all 0.3s linear;
+  display: inline-block;
+  font-size: 18px;
+  line-height: 1.2;
+  font-weight: 600;
+  color: #333;
+  padding: 7px 15px;
+  margin: 0 5px;
+  border-radius: 5px;
+}
+.ova-dir-archive .list-cat-dir .item .cate_name:hover {
+  transition: all 0.3s linear;
+  color: #fff;
+  background: #ff3514;
+}
+.ova-dir-archive #ova_dir_archive_google_map, .ova-dir-archive #el_ova_dir_archive_google_map {
+  height: 400px;
+}
+.ova-dir-archive .property {
+  position: relative;
+}
+.ova-dir-archive .property.highlight .card {
+  display: flex;
+}
+.ova-dir-archive .property:before {
+  content: "";
+  display: block;
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  margin-left: -10px;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid #fff;
+}
+.ova-dir-archive .property .avatar {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  border: 4px solid transparent;
+  background: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.ova-dir-archive .property .avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.ova-dir-archive .property .card {
+  display: none;
+  position: absolute;
+  top: 63px;
+  left: 50%;
+  transform: translateX(-50%);
+  -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.25);
+  -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.25);
+  background-color: #FFF;
+  width: 280px;
+  cursor: default;
+}
+.ova-dir-archive .property .card .thumbnail {
+  display: block;
+  flex: 0 0 100px;
+}
+.ova-dir-archive .property .card .thumbnail:hover img {
+  opacity: 0.9;
+}
+.ova-dir-archive .property .card .thumbnail img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: all 0.3s linear;
+}
+.ova-dir-archive .property .card .content {
+  width: 100%;
+  padding: 15px 20px;
+}
+.ova-dir-archive .property .card .content .title {
+  margin: 0;
+}
+.ova-dir-archive .property .card .content .title a {
+  font-size: 16px;
+}
+.ova-dir-archive .property .card .content .title a:hover {
+  text-decoration: underline;
+}
+.ova-dir-archive .property .card .content .info {
+  margin: 10px 0px 0px 0px;
+  padding: 0;
+  list-style: none;
+}
+.ova-dir-archive .property .card .content .info li:not(:first-child) {
+  margin-top: 5px;
+}
+.ova-dir-archive .property .card .content .info li {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  line-height: 1.3;
+}
+.ova-dir-archive .property .card .content .info li i {
+  width: 12px;
+  line-height: 1;
+  display: inline-flex;
+}
+.ova-dir-archive .property .card .content .info li .text {
+  display: inline-block;
+}
+.ova-dir-archive .property .card .content .info li .text a:hover {
+  text-decoration: underline;
+}
+.ova-dir-archive .ova-dir-items {
+  margin-top: 30px;
+  display: grid;
+  gap: 30px;
+}
+.ova-dir-archive .ova-dir-items .item {
+  background: #fff;
+  box-shadow: 0px 10px 40px 0px rgba(6, 22, 58, 0.1);
+}
+.ova-dir-archive .ova-dir-items .item:hover .thumbnail img {
+  transform: scale(1.1);
+}
+.ova-dir-archive .ova-dir-items .item .thumbnail {
+  display: block;
+  height: auto;
+  position: relative;
+  overflow: hidden;
+}
+.ova-dir-archive .ova-dir-items .item .thumbnail img {
+  display: block;
+  width: 100%;
+  transition: all 0.3s linear;
+}
+.ova-dir-archive .ova-dir-items .item .content {
+  padding: 14px 24px 24px 24px;
+}
+.ova-dir-archive .ova-dir-items .item .content .title {
+  font-size: 18px;
+  color: #333;
+  margin: 0;
+}
+.ova-dir-archive .ova-dir-items .item .content .title a {
+  font-size: 18px;
+  color: #333;
+}
+.ova-dir-archive .ova-dir-items .item .content .title a:hover {
+  text-decoration: underline;
+}
+.ova-dir-archive .ova-dir-items .item .content .info {
+  margin: 13px 0px 0px 0px;
+  padding: 0;
+  list-style: none;
+}
+.ova-dir-archive .ova-dir-items .item .content .info li {
+  margin: 0px 0px 8px 0px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  line-height: 1.3;
+}
+.ova-dir-archive .ova-dir-items .item .content .info li i {
+  width: 14px;
+  line-height: 1;
+  display: inline-flex;
+}
+.ova-dir-archive .ova-dir-items .item .content .info li .text {
+  display: inline-block;
+}
+.ova-dir-archive .ova-dir-items .item .content .info li .text a {
+  color: #333;
+}
+.ova-dir-archive .ova-dir-items .item .content .info li .text a:hover {
+  text-decoration: underline;
+}
+.ova-dir-archive.three_column .ova-dir-items {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+@media screen and (max-width: 1023px) {
+  .ova-dir-archive.three_column .ova-dir-items {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media screen and (max-width: 600px) {
+  .ova-dir-archive.three_column .ova-dir-items {
+    grid-template-columns: 1fr;
+  }
+}
+.ova-dir-archive.two_column .ova-dir-items {
+  grid-template-columns: 1fr 1fr;
+}
+@media screen and (max-width: 600px) {
+  .ova-dir-archive.two_column .ova-dir-items {
+    grid-template-columns: 1fr;
+  }
+}
+.ova-dir-archive.one_column .ova-dir-items {
+  grid-template-columns: 1fr;
+}
+
+.ova-dir-loader {
+  text-align: center;
+  margin-bottom: 30px;
+}
+.ova-dir-loader .loader {
+  margin: 0 auto;
+  width: 35px;
+  height: 35px;
+  border: 5px solid;
+  border-color: var(--primary) transparent;
+  border-radius: 50%;
+  display: none;
+  box-sizing: border-box;
+  animation: ova_dir_rotation 1s linear infinite;
+}
+.ova-dir-loader .loader.is-active {
+  display: inline-block;
+}
+
+@keyframes ova_dir_rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+/**
+ * Pagination
+ */
+nav.pagination {
+  display: block;
+  margin: 60px 0px;
+}
+nav .page-numbers {
+  display: inline-block;
+  list-style-type: none;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+  border: none;
+  clear: both;
+  white-space: inherit;
+}
+nav .page-numbers li {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0px 2px 10px 2px;
+  border: none;
+  padding: 0;
+  float: none;
+}
+nav .page-numbers li .page-numbers {
+  background: #f1f1f1;
+  border-radius: 5px;
+  width: 50px;
+  height: 50px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1em;
+  font-weight: 600;
+  color: #333;
+  text-shadow: none;
+}
+nav .page-numbers li .page-numbers i {
+  display: inline-flex;
+  line-height: 1;
+}
+nav .page-numbers li .page-numbers i:before {
+  font-weight: bold !important;
+}
+nav .page-numbers li .page-numbers:hover, nav .page-numbers li .page-numbers:focus, nav .page-numbers li .page-numbers.current {
+  background-color: #ff3514;
+  color: #fff;
+}
+
+.ova-dir-wrapper {
+  display: flex;
+  column-gap: 30px;
+  row-gap: 50px;
+  margin: 100px 0;
+}
+@media (max-width: 1024px) {
+  .ova-dir-wrapper {
+    flex-direction: column;
+    margin: 70px 0;
+  }
+}
+.ova-dir-wrapper .ova-dir-sidebar-wrapper {
+  flex: 0 0 370px;
+  position: sticky;
+  top: 150px;
+  left: 0;
+  height: 100%;
+  margin-bottom: 50px;
+}
+@media (max-width: 1024px) {
+  .ova-dir-wrapper .ova-dir-sidebar-wrapper {
+    margin-bottom: 0;
+  }
+}

@@ -1,0 +1,321 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EvalOS User Guide — i3 Technologies</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.6;color:#1f2328;background:#fff}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 24px}
+  h1{font-size:26px;font-weight:700;color:#1f2328;margin-bottom:4px}
+  h2{font-size:18px;font-weight:600;color:#3b82d4;margin:32px 0 10px;padding-bottom:4px;border-bottom:2px solid #e5e7eb}
+  h3{font-size:15px;font-weight:600;color:#1f2328;margin:18px 0 6px}
+  p{margin-bottom:10px}
+  ul,ol{margin:0 0 10px 20px}
+  li{margin-bottom:4px}
+  a{color:#3b82d4;text-decoration:none}
+  a:hover{text-decoration:underline}
+  .cover{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:20px 24px;margin-bottom:28px}
+  .cover h1{margin-bottom:8px}
+  .cover .meta{font-size:13px;color:#57606a}
+  .cover .meta span{margin-right:20px}
+  .toc{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:16px 20px;margin-bottom:28px}
+  .toc h3{margin-top:0;margin-bottom:10px;font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:#57606a}
+  .toc ol{margin-left:18px}
+  .toc li{margin-bottom:3px;font-size:14px}
+  table{width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:14px}
+  th{background:#f7f8fa;text-align:left;padding:8px 10px;border:1px solid #e5e7eb;font-weight:600;color:#1f2328}
+  td{padding:8px 10px;border:1px solid #e5e7eb;vertical-align:top}
+  tr:nth-child(even) td{background:#fafafa}
+  .steps{counter-reset:step;list-style:none;margin-left:0}
+  .steps li{counter-increment:step;display:flex;gap:12px;margin-bottom:10px;align-items:flex-start}
+  .steps li::before{content:counter(step);min-width:26px;height:26px;border-radius:50%;background:#3b82d4;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+  .note{background:#eff6ff;border-left:4px solid #3b82d4;padding:10px 14px;margin:12px 0;font-size:14px;border-radius:0 4px 4px 0}
+  .warn{background:#fffbeb;border-left:4px solid #f59e0b;padding:10px 14px;margin:12px 0;font-size:14px;border-radius:0 4px 4px 0}
+  .note strong,.warn strong{display:block;margin-bottom:2px}
+  .tag{display:inline-block;background:#e5e7eb;color:#57606a;font-size:12px;padding:1px 7px;border-radius:3px;font-family:monospace}
+  .section-num{color:#57606a;font-size:13px;font-weight:400;margin-left:6px}
+  hr{border:none;border-top:1px solid #e5e7eb;margin:28px 0}
+  .footer{text-align:center;font-size:12px;color:#57606a;margin-top:40px;padding-top:16px;border-top:1px solid #e5e7eb}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="cover">
+    <h1>EvalOS User Guide</h1>
+    <p style="color:#57606a;margin-bottom:12px">AI-Powered Skills Assessment Platform</p>
+    <div class="meta">
+      <span><strong>Platform URL:</strong> <a href="https://evalos.i3technologies.co.ke">evalos.i3technologies.co.ke</a></span>
+      <span><strong>SSO:</strong> <a href="https://sso.i3technologies.co.ke/auth/realms/i3">sso.i3technologies.co.ke</a></span>
+      <span><strong>Support:</strong> <a href="mailto:support@i3technologies.co.ke">support@i3technologies.co.ke</a></span>
+    </div>
+  </div>
+
+  <div class="toc">
+    <h3>Table of Contents</h3>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#getting-started">Getting Started — First Login</a></li>
+      <li><a href="#dashboard">Dashboard</a></li>
+      <li><a href="#taking-exam">Taking an Exam</a></li>
+      <li><a href="#study-coach">Study Coach (AI Tutor)</a></li>
+      <li><a href="#ai-interview">AI Interview</a></li>
+      <li><a href="#coding-lab">Coding Lab</a></li>
+      <li><a href="#leaderboard">Leaderboard</a></li>
+      <li><a href="#zuri">Zuri AI Co-worker</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+    </ol>
+  </div>
+
+  
+  <h2 id="overview">1 — Overview</h2>
+  <p>EvalOS is i3 Technologies' AI-powered skills assessment platform. It enables organisations, training institutions, and professional bodies to design, administer, and automatically grade assessments — and gives learners instant AI feedback to accelerate their growth.</p>
+  <table>
+    <tr><th>Capability</th><th>Description</th></tr>
+    <tr><td>Exams &amp; Assessments</td><td>MCQ, short answer, essay, and live coding questions with AI auto-grading</td></tr>
+    <tr><td>Study Coach</td><td>AI tutor (Qwen 7B via LiteLLM) that explains wrong answers and builds study plans</td></tr>
+    <tr><td>AI Interview</td><td>Simulated mock interviews with behavioural and technical questions; AI feedback report generated</td></tr>
+    <tr><td>Coding Lab</td><td>Monaco editor sandbox — write, run, and submit code for AI review in multiple languages</td></tr>
+    <tr><td>Leaderboard</td><td>Real-time ranking by department, cohort, or date range</td></tr>
+    <tr><td>Zuri Co-worker</td><td>Always-on chat assistant for platform navigation, exam tips, and study resources</td></tr>
+  </table>
+
+  
+  <h2 id="getting-started">2 — Getting Started</h2>
+  <h3>2.1 First Login</h3>
+  <ol class="steps">
+    <li>Open your browser and navigate to <a href="https://evalos.i3technologies.co.ke">https://evalos.i3technologies.co.ke</a>.</li>
+    <li>Click <strong>Sign In</strong>. You will be redirected to the i3 Single Sign-On portal (<code>sso.i3technologies.co.ke</code>).</li>
+    <li>Enter your email address (e.g. <span class="tag">yourname@i3technologies.co.ke</span>) and the password provided by your administrator.</li>
+    <li>Click <strong>Log In</strong>. On your first login you may be prompted to verify your email — check your inbox and click the confirmation link.</li>
+    <li>You will be redirected back to the EvalOS dashboard.</li>
+  </ol>
+  <div class="note"><strong>Note</strong>Credentials are managed centrally via Keycloak SSO. Your same username and password work across all i3 platform products.</div>
+
+  <h3>2.2 Changing Your Password</h3>
+  <ol class="steps">
+    <li>Click your avatar (top-right) → <strong>Account Settings</strong>.</li>
+    <li>Select <strong>Password</strong> from the left menu.</li>
+    <li>Enter your current password, then your new password twice, and click <strong>Save</strong>.</li>
+  </ol>
+
+  <h3>2.3 Profile Setup</h3>
+  <ol class="steps">
+    <li>Click your avatar → <strong>Profile</strong>.</li>
+    <li>Complete your department, job title, and profile photo.</li>
+    <li>Click <strong>Save Changes</strong>. Your profile details appear on the leaderboard and exam submissions.</li>
+  </ol>
+
+  
+  <h2 id="dashboard">3 — Dashboard</h2>
+  <p>After login you land on the Dashboard — your personal command centre.</p>
+  <table>
+    <tr><th>Panel</th><th>What It Shows</th></tr>
+    <tr><td>Upcoming Exams</td><td>Exams assigned to you with due dates; click to start when the window is open</td></tr>
+    <tr><td>Recent Activity</td><td>Your last 5 exam attempts with score and AI feedback status</td></tr>
+    <tr><td>My Score</td><td>Overall average score across all completed exams</td></tr>
+    <tr><td>Leaderboard Rank</td><td>Your current rank in your cohort; links to the full leaderboard</td></tr>
+    <tr><td>Quick Links</td><td>Shortcuts to Coding Lab, AI Interview, and Study Coach</td></tr>
+  </table>
+
+  
+  <h2 id="taking-exam">4 — Taking an Exam</h2>
+  <h3>4.1 Finding and Starting an Exam</h3>
+  <ol class="steps">
+    <li>From the Dashboard, click <strong>Exams</strong> in the top navigation bar.</li>
+    <li>Browse the list of available exams. Use the filter bar to search by topic or date.</li>
+    <li>Click an exam card to open its detail page. Review the instructions, time limit, and question count.</li>
+    <li>Click <strong>Start Exam</strong>. The timer starts immediately — do not navigate away.</li>
+  </ol>
+  <div class="warn"><strong>Warning</strong>Once started, an exam session cannot be paused. Ensure you have a stable internet connection and sufficient time before clicking Start Exam.</div>
+
+  <h3>4.2 Question Types</h3>
+  <table>
+    <tr><th>Type</th><th>Description</th><th>How to Answer</th></tr>
+    <tr><td>Multiple Choice (MCQ)</td><td>Single correct answer from 4 options</td><td>Click the radio button next to your answer</td></tr>
+    <tr><td>Multi-Select</td><td>One or more correct answers</td><td>Tick all correct checkboxes</td></tr>
+    <tr><td>Short Answer</td><td>Typed response, 1–3 sentences</td><td>Type in the text field; AI grades for key concepts</td></tr>
+    <tr><td>Essay</td><td>Longer written response</td><td>Use the rich text editor; AI evaluates structure and content</td></tr>
+    <tr><td>Coding</td><td>Write code to pass test cases</td><td>Opens an embedded Coding Lab editor — see Section 7</td></tr>
+  </table>
+
+  <h3>4.3 Navigating Questions</h3>
+  <ul>
+    <li>Use <strong>Previous</strong> / <strong>Next</strong> buttons or the question number grid on the left sidebar.</li>
+    <li>Flag a question for review by clicking the flag icon — flagged questions show in yellow in the sidebar.</li>
+    <li>Answered questions show a green dot; unanswered show grey.</li>
+  </ul>
+
+  <h3>4.4 Submitting and Viewing Results</h3>
+  <ol class="steps">
+    <li>Click <strong>Submit Exam</strong> when done. A confirmation dialog lists any unanswered questions.</li>
+    <li>Click <strong>Confirm Submit</strong>. Grading runs immediately.</li>
+    <li>The Results page shows your total score, per-question breakdown, and AI-generated feedback for each wrong answer.</li>
+    <li>Click <strong>Open Study Coach</strong> on any question to get a deeper explanation (see Section 5).</li>
+  </ol>
+  <div class="note"><strong>Note</strong>Results for essay and short-answer questions may take up to 30 seconds while the AI grades your response. The page refreshes automatically.</div>
+
+  
+  <h2 id="study-coach">5 — Study Coach</h2>
+  <p>The Study Coach is an AI tutor powered by the <strong>Qwen 7B Instruct</strong> model running on-cluster via LiteLLM. It is context-aware — it knows which exam you took and which questions you got wrong.</p>
+
+  <h3>5.1 Opening Study Coach</h3>
+  <ol class="steps">
+    <li>After submitting an exam, on the Results page click <strong>Open Study Coach</strong> (top-right of any question card).</li>
+    <li>Alternatively, go to <strong>My Attempts</strong>, find a past attempt, and click the book icon.</li>
+    <li>The Study Coach panel opens alongside your exam summary. The AI has already read your attempt and is ready.</li>
+  </ol>
+
+  <h3>5.2 Sample Prompts</h3>
+  <table>
+    <tr><th>Goal</th><th>Sample Prompt</th></tr>
+    <tr><td>Understand a wrong answer</td><td>"Explain why my answer to question 3 was wrong and what the correct reasoning is."</td></tr>
+    <tr><td>Build a study plan</td><td>"Create a 2-week study plan for the topics I scored below 60% on."</td></tr>
+    <tr><td>Deeper concept explanation</td><td>"Explain OSI Model Layer 4 in simple terms with a real-world analogy."</td></tr>
+    <tr><td>Practice questions</td><td>"Give me 5 practice questions on subnetting similar to the ones I got wrong."</td></tr>
+    <tr><td>Summarise weak areas</td><td>"Summarise my three weakest topics from this exam."</td></tr>
+  </table>
+  <div class="note"><strong>Note</strong>The Study Coach runs entirely on-cluster — no data leaves i3 infrastructure. Responses typically arrive within 5–15 seconds on CPU-only inference.</div>
+
+  
+  <h2 id="ai-interview">6 — AI Interview</h2>
+  <p>The AI Interview feature simulates a professional job interview. It presents questions and evaluates your typed responses, then generates a structured feedback report.</p>
+
+  <h3>6.1 Starting an Interview</h3>
+  <ol class="steps">
+    <li>Click <strong>AI Interview</strong> in the top navigation or Dashboard quick links.</li>
+    <li>Select an interview type: <em>Behavioural</em>, <em>Technical</em>, or <em>Mixed</em>.</li>
+    <li>Choose the target role or topic area (e.g. "Software Engineer — Backend", "Data Analyst").</li>
+    <li>Click <strong>Start Interview</strong>. Questions are presented one at a time.</li>
+  </ol>
+
+  <h3>6.2 Question Types</h3>
+  <table>
+    <tr><th>Type</th><th>Examples</th></tr>
+    <tr><td>Behavioural</td><td>"Tell me about a time you resolved a conflict in your team."</td></tr>
+    <tr><td>Technical</td><td>"Explain the difference between TCP and UDP. When would you use each?"</td></tr>
+    <tr><td>Situational</td><td>"A critical production service goes down at 2 AM. Walk me through your response."</td></tr>
+    <tr><td>Competency</td><td>"How do you prioritise tasks when you have multiple urgent deadlines?"</td></tr>
+  </table>
+
+  <h3>6.3 Viewing Your Feedback Report</h3>
+  <p>After submitting your final answer the AI generates a structured report covering:</p>
+  <ul>
+    <li><strong>Overall Score</strong> — percentage rating across all responses</li>
+    <li><strong>Communication Quality</strong> — clarity, structure, and conciseness</li>
+    <li><strong>Technical Accuracy</strong> (technical questions only) — correctness and depth</li>
+    <li><strong>STAR Method Usage</strong> (behavioural) — Situation, Task, Action, Result coverage</li>
+    <li><strong>Improvement Tips</strong> — 3–5 specific, actionable suggestions per question</li>
+  </ul>
+  <div class="note"><strong>Tip</strong>Use <em>Export PDF</em> on the report page to save your interview feedback for personal review or to share with a career coach.</div>
+
+  
+  <h2 id="coding-lab">7 — Coding Lab</h2>
+  <p>The Coding Lab provides a Monaco editor (the same engine that powers VS Code) directly in your browser. Write, run, and submit code for AI review or as part of a coding exam question.</p>
+
+  <h3>7.1 Supported Languages</h3>
+  <table>
+    <tr><th>Language</th><th>Runtime</th><th>Notes</th></tr>
+    <tr><td>Python 3</td><td>3.11</td><td>Standard library + numpy, pandas, requests available</td></tr>
+    <tr><td>JavaScript</td><td>Node 20</td><td>CommonJS and ES Modules supported</td></tr>
+    <tr><td>TypeScript</td><td>Node 20 + tsc</td><td>Compiled then executed</td></tr>
+    <tr><td>Java</td><td>JDK 21</td><td>Single-file execution via <code>java FileName.java</code></td></tr>
+    <tr><td>Go</td><td>1.22</td><td>Single-package programs</td></tr>
+    <tr><td>SQL</td><td>SQLite 3</td><td>In-memory DB; DDL + DML supported</td></tr>
+  </table>
+
+  <h3>7.2 Keyboard Shortcuts</h3>
+  <table>
+    <tr><th>Action</th><th>Windows / Linux</th><th>macOS</th></tr>
+    <tr><td>Run code</td><td>Ctrl + Enter</td><td>⌘ + Enter</td></tr>
+    <tr><td>Format code</td><td>Shift + Alt + F</td><td>⇧ + ⌥ + F</td></tr>
+    <tr><td>Find in file</td><td>Ctrl + F</td><td>⌘ + F</td></tr>
+    <tr><td>Comment/Uncomment</td><td>Ctrl + /</td><td>⌘ + /</td></tr>
+    <tr><td>Toggle word wrap</td><td>Alt + Z</td><td>⌥ + Z</td></tr>
+    <tr><td>Submit for AI review</td><td>Ctrl + Shift + S</td><td>⌘ + Shift + S</td></tr>
+  </table>
+
+  <h3>7.3 Submitting Code for AI Review</h3>
+  <ol class="steps">
+    <li>Once your code passes the visible test cases (green tick appears), click <strong>Submit for Review</strong> or press <span class="tag">Ctrl+Shift+S</span>.</li>
+    <li>The AI analyses code quality, efficiency, edge-case handling, and style.</li>
+    <li>Feedback appears in the right panel — inline comments are shown directly in the editor gutter.</li>
+  </ol>
+
+  
+  <h2 id="leaderboard">8 — Leaderboard</h2>
+  <p>The Leaderboard ranks all EvalOS users by weighted assessment performance. Use it to benchmark your progress against peers.</p>
+
+  <h3>8.1 Scoring Weights</h3>
+  <table>
+    <tr><th>Component</th><th>Weight</th></tr>
+    <tr><td>Exam average score</td><td>60%</td></tr>
+    <tr><td>AI Interview score</td><td>25%</td></tr>
+    <tr><td>Coding Lab submissions (rated)</td><td>15%</td></tr>
+  </table>
+
+  <h3>8.2 Filters</h3>
+  <ul>
+    <li><strong>Department</strong> — compare only within your business unit</li>
+    <li><strong>Cohort / Batch</strong> — filter by training cohort or intake group</li>
+    <li><strong>Date Range</strong> — view rankings for a specific period (e.g. last 30 days)</li>
+    <li><strong>Exam / Topic</strong> — rank by performance on a specific exam or topic</li>
+  </ul>
+  <div class="note"><strong>Note</strong>Your leaderboard entry is only visible to users in the same organisation. Administrators can control visibility in the admin panel.</div>
+
+  
+  <h2 id="zuri">9 — Zuri AI Co-worker</h2>
+  <p>Zuri is the always-on AI assistant embedded in EvalOS. Unlike the Study Coach (which is tied to a specific exam attempt), Zuri answers general questions about the platform, learning resources, and study strategies at any time.</p>
+
+  <h3>9.1 Opening Zuri</h3>
+  <ol class="steps">
+    <li>Look for the <strong>chat bubble icon</strong> in the bottom-right corner of any EvalOS page.</li>
+    <li>Click the bubble to open the Zuri chat panel.</li>
+    <li>Type your question or pick from the suggested prompts shown on first open.</li>
+  </ol>
+
+  <h3>9.2 What Zuri Can Help With</h3>
+  <table>
+    <tr><th>Use Case</th><th>Example Question</th></tr>
+    <tr><td>Platform navigation</td><td>"How do I find my past exam results?"</td></tr>
+    <tr><td>Exam tips</td><td>"What's the best strategy for timed MCQ exams?"</td></tr>
+    <tr><td>Study resources</td><td>"Recommend resources to learn Python for data analysis."</td></tr>
+    <tr><td>Understanding features</td><td>"What is the Coding Lab and how do I use it?"</td></tr>
+    <tr><td>Career guidance</td><td>"What certifications should I pursue for cloud architecture?"</td></tr>
+  </table>
+
+  <h3>9.3 Zuri vs Study Coach</h3>
+  <table>
+    <tr><th></th><th>Zuri</th><th>Study Coach</th></tr>
+    <tr><td>Available</td><td>Always — any page</td><td>Only after an exam attempt</td></tr>
+    <tr><td>Context</td><td>General platform &amp; learning knowledge</td><td>Your specific exam answers &amp; scores</td></tr>
+    <tr><td>Best for</td><td>Quick questions, navigation, general tips</td><td>Deep explanation of wrong answers, study plans</td></tr>
+  </table>
+
+  
+  <h2 id="troubleshooting">10 — Troubleshooting</h2>
+  <table>
+    <tr><th>Issue</th><th>Cause</th><th>Fix</th></tr>
+    <tr><td>Cannot log in</td><td>Wrong credentials or expired session</td><td>Clear browser cache, try incognito mode. Use "Forgot Password" on the SSO page or contact your admin.</td></tr>
+    <tr><td>Redirected in a loop at login</td><td>Cookie/session conflict</td><td>Clear all cookies for <code>sso.i3technologies.co.ke</code> and <code>evalos.i3technologies.co.ke</code>, then retry.</td></tr>
+    <tr><td>Session timed out during exam</td><td>30-minute inactivity timeout</td><td>Your progress up to the last saved question is retained. Log back in and click <strong>Resume Attempt</strong> on the Exams page.</td></tr>
+    <tr><td>Exam not loading / blank page</td><td>Network or JS cache issue</td><td>Hard-refresh (<span class="tag">Ctrl+Shift+R</span> / <span class="tag">⌘+Shift+R</span>). If it persists, try a different browser.</td></tr>
+    <tr><td>Study Coach not responding</td><td>AI model loading on first request</td><td>Wait 15–20 seconds and retry. The model may be warming up after inactivity.</td></tr>
+    <tr><td>Coding Lab code won't run</td><td>Syntax error or timeout (&gt;10s)</td><td>Check the error output panel below the editor. Ensure no infinite loops.</td></tr>
+    <tr><td>Leaderboard not updating</td><td>Score sync delay</td><td>Scores refresh every 5 minutes. Hard-refresh the page if still stale after 10 minutes.</td></tr>
+    <tr><td>Zuri not appearing</td><td>Browser extension blocking chat widget</td><td>Disable ad-blockers or content-blockers for this domain, then reload.</td></tr>
+  </table>
+
+  <h3>Contact Support</h3>
+  <p>If an issue persists after following the steps above, contact the i3 Technologies helpdesk:</p>
+  <ul>
+    <li><strong>Email:</strong> <a href="mailto:support@i3technologies.co.ke">support@i3technologies.co.ke</a></li>
+    <li><strong>Include:</strong> your username, the browser and OS you are using, a screenshot of any error message, and the time the issue occurred.</li>
+  </ul>
+
+  <div class="footer">Made with IBM Bob</div>
+</div>
+</body>
+</html>

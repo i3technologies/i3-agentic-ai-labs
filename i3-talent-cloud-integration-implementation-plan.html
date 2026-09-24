@@ -1,0 +1,655 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>i3 Talent Cloud — Integration Implementation Plan</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.6;background:#fff;color:#1f2328;padding:32px 16px}
+.wrap{max-width:800px;margin:0 auto}
+h1{font-size:22px;font-weight:700;margin-bottom:4px}
+.meta{color:#57606a;font-size:13px;margin-bottom:24px}
+
+/* Phase headers */
+.phase{margin:32px 0 12px;border-radius:8px;overflow:hidden}
+.phase-header{display:flex;align-items:center;gap:12px;padding:12px 16px;font-weight:700;font-size:15px}
+.ph1{background:#ede9fe;color:#5b21b6}
+.ph2{background:#dbeafe;color:#1d4ed8}
+.ph3{background:#dcfce7;color:#166534}
+.ph4{background:#fff7ed;color:#9a3412}
+.phase-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(0,0,0,.08)}
+
+/* Steps */
+.step{border:1px solid #e5e7eb;border-radius:8px;margin-bottom:12px;overflow:hidden}
+.step-header{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:#f8fafc;border-bottom:1px solid #e5e7eb}
+.step-num{font-size:11px;font-weight:700;background:#1f2328;color:#fff;border-radius:20px;padding:2px 8px;white-space:nowrap;margin-top:2px}
+.step-title{font-weight:700;font-size:14px;flex:1}
+.effort{font-size:11px;color:#57606a;font-weight:600;white-space:nowrap}
+.step-body{padding:12px 14px}
+.step-body p{font-size:13px;color:#374151;margin-bottom:8px}
+.step-body p:last-child{margin-bottom:0}
+
+/* Code blocks */
+pre{background:#0f172a;color:#e2e8f0;border-radius:6px;padding:12px 14px;font-size:11.5px;font-family:"SFMono-Regular",Consolas,monospace;overflow-x:auto;margin:8px 0;line-height:1.5}
+code{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:3px;padding:1px 5px;font-size:11.5px;font-family:"SFMono-Regular",Consolas,monospace}
+.comment{color:#94a3b8}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}
+th{background:#f7f8fa;text-align:left;padding:7px 10px;border-bottom:2px solid #e5e7eb;font-weight:600;color:#57606a;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+tr:last-child td{border-bottom:none}
+
+/* Badges */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.b-exists{background:#dafbe1;color:#1a7f37}
+.b-new{background:#ddf4ff;color:#0550ae}
+.b-extend{background:#fff8c5;color:#9a6700}
+.b-done{background:#dafbe1;color:#1a7f37}
+.b-review{background:#fff8c5;color:#9a6700}
+
+/* Callouts */
+.callout{border-left:4px solid #6366f1;background:#f5f3ff;padding:10px 14px;border-radius:0 6px 6px 0;margin:8px 0;font-size:13px}
+.callout.warn{border-color:#f59e0b;background:#fffbeb}
+.callout.green{border-color:#10b981;background:#f0fdf4}
+.callout.red{border-color:#ef4444;background:#fef2f2}
+
+/* Summary bar */
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0}
+.sum-card{border:1px solid #e5e7eb;border-radius:8px;padding:12px;text-align:center;background:#f8fafc}
+.sum-card .n{font-size:24px;font-weight:700}
+.sum-card .l{font-size:11px;color:#57606a;margin-top:2px}
+.c-p1{color:#7c3aed}.c-p2{color:#1d4ed8}.c-p3{color:#166534}.c-p4{color:#9a3412}
+
+hr{border:none;border-top:1px solid #e5e7eb;margin:28px 0}
+footer{margin-top:40px;padding-top:14px;border-top:1px solid #e5e7eb;text-align:center;font-size:12px;color:#57606a}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>i3 Talent Cloud — Integration Implementation Plan</h1>
+<div class="meta">
+  Platform: IBM ROKS Frankfurt (OpenShift 4.17.56)  ·  18 namespaces confirmed live  · 
+  Prepared: September 2026  ·  Status: <strong>READY FOR REVIEW</strong>
+</div>
+
+<div class="callout green">
+  <strong>Ground truth from live cluster:</strong> PostgreSQL has 15 databases (no <code>talent_db</code> yet). SeaweedFS has 6 buckets (no talent buckets). n8n has 2 workflows. Keycloak has 22 clients (no <code>i3talent</code>). No <code>i3-talent</code> namespace exists. All infrastructure needed is running — only the Talent Cloud layer is missing.
+</div>
+
+
+<div class="summary">
+  <div class="sum-card"><div class="n c-p1">7</div><div class="l">Phase 1 Steps<br />Foundation · ~2 weeks</div></div>
+  <div class="sum-card"><div class="n c-p2">5</div><div class="l">Phase 2 Steps<br />Portal &amp; AI · ~3 weeks</div></div>
+  <div class="sum-card"><div class="n c-p3">4</div><div class="l">Phase 3 Steps<br />EvalOS Ext. · ~2 weeks</div></div>
+  <div class="sum-card"><div class="n c-p4">2</div><div class="l">Phase 4 Steps<br />Recruit Portal · ~2 weeks</div></div>
+</div>
+
+
+<div class="phase">
+  <div class="phase-header ph1">
+    <span>Phase 1 — Foundation</span>
+    <span class="phase-badge">Database · Namespace · Secrets · Keycloak · Storage · Kafka · n8n Bridges</span>
+  </div>
+</div>
+
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">STEP 1</span>
+    <span class="step-title">Create <code>talent_db</code> database, user, and schema on existing PostgreSQL cluster</span>
+    <span class="effort">⏱ 1 day</span>
+  </div>
+  <div class="step-body">
+    <p>Creates the <code>talent_db</code> PostgreSQL database and all 9 Talent Graph tables on the existing Crunchy PGO cluster. Uses the same PGBouncer endpoint as every other app. No new DB infrastructure.</p>
+    <p><strong>What gets created:</strong> <code>candidates</code>, <code>certifications</code>, <code>skills</code>, <code>skill_scores</code>, <code>assessment_events</code>, <code>engagements</code>, <code>client_feedback</code>, <code>team_compositions</code>, <code>job_briefs</code>, <code>talent_edges</code> (Talent Graph adjacency)</p>
+
+<pre><span class="comment"># 1a. Create DB + user</span>
+oc exec -n i3-data i3-postgres-primary-hffm-0 -c database -- \
+  psql -U postgres -c "
+    CREATE USER talent WITH PASSWORD 'talent-2026-secure';
+    CREATE DATABASE talent_db OWNER talent;
+    GRANT ALL PRIVILEGES ON DATABASE talent_db TO talent;
+  "
+
+<span class="comment"># 1b. Apply schema (save platform/talent/migrations/001_init.sql first, then:)</span>
+oc cp platform/talent/migrations/001_init.sql \
+  i3-data/i3-postgres-primary-hffm-0:/tmp/talent_init.sql -c database
+oc exec -n i3-data i3-postgres-primary-hffm-0 -c database -- \
+  psql -U postgres -d talent_db -f /tmp/talent_init.sql</pre>
+
+    <p><strong>Verify:</strong> <code>SELECT tablename FROM pg_tables WHERE schemaname='public';</code> should return 9 tables.</p>
+    <div class="callout green">Uses existing <code>i3-postgres-pgbouncer.i3-data.svc:5432</code> — zero new infrastructure.</div>
+  </div>
+</div>
+
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">STEP 2</span>
+    <span class="step-title">Create <code>i3-talent</code> namespace, RBAC, anyuid SCC, and secrets</span>
+    <span class="effort">⏱ 2 hours</span>
+  </div>
+  <div class="step-body">
+    <p>Provisions the namespace following the exact same pattern as <code>i3-engage</code> and <code>i3-smartlab</code>. Creates the <code>talent-secrets</code> Secret with all service credentials.</p>
+<pre><span class="comment"># 2a. Create namespace + service account</span>
+oc new-project i3-talent
+oc create sa talent-sa -n i3-talent
+oc adm policy add-scc-to-user anyuid -z talent-sa -n i3-talent
+
+<span class="comment"># 2b. Create talent-secrets (all values from live cluster)</span>
+oc create secret generic talent-secrets -n i3-talent \
+  --from-literal=DATABASE_URL="postgresql://talent:talent-2026-secure@i3-postgres-pgbouncer.i3-data.svc:5432/talent_db?pgbouncer=true" \
+  --from-literal=LITELLM_URL="http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1" \
+  --from-literal=LITELLM_KEY="sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  --from-literal=SEAWEEDFS_ENDPOINT="http://seaweedfs-s3.i3-ott.svc.cluster.local:8333" \
+  --from-literal=CHROMADB_HOST="chromadb.i3-ai-lab.svc.cluster.local" \
+  --from-literal=CHROMADB_TOKEN="fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c" \
+  --from-literal=EVALOS_URL="http://evalos-web.i3-evalos.svc.cluster.local:3000" \
+  --from-literal=ENGAGE_URL="http://engage-web.i3-engage.svc.cluster.local:3000" \
+  --from-literal=N8N_API_KEY="eb1db1b7bc27004b3ce95e8a4b750a6174b336af60b67038a9516b23cd9a3b41" \
+  --from-literal=KAFKA_BOOTSTRAP="kafka-bootstrap.i3-messaging.svc.cluster.local:9092" \
+  --from-literal=LANGFUSE_URL="http://langfuse.i3-ott.svc.cluster.local:3000" \
+  --from-literal=NEXTAUTH_URL="https://talent.i3technologies.co.ke" \
+  --from-literal=NEXTAUTH_SECRET="$(openssl rand -base64 32)"</pre>
+  </div>
+</div>
+
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">STEP 3</span>
+    <span class="step-title">Register Keycloak OIDC client <code>i3talent</code> with 4 roles in the <code>i3</code> realm</span>
+    <span class="effort">⏱ 1 hour</span>
+  </div>
+  <div class="step-body">
+    <p>Creates the <code>i3talent</code> OIDC client and 4 realm roles: <code>talent-candidate</code>, <code>talent-recruiter</code>, <code>talent-admin</code>, <code>talent-client</code>. Uses the same kcadm pattern already used for all other platform clients.</p>
+<pre><span class="comment"># 3a. Login</span>
+oc exec -n i3-auth keycloak-0 -- /opt/eap/bin/kcadm.sh config credentials \
+  --server http://localhost:8080/auth --realm master \
+  --user admin --password "REDACTED-keycloak-admin"
+
+<span class="comment"># 3b. Create client</span>
+oc exec -n i3-auth keycloak-0 -- /opt/eap/bin/kcadm.sh create clients -r i3 -f - &lt;&lt;'EOF'
+{
+  "clientId": "i3talent",
+  "enabled": true,
+  "protocol": "openid-connect",
+  "publicClient": false,
+  "redirectUris": [
+    "https://talent.i3technologies.co.ke/*",
+    "https://recruit.i3technologies.co.ke/*",
+    "https://talent.i3technologies.co.ke/api/auth/callback/keycloak"
+  ],
+  "webOrigins": ["https://talent.i3technologies.co.ke","https://recruit.i3technologies.co.ke"],
+  "standardFlowEnabled": true,
+  "directAccessGrantsEnabled": false
+}
+EOF
+
+<span class="comment"># 3c. Create realm roles</span>
+for ROLE in talent-candidate talent-recruiter talent-admin talent-client; do
+  oc exec -n i3-auth keycloak-0 -- /opt/eap/bin/kcadm.sh create roles -r i3 -s name=$ROLE
+done</pre>
+  </div>
+</div>
+
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">STEP 4</span>
+    <span class="step-title">Create SeaweedFS S3 buckets for Talent Cloud file storage</span>
+    <span class="effort">⏱ 30 min</span>
+  </div>
+  <div class="step-body">
+    <p>Creates 3 new buckets in the existing SeaweedFS S3 gateway — no new storage infrastructure. Uses the same S3 endpoint as SmartLab and Directus.</p>
+<pre><span class="comment"># Run from smartlab-api pod (has curl, proven S3 access)</span>
+oc exec -n i3-smartlab deploy/smartlab-api -- python3 -c "
+import boto3
+s3 = boto3.client('s3',
+  endpoint_url='http://seaweedfs-s3.i3-ott.svc.cluster.local:8333',
+  aws_access_key_id='admin', aws_secret_access_key='admin')
+for b in ['talent-cvs','talent-certs','talent-reports']:
+    s3.create_bucket(Bucket=b)
+    print('Created:', b)
+"</pre>
+    <p><strong>Existing buckets confirmed live:</strong> <code>directus-uploads</code>, <code>i3-vod</code>, <code>smartlab-content</code>, <code>smartlab-epub</code>, <code>smartlab-scorm</code>, <code>smartlab-video</code></p>
+  </div>
+</div>
+
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">STEP 5</span>
+    <span class="step-title">Create Kafka topics for Talent Cloud events</span>
+    <span class="effort">⏱ 30 min</span>
+  </div>
+  <div class="step-body">
+    <p>Creates 3 new Kafka topics in the existing Strimzi cluster (<code>i3-messaging</code>). These topics decouple EvalOS score events from the Talent Graph — assessments are non-blocking and the event log provides governance audit trail.</p>
+<pre><span class="comment"># Create KafkaTopic resources via Strimzi operator</span>
+cat &lt;&lt;'EOF' | oc apply -f -
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: talent-assessments
+  namespace: i3-messaging
+  labels:
+    strimzi.io/cluster: i3-kafka
+spec:
+  partitions: 3
+  replicas: 2
+  config:
+    retention.ms: "604800000"   # 7 days
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: talent-score-updates
+  namespace: i3-messaging
+  labels:
+    strimzi.io/cluster: i3-kafka
+spec:
+  partitions: 3
+  replicas: 2
+  config:
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: talent-placements
+  namespace: i3-messaging
+  labels:
+    strimzi.io/cluster: i3-kafka
+spec:
+  partitions: 2
+  replicas: 2
+  config:
+    retention.ms: "2592000000"  # 30 days
+EOF</pre>
+  </div>
+</div>
+
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">STEP 6</span>
+    <span class="step-title">Build and deploy the <strong>Talent API</strong> (FastAPI) — Talent Graph CRUD, bench-match, score ingestion</span>
+    <span class="effort">⏱ 5–7 days</span>
+  </div>
+  <div class="step-body">
+    <p>The Talent API is the core backend. Follows the exact same pattern as <code>smartlab-api</code>: FastAPI in <code>i3-talent</code> namespace, built via OpenShift Binary Build from <code>platform/talent/api/</code>. Exposes endpoints consumed by the portal, EvalOS webhooks, and n8n workflows.</p>
+
+    <table>
+      <tr><th>Router</th><th>Key Endpoints</th><th>Integrations</th></tr>
+      <tr><td><code>/candidates</code></td><td>GET list, POST create, GET /:id passport, PATCH /:id</td><td>PostgreSQL <code>talent_db</code>, SeaweedFS (CV upload)</td></tr>
+      <tr><td><code>/assessments</code></td><td>POST trigger (→ EvalOS), POST webhook (score ingestion), GET /:id result</td><td>EvalOS REST, Kafka <code>talent-assessments</code>, Langfuse trace</td></tr>
+      <tr><td><code>/match</code></td><td>POST bench-match (job brief → ranked candidates)</td><td>LiteLLM, ChromaDB <code>talent-passports</code></td></tr>
+      <tr><td><code>/jobs</code></td><td>CRUD for job briefs and FDE requests</td><td>PostgreSQL, Directus CMS</td></tr>
+      <tr><td><code>/teams</code></td><td>POST compose team, GET /:id team scorecard</td><td>PostgreSQL, EvalOS team eval webhook</td></tr>
+      <tr><td><code>/skills</code></td><td>GET ontology, POST score-decay check</td><td>PostgreSQL, Kafka <code>talent-score-updates</code></td></tr>
+      <tr><td><code>/passport</code></td><td>GET /:id (public, signed URL), POST regenerate</td><td>LiteLLM (narrative gen), SeaweedFS</td></tr>
+    </table>
+
+<pre><span class="comment"># Build + deploy (same pattern as smartlab-api)</span>
+oc create buildconfig talent-api -n i3-talent \
+  --strategy=docker --binary
+tar -czf platform/talent/api/talent-api-src.tar.gz \
+  -C platform/talent/api --exclude=__pycache__ --exclude="*.tar.gz" .
+oc start-build talent-api -n i3-talent \
+  --from-archive=platform/talent/api/talent-api-src.tar.gz --follow</pre>
+
+    <div class="callout">The <code>platform/talent/api/</code> source is created in Step 6 (code writing). The Dockerfile, <code>main.py</code>, and router files follow the exact same structure as <code>platform/smartlab/api/</code>.</div>
+  </div>
+</div>
+
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">STEP 7</span>
+    <span class="step-title">Create n8n automation workflows — 4 pipelines connecting all services</span>
+    <span class="effort">⏱ 2–3 days</span>
+  </div>
+  <div class="step-body">
+    <p>Four n8n workflows automate the Talent Cloud event pipelines. n8n already has 2 active workflows. These are added via the n8n API (same method used for the SmartLab VOD workflow).</p>
+
+    <table>
+      <tr><th>Workflow</th><th>Trigger</th><th>Actions</th></tr>
+      <tr>
+        <td><strong>W1: Assessment → Talent Graph</strong></td>
+        <td>Webhook: EvalOS posts score to <code>/webhook/assessment-complete</code></td>
+        <td>Write <code>assessment_events</code> row → update <code>skill_scores</code> → push <code>talent-assessments</code> Kafka topic → POST Talent API <code>/assessments/webhook</code></td>
+      </tr>
+      <tr>
+        <td><strong>W2: Score Decay Monitor</strong></td>
+        <td>Schedule: daily at 06:00 UTC</td>
+        <td>Query Talent API <code>/skills/decay-check</code> → emit <code>talent-score-updates</code> Kafka events → trigger Engage contact list campaign for expired skills</td>
+      </tr>
+      <tr>
+        <td><strong>W3: Job Brief → Bench Match</strong></td>
+        <td>Webhook: new <code>job_briefs</code> record created</td>
+        <td>Call Talent API <code>/match</code> → format shortlist → POST Engage <code>/api/campaigns/send</code> to recruiter → update Directus job brief status</td>
+      </tr>
+      <tr>
+        <td><strong>W4: Moodle Course Completion → Talent Passport</strong></td>
+        <td>Webhook: Moodle course completion event (via Moodle WS token <code>4a88241080ac203af3a76a00c428b7a9</code>)</td>
+        <td>POST Talent API <code>/candidates/:id/certifications</code> → regenerate Talent Passport → push <code>talent-score-updates</code> Kafka topic</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+
+<div class="phase">
+  <div class="phase-header ph2">
+    <span>Phase 2 — Portal &amp; AI Layer</span>
+    <span class="phase-badge">talent-web Next.js · ChromaDB RAG · NetworkPolicies · DNS · Grafana Dashboard</span>
+  </div>
+</div>
+
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">STEP 8</span>
+    <span class="step-title">Add DNS CNAMEs and NetworkPolicies for <code>i3-talent</code> namespace</span>
+    <span class="effort">⏱ 2 hours</span>
+  </div>
+  <div class="step-body">
+    <p>Three new DNS CNAME records at cPanel (ns1.host-ww.net) and egress NetworkPolicies for the talent namespace — following the proven pattern from SmartLab and Engage.</p>
+
+    <table>
+      <tr><th>DNS Record</th><th>Type</th><th>Target</th></tr>
+      <tr><td><code>talent</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td></tr>
+      <tr><td><code>recruit</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td></tr>
+      <tr><td><code>_acme-challenge.talent</code></td><td>CNAME</td><td><code>57dffb24-1927-4a0f-99b6-a298b8fe2fcd.auth.acme-dns.io</code></td></tr>
+    </table>
+
+    <p><strong>NetworkPolicy:</strong> <code>i3-talent</code> needs egress to: <code>i3-data</code> (5432), <code>i3-model-gateway</code> (4000, 11434), <code>i3-evalos</code> (3000), <code>i3-engage</code> (3000), <code>i3-ott</code> (8333 SeaweedFS, 5678 n8n, 8055 Directus), <code>i3-ai-lab</code> (8000 ChromaDB), <code>i3-messaging</code> (9092 Kafka), <code>i3-auth</code> (8443 Keycloak), <code>openshift-dns</code> (5353), external HTTPS (0.0.0.0/0:443).</p>
+  </div>
+</div>
+
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">STEP 9</span>
+    <span class="step-title">Create Let's Encrypt cert for <code>talent.i3technologies.co.ke</code> via cert-manager</span>
+    <span class="effort">⏱ 30 min (after DNS propagates)</span>
+  </div>
+  <div class="step-body">
+    <p>Same pattern as the two SmartLab API certs — both issued successfully. cert-manager + acme-dns (DNS-01). Add <code>talent.i3technologies.co.ke</code> entry to <code>acme-dns-credentials</code> secret in <code>cert-manager</code> namespace, then apply a <code>Certificate</code> resource in <code>i3-talent</code>.</p>
+<pre><span class="comment"># cert-manager Certificate resource</span>
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: talent-tls
+  namespace: i3-talent
+spec:
+  secretName: talent-tls
+  dnsNames:
+    - talent.i3technologies.co.ke
+    - recruit.i3technologies.co.ke
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer</pre>
+    <div class="callout green">The wildcard cert <code>*.i3technologies.co.ke</code> already covers <code>talent.*</code> and <code>recruit.*</code> (second-level subdomains) — you can copy it to <code>i3-talent</code> immediately and use it while the LE cert issues. Same approach used for SmartLab on day 1.</div>
+  </div>
+</div>
+
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">STEP 10</span>
+    <span class="step-title">Set up ChromaDB <code>talent-passports</code> collection and embedding pipeline</span>
+    <span class="effort">⏱ 1 day</span>
+  </div>
+  <div class="step-body">
+    <p>Creates a dedicated ChromaDB collection <code>talent-passports</code> in the existing ChromaDB pod (<code>i3-ai-lab</code>). The Talent API's <code>/match</code> endpoint embeds candidate skill profiles using Ollama <code>nomic-embed-text</code> and stores them here for semantic bench-matching queries.</p>
+
+<pre><span class="comment"># Collection creation via Talent API on startup (idempotent)</span>
+POST http://chromadb.i3-ai-lab.svc.cluster.local:8000/api/v1/collections
+{
+  "name": "talent-passports",
+  "metadata": {
+    "hnsw:space": "cosine",
+    "description": "Talent Digital Passport embeddings for semantic bench matching"
+  }
+}</pre>
+
+    <p><strong>Embedding model:</strong> <code>nomic-embed-text:latest</code> via <code>ollama.i3-model-gateway.svc.cluster.local:11434</code> — already used by Sage and JupyterHub.</p>
+    <p><strong>Document structure per candidate:</strong> combined text of skills, certifications, engagement summaries → embedded as single vector with <code>candidate_id</code> metadata.</p>
+    <div class="callout warn"><strong>Note:</strong> ChromaDB auth token is required — use <code>fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c</code> from <code>talent-secrets</code>. Direct external access returns 403 (confirmed in live test).</div>
+  </div>
+</div>
+
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">STEP 11</span>
+    <span class="step-title">Build and deploy <strong>talent-web</strong> portal (Next.js 14)</span>
+    <span class="effort">⏱ 10–14 days</span>
+  </div>
+  <div class="step-body">
+    <p>The Talent Cloud web portal — same architecture as Engage (Next.js 14, NextAuth + Keycloak, Tailwind, Recharts). Four role-based views within one app, gated by Keycloak roles.</p>
+
+    <table>
+      <tr><th>View / Role</th><th>Pages</th><th>Key features</th></tr>
+      <tr>
+        <td><strong>Candidate</strong><br /><code>talent-candidate</code></td>
+        <td>/profile · /passport · /assessments · /certifications</td>
+        <td>View &amp; edit Talent Passport; trigger self-assessment; upload CV &amp; certs to SeaweedFS; view skill score history and decay warnings</td>
+      </tr>
+      <tr>
+        <td><strong>Recruiter</strong><br /><code>talent-recruiter</code></td>
+        <td>/bench · /jobs · /shortlists · /teams · /pipeline</td>
+        <td>Semantic bench search (ChromaDB); create job briefs; AI-assisted team composition; manage FDE pipeline; send shortlist to client</td>
+      </tr>
+      <tr>
+        <td><strong>Client</strong><br /><code>talent-client</code></td>
+        <td>/shortlist · /feedback · /engagements</td>
+        <td>View candidate shortlists (read-only Passport cards); submit post-engagement scorecards; view active FDE deployment status</td>
+      </tr>
+      <tr>
+        <td><strong>Admin</strong><br /><code>talent-admin</code></td>
+        <td>/candidates · /analytics · /settings · /skills-ontology</td>
+        <td>Full candidate management; platform KPI dashboard (bench utilisation, time-to-shortlist, placement rate); skills ontology editor</td>
+      </tr>
+    </table>
+
+<pre><span class="comment"># Build (same binary build pattern as engage-web)</span>
+tar -czf platform/talent/web/talent-web-src.tar.gz \
+  -C platform/talent/web --exclude=node_modules --exclude=.next --exclude="*.tar.gz" .
+oc start-build talent-web -n i3-talent \
+  --from-archive=platform/talent/web/talent-web-src.tar.gz --follow</pre>
+  </div>
+</div>
+
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">STEP 12</span>
+    <span class="step-title">Add Talent Cloud dashboard to Grafana</span>
+    <span class="effort">⏱ 1 day</span>
+  </div>
+  <div class="step-body">
+    <p>Import a new Grafana dashboard "Talent Cloud Operations" via the Grafana API. Panels query PostgreSQL <code>talent_db</code> via the existing Prometheus data source and direct PostgreSQL plugin.</p>
+
+    <table>
+      <tr><th>Panel</th><th>Metric</th><th>Alert threshold</th></tr>
+      <tr><td>Bench Utilisation %</td><td>Active engagements ÷ total active candidates</td><td>&lt; 60% → warning</td></tr>
+      <tr><td>Time-to-Shortlist</td><td>Avg hours from job_brief created → shortlist sent</td><td>&gt; 48h → warning</td></tr>
+      <tr><td>Assessment Pass Rate</td><td>Senior Practitioner+ passes ÷ total assessments</td><td>&lt; 40% → review curriculum</td></tr>
+      <tr><td>Skills Decay Alerts</td><td>Count of skill_scores WHERE decayed = true</td><td>&gt; 0 → fire Engage campaign</td></tr>
+      <tr><td>FDE Deployment Pipeline</td><td>Count by stage: assessed → approved → deployed → active</td><td>—</td></tr>
+      <tr><td>Placement Conversion Rate</td><td>Hired ÷ shortlisted (30-day rolling)</td><td>—</td></tr>
+    </table>
+  </div>
+</div>
+
+
+<div class="phase">
+  <div class="phase-header ph3">
+    <span>Phase 3 — EvalOS Extensions for Team Evaluation</span>
+    <span class="phase-badge">Team Sprint Mode · Score Webhooks · EvalOS-as-a-Service · Passport Badge</span>
+  </div>
+</div>
+
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">STEP 13</span>
+    <span class="step-title">Add EvalOS → Talent API score webhook endpoint</span>
+    <span class="effort">⏱ 1 day</span>
+  </div>
+  <div class="step-body">
+    <p>Adds a <code>POST /api/talent-webhook</code> route to <code>evalos-web</code> that fires on assessment completion. Signed with a shared secret. This is the bridge that makes EvalOS the live scoring engine for the Talent Graph.</p>
+<pre><span class="comment"># evalos-web: new API route (add to existing Next.js app)</span>
+<span class="comment"># src/app/api/talent-webhook/route.ts</span>
+POST /api/talent-webhook
+Body: { candidate_id, assessment_id, skill_scores[], band, langfuse_trace_id, completed_at }
+Auth: X-Talent-Webhook-Secret header
+Downstream: POST talent-api.i3-talent.svc.cluster.local:8080/assessments/webhook</pre>
+    <div class="callout">Langfuse trace ID is stored on every call — this satisfies the governance requirement that every AI evaluation decision has an auditable trace before any placement is confirmed.</div>
+  </div>
+</div>
+
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">STEP 14</span>
+    <span class="step-title">Extend EvalOS with Team Sprint Simulation mode</span>
+    <span class="effort">⏱ 5–7 days</span>
+  </div>
+  <div class="step-body">
+    <p>Adds a new assessment type to <code>evalos-web</code>: Team Sprint Simulation — a multi-candidate session where 2–5 candidates collaborate in a time-boxed project simulation. Zuri AI evaluates individual contribution and team dynamics.</p>
+
+    <table>
+      <tr><th>New feature</th><th>Implementation</th></tr>
+      <tr><td>Team session creation</td><td>New <code>/sessions/team</code> route in evalos-web — takes team_composition_id from Talent API</td></tr>
+      <tr><td>Multi-user sandbox</td><td>One <code>evalos-sandbox</code> pod per team (scale on demand — Recreate strategy already set)</td></tr>
+      <tr><td>Zuri AI team observer</td><td>Extend <code>zuri-coworker</code> system prompt with team evaluation rubric — individual contribution score + collaboration score</td></tr>
+      <tr><td>Team scorecard output</td><td>POST to <code>/api/talent-webhook</code> with <code>team_composition_id</code> + per-member scores</td></tr>
+    </table>
+  </div>
+</div>
+
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">STEP 15</span>
+    <span class="step-title">Launch EvalOS-as-a-Service — external client assessment access</span>
+    <span class="effort">⏱ 2 days</span>
+  </div>
+  <div class="step-body">
+    <p>The fastest commercial revenue path from the specification. Packages existing EvalOS as a licensable assessment service for external clients — no new infrastructure. Two additions only:</p>
+    <ol style="padding-left:18px;font-size:13px;margin-top:8px">
+      <li style="margin-bottom:6px"><strong>Client tenant in Keycloak</strong> — a new group or sub-realm per paying client, or role-based isolation in the existing <code>i3</code> realm for MVP</li>
+      <li style="margin-bottom:6px"><strong>Assessment invite API</strong> — Talent API endpoint <code>POST /assessments/invite</code> that creates a time-limited Keycloak registration link for an external candidate → sends via Engage email → candidate logs in, completes EvalOS, score posts back to client dashboard in talent-web</li>
+    </ol>
+<pre><span class="comment"># Invite flow (entire flow uses existing services)</span>
+1. Client creates job brief in talent-web → selects "EvalOS screening"
+2. Talent API POSTs to Keycloak: create temp user with talent-candidate role
+3. Talent API POSTs to Engage: send invite email with login link
+4. Candidate logs in → completes EvalOS assessment (existing evalos.i3technologies.co.ke)
+5. EvalOS fires webhook → Talent API updates candidate score
+6. Client views scored shortlist in talent-web /shortlist</pre>
+  </div>
+</div>
+
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">STEP 16</span>
+    <span class="step-title">Implement Talent Digital Passport as verifiable Open Badge (optional but recommended)</span>
+    <span class="effort">⏱ 2 days</span>
+  </div>
+  <div class="step-body">
+    <p>Signs the Talent Passport JSON as an <strong>Open Badges 3.0</strong> verifiable credential using i3's private key stored in OpenBao. Passport becomes externally shareable and cryptographically verifiable — a genuine market differentiator as the specification claims.</p>
+<pre><span class="comment"># Talent API endpoint</span>
+GET /passport/{candidate_id}/badge
+→ Returns signed JWT (Open Badges 3.0 VC)
+→ Verifiable at any OB3-compatible verifier using i3's JWKS endpoint
+
+<span class="comment"># Signing key stored in OpenBao</span>
+vault kv put secret/talent/passport-signing key=@passport_signing_key.pem</pre>
+  </div>
+</div>
+
+
+<div class="phase">
+  <div class="phase-header ph4">
+    <span>Phase 4 — i3 Recruit Public Portal</span>
+    <span class="phase-badge">Public Job Board · Candidate Application · Client Brief Intake · Commercial Launch</span>
+  </div>
+</div>
+
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">STEP 17</span>
+    <span class="step-title">Build i3 Recruit public job board at <code>recruit.i3technologies.co.ke</code></span>
+    <span class="effort">⏱ 5 days</span>
+  </div>
+  <div class="step-body">
+    <p>A public-facing Next.js page group within <code>talent-web</code> (no SSO required for browsing). Job listings sourced from Directus CMS. Candidate application form triggers EvalOS-gated screening (Step 15 flow). Client brief intake form for new recruitment mandates.</p>
+
+    <table>
+      <tr><th>Page</th><th>Auth</th><th>Data source</th></tr>
+      <tr><td><code>/recruit</code> — job listings</td><td>Public</td><td>Directus CMS <code>job_briefs</code> collection</td></tr>
+      <tr><td><code>/recruit/apply/:id</code> — application</td><td>Public (creates Keycloak account)</td><td>Talent API <code>POST /candidates</code> + EvalOS invite</td></tr>
+      <tr><td><code>/recruit/hire</code> — client brief intake</td><td>Public form</td><td>Talent API <code>POST /jobs</code> + n8n W3 triggers bench match</td></tr>
+    </table>
+  </div>
+</div>
+
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-num">STEP 18</span>
+    <span class="step-title">Production hardening — GDPR/DPA compliance, data encryption, SLA monitoring</span>
+    <span class="effort">⏱ 3 days</span>
+  </div>
+  <div class="step-body">
+    <p>Required before external client data enters the system. Three additions to the Talent API:</p>
+    <ul>
+      <li><strong>Right-to-erasure endpoint</strong> <code>DELETE /candidates/:id</code> — hard-deletes all PII from PostgreSQL and SeaweedFS, publishes <code>talent-placements</code> Kafka tombstone event</li>
+      <li><strong>Field-level encryption</strong> — PII fields (phone, NDA details) encrypted at rest using per-candidate keys from OpenBao (<code>vault transit</code> engine)</li>
+      <li><strong>Consent tracking</strong> — <code>candidates.consent_given_at</code> and <code>candidates.consent_version</code> columns; consent required before any EvalOS assessment is triggered</li>
+    </ul>
+    <div class="callout red"><strong>Kenya Data Protection Act 2019:</strong> Any personal data of Kenyan residents stored on the platform is subject to KDPA. The right-to-erasure endpoint and consent tracking are legally required before commercial launch, not optional.</div>
+  </div>
+</div>
+
+
+<hr />
+<h2 style="font-size:16px;font-weight:700;margin-bottom:12px">Implementation Order Summary</h2>
+<table>
+  <tr><th>#</th><th>Step</th><th>Phase</th><th>Effort</th><th>Dependencies</th><th>Status</th></tr>
+  <tr><td>1</td><td>Create <code>talent_db</code> schema</td><td>P1</td><td>1 day</td><td>None</td><td><span class="badge b-review">Ready to run</span></td></tr>
+  <tr><td>2</td><td>Create <code>i3-talent</code> namespace + secrets</td><td>P1</td><td>2 hrs</td><td>Step 1</td><td><span class="badge b-review">Ready to run</span></td></tr>
+  <tr><td>3</td><td>Keycloak <code>i3talent</code> client + roles</td><td>P1</td><td>1 hr</td><td>None</td><td><span class="badge b-review">Ready to run</span></td></tr>
+  <tr><td>4</td><td>SeaweedFS buckets (3 new)</td><td>P1</td><td>30 min</td><td>None</td><td><span class="badge b-review">Ready to run</span></td></tr>
+  <tr><td>5</td><td>Kafka topics (3 new)</td><td>P1</td><td>30 min</td><td>None</td><td><span class="badge b-review">Ready to run</span></td></tr>
+  <tr><td>6</td><td>Talent API (FastAPI) build + deploy</td><td>P1</td><td>5–7 days</td><td>Steps 1–5</td><td><span class="badge b-new">Code to write</span></td></tr>
+  <tr><td>7</td><td>n8n workflows (4)</td><td>P1</td><td>2–3 days</td><td>Step 6</td><td><span class="badge b-new">Workflows to build</span></td></tr>
+  <tr><td>8</td><td>DNS CNAMEs + NetworkPolicies</td><td>P2</td><td>2 hrs</td><td>Step 2</td><td><span class="badge b-review">Needs DNS action</span></td></tr>
+  <tr><td>9</td><td>LE cert for <code>talent.*</code></td><td>P2</td><td>30 min</td><td>Step 8 (DNS)</td><td><span class="badge b-review">After DNS propagates</span></td></tr>
+  <tr><td>10</td><td>ChromaDB <code>talent-passports</code> collection</td><td>P2</td><td>1 day</td><td>Step 6</td><td><span class="badge b-new">Talent API startup task</span></td></tr>
+  <tr><td>11</td><td>talent-web portal (Next.js)</td><td>P2</td><td>10–14 days</td><td>Steps 6–9</td><td><span class="badge b-new">Code to write</span></td></tr>
+  <tr><td>12</td><td>Grafana KPI dashboard</td><td>P2</td><td>1 day</td><td>Step 6</td><td><span class="badge b-new">JSON dashboard</span></td></tr>
+  <tr><td>13</td><td>EvalOS score webhook</td><td>P3</td><td>1 day</td><td>Step 6</td><td><span class="badge b-extend">Extend evalos-web</span></td></tr>
+  <tr><td>14</td><td>EvalOS team sprint mode</td><td>P3</td><td>5–7 days</td><td>Step 13</td><td><span class="badge b-extend">Extend evalos-web</span></td></tr>
+  <tr><td>15</td><td>EvalOS-as-a-Service (invite flow)</td><td>P3</td><td>2 days</td><td>Steps 6,11,13</td><td><span class="badge b-new">Fastest revenue</span></td></tr>
+  <tr><td>16</td><td>Open Badge signed passport</td><td>P3</td><td>2 days</td><td>Step 6</td><td><span class="badge b-new">Optional but recommended</span></td></tr>
+  <tr><td>17</td><td>i3 Recruit public portal</td><td>P4</td><td>5 days</td><td>Steps 11,15</td><td><span class="badge b-new">Public launch gate</span></td></tr>
+  <tr><td>18</td><td>GDPR/DPA compliance hardening</td><td>P4</td><td>3 days</td><td>Step 17</td><td><span class="badge b-review">Required before go-live</span></td></tr>
+</table>
+
+<div class="callout green" style="margin-top:16px">
+  <strong>First 3 days (Steps 1–5):</strong> Zero code required. Database schema, namespace, Keycloak client, S3 buckets, and Kafka topics can all be applied directly on the live cluster using the commands above. This establishes the full infrastructure foundation before a single line of application code is written.
+</div>
+
+<footer>Made with IBM Bob  ·  i3 Technologies Limited  ·  September 2026  ·  INTERNAL — RESTRICTED</footer>
+</div>
+</body>
+</html>

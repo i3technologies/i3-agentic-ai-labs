@@ -140,11 +140,17 @@ spec:
               value: "8000"
             - name: DEFAULT_MODEL
               value: "mistral-nemo"
-            - name: LITELLM_MASTER_KEY
+            # AUTH-01: use per-service virtual key, not master key.
+            # Issue via: litellm /key/generate with metadata.service=admissions-agent
+            # OpenBao path: i3/litellm/virtual-keys/admissions-agent
+            - name: LITELLM_KEY
               valueFrom:
                 secretKeyRef:
                   name: admissions-secrets
-                  key: LITELLM_MASTER_KEY
+                  key: LITELLM_KEY
+            # STEP-P1-13: OTel trace exporter endpoint
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.i3-monitoring.svc.cluster.local:4317"
           envFrom:
             - secretRef:
                 name: admissions-secrets
@@ -212,7 +218,20 @@ spec:
     insecureEdgeTerminationPolicy: Redirect
 
 ---
-# ── Admissions Secrets (placeholder — real values from OpenBao) ──
+# ── Admissions Secrets — all values injected by OpenBao agent sidecar ──
+# SEC-04: REPLACE_FROM_VAULT placeholders removed; sidecar renders env vars at runtime.
+# SEC-06: KEYCLOAK_ISSUER added — sourced from i3/admissions/keycloak-issuer.
+#
+# OpenBao KV v2 paths (i3/ mount):
+#   i3/admissions/litellm-key          → field: key     → LITELLM_KEY
+#   i3/admissions/odoo                 → fields: url, db, username, password
+#   i3/admissions/google-calendar      → field: credentials_json → GOOGLE_CALENDAR_CREDENTIALS
+#   i3/admissions/n8n                  → field: webhook_url → N8N_WEBHOOK_URL
+#   i3/admissions/keycloak-issuer      → field: issuer   → KEYCLOAK_ISSUER
+#
+# AUTH-01: per-service virtual key (not master key).
+# Issue: POST litellm.i3technologies.co.ke/key/generate
+#   {"metadata": {"service": "admissions-agent"}, "max_budget": 50, "budget_duration": "1d"}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -221,15 +240,41 @@ metadata:
   annotations:
     openbao.org/agent-inject: "true"
     openbao.org/role: "admissions"
+    # LITELLM_KEY
+    openbao.org/agent-inject-secret-litellm-key: "i3/data/admissions/litellm-key"
+    openbao.org/agent-inject-template-litellm-key: |
+      {{- with secret "i3/data/admissions/litellm-key" -}}
+      export LITELLM_KEY="{{ .Data.data.key }}"
+      {{- end }}
+    # ODOO credentials
+    openbao.org/agent-inject-secret-odoo: "i3/data/admissions/odoo"
+    openbao.org/agent-inject-template-odoo: |
+      {{- with secret "i3/data/admissions/odoo" -}}
+      export ODOO_URL="{{ .Data.data.url }}"
+      export ODOO_DB="{{ .Data.data.db }}"
+      export ODOO_USERNAME="{{ .Data.data.username }}"
+      export ODOO_PASSWORD="{{ .Data.data.password }}"
+      {{- end }}
+    # Google Calendar credentials JSON
+    openbao.org/agent-inject-secret-google-calendar: "i3/data/admissions/google-calendar"
+    openbao.org/agent-inject-template-google-calendar: |
+      {{- with secret "i3/data/admissions/google-calendar" -}}
+      export GOOGLE_CALENDAR_CREDENTIALS='{{ .Data.data.credentials_json }}'
+      {{- end }}
+    # n8n webhook URL
+    openbao.org/agent-inject-secret-n8n: "i3/data/admissions/n8n"
+    openbao.org/agent-inject-template-n8n: |
+      {{- with secret "i3/data/admissions/n8n" -}}
+      export N8N_WEBHOOK_URL="{{ .Data.data.webhook_url }}"
+      {{- end }}
+    # SEC-06: Keycloak issuer URL — must match admissions_agent.py KEYCLOAK_ISSUER
+    openbao.org/agent-inject-secret-keycloak-issuer: "i3/data/admissions/keycloak-issuer"
+    openbao.org/agent-inject-template-keycloak-issuer: |
+      {{- with secret "i3/data/admissions/keycloak-issuer" -}}
+      export KEYCLOAK_ISSUER="{{ .Data.data.issuer }}"
+      {{- end }}
 type: Opaque
-stringData:
-  LITELLM_MASTER_KEY: "REPLACE_FROM_VAULT"
-  ODOO_URL: "REPLACE_FROM_VAULT"
-  ODOO_DB: "REPLACE_FROM_VAULT"
-  ODOO_USERNAME: "REPLACE_FROM_VAULT"
-  ODOO_PASSWORD: "REPLACE_FROM_VAULT"
-  GOOGLE_CALENDAR_CREDENTIALS: "REPLACE_FROM_VAULT"
-  N8N_WEBHOOK_URL: "REPLACE_FROM_VAULT"
+# stringData intentionally empty — all secrets delivered via OpenBao sidecar.
 
 ---
 # ── MCP Connectors ────────────────────────────────────────────

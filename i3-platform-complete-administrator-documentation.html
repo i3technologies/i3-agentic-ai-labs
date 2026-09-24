@@ -1,0 +1,981 @@
+
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>i3 Agentic AI Platform — Administrator Documentation</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:13px;line-height:1.65;background:#fff;color:#1f2328}
+.wrap{max-width:980px;margin:0 auto;padding:32px 20px 60px}
+.cover{background:#1f2328;color:#fff;padding:36px 32px;border-radius:6px;margin-bottom:32px}
+.cover h1{font-size:26px;font-weight:800;margin-bottom:6px}
+.cover .sub{font-size:14px;opacity:.75;margin-top:4px}
+.cover .meta{margin-top:16px;font-size:12px;opacity:.6;display:flex;flex-wrap:wrap;gap:20px}
+.restricted{background:#ffebe9;border:2px solid #cf222e;padding:14px 18px;border-radius:6px;margin:0 0 28px;font-size:13px}
+.restricted strong{color:#cf222e}
+h2{font-size:16px;font-weight:700;margin:36px 0 12px;padding-bottom:7px;border-bottom:2px solid #cf222e;color:#cf222e;text-transform:uppercase;letter-spacing:.04em}
+h3{font-size:13px;font-weight:700;margin:20px 0 8px;color:#1f2328;text-transform:uppercase;letter-spacing:.04em;border-left:3px solid #3b82d4;padding-left:8px}
+h4{font-size:12px;font-weight:700;margin:14px 0 6px;color:#57606a;text-transform:uppercase;letter-spacing:.03em}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px}
+th{background:#1f2328;color:#fff;text-align:left;padding:7px 10px;font-weight:600}
+td{padding:7px 10px;border:1px solid #e5e7eb;vertical-align:top}
+tr:nth-child(even) td{background:#fafafa}
+code{font-family:"Consolas","Courier New",monospace;font-size:11px;background:#f0f0f0;padding:1px 5px;border-radius:3px;color:#1f2328}
+pre{background:#1f2328;color:#e6edf3;padding:14px 16px;border-radius:5px;font-size:11px;font-family:"Consolas","Courier New",monospace;overflow-x:auto;margin:10px 0 16px;line-height:1.55}
+.pw{font-family:"Consolas","Courier New",monospace;font-size:11px;background:#fff8c5;padding:2px 6px;border-radius:3px;font-weight:700;color:#9a6700}
+.url{font-size:11px;color:#0550ae;word-break:break-all}
+.warn{background:#fffbea;border-left:4px solid #d4a017;padding:10px 14px;border-radius:0 4px 4px 0;margin:12px 0;font-size:12px}
+.danger{background:#ffebe9;border-left:4px solid #cf222e;padding:10px 14px;border-radius:0 4px 4px 0;margin:12px 0;font-size:12px}
+.ok{background:#e6ffed;border-left:4px solid #2da44e;padding:10px 14px;border-radius:0 4px 4px 0;margin:12px 0;font-size:12px}
+.replace{background:#ffebe9;color:#cf222e;font-weight:700;font-family:monospace;font-size:11px;padding:1px 4px;border-radius:3px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.card{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:14px 16px}
+.card h3{border:none;padding:0;margin-top:0;color:#0550ae;font-size:12px;border-bottom:1px solid #e5e7eb;padding-bottom:6px;margin-bottom:10px}
+.ns-badge{display:inline-block;background:#ddf4ff;color:#0550ae;border:1px solid #b6e3ff;border-radius:3px;font-size:10px;font-family:monospace;padding:1px 6px;margin-left:6px;font-weight:600}
+.toc{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:18px 22px;margin-bottom:28px;column-count:2;column-gap:28px;font-size:12px}
+.toc a{color:#0550ae;text-decoration:none}
+.toc li{margin:4px 0;list-style:disc;margin-left:16px}
+.toc h4{column-span:all;margin-top:0;margin-bottom:10px;font-size:13px;color:#1f2328;text-transform:uppercase;letter-spacing:.05em}
+footer{margin-top:48px;padding-top:12px;border-top:1px solid #e5e7eb;text-align:center;font-size:12px;color:#57606a}
+@media(max-width:680px){.grid2{grid-template-columns:1fr}.toc{column-count:1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="cover">
+  <div style="font-size:10px;opacity:.6;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px">🔴 STRICTLY CONFIDENTIAL — IT ADMINISTRATION USE ONLY</div>
+  <h1>i3 Agentic AI Platform</h1>
+  <div style="font-size:18px;font-weight:600;margin-top:4px;opacity:.9">Complete Administrator Documentation with Credentials</div>
+  <div class="meta">
+    <span>Cluster: IBM ROKS Frankfurt (eu-de)</span>
+    <span>OpenShift 4.17</span>
+    <span>17 Namespaces</span>
+    <span>Version: September 2026</span>
+    <span>Domain: i3technologies.co.ke</span>
+  </div>
+</div>
+
+<div class="restricted">
+  <strong>⚠ RESTRICTED DOCUMENT:</strong> Contains all administrative credentials, API keys, database passwords, and secrets for the i3 Platform. Store in a physically secure location. Share only with authorised senior IT staff. Rotate passwords every 90 days. Do not email, screenshot, or print without CTO authorisation.
+</div>
+
+<div class="toc">
+  <h4>Table of Contents</h4>
+  <ul>
+    <li><a href="#cluster">Cluster Access &amp; Infrastructure</a></li>
+    <li><a href="#keycloak">Keycloak / SSO</a></li>
+    <li><a href="#databases">PostgreSQL — All Databases</a></li>
+    <li><a href="#modelgw">AI Model Gateway (LiteLLM)</a></li>
+    <li><a href="#langfuse">Langfuse LLM Observability</a></li>
+    <li><a href="#openbao">OpenBao Secrets Vault</a></li>
+    <li><a href="#evalos">EvalOS Assessment Platform</a></li>
+    <li><a href="#engage">Engage CRM / CDP</a></li>
+    <li><a href="#pmaas">PMaaS — Campaign OS</a></li>
+    <li><a href="#admissions">Admissions AI Agent</a></li>
+    <li><a href="#afroerp">AfroERP</a></li>
+    <li><a href="#ailab">AI Lab (JupyterHub / Sage)</a></li>
+    <li><a href="#ott">OTT — Streaming &amp; VOD</a></li>
+    <li><a href="#kafka">Kafka (Strimzi KRaft)</a></li>
+    <li><a href="#monitoring">Prometheus &amp; Grafana</a></li>
+    <li><a href="#argocd">Argo CD GitOps</a></li>
+    <li><a href="#keda">KEDA Autoscaling</a></li>
+    <li><a href="#external">External APIs &amp; Integrations</a></li>
+    <li><a href="#internal">Internal Service DNS</a></li>
+    <li><a href="#day2">Day-2 Operations Quick Reference</a></li>
+    <li><a href="#outstanding">Outstanding Actions Required</a></li>
+  </ul>
+</div>
+
+
+<h2 id="cluster">1. Cluster Access &amp; Infrastructure</h2>
+
+<table>
+  <tr><th>Resource</th><th>Value</th></tr>
+  <tr><td>Cloud Provider</td><td>IBM Cloud — Red Hat OpenShift on IBM Cloud (ROKS)</td></tr>
+  <tr><td>Region</td><td>eu-de (Frankfurt)</td></tr>
+  <tr><td>OpenShift Version</td><td>4.17</td></tr>
+  <tr><td>Cluster ID</td><td><code>da0umukf0anep6valpig</code></td></tr>
+  <tr><td>Cluster API Endpoint</td><td><code>https://c113-e.eu-de.containers.cloud.ibm.com:32581</code></td></tr>
+  <tr><td>IBM Cloud Account</td><td><code>KubeCert#IBMid-693001MZ5X</code></td></tr>
+  <tr><td>IBM Cloud Console</td><td><span class="url">https://cloud.ibm.com/kubernetes/clusters/da0umukf0anep6valpig/overview</span></td></tr>
+  <tr><td>OpenShift Web Console</td><td><code>console-openshift-console.i3-platform-bcc5f5bc...eu-de.containers.appdomain.cloud</code></td></tr>
+  <tr><td>Load Balancer Hostname</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td></tr>
+  <tr><td>LB IP 1</td><td><code>149.81.239.32</code></td></tr>
+  <tr><td>LB IP 2</td><td><code>158.176.12.150</code></td></tr>
+  <tr><td>DNS Management</td><td><code>cpanel.i3technologies.co.ke:2083</code></td></tr>
+  <tr><td>Admin kubeconfig path</td><td><code>%USERPROFILE%\.bluemix\plugins\container-service\clusters\i3-platform-da0umukf0anep6valpig-admin\kube-config.yaml</code></td></tr>
+  <tr><td>Worker Nodes</td><td>3× bx2.4x16 (4 vCPU / 16 GB) always-on; 1× gx2.8x64 GPU burst (scale-to-zero)</td></tr>
+  <tr><td>Cluster DNS IP</td><td><code>172.21.0.10</code></td></tr>
+  <tr><td>Image Registry IP</td><td><code>172.21.59.183:5000</code></td></tr>
+</table>
+
+<h3>Namespace Topology (17 Namespaces)</h3>
+<table>
+  <tr><th>Tier</th><th>Namespace</th><th>Purpose</th><th>CPU Limit</th><th>Mem Limit</th></tr>
+  <tr><td>0 — Data</td><td><code>i3-data</code></td><td>Crunchy PostgreSQL HA + PGBouncer</td><td>12</td><td>32 Gi</td></tr>
+  <tr><td>0 — Messaging</td><td><code>i3-messaging</code></td><td>Strimzi Kafka KRaft (3 brokers)</td><td>8</td><td>16 Gi</td></tr>
+  <tr><td>1 — Security</td><td><code>i3-security</code></td><td>OpenBao Vault (3-node Raft HA)</td><td>4</td><td>8 Gi</td></tr>
+  <tr><td>1 — Auth</td><td><code>i3-auth</code></td><td>Keycloak / RHSSO</td><td>4</td><td>8 Gi</td></tr>
+  <tr><td>2 — GitOps</td><td><code>i3-gitops</code></td><td>Argo CD + Tekton CI/CD</td><td>8</td><td>16 Gi</td></tr>
+  <tr><td>2b — Gateway</td><td><code>i3-gateway</code></td><td>Kong API Gateway</td><td>—</td><td>—</td></tr>
+  <tr><td>2c — Consent</td><td><code>i3-consent</code></td><td>Consent Service (STEP-P2-02)</td><td>2</td><td>4 Gi</td></tr>
+  <tr><td>3 — AI</td><td><code>i3-model-gateway</code></td><td>LiteLLM + Ollama + Langfuse (heaviest)</td><td>24</td><td>64 Gi</td></tr>
+  <tr><td>3 — AI</td><td><code>i3-ai-lab</code></td><td>RHOAI JupyterHub + ChromaDB</td><td>16</td><td>48 Gi</td></tr>
+  <tr><td>3b — Agents</td><td><code>i3-agent-mesh</code></td><td>Agent Registry + MCP Gateway</td><td>4</td><td>8 Gi</td></tr>
+  <tr><td>4 — Apps</td><td><code>i3-evalos</code></td><td>EvalOS + Firecracker sandbox</td><td>16</td><td>32 Gi</td></tr>
+  <tr><td>4 — Apps</td><td><code>i3-ott</code></td><td>OvenMediaEngine + SeaweedFS + n8n + Directus</td><td>48</td><td>64 Gi</td></tr>
+  <tr><td>4 — Apps</td><td><code>i3-admissions</code></td><td>FastAPI Agent + ChromaDB + MCP Connectors</td><td>16</td><td>32 Gi</td></tr>
+  <tr><td>4 — Apps</td><td><code>i3-engage</code></td><td>Engage CDP/CRM + Kafka Consumers</td><td>8</td><td>16 Gi</td></tr>
+  <tr><td>4 — Apps</td><td><code>i3-pmaas</code></td><td>PMaaS Campaign OS + Campaign Agent</td><td>8</td><td>24 Gi</td></tr>
+  <tr><td>4 — Apps</td><td><code>i3-afroerp</code></td><td>AfroERP (ERPNext) + MariaDB + AfroERP Agent</td><td>8</td><td>32 Gi</td></tr>
+  <tr><td>5 — Monitoring</td><td><code>i3-monitoring</code></td><td>Prometheus + Grafana</td><td>8</td><td>16 Gi</td></tr>
+</table>
+
+<h3>Essential CLI Commands</h3>
+<pre>
+# Set KUBECONFIG
+$env:KUBECONFIG="$env:USERPROFILE\.bluemix\plugins\container-service\clusters\i3-platform-da0umukf0anep6valpig-admin\kube-config.yaml"
+
+# Login to IBM Cloud
+ibmcloud login --apikey $IBMCLOUD_API_KEY -r eu-de -g i3-production
+ibmcloud ks cluster config --cluster i3-platform
+
+# Check all nodes
+oc get nodes --no-headers
+
+# Find unhealthy pods
+oc get pods -A --no-headers | Where-Object { $_ -notmatch "Running|Completed" }
+
+# Restart a deployment
+oc rollout restart deployment/NAME -n NAMESPACE
+
+# View pod logs
+oc logs -n NAMESPACE deployment/NAME --tail=50
+
+# Exec into pod shell
+oc exec -it -n NAMESPACE POD_NAME -- bash
+
+# Get a secret value (decoded)
+oc get secret SECRET -n NS -o jsonpath="{.data.KEY}" | base64 -d
+
+# Patch a secret
+oc patch secret SECRET -n NS --type=merge -p "{`"data`":{`"KEY`":`"$(echo -n VALUE | base64)`"}}"
+
+# List all routes
+oc get routes -A --no-headers
+
+# Connect to Postgres
+oc exec -it -n i3-data POSTGRES_POD -- psql -U i3admin -d postgres
+</pre>
+
+
+<h2 id="keycloak">2. Keycloak / Identity &amp; SSO <span class="ns-badge">i3-auth</span></h2>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Admin Console URL</td><td><span class="url">https://keycloak.i3technologies.co.ke</span></td></tr>
+  <tr><td>SSO Login URL (users)</td><td><span class="url">https://sso.i3technologies.co.ke</span></td></tr>
+  <tr><td>Realm Issuer</td><td><code>https://sso.i3technologies.co.ke/auth/realms/i3</code></td></tr>
+  <tr><td>Namespace</td><td><code>i3-auth</code></td></tr>
+  <tr><td>Replicas</td><td>2</td></tr>
+  <tr><td><strong>Admin Username</strong></td><td><code>admin</code></td></tr>
+  <tr><td><strong>Admin Password</strong></td><td><span class="pw">REDACTED-keycloak-admin</span></td></tr>
+</table>
+
+<h3>Realm Settings (i3 Realm)</h3>
+<table>
+  <tr><th>Setting</th><th>Value</th></tr>
+  <tr><td>Access Token Lifespan</td><td>1 hour</td></tr>
+  <tr><td>SSO Session Max</td><td>10 hours</td></tr>
+  <tr><td>Offline Session Max</td><td>30 days</td></tr>
+  <tr><td>Brute Force Protection</td><td>Enabled — locks after 5 failed attempts</td></tr>
+  <tr><td>Password Policy</td><td>Min 12 chars, upper + lower + digit + special</td></tr>
+</table>
+
+<h3>Realm Roles</h3>
+<table>
+  <tr><th>Role</th><th>Purpose</th></tr>
+  <tr><td><code>admin</code></td><td>Full platform administration</td></tr>
+  <tr><td><code>instructor</code></td><td>Exam creation, cohort management, content upload</td></tr>
+  <tr><td><code>student</code></td><td>Exam taking, AI Lab, VOD viewing</td></tr>
+  <tr><td><code>admissions-agent</code></td><td>Service account role (not for humans)</td></tr>
+</table>
+
+<h3>OIDC Clients</h3>
+<table>
+  <tr><th>Client ID</th><th>Used By</th><th>Secret Location</th></tr>
+  <tr><td><code>engage-web</code></td><td>Engage CRM dashboard</td><td>OpenBao: <code>i3/keycloak/engage-client</code></td></tr>
+  <tr><td><code>pmaas-web</code></td><td>PMaaS campaign dashboard</td><td>OpenBao: <code>i3/keycloak/pmaas-client</code></td></tr>
+  <tr><td><code>open-webui-nuru</code></td><td>Nuru AI co-worker (Engage)</td><td>OpenBao: <code>i3/open-webui/engage/jwt-secret</code></td></tr>
+  <tr><td><code>open-webui-dawa</code></td><td>Dawa AI co-worker (PMaaS)</td><td>OpenBao: <code>i3/open-webui/pmaas/jwt-secret</code></td></tr>
+  <tr><td><code>open-webui-mfumo</code></td><td>Mfumo AI co-worker (AfroERP)</td><td>OpenBao: <code>i3/open-webui/afroerp/jwt-secret</code></td></tr>
+  <tr><td><code>i3-ar-server</code></td><td>MCP Gateway (i3-AR)</td><td>Keycloak admin console → Clients</td></tr>
+  <tr><td><code>ford-portal</code></td><td>FORD-Asili portal</td><td><span class="replace">⚠ Empty — ACTION REQUIRED</span></td></tr>
+  <tr><td><code>sit-api</code></td><td>SIT API</td><td><span class="pw">BWllvjsZyODiAhpeWnyEii1yXK9WmaRh</span></td></tr>
+  <tr><td><code>talent-api</code></td><td>Talent Cloud API</td><td><span class="pw">vpWBWnUvNO0eslEKWqVASBIE8JzVlsY4</span></td></tr>
+</table>
+
+<h3>Admin Operations</h3>
+<pre>
+# Add a user (via CLI)
+oc apply -f platform/operators/keycloak/test-users.yaml
+
+# Force a user password reset
+KC_POD=$(oc get pods -n i3-auth -l app=keycloak -o jsonpath='{.items[0].metadata.name}')
+TOKEN=$(oc exec -n i3-auth $KC_POD -- curl -s -X POST \
+  http://localhost:8080/realms/master/protocol/openid-connect/token \
+  -d "username=admin&amp;password=REDACTED-keycloak-admin&amp;grant_type=password&amp;client_id=admin-cli" \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+
+USER_ID=$(oc exec -n i3-auth $KC_POD -- \
+  curl -s "http://localhost:8080/admin/realms/i3/users?username=TARGET_USER&amp;exact=true" \
+  -H "Authorization: Bearer $TOKEN" | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['id'])")
+
+oc exec -n i3-auth $KC_POD -- curl -s -X PUT \
+  "http://localhost:8080/admin/realms/i3/users/$USER_ID/execute-actions-email" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '["UPDATE_PASSWORD"]'
+
+# Rotate all 5 OIDC client secrets
+. .\platform\scripts\load-env.ps1
+$env:KEYCLOAK_ADMIN_PASSWORD = "REDACTED-keycloak-admin"
+.\platform\scripts\keycloak-post-deploy.ps1
+</pre>
+
+
+<h2 id="databases">3. PostgreSQL — All Databases <span class="ns-badge">i3-data</span></h2>
+
+<div class="ok">Connection string template: <code>postgresql://USER:PASS@i3-postgres-pgbouncer.i3-data.svc:5432/DBNAME</code> (do NOT append <code>?pgbouncer=true</code>)</div>
+
+<h3>Topology</h3>
+<table>
+  <tr><th>Component</th><th>Value</th></tr>
+  <tr><td>Operator</td><td>Crunchy PostgreSQL v5</td></tr>
+  <tr><td>Topology</td><td>1 Primary + 2 Replicas (Patroni) + 2 PGBouncer</td></tr>
+  <tr><td>R/W Host</td><td><code>i3-postgres-ha.i3-data.svc</code> port 5432</td></tr>
+  <tr><td>Pool Host</td><td><code>i3-postgres-pgbouncer.i3-data.svc</code> port 5432</td></tr>
+  <tr><td>Pool Mode</td><td>transaction</td></tr>
+  <tr><td>Max Client Connections</td><td>1000</td></tr>
+  <tr><td>Default Pool Size</td><td>50 per database</td></tr>
+</table>
+
+<h3>Database Credentials</h3>
+<table>
+  <tr><th>Database</th><th>App User</th><th>Password</th><th>Application</th></tr>
+  <tr><td><code>postgres</code> (superuser)</td><td><code>i3admin</code></td><td><span class="pw">?Z-EfajDpq21=G/5iR21&gt;k8f</span></td><td>DBA / migrations</td></tr>
+  <tr><td><code>ar_db</code></td><td><code>ar_app</code></td><td><span class="pw">de0ca0d50fd34c2f8847258f</span></td><td>MCP Gateway (i3-AR)</td></tr>
+  <tr><td><code>talent_db</code></td><td><code>talent_app</code></td><td><span class="pw">222d37ba48bf45f1b8f05987</span></td><td>Talent Cloud</td></tr>
+  <tr><td><code>sit_db</code></td><td><code>sit_app</code></td><td><span class="pw">9a12b5ece9344b2faeb04577</span></td><td>SIT Work-Centers</td></tr>
+  <tr><td><code>ford_members_db</code></td><td><code>ford_app</code></td><td><span class="pw">85405f2aa77f4e7c87d183ad</span></td><td>FORD-Asili</td></tr>
+  <tr><td><code>evalos_db</code></td><td><code>evalos</code></td><td>Decode from <code>evalos-web-secrets</code> in <code>i3-evalos</code></td><td>EvalOS</td></tr>
+  <tr><td><code>engage_db</code></td><td><code>engage</code></td><td><span class="pw">engage-2026-secure</span></td><td>Engage CDP</td></tr>
+  <tr><td><code>edbridge_db</code></td><td><code>edbridge</code></td><td>Decode from <code>edbridge-secrets</code> in <code>i3-edbridge</code></td><td>Moodle / EdBridge</td></tr>
+  <tr><td><code>social_db</code></td><td><code>socialapp</code></td><td><span class="pw">i3-Social-DB-2026!</span></td><td>Nextcloud</td></tr>
+  <tr><td><code>n8n_db</code></td><td><code>n8n</code></td><td><span class="pw">REDACTED-n8n-db</span></td><td>n8n Automation</td></tr>
+  <tr><td><code>pmaas_db</code></td><td><code>pmaas</code></td><td><span class="replace">⚠ NOT SET — ACTION REQUIRED</span></td><td>PMaaS</td></tr>
+</table>
+
+<h3>PostgreSQL Admin Operations</h3>
+<pre>
+# Check Patroni cluster health
+oc exec -n i3-data $(oc get pods -n i3-data \
+  -l postgres-operator.crunchydata.com/role=master \
+  -o jsonpath='{.items[0].metadata.name}') \
+  -- patronictl -c /etc/patroni topology
+
+# Check pgBackRest backup status
+oc exec -n i3-data $(oc get pods -n i3-data \
+  -l postgres-operator.crunchydata.com/role=pgbackrest \
+  -o jsonpath='{.items[0].metadata.name}') \
+  -- pgbackrest --stanza=db info
+
+# Manual backup
+make dr-backup
+
+# Point-in-Time Recovery
+oc scale deployment -n i3-model-gateway --all --replicas=0
+oc scale deployment -n i3-admissions --all --replicas=0
+oc scale deployment -n i3-evalos --all --replicas=0
+make dr-restore RESTORE_TARGET="2025-09-01 03:00:00"
+# then scale back to replicas=2
+
+# Run EvalOS schema migration
+oc exec -n i3-data $(oc get pods -n i3-data \
+  -l postgres-operator.crunchydata.com/role=master \
+  -o jsonpath='{.items[0].metadata.name}') \
+  -- psql -U postgres -d evalos_db -f /dev/stdin &lt; platform/evalos/schema.sql
+</pre>
+
+
+<h2 id="modelgw">4. AI Model Gateway — LiteLLM <span class="ns-badge">i3-model-gateway</span></h2>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>External URL</td><td><span class="url">https://litellm.i3technologies.co.ke</span></td></tr>
+  <tr><td>Internal URL</td><td><code>http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000</code></td></tr>
+  <tr><td>Port</td><td>4000</td></tr>
+  <tr><td>Replicas</td><td>2 (scales 1–8 via KEDA on request rate &gt;20/min)</td></tr>
+  <tr><td><strong>Master API Key</strong></td><td><span class="pw">sk-litellm-i3-f951c9377163a11275864cb92e90ad13</span></td></tr>
+  <tr><td>Routing Strategy</td><td>least-busy with fallback chain</td></tr>
+  <tr><td>Redis Semantic Cache TTL</td><td>3600 s, similarity threshold 0.95</td></tr>
+</table>
+
+<h3>Configured Models</h3>
+<table>
+  <tr><th>Model Name</th><th>Tier</th><th>Backend</th><th>Timeout</th><th>Max Tokens</th></tr>
+  <tr><td><code>granite-nano</code></td><td>3 — Edge</td><td>Ollama: granite3.1-dense:2b</td><td>60s</td><td>2048</td></tr>
+  <tr><td><code>embed</code></td><td>3 — Edge</td><td>Ollama: nomic-embed-text:v1.5</td><td>15s</td><td>—</td></tr>
+  <tr><td><code>qwen-fast</code></td><td>2 — RAG</td><td>Ollama: qwen2.5:7b-instruct-q4_K_M</td><td>180s</td><td>4096</td></tr>
+  <tr><td><code>coder</code></td><td>2 — RAG</td><td>Ollama: qwen2.5-coder:7b-instruct-q4_K_M</td><td>180s</td><td>4096</td></tr>
+  <tr><td><code>qwen-heavy</code></td><td>1 — Heavy</td><td>Ollama: qwen2.5:14b-instruct-q4_K_M</td><td>240s</td><td>8192</td></tr>
+  <tr><td><code>vision</code></td><td>1 — Heavy</td><td>Ollama: llava:13b-v1.6-mistral-q4</td><td>240s</td><td>2048</td></tr>
+</table>
+
+<h3>Fallback Chain</h3>
+<table>
+  <tr><th>Primary</th><th>Fallback</th></tr>
+  <tr><td><code>qwen-heavy</code></td><td><code>qwen-fast</code></td></tr>
+  <tr><td><code>qwen-fast</code></td><td><code>granite-nano</code> (terminal — no further fallback)</td></tr>
+  <tr><td><code>coder</code></td><td><code>qwen-fast</code></td></tr>
+  <tr><td><code>vision</code></td><td><code>qwen-heavy</code></td></tr>
+</table>
+
+<h3>Admin Operations</h3>
+<pre>
+# Health check
+curl -s https://litellm.i3technologies.co.ke/health/readiness | python3 -m json.tool
+
+# List available models
+curl -s https://litellm.i3technologies.co.ke/v1/models \
+  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  | python3 -m json.tool
+
+# Create user API key
+curl -s -X POST https://litellm.i3technologies.co.ke/key/generate \
+  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  -H "Content-Type: application/json" \
+  -d '{"user_id":"student01","models":["granite-nano","qwen-fast"],"max_budget":5.0,"rpm_limit":30}' \
+  | python3 -m json.tool
+
+# Check spend/budget
+curl -s https://litellm.i3technologies.co.ke/global/spend \
+  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  | python3 -m json.tool
+
+# View logs
+oc logs -n i3-model-gateway -l app=litellm-proxy -f --tail=200
+
+# Pull a new Ollama model
+OLLAMA_POD=$(oc get pods -n i3-model-gateway -l app=ollama -o jsonpath='{.items[0].metadata.name}')
+oc exec -n i3-model-gateway $OLLAMA_POD -- ollama pull mistral-nemo:12b
+</pre>
+
+
+<h2 id="langfuse">5. Langfuse LLM Observability <span class="ns-badge">i3-model-gateway</span></h2>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>External URL</td><td><span class="url">https://langfuse.i3technologies.co.ke</span></td></tr>
+  <tr><td>Internal URL</td><td><code>http://langfuse.i3-model-gateway.svc:3000</code></td></tr>
+  <tr><td>Admin Login</td><td><code>admin@i3technologies.co.ke</code> — password from OpenBao: <code>i3/model-gateway/langfuse</code></td></tr>
+  <tr><td>NEXTAUTH_SECRET</td><td><span class="pw">XY/DP1FB2BkupdvsOFdevCbMmymZVj8hh4vjliaSJio=</span></td></tr>
+  <tr><td>EvalOS Project Public Key</td><td><span class="pw">pk-lf-i3evalos-8ed2998c3f68449b</span></td></tr>
+  <tr><td>EvalOS Project Secret Key</td><td><span class="pw">sk-lf-i3evalos-b7905eaf49904cc5</span></td></tr>
+  <tr><td>Components</td><td><code>langfuse-web</code> (port 3000) + <code>langfuse-worker</code></td></tr>
+</table>
+
+<h3>Key Metrics to Monitor</h3>
+<table>
+  <tr><th>Metric</th><th>Location</th><th>Alert Threshold</th></tr>
+  <tr><td>P95 Latency</td><td>Dashboard → Latency</td><td>&gt;5s for Tier 3 models</td></tr>
+  <tr><td>Error Rate</td><td>Dashboard → Errors</td><td>&gt;1%</td></tr>
+  <tr><td>Token Spend</td><td>Dashboard → Cost</td><td>&gt;$50/day</td></tr>
+  <tr><td>Cache Hit Rate</td><td>Traces → Metadata</td><td>&lt;20% (add caching if low)</td></tr>
+</table>
+
+
+<h2 id="openbao">6. OpenBao Secrets Vault <span class="ns-badge">i3-security</span></h2>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>UI Access</td><td><code>oc port-forward svc/openbao 8200:8200 -n i3-security</code> then http://localhost:8200</td></tr>
+  <tr><td>Pods</td><td>3 replicas (openbao-0, -1, -2) — Raft HA</td></tr>
+  <tr><td>Root Token</td><td>Stored externally in offline HSM — contact CTO. NEVER in cluster.</td></tr>
+  <tr><td>Unseal Threshold</td><td>3-of-5 Shamir key shares</td></tr>
+  <tr><td>Unseal Key Storage</td><td><code>platform\scripts\load-env.ps1</code> (OPENBAO_UNSEAL_KEY_1/2/3)</td></tr>
+</table>
+
+<h3>Secret Paths Reference</h3>
+<table>
+  <tr><th>Path</th><th>Contents</th><th>Used By</th></tr>
+  <tr><td><code>i3/model-gateway/litellm</code></td><td>master_key, salt</td><td>LiteLLM proxy</td></tr>
+  <tr><td><code>i3/model-gateway/langfuse</code></td><td>nextauth_secret, salt, encryption_key, admin_password</td><td>Langfuse</td></tr>
+  <tr><td><code>i3/model-gateway/watsonx</code></td><td>api_key, project_id, endpoint</td><td>LiteLLM → watsonx.ai</td></tr>
+  <tr><td><code>i3/ott/directus</code></td><td>key, secret, admin_password</td><td>Directus CMS</td></tr>
+  <tr><td><code>i3/ott/n8n</code></td><td>encryption_key</td><td>n8n Automation</td></tr>
+  <tr><td><code>i3/monitoring/grafana</code></td><td>admin_password</td><td>Grafana</td></tr>
+  <tr><td><code>i3/data/postgres</code></td><td>pgbouncer_password, replication_password</td><td>Crunchy PG</td></tr>
+  <tr><td><code>i3/admissions/agent</code></td><td>chroma_token, odoo_api_key, n8n_webhook_token</td><td>Admissions Agent</td></tr>
+  <tr><td><code>i3/auth/keycloak-clients</code></td><td>Per-client secrets (5 OIDC clients)</td><td>All OIDC apps</td></tr>
+  <tr><td><code>i3/gitops/registry</code></td><td>IBM Container Registry credentials</td><td>Tekton CI</td></tr>
+  <tr><td><code>i3/litellm/api-key</code></td><td>master key for app injections</td><td>Engage, PMaaS, AfroERP</td></tr>
+  <tr><td><code>i3/chromadb/token</code></td><td>ChromaDB auth token</td><td>Engage, Admissions</td></tr>
+</table>
+
+<h3>Admin Operations</h3>
+<pre>
+# Check vault status
+oc exec -n i3-security openbao-0 -- bao status
+# Expected: Initialized=true, Sealed=false, HA Enabled=true
+
+# Unseal after pod restart
+. .\platform\scripts\load-env.ps1
+.\platform\scripts\unseal-openbao.ps1
+
+# Read a secret
+oc exec -n i3-security openbao-0 -- bao kv get -mount=i3 model-gateway/litellm
+
+# Write / update a secret
+oc exec -n i3-security openbao-0 -- \
+  bao kv put -mount=i3 model-gateway/litellm master_key="new-key" salt="new-salt"
+
+# Rotate a secret (example: Directus)
+oc exec -n i3-security openbao-0 -- \
+  bao kv put -mount=i3 ott/directus admin_password="NewPassword!2026"
+oc rollout restart deployment/directus -n i3-ott
+</pre>
+
+
+<h2 id="evalos">7. EvalOS — Assessment Platform <span class="ns-badge">i3-evalos</span></h2>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>External URL</td><td><span class="url">https://evalos.i3technologies.co.ke</span></td></tr>
+  <tr><td>Authentication</td><td>Keycloak SSO (realm: i3)</td></tr>
+  <tr><td>Admin Access</td><td>Keycloak users with <code>admin</code> or <code>instructor</code> role</td></tr>
+  <tr><td>Database</td><td><code>evalos_db</code> — credentials in <code>evalos-web-secrets</code> in <code>i3-evalos</code></td></tr>
+  <tr><td>Sandbox Runtime</td><td>Firecracker MicroVM — boot time ~125 ms</td></tr>
+  <tr><td>Execution Time Limit</td><td>30 seconds per submission</td></tr>
+  <tr><td>NEXTAUTH_SECRET</td><td>Stored in <code>evalos-web-secrets</code></td></tr>
+  <tr><td>Langfuse PK</td><td><span class="pw">pk-lf-i3evalos-8ed2998c3f68449b</span></td></tr>
+  <tr><td>Langfuse SK</td><td><span class="pw">sk-lf-i3evalos-b7905eaf49904cc5</span></td></tr>
+  <tr><td>LiteLLM Key</td><td><span class="pw">sk-litellm-i3-f951c9377163a11275864cb92e90ad13</span></td></tr>
+</table>
+
+<h3>Execution Profiles</h3>
+<table>
+  <tr><th>Profile</th><th>Environment</th><th>Used For</th></tr>
+  <tr><td>A</td><td>Python 3.11 + PyTorch + HuggingFace</td><td>AI/ML coding tasks</td></tr>
+  <tr><td>B</td><td>Terraform + kubectl (dry-run only)</td><td>IaC / DevOps tasks</td></tr>
+  <tr><td>C</td><td>Rust / C++ / ROS 2</td><td>Systems programming</td></tr>
+  <tr><td>D</td><td>Dual-VM security lab</td><td>Cybersecurity practicals</td></tr>
+</table>
+
+<h3>Anti-Cheat Thresholds</h3>
+<table>
+  <tr><th>Event</th><th>Flag Threshold</th></tr>
+  <tr><td>Window focus lost</td><td>5 events</td></tr>
+  <tr><td>Fullscreen exit</td><td>3 events</td></tr>
+  <tr><td>Clipboard events (copy/paste)</td><td>10 events</td></tr>
+  <tr><td>Tab switch</td><td>Logged every occurrence</td></tr>
+</table>
+
+<h3>Admin Operations</h3>
+<pre>
+# View EvalOS logs
+make logs-evalos
+oc logs -n i3-evalos -l app=evalos-web --tail=100
+
+# View sandbox logs
+make logs-sandbox
+
+# KEDA ScaledObject: evalos-sandbox-scaler (CPU &gt; 75%, min 1, max 4)
+oc get scaledobject evalos-sandbox-scaler -n i3-evalos
+
+# AI question generation requires:
+#   LITELLM_URL = http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1
+#   LITELLM_KEY = sk-litellm-i3-f951c9377163a11275864cb92e90ad13
+</pre>
+
+
+<h2 id="engage">8. Engage — Customer 360 CDP <span class="ns-badge">i3-engage</span></h2>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>External URL (Dashboard)</td><td><span class="url">https://engage.i3technologies.co.ke</span></td></tr>
+  <tr><td>Nuru Co-worker URL</td><td><span class="url">https://nuru.i3technologies.co.ke</span></td></tr>
+  <tr><td>WhatsApp Webhook</td><td><span class="url">https://engage-webhook.i3technologies.co.ke/webhook/whatsapp</span></td></tr>
+  <tr><td>Authentication</td><td>Keycloak SSO — client: <code>engage-web</code></td></tr>
+  <tr><td>Database</td><td><code>engage_db</code> | User: <code>engage</code> | Pass: <span class="pw">engage-2026-secure</span></td></tr>
+  <tr><td>NEXTAUTH_SECRET</td><td><span class="pw">5/5acuPp23ZT9+FEP8gnyE2q1HVbD1VLnjIo0TiCHLE=</span></td></tr>
+  <tr><td>LiteLLM Fast Model</td><td><code>qwen-fast</code></td></tr>
+  <tr><td>LiteLLM Heavy Model</td><td><code>qwen-heavy</code></td></tr>
+  <tr><td>ChromaDB Collection</td><td><code>engage-brand-kb</code></td></tr>
+  <tr><td>Brevo API Key</td><td><span class="pw">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</span></td></tr>
+  <tr><td>Africa's Talking API Key</td><td><span class="replace">⚠ NOT SET — inject AT_API_KEY into engage-secrets</span></td></tr>
+  <tr><td>Africa's Talking Username</td><td><span class="replace">⚠ NOT SET — inject AT_USERNAME into engage-secrets</span></td></tr>
+  <tr><td>WhatsApp Token</td><td><span class="replace">⚠ NOT SET — inject WHATSAPP_TOKEN from Meta Business</span></td></tr>
+</table>
+
+<h3>Components</h3>
+<table>
+  <tr><th>Component</th><th>Deployment</th><th>Port</th><th>Purpose</th></tr>
+  <tr><td>Engage Web</td><td><code>engage-web</code></td><td>3000</td><td>CDP dashboard (Next.js)</td></tr>
+  <tr><td>Campaign Agent</td><td><code>campaign-agent</code></td><td>8080</td><td>LangGraph autonomous campaign manager</td></tr>
+  <tr><td>SMS Consumer</td><td><code>sms-consumer</code></td><td>—</td><td>Kafka consumer: engage.sms-events</td></tr>
+  <tr><td>WhatsApp Consumer</td><td><code>whatsapp-consumer</code></td><td>—</td><td>Kafka consumer: engage.whatsapp-events</td></tr>
+  <tr><td>Email Consumer</td><td><code>email-consumer</code></td><td>—</td><td>Kafka consumer: engage.email-events</td></tr>
+  <tr><td>Nuru Co-worker</td><td><code>nuru-coworker</code></td><td>8080</td><td>Open WebUI AI assistant for engagement team</td></tr>
+</table>
+
+
+<h2 id="pmaas">9. PMaaS — Political Campaign Operating System <span class="ns-badge">i3-pmaas</span></h2>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>External URL</td><td><span class="url">https://pmaas.i3technologies.co.ke</span></td></tr>
+  <tr><td>Dawa Co-worker URL</td><td><span class="url">https://dawa.i3technologies.co.ke</span></td></tr>
+  <tr><td>Authentication</td><td>Keycloak SSO — client: <code>pmaas-web</code></td></tr>
+  <tr><td>Database</td><td><code>pmaas_db</code> | User: <code>pmaas</code> | Pass: <span class="replace">⚠ NOT SET — ACTION REQUIRED</span></td></tr>
+  <tr><td>NEXTAUTH_SECRET</td><td><span class="pw">5/5acuPp23ZT9+FEP8gnyE2q1HVbD1VLnjIo0TiCHLE=</span></td></tr>
+  <tr><td>ChromaDB Collection</td><td><code>pmaas-manifesto</code></td></tr>
+  <tr><td>Voice TTS URL</td><td><code>http://voice-tts.i3-voice.svc.cluster.local:8000</code></td></tr>
+  <tr><td>Voice API Key</td><td><span class="pw">996c39cfc16b10eb1952e76036e1dcb6213f2b56ba28fe96</span></td></tr>
+  <tr><td>M-Pesa Consumer Key</td><td><span class="pw">p9MtTHfq0np8OnXFvTjmF3ytgj9svH7Gexr90CgMGqrhoTpd</span></td></tr>
+  <tr><td>M-Pesa Consumer Secret</td><td><span class="pw">BtG0mgEEhtUd408yAJDGltRTQSLAzlE3mi7q7rue1OxyH82cfIbt1d494soE1XFf</span></td></tr>
+  <tr><td>M-Pesa Shortcode</td><td><span class="replace">⚠ NOT SET</span></td></tr>
+  <tr><td>M-Pesa Passkey</td><td><span class="replace">⚠ NOT SET</span></td></tr>
+  <tr><td>WhatsApp Token</td><td><span class="replace">⚠ NOT SET</span></td></tr>
+  <tr><td>Media PVC</td><td>20 Gi — mounted at <code>/app/public/uploads</code></td></tr>
+  <tr><td>Kafka Topic</td><td><code>pmaas.voter-interactions</code></td></tr>
+</table>
+
+<h3>Components</h3>
+<table>
+  <tr><th>Component</th><th>Deployment</th><th>Port</th><th>Purpose</th></tr>
+  <tr><td>PMaaS Web</td><td><code>pmaas-web</code></td><td>3000</td><td>Campaign dashboard (Next.js)</td></tr>
+  <tr><td>Campaign Agent</td><td><code>campaign-agent</code></td><td>8080</td><td>LangGraph: daily briefings, targeting, content</td></tr>
+  <tr><td>Dawa Co-worker</td><td><code>dawa-coworker</code></td><td>8080</td><td>Open WebUI AI assistant for campaign team</td></tr>
+</table>
+
+
+<h2 id="admissions">10. Admissions AI Agent <span class="ns-badge">i3-admissions</span></h2>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>External URL</td><td><span class="url">https://admissions.i3technologies.co.ke</span></td></tr>
+  <tr><td>Authentication</td><td>Public (no login required for chatbot)</td></tr>
+  <tr><td>Default Model</td><td><code>mistral-nemo</code> (Tier 2 RAG)</td></tr>
+  <tr><td>ChromaDB Host</td><td><code>chromadb.i3-admissions.svc.cluster.local:8000</code></td></tr>
+  <tr><td>ChromaDB Token</td><td><span class="pw">fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c</span></td></tr>
+  <tr><td>ChromaDB PVC</td><td>20 Gi — mounted at <code>/chroma/chroma</code></td></tr>
+  <tr><td>LiteLLM Master Key</td><td>Injected from OpenBao: <code>i3/model-gateway/litellm</code></td></tr>
+  <tr><td>Odoo CRM URL</td><td>Injected from OpenBao: <code>i3/admissions/agent</code></td></tr>
+  <tr><td>n8n Webhook Token</td><td>Injected from OpenBao: <code>i3/admissions/agent</code></td></tr>
+  <tr><td>Replicas</td><td>2</td></tr>
+  <tr><td>Security</td><td>Lobster Trap prompt-injection firewall (12 patterns)</td></tr>
+  <tr><td>Prompt Firewall</td><td>All user input screened before reaching LLM</td></tr>
+</table>
+
+<h3>Components</h3>
+<table>
+  <tr><th>Component</th><th>Port</th><th>Purpose</th></tr>
+  <tr><td><code>admissions-agent</code></td><td>8000</td><td>FastAPI + LangChain RAG chatbot</td></tr>
+  <tr><td><code>chromadb</code></td><td>8000</td><td>Vector store for programme documents</td></tr>
+  <tr><td><code>mcp-connectors</code></td><td>9000</td><td>MCP tools: Odoo CRM, Google Calendar, n8n</td></tr>
+</table>
+
+
+<h2 id="afroerp">11. AfroERP — African Business OS <span class="ns-badge">i3-afroerp</span></h2>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>External URL</td><td><span class="url">https://afroerp.i3technologies.co.ke</span></td></tr>
+  <tr><td>Mfumo Co-worker URL</td><td><span class="url">https://mfumo.i3technologies.co.ke</span></td></tr>
+  <tr><td>ERPNext Admin Login</td><td><code>admin</code> / <span class="pw">REDACTED-erp-admin</span></td></tr>
+  <tr><td>ERPNext Framework</td><td>Frappe v15 / ERPNext v15</td></tr>
+  <tr><td>MariaDB Version</td><td>10.6</td></tr>
+  <tr><td>MariaDB Root Password</td><td><span class="replace">⚠ REPLACE_WITH_SECURE_ROOT_PW — ACTION REQUIRED</span></td></tr>
+  <tr><td>MariaDB User</td><td><code>frappe</code></td></tr>
+  <tr><td>MariaDB DB Name</td><td><code>afroerp</code></td></tr>
+  <tr><td>MariaDB Data PVC</td><td>50 Gi</td></tr>
+  <tr><td>ERPNext Sites PVC</td><td>20 Gi</td></tr>
+  <tr><td>Redis Databases</td><td>DB0 = cache, DB1 = queue, DB2 = socketio</td></tr>
+  <tr><td>Site Name</td><td><code>afroerp.i3technologies.co.ke</code></td></tr>
+  <tr><td>LiteLLM Key</td><td><span class="replace">⚠ NOT SET — set LITELLM_KEY in afroerp-secrets</span></td></tr>
+  <tr><td>M-Pesa Consumer Key</td><td><span class="replace">⚠ NOT SET</span></td></tr>
+  <tr><td>KRA PIN</td><td><span class="replace">⚠ NOT SET</span></td></tr>
+  <tr><td>KRA eTIMS API URL</td><td><code>https://etims-api.kra.go.ke</code></td></tr>
+</table>
+
+<h3>Kenya Modules</h3>
+<table>
+  <tr><th>Module</th><th>Source</th><th>Purpose</th></tr>
+  <tr><td>M-Pesa Daraja</td><td><code>platform/afroerp/frappe-apps/afroerp_kenya/mpesa.py</code></td><td>STK Push / B2C payments</td></tr>
+  <tr><td>KRA eTIMS</td><td><code>platform/afroerp/frappe-apps/afroerp_kenya/etims.py</code></td><td>E-invoicing for KRA tax compliance</td></tr>
+</table>
+
+
+<h2 id="ailab">12. AI Lab — JupyterHub &amp; Sage <span class="ns-badge">i3-ai-lab</span></h2>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>JupyterHub URL</td><td><span class="url">https://jupyter.i3technologies.co.ke</span></td></tr>
+  <tr><td>Sage (Open WebUI) URL</td><td><span class="url">https://sage.i3technologies.co.ke</span></td></tr>
+  <tr><td>Authentication</td><td>Keycloak SSO</td></tr>
+  <tr><td>Operator</td><td>Red Hat OpenShift AI (RHOAI)</td></tr>
+  <tr><td>ChromaDB Internal URL</td><td><code>http://chromadb.i3-ai-lab.svc.cluster.local:8000</code></td></tr>
+  <tr><td>ChromaDB Auth Token</td><td><span class="pw">fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c</span></td></tr>
+  <tr><td>Cohort Namespace Pattern</td><td><code>cohort-N</code> (e.g. <code>cohort-2</code>)</td></tr>
+</table>
+
+<h3>Notebook Images</h3>
+<table>
+  <tr><th>Image</th><th>Use Case</th></tr>
+  <tr><td>PyTorch 2.x</td><td>Deep learning, neural network training</td></tr>
+  <tr><td>TensorFlow 2.x</td><td>Keras/TF projects</td></tr>
+  <tr><td>Minimal Python</td><td>General coursework, data science</td></tr>
+</table>
+
+<h3>Container Sizes</h3>
+<table>
+  <tr><th>Size</th><th>CPU</th><th>RAM</th><th>GPU</th></tr>
+  <tr><td>Small</td><td>2</td><td>4 GB</td><td>None</td></tr>
+  <tr><td>Medium</td><td>4</td><td>8 GB</td><td>0.5</td></tr>
+  <tr><td>Large</td><td>8</td><td>16 GB</td><td>1</td></tr>
+</table>
+
+<h3>Admin Operations</h3>
+<pre>
+# Provision new cohort
+make provision-cohort COHORT=2 STUDENTS="alice,bob,carol" GPU_QUOTA=1
+
+# Adjust individual student GPU quota
+oc patch resourcequota student-alice-quota -n cohort-2 \
+  --type=merge -p '{"spec":{"hard":{"limits.nvidia.com/gpu":"2"}}}'
+
+# Stop all workbenches in a cohort (free GPU)
+oc get pods -n cohort-2 -l component=singleuser-server \
+  -o name | xargs oc delete -n cohort-2
+
+# GPU pool management
+make gpu-up     # activate burst GPU pool
+make gpu-down   # deactivate (saves ~$280/mo)
+</pre>
+
+
+<h2 id="ott">13. OTT — Streaming, VOD &amp; Content <span class="ns-badge">i3-ott</span></h2>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Live Stream URL</td><td><span class="url">https://stream.i3technologies.co.ke</span></td></tr>
+  <tr><td>VOD / HLS URL</td><td><span class="url">https://hls.i3technologies.co.ke</span></td></tr>
+  <tr><td>RTMP Ingest</td><td><code>rtmp://ingest.i3technologies.co.ke:1935/live</code></td></tr>
+  <tr><td>SRT Ingest</td><td><code>srt://ingest.i3technologies.co.ke:9999?streamid=live/&lt;key&gt;</code></td></tr>
+  <tr><td>Directus CMS URL</td><td><span class="url">https://cms.i3technologies.co.ke</span></td></tr>
+  <tr><td>Directus Admin Login</td><td><code>admin@i3.tech</code> / <span class="pw">a0meDpzBwTx7Srks</span></td></tr>
+  <tr><td>n8n Automation URL</td><td><span class="url">https://n8n.i3technologies.co.ke</span></td></tr>
+  <tr><td>n8n Auth</td><td>Keycloak SSO + Encryption Key: <span class="pw">8CgTV0QNltXMpqBkUjLAKz17GrwZx5e6</span></td></tr>
+  <tr><td>Nextcloud URL</td><td><span class="url">https://nextcloud.i3technologies.co.ke</span></td></tr>
+  <tr><td>Nextcloud Admin</td><td><code>i3admin</code> / <span class="pw">i3-Social-Admin-2026!</span></td></tr>
+  <tr><td>SeaweedFS S3 API (internal)</td><td><code>seaweedfs-s3.i3-ott.svc.cluster.local:8333</code></td></tr>
+  <tr><td>SeaweedFS HMAC</td><td><span class="replace">⚠ ACCESS_KEY_ID and SECRET_ACCESS_KEY NOT SET</span></td></tr>
+  <tr><td>IBM COS DR Sync</td><td>rclone CronJob daily at 02:00 UTC → <code>i3-seaweedfs-dr-eu-de</code></td></tr>
+</table>
+
+<h3>SeaweedFS Buckets</h3>
+<table>
+  <tr><th>Bucket</th><th>Purpose</th></tr>
+  <tr><td><code>i3-vod</code></td><td>VOD HLS segments and manifests</td></tr>
+  <tr><td><code>i3-cms-assets</code></td><td>Directus CMS uploaded files</td></tr>
+  <tr><td><code>i3-recordings</code></td><td>Raw OvenMediaEngine recording output</td></tr>
+</table>
+
+<h3>Admin Operations</h3>
+<pre>
+# SeaweedFS health
+oc exec -n i3-ott seaweedfs-master-0 -- curl -s localhost:9333/cluster/status | python3 -m json.tool
+
+# Manual DR sync to IBM COS
+make dr-backup
+# or: oc create job --from=cronjob/seaweedfs-cos-dr-sync manual-sync-$(date +%s) -n i3-ott
+
+# Restore SeaweedFS from IBM COS (disaster recovery)
+oc run rclone-restore --rm -i --restart=Never --image=rclone/rclone:1.67 \
+  -n i3-ott --env-from=secret/rclone-secrets \
+  -- rclone sync cos:i3-seaweedfs-dr-eu-de/vod seaweedfs:i3-vod --transfers=32
+
+# Set up rclone secrets after key rotation
+. .\platform\scripts\load-env.ps1
+.\platform\scripts\rclone-secret.ps1
+</pre>
+
+
+<h2 id="kafka">14. Kafka — Event Streaming <span class="ns-badge">i3-messaging</span></h2>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Operator</td><td>Strimzi KRaft (ZooKeeper-free)</td></tr>
+  <tr><td>Brokers</td><td>3 combined controller+broker nodes</td></tr>
+  <tr><td>Kafka Version</td><td>3.7.0</td></tr>
+  <tr><td>Bootstrap (internal)</td><td><code>kafka-bootstrap.i3-messaging.svc.cluster.local:9092</code></td></tr>
+</table>
+
+<h3>All Kafka Topics</h3>
+<table>
+  <tr><th>Topic</th><th>Producer</th><th>Consumer</th><th>Retention</th></tr>
+  <tr><td><code>admissions-leads</code></td><td>Admissions Agent</td><td>n8n, CRM</td><td>7 days</td></tr>
+  <tr><td><code>evalos-submissions</code></td><td>EvalOS</td><td>Grading service</td><td>30 days</td></tr>
+  <tr><td><code>ott-stream-events</code></td><td>OvenMediaEngine</td><td>n8n OTT pipeline</td><td>1 day</td></tr>
+  <tr><td><code>ai-lab-usage</code></td><td>JupyterHub</td><td>Langfuse, billing</td><td>30 days</td></tr>
+  <tr><td><code>engage.sms-events</code></td><td>Engage Web</td><td>SMS Consumer</td><td>7 days</td></tr>
+  <tr><td><code>engage.whatsapp-events</code></td><td>Engage Webhook</td><td>WhatsApp Consumer</td><td>7 days</td></tr>
+  <tr><td><code>engage.email-events</code></td><td>Engage Web</td><td>Email Consumer</td><td>7 days</td></tr>
+  <tr><td><code>pmaas.voter-interactions</code></td><td>PMaaS Web</td><td>Campaign Agent</td><td>30 days</td></tr>
+  <tr><td><code>talent-assessments</code></td><td>EvalOS</td><td>Talent API</td><td>30 days</td></tr>
+  <tr><td><code>talent-score-updates</code></td><td>Talent API</td><td>SIT API</td><td>30 days</td></tr>
+  <tr><td><code>talent-placements</code></td><td>Talent API</td><td>PMaaS</td><td>30 days</td></tr>
+  <tr><td><code>sit.enrollments</code></td><td>SIT API</td><td>EvalOS, Talent API</td><td>30 days</td></tr>
+  <tr><td><code>sit.ecitizen</code></td><td>SIT API</td><td>Engage, n8n</td><td>7 days</td></tr>
+  <tr><td><code>sit.credentials</code></td><td>SIT API</td><td>Talent API, n8n</td><td>30 days</td></tr>
+  <tr><td><code>ar.actions</code></td><td>MCP Gateway</td><td>Guardian, audit log</td><td>30 days</td></tr>
+  <tr><td><code>ford.membership.registrations</code></td><td>FORD API</td><td>n8n, Engage (OTP)</td><td>30 days</td></tr>
+  <tr><td><code>ford.primary.ballots</code></td><td>FORD API (Fabric)</td><td>Result Tally chaincode</td><td>90 days</td></tr>
+</table>
+
+<h3>Admin Operations</h3>
+<pre>
+KAFKA_POD=$(oc get pods -n i3-messaging -l strimzi.io/component-type=kafka \
+  -o jsonpath='{.items[0].metadata.name}')
+
+# Check broker health
+oc exec -n i3-messaging $KAFKA_POD -- \
+  bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092
+
+# Check consumer group lag
+oc exec -n i3-messaging $KAFKA_POD -- \
+  bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --all-groups
+
+# Create a topic
+oc exec -n i3-messaging $KAFKA_POD -- bin/kafka-topics.sh \
+  --bootstrap-server localhost:9092 --create --topic my-topic \
+  --partitions 3 --replication-factor 3 --config retention.ms=86400000
+
+# Debug: read topic messages
+oc exec -n i3-messaging $KAFKA_POD -- bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 --topic admissions-leads --from-beginning --max-messages 10
+</pre>
+
+
+<h2 id="monitoring">15. Prometheus &amp; Grafana <span class="ns-badge">i3-monitoring</span></h2>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Grafana URL</td><td><span class="url">https://grafana.i3technologies.co.ke</span></td></tr>
+  <tr><td>Grafana Admin Password</td><td><code>oc get secret grafana-admin -n i3-monitoring -o jsonpath="{.data.admin-password}" | base64 -d</code></td></tr>
+  <tr><td>Prometheus Internal</td><td><code>http://prometheus-operated.i3-monitoring.svc.cluster.local:9090</code></td></tr>
+  <tr><td>Data Retention</td><td>15 days on 20 Gi PVC</td></tr>
+</table>
+
+<h3>Prometheus Scrape Targets</h3>
+<table>
+  <tr><th>Job</th><th>Target</th><th>Metrics</th></tr>
+  <tr><td>litellm</td><td>litellm-proxy:4000/metrics</td><td>Request rate, latency, token usage</td></tr>
+  <tr><td>evalos</td><td>evalos-sandbox:8080/metrics</td><td>Submission rate, VM boot time</td></tr>
+  <tr><td>admissions-agent</td><td>admissions-agent:8000/metrics</td><td>Active requests, RAG latency</td></tr>
+  <tr><td>langfuse</td><td>langfuse-web:3000/api/public/metrics/prometheus</td><td>LLM trace metrics</td></tr>
+  <tr><td>kafka</td><td>kafka-brokers:9404</td><td>Consumer lag, throughput</td></tr>
+  <tr><td>kubernetes-pods</td><td>All pods with annotation <code>prometheus.io/scrape: "true"</code></td><td>Pod-level metrics</td></tr>
+</table>
+
+
+<h2 id="argocd">16. Argo CD GitOps <span class="ns-badge">i3-gitops</span></h2>
+
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>URL</td><td><span class="url">https://argocd.i3technologies.co.ke</span></td></tr>
+  <tr><td>Admin Login</td><td><code>admin</code> / <span class="pw">2xvrjq4E0CYnwakSIohQ3eGHftVi7zLM</span></td></tr>
+  <tr><td>Auth</td><td>Keycloak OIDC — group <code>i3-platform-admins</code> = admin</td></tr>
+  <tr><td>Git Repo</td><td><code>https://github.com/i3-technologies/platform-gitops</code></td></tr>
+  <tr><td>Root App</td><td><code>i3-platform-root</code></td></tr>
+  <tr><td>Safety: Prune</td><td><code>false</code> — Argo CD will NEVER auto-delete resources</td></tr>
+  <tr><td>Safety: SelfHeal</td><td><code>true</code> — Argo CD auto-corrects drift</td></tr>
+</table>
+
+<h3>App-of-Apps Waves</h3>
+<table>
+  <tr><th>Wave</th><th>Workstream</th><th>Namespace</th></tr>
+  <tr><td>1</td><td>core-operators</td><td>i3-data</td></tr>
+  <tr><td>2</td><td>model-gateway</td><td>i3-model-gateway</td></tr>
+  <tr><td>3</td><td>ai-lab</td><td>i3-ai-lab</td></tr>
+  <tr><td>4</td><td>evalos</td><td>i3-evalos</td></tr>
+  <tr><td>5</td><td>ott</td><td>i3-ott</td></tr>
+  <tr><td>6</td><td>admissions</td><td>i3-admissions</td></tr>
+</table>
+
+<h3>Admin Operations</h3>
+<pre>
+# Check all app sync status
+oc get applications -n i3-gitops \
+  -o custom-columns="NAME:.metadata.name,SYNC:.status.sync.status,HEALTH:.status.health.status"
+
+# Force-sync an app
+oc patch application i3-model-gateway -n i3-gitops \
+  --type=merge -p '{"metadata":{"annotations":{"argocd.argoproj.io/refresh":"hard"}}}'
+
+# Roll back to a previous commit
+ARGOCD_POD=$(oc get pods -n i3-gitops -l app.kubernetes.io/name=argocd-server \
+  -o jsonpath='{.items[0].metadata.name}')
+oc exec -n i3-gitops $ARGOCD_POD -- \
+  argocd app rollback i3-model-gateway --revision &lt;commit-sha&gt;
+</pre>
+
+
+<h2 id="keda">17. KEDA Autoscaling</h2>
+
+<table>
+  <tr><th>ScaledObject</th><th>Target Deployment</th><th>Min</th><th>Max</th><th>Trigger</th></tr>
+  <tr><td><code>litellm-proxy-scaler</code></td><td>litellm-proxy</td><td>1</td><td>6</td><td>Prometheus: request rate &gt;20/min</td></tr>
+  <tr><td><code>ollama-scaler</code></td><td>ollama</td><td>1</td><td>4</td><td>CPU utilisation &gt;80%</td></tr>
+  <tr><td><code>evalos-sandbox-scaler</code></td><td>evalos-sandbox</td><td>1</td><td>4</td><td>CPU utilisation &gt;75%</td></tr>
+  <tr><td><code>admissions-agent-scaler</code></td><td>admissions-agent</td><td>1</td><td>4</td><td>Prometheus: active HTTP requests &gt;10</td></tr>
+</table>
+
+<pre>
+# Check status
+oc get scaledobjects -A
+
+# Pause autoscaling temporarily
+oc patch scaledobject litellm-proxy-scaler -n i3-model-gateway \
+  --type=merge -p '{"spec":{"paused":true}}'
+
+# Resume autoscaling
+oc patch scaledobject litellm-proxy-scaler -n i3-model-gateway \
+  --type=merge -p '{"spec":{"paused":false}}'
+</pre>
+
+
+<h2 id="external">18. External APIs &amp; Integrations</h2>
+
+<table>
+  <tr><th>Service</th><th>Credential / Key</th><th>Used By</th></tr>
+  <tr><td>Brevo (Email)</td><td><span class="pw">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</span></td><td>Engage, PMaaS, EvalOS</td></tr>
+  <tr><td>Brevo SMTP Server</td><td><code>smtp-relay.brevo.com:587</code></td><td>All email notifications</td></tr>
+  <tr><td>Brevo SMTP Login</td><td><span class="pw">b8994d001@smtp-brevo.com</span></td><td>All email notifications</td></tr>
+  <tr><td>Africa's Talking SMS</td><td><span class="replace">⚠ AT_API_KEY: NOT SET</span> | <span class="replace">⚠ AT_USERNAME: NOT SET</span></td><td>Engage SMS</td></tr>
+  <tr><td>KRA eTIMS</td><td><span class="replace">⚠ KRA_CLIENT_ID, KRA_CLIENT_SECRET, KRA_PIN: NOT SET</span></td><td>AfroERP tax compliance</td></tr>
+  <tr><td>M-Pesa (AfroERP)</td><td><span class="replace">⚠ MPESA_CONSUMER_KEY, MPESA_CONSUMER_SECRET, MPESA_PASSKEY: NOT SET</span></td><td>AfroERP payments</td></tr>
+  <tr><td>M-Pesa (PMaaS)</td><td>Consumer Key: <span class="pw">p9MtTHfq0np8OnXFvTjmF3ytgj9svH7Gexr90CgMGqrhoTpd</span></td><td>PMaaS payment links</td></tr>
+  <tr><td>SeaweedFS S3 HMAC</td><td><span class="replace">⚠ ACCESS_KEY_ID and SECRET_ACCESS_KEY: NOT SET in seaweedfs-hmac secret</span></td><td>All S3 uploads</td></tr>
+  <tr><td>Directus Static Token (n8n)</td><td><span class="replace">⚠ REPLACE_WITH_DIRECTUS_STATIC_TOKEN — generate in Directus → API Tokens</span></td><td>n8n ↔ Directus</td></tr>
+</table>
+
+
+<h2 id="internal">19. Internal Service DNS (Cluster-Internal)</h2>
+
+<table>
+  <tr><th>Service</th><th>Internal DNS</th><th>Port</th></tr>
+  <tr><td>PostgreSQL HA (R/W)</td><td><code>i3-postgres-ha.i3-data.svc</code></td><td>5432</td></tr>
+  <tr><td>PGBouncer (pool)</td><td><code>i3-postgres-pgbouncer.i3-data.svc</code></td><td>5432</td></tr>
+  <tr><td>Kafka Bootstrap</td><td><code>kafka-bootstrap.i3-messaging.svc.cluster.local</code></td><td>9092</td></tr>
+  <tr><td>LiteLLM Proxy</td><td><code>litellm-proxy.i3-model-gateway.svc.cluster.local</code></td><td>4000</td></tr>
+  <tr><td>ChromaDB (AI Lab)</td><td><code>chromadb.i3-ai-lab.svc.cluster.local</code></td><td>8000</td></tr>
+  <tr><td>ChromaDB (Admissions)</td><td><code>chromadb.i3-admissions.svc.cluster.local</code></td><td>8000</td></tr>
+  <tr><td>SeaweedFS S3</td><td><code>seaweedfs-s3.i3-ott.svc.cluster.local</code></td><td>8333</td></tr>
+  <tr><td>n8n</td><td><code>n8n.i3-ott.svc.cluster.local</code></td><td>5678</td></tr>
+  <tr><td>Langfuse</td><td><code>langfuse.i3-model-gateway.svc.cluster.local</code></td><td>3000</td></tr>
+  <tr><td>OpenBao (Vault)</td><td><code>openbao-active.i3-security.svc</code></td><td>8200</td></tr>
+  <tr><td>Keycloak</td><td><code>keycloak.i3-auth.svc.cluster.local</code></td><td>8080</td></tr>
+  <tr><td>Voice TTS</td><td><code>voice-tts.i3-voice.svc.cluster.local</code></td><td>8000</td></tr>
+  <tr><td>Voice STT</td><td><code>voice-stt.i3-voice.svc.cluster.local</code></td><td>8001</td></tr>
+  <tr><td>ERPNext (AfroERP)</td><td><code>erpnext.i3-afroerp.svc.cluster.local</code></td><td>8000</td></tr>
+  <tr><td>MariaDB (AfroERP)</td><td><code>mariadb.i3-afroerp.svc.cluster.local</code></td><td>3306</td></tr>
+  <tr><td>Cluster DNS</td><td><code>172.21.0.10</code></td><td>53</td></tr>
+  <tr><td>Image Registry</td><td><code>172.21.59.183</code></td><td>5000</td></tr>
+</table>
+
+
+<h2 id="day2">20. Day-2 Operations Quick Reference</h2>
+
+<h3>Daily Health Check</h3>
+<pre>
+.\platform\scripts\post-deploy-checklist.ps1
+# or: make post-deploy-check
+</pre>
+
+<h3>Cluster Verification</h3>
+<pre>
+make verify-cluster       # Namespaces + Argo CD sync
+make verify-namespaces    # Pod status per namespace
+make verify-argo          # Argo CD application sync status
+</pre>
+
+<h3>Backup</h3>
+<pre>
+make dr-backup            # pgBackRest full backup + SeaweedFS → COS sync
+make dr-test              # Non-destructive backup integrity check
+</pre>
+
+<h3>Load Testing</h3>
+<pre>
+make test-all             # Full test suite
+make test-load-evalos     # 100 concurrent sandbox submissions (5 min)
+make test-load-ailab      # 2,000 concurrent AI Lab API requests (10 min)
+make test-ragas           # RAGAS evaluation (Admissions Agent)
+make test-redteam         # Prompt injection red-team scan
+</pre>
+
+<h3>Image Builds</h3>
+<pre>
+ibmcloud cr login --client buildah
+make build-images         # Builds all custom images, pushes to de.icr.io
+</pre>
+
+<h3>Monthly Budget Estimate</h3>
+<table>
+  <tr><th>Resource</th><th>State</th><th>Est. Cost/mo</th></tr>
+  <tr><td>3× bx2.4x16 CPU workers</td><td>Always on</td><td>~$420</td></tr>
+  <tr><td>GPU burst (gx2.8x64)</td><td>Scale-to-zero</td><td>$0–$280</td></tr>
+  <tr><td>IBM COS ~2 TB</td><td>Retain</td><td>~$45</td></tr>
+  <tr><td>SeaweedFS PVCs (500Gi×3)</td><td>Retain</td><td>~$300</td></tr>
+  <tr><td><strong>Total (GPU off)</strong></td><td>—</td><td><strong>~$765</strong></td></tr>
+  <tr><td><strong>Total (GPU 50% on)</strong></td><td>—</td><td><strong>~$905</strong></td></tr>
+</table>
+
+<h3>Common Troubleshooting</h3>
+<table>
+  <tr><th>Symptom</th><th>First Check</th><th>Command</th></tr>
+  <tr><td>Application returns 502</td><td>Check pod status</td><td><code>oc get pods -n &lt;ns&gt;</code></td></tr>
+  <tr><td>Slow LLM responses</td><td>Check Ollama CPU</td><td><code>oc top pod -n i3-model-gateway</code></td></tr>
+  <tr><td>EvalOS submission timeout</td><td>Check sandbox logs</td><td><code>make logs-sandbox</code></td></tr>
+  <tr><td>OpenBao sealed after restart</td><td>Unseal pods</td><td><code>.\platform\scripts\unseal-openbao.ps1</code></td></tr>
+  <tr><td>Argo CD OutOfSync</td><td>Force refresh</td><td><code>make verify-argo</code> then force sync</td></tr>
+  <tr><td>High Kafka lag</td><td>Check consumer group</td><td>See §14 Kafka admin commands</td></tr>
+  <tr><td>SeaweedFS disk full</td><td>Check PVC usage</td><td><code>oc get pvc -n i3-ott</code></td></tr>
+  <tr><td>Missing VOD after stream</td><td>Check OTT pipeline</td><td><code>make logs-pipeline</code></td></tr>
+</table>
+
+
+<h2 id="outstanding">21. ⚠ Outstanding Actions Required</h2>
+
+<table>
+  <tr><th>#</th><th>Action</th><th>Component</th><th>Priority</th><th>Steps</th></tr>
+  <tr><td>1</td><td>Set <code>pmaas_db</code> PostgreSQL password</td><td>PMaaS</td><td style="color:#cf222e">🔴 HIGH</td><td><code>ALTER ROLE pmaas WITH PASSWORD '...'; oc patch secret pmaas-secrets -n i3-pmaas</code></td></tr>
+  <tr><td>2</td><td>Set Africa's Talking API Key &amp; Username</td><td>Engage SMS</td><td style="color:#cf222e">🔴 HIGH</td><td>Set AT_API_KEY and AT_USERNAME in engage-secrets (i3-engage)</td></tr>
+  <tr><td>3</td><td>Set SeaweedFS HMAC credentials</td><td>All S3 uploads</td><td style="color:#cf222e">🔴 HIGH</td><td>Set ACCESS_KEY_ID and SECRET_ACCESS_KEY in seaweedfs-hmac secret in i3-ott</td></tr>
+  <tr><td>4</td><td>Set FORD portal Keycloak client secret</td><td>FORD-Asili</td><td style="color:#d4a017">🟠 MEDIUM</td><td>Generate ford-portal client secret in Keycloak → patch into ford-secrets in i3-ford</td></tr>
+  <tr><td>5</td><td>Configure KRA eTIMS credentials</td><td>AfroERP</td><td style="color:#d4a017">🟠 MEDIUM</td><td>Set KRA_CLIENT_ID, KRA_CLIENT_SECRET, KRA_PIN in afroerp-secrets (i3-afroerp)</td></tr>
+  <tr><td>6</td><td>Configure M-Pesa credentials (AfroERP)</td><td>AfroERP</td><td style="color:#d4a017">🟠 MEDIUM</td><td>Set MPESA_CONSUMER_KEY, MPESA_CONSUMER_SECRET, MPESA_PASSKEY in afroerp-secrets</td></tr>
+  <tr><td>7</td><td>Set MariaDB root + frappe passwords (AfroERP)</td><td>AfroERP</td><td style="color:#d4a017">🟠 MEDIUM</td><td>Replace REPLACE_WITH_SECURE_ROOT_PW and REPLACE_WITH_SECURE_DB_PW in afroerp-secrets</td></tr>
+  <tr><td>8</td><td>Set LiteLLM key in afroerp-secrets</td><td>AfroERP AI</td><td style="color:#d4a017">🟠 MEDIUM</td><td>Set LITELLM_KEY=sk-litellm-i3-f951c9377163a11275864cb92e90ad13 in afroerp-secrets</td></tr>
+  <tr><td>9</td><td>Generate Hyperledger Fabric MSP for orderer-0</td><td>FORD Blockchain</td><td style="color:#5a8a00">🟡 LOW</td><td>orderer-0 in i3-ford is in CrashLoopBackOff — generate MSP cert from i3tech-ca</td></tr>
+  <tr><td>10</td><td>Fix pgBackRest backup recurring failures</td><td>i3-data</td><td style="color:#5a8a00">🟡 LOW</td><td>Port 8432 NP applied; stale Error pods accumulating — investigate and clear</td></tr>
+  <tr><td>11</td><td>Set Directus static token in n8n-secrets</td><td>n8n ↔ Directus</td><td style="color:#5a8a00">🟡 LOW</td><td>Generate in Directus admin → API Tokens → set DIRECTUS_STATIC_TOKEN in n8n-secrets</td></tr>
+</table>
+
+<footer>Made with IBM Bob  |  i3 Technologies Ltd — STRICTLY CONFIDENTIAL  |  Administrator Documentation with Credentials  |  September 2026</footer>
+</div>
+</body>
+</html>

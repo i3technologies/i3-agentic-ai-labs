@@ -1,0 +1,236 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 EvalOS Platform — Phase 2 Deployment Review</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.6; color: #1f2328; background: #ffffff; padding: 32px 16px 48px; }
+  .page { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 700; color: #1f2328; margin-bottom: 4px; }
+  .meta { font-size: 12px; color: #57606a; margin-bottom: 28px; border-bottom: 1px solid #e5e7eb; padding-bottom: 14px; }
+  h2 { font-size: 15px; font-weight: 600; color: #1f2328; margin: 28px 0 10px; padding-bottom: 5px; border-bottom: 1px solid #e5e7eb; }
+  h3 { font-size: 13px; font-weight: 600; color: #1f2328; margin: 14px 0 6px; }
+  p { margin-bottom: 8px; color: #1f2328; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px; }
+  th { background: #f7f8fa; text-align: left; padding: 7px 10px; font-weight: 600; font-size: 12px; color: #57606a; border: 1px solid #e5e7eb; }
+  td { padding: 7px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .green  { background: #d1fae5; color: #065f46; }
+  .yellow { background: #fef9c3; color: #854d0e; }
+  .red    { background: #fee2e2; color: #991b1b; }
+  .blue   { background: #dbeafe; color: #1e40af; }
+  .gray   { background: #f3f4f6; color: #374151; }
+  .section { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 14px 16px; margin-bottom: 16px; }
+  .kv { display: flex; gap: 8px; margin-bottom: 4px; font-size: 13px; }
+  .kv .k { font-weight: 600; min-width: 190px; color: #57606a; }
+  .kv .v { color: #1f2328; font-family: ui-monospace, monospace; font-size: 12px; }
+  .issue { border-left: 3px solid #f59e0b; background: #fffbeb; padding: 8px 12px; margin-bottom: 8px; border-radius: 0 4px 4px 0; font-size: 13px; }
+  .issue.critical { border-left-color: #ef4444; background: #fef2f2; }
+  .issue.info { border-left-color: #3b82d4; background: #eff6ff; }
+  code { font-family: ui-monospace, monospace; font-size: 12px; background: #f3f4f6; padding: 1px 5px; border-radius: 3px; }
+  ul { margin: 6px 0 8px 18px; }
+  li { margin-bottom: 3px; font-size: 13px; }
+  .number-stat { display: inline-block; font-size: 24px; font-weight: 700; color: #3b82d4; margin-right: 4px; }
+  .stat-row { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 16px; }
+  .stat-box { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px 18px; min-width: 110px; text-align: center; }
+  .stat-label { font-size: 11px; color: #57606a; margin-top: 2px; }
+  footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>i3 EvalOS Platform — Phase 2 Deployment Review</h1>
+  <div class="meta">
+    Generated: 10 September 2026  |  Cluster: <code>i3-platform</code> (IBM ROKS 4.17, eu-de, Frankfurt)  |  Prepared for: Sebastian Njagi, Philip Mukiti, Joseph Maina
+  </div>
+
+  
+  <div class="stat-row">
+    <div class="stat-box"><div class="number-stat">360</div><div class="stat-label">Active Questions</div></div>
+    <div class="stat-box"><div class="number-stat">32</div><div class="stat-label">Enrolled Users</div></div>
+    <div class="stat-box"><div class="number-stat">6</div><div class="stat-label">Active Exams</div></div>
+    <div class="stat-box"><div class="number-stat">17</div><div class="stat-label">Attempts</div></div>
+    <div class="stat-box"><div class="number-stat">13</div><div class="stat-label">Passed (76%)</div></div>
+    <div class="stat-box"><div class="number-stat">7</div><div class="stat-label">Certificates Issued</div></div>
+  </div>
+
+  
+  <h2>Phase Completion Summary</h2>
+  <table>
+    <tr><th>Phase</th><th>Feature</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>Phase 1</td><td>Core exam engine, 360 questions, 32 users, TLS, Keycloak SSO</td><td><span class="badge green">LIVE</span></td><td>Full certificate issuance, pass threshold 90%</td></tr>
+    <tr><td>Phase 1</td><td>n8n email automation (Brevo API)</td><td><span class="badge green">LIVE</span></td><td>3 event types: <code>exam_invite</code>, <code>exam_passed</code>, <code>exam_failed</code> — HTTP 201 confirmed</td></tr>
+    <tr><td>Phase 1</td><td>Admin dashboard, enrolment queue, certificate redesign</td><td><span class="badge green">LIVE</span></td><td>All 3 admins have access</td></tr>
+    <tr><td>Phase 2a</td><td>Ollama / Mistral 7B AI Study Coach (on-cluster LLM)</td><td><span class="badge green">LIVE</span></td><td><code>mistral:7b-instruct-q4_K_M</code> (4.4 GB) running in <code>i3-ott</code></td></tr>
+    <tr><td>Phase 2b</td><td>Langfuse LLM observability</td><td><span class="badge green">LIVE</span></td><td>DB auth resolved, API keys provisioned, tracing enabled in evalos-web</td></tr>
+    <tr><td>Phase 2c</td><td>Cohort Leaderboard (<code>/leaderboard</code>)</td><td><span class="badge green">LIVE</span></td><td>Deployed in build #20 — podium, rank badges, set progress</td></tr>
+    <tr><td>Phase 2d</td><td>Question Bank Admin UI (<code>/admin/questions</code>)</td><td><span class="badge green">LIVE</span></td><td>Deployed in build #20 — filters, pagination, type badges</td></tr>
+    <tr><td>Phase 2e</td><td>AI Interview Round</td><td><span class="badge gray">PENDING</span></td><td>Not started</td></tr>
+    <tr><td>Phase 2f</td><td>Grafana Dashboards</td><td><span class="badge gray">PENDING</span></td><td>Not started</td></tr>
+    <tr><td>Phase 2g</td><td>Directus CMS Question Management</td><td><span class="badge gray">PENDING</span></td><td>Directus pod is running; integration not built</td></tr>
+  </table>
+
+  
+  <h2>Live Services — Pod Health</h2>
+  <table>
+    <tr><th>Service</th><th>Namespace</th><th>Pods</th><th>Status</th><th>URL</th></tr>
+    <tr><td>evalos-web</td><td><code>i3-evalos</code></td><td>2/2</td><td><span class="badge green">Running</span></td><td><code>evalos.i3technologies.co.ke</code></td></tr>
+    <tr><td>evalos-sandbox</td><td><code>i3-evalos</code></td><td>1/1</td><td><span class="badge green">Running</span></td><td>Internal</td></tr>
+    <tr><td>Ollama (Mistral 7B)</td><td><code>i3-ott</code></td><td>1/1</td><td><span class="badge green">Running</span></td><td><code>ollama.i3-ott.svc:11434</code> (internal)</td></tr>
+    <tr><td>Langfuse</td><td><code>i3-ott</code></td><td>1/1</td><td><span class="badge green">Running</span></td><td><code>langfuse.i3-ott.svc:3000</code> (internal) — <em>route blocked, see issues</em></td></tr>
+    <tr><td>Redis (Langfuse cache)</td><td><code>i3-ott</code></td><td>1/1</td><td><span class="badge green">Running</span></td><td>Internal</td></tr>
+    <tr><td>n8n</td><td><code>i3-ott</code></td><td>1/1</td><td><span class="badge green">Running</span></td><td><code>n8n.i3technologies.co.ke</code></td></tr>
+    <tr><td>Directus CMS</td><td><code>i3-ott</code></td><td>1/1</td><td><span class="badge green">Running</span></td><td><code>cms.i3technologies.co.ke</code></td></tr>
+    <tr><td>SeaweedFS (3 volumes)</td><td><code>i3-ott</code></td><td>7/7</td><td><span class="badge green">Running</span></td><td>Internal object storage + S3 GW</td></tr>
+    <tr><td>PostgreSQL (PGO, HA)</td><td><code>i3-data</code></td><td>3 primaries + pgbouncer</td><td><span class="badge green">Running</span></td><td>Internal — pgbouncer at <code>i3-postgres-pgbouncer.i3-data.svc:5432</code></td></tr>
+    <tr><td>Keycloak SSO</td><td>External managed</td><td>—</td><td><span class="badge green">Running</span></td><td><code>sso.i3technologies.co.ke</code></td></tr>
+  </table>
+
+  
+  <h2>Database State (evalos_db)</h2>
+  <div class="section">
+    <div class="kv"><span class="k">Host</span><span class="v">i3-postgres-pgbouncer.i3-data.svc:5432</span></div>
+    <div class="kv"><span class="k">Database</span><span class="v">evalos_db</span></div>
+    <div class="kv"><span class="k">HA Mode</span><span class="v">PGO — 3 primary pods, automated backups running (diff every 6h, full every 12h)</span></div>
+    <div class="kv"><span class="k">Tables</span><span class="v">questions, quiz_attempts, exams, question_sets, certificates, enrolment_queue, ai_interviews, certificates, topics, code_submissions (10 total)</span></div>
+    <div class="kv"><span class="k">Active Questions</span><span class="v">360 (6 sets × 60 questions each)</span></div>
+    <div class="kv"><span class="k">Exam Attempts</span><span class="v">17 total — 13 passed (76%), 4 failed — 7 certificates issued</span></div>
+  </div>
+
+  
+  <h2>evalos-web — Current Build</h2>
+  <div class="section">
+    <div class="kv"><span class="k">Build Number</span><span class="v">#20 (Completed — 10 Sep 2026)</span></div>
+    <div class="kv"><span class="k">Image</span><span class="v">de.icr.io/i3-platform/evalos-web:latest</span></div>
+    <div class="kv"><span class="k">Framework</span><span class="v">Next.js 14.2.5 (Node 20 Alpine)</span></div>
+    <div class="kv"><span class="k">Routes compiled</span><span class="v">/  /dashboard  /leaderboard  /admin  /admin/questions  /exam/[examId]  /exam/[examId]/results  /verify/[code]  /api/study-coach/[attemptId]  + 9 API routes</span></div>
+    <div class="kv"><span class="k">Health</span><span class="v">HTTP 200 — evalos.i3technologies.co.ke/api/health ✓</span></div>
+  </div>
+
+  <h2>Secrets Configured on evalos-web</h2>
+  <table>
+    <tr><th>Secret Key</th><th>Value / Source</th><th>Status</th></tr>
+    <tr><td><code>DATABASE_URL</code></td><td>pgbouncer → evalos_db (URL-encoded password)</td><td><span class="badge green">Set</span></td></tr>
+    <tr><td><code>KEYCLOAK_ISSUER</code></td><td><code>https://sso.i3technologies.co.ke/auth/realms/i3</code></td><td><span class="badge green">Set</span></td></tr>
+    <tr><td><code>KEYCLOAK_CLIENT_ID</code></td><td><code>evalos-spa</code></td><td><span class="badge green">Set</span></td></tr>
+    <tr><td><code>NEXTAUTH_SECRET</code></td><td>Rotated, stored in secret</td><td><span class="badge green">Set</span></td></tr>
+    <tr><td><code>NEXTAUTH_URL</code></td><td><code>https://evalos.i3technologies.co.ke</code></td><td><span class="badge green">Set</span></td></tr>
+    <tr><td><code>N8N_WEBHOOK_URL</code></td><td>n8n internal webhook for events</td><td><span class="badge green">Set</span></td></tr>
+    <tr><td><code>LANGFUSE_HOST</code></td><td><code>http://langfuse.i3-ott.svc:3000</code></td><td><span class="badge green">Set (new)</span></td></tr>
+    <tr><td><code>LANGFUSE_PUBLIC_KEY</code></td><td><code>pk-lf-i3evalos-8ed2998c3f68449b</code></td><td><span class="badge green">Set (new)</span></td></tr>
+    <tr><td><code>LANGFUSE_SECRET_KEY</code></td><td><code>sk-lf-i3evalos-b7905eaf49904cc5</code></td><td><span class="badge green">Set (new)</span></td></tr>
+  </table>
+
+  
+  <h2>Known Issues &amp; Action Items</h2>
+
+  <div class="issue critical">
+    <strong>🔴 Langfuse public route blocked (HostAlreadyClaimed)</strong><br />
+    The route <code>langfuse.i3technologies.co.ke</code> in namespace <code>i3-ott</code> is blocked because an older route in namespace <code>i3-model-gateway</code> (created 6 Sep 2026) already claims that hostname. The <code>i3-ott</code> route was created 10 Sep 2026 and lost the claim.<br />
+    <strong>Action:</strong> Delete the old route in <code>i3-model-gateway</code> (<code>oc delete route langfuse-public -n i3-model-gateway</code>), then the <code>i3-ott</code> route will auto-claim the hostname. Langfuse admin UI is currently only reachable internally.
+  </div>
+
+  <div class="issue">
+    <strong>🟡 Langfuse admin UI — only 1 admin user created</strong><br />
+    Only <strong>Sebastian Njagi</strong> (<code>snjagi@i3technologies.co.ke</code>) has been signed up in Langfuse. Philip Mukiti and Joseph Maina have not yet been added. Signup is still open (<code>NEXT_PUBLIC_SIGN_UP_DISABLED=false</code>).<br />
+    <strong>Action:</strong> After the route is fixed, the two remaining admins should register at <code>https://langfuse.i3technologies.co.ke</code>, then disable signup.
+  </div>
+
+  <div class="issue">
+    <strong>🟡 End-to-end AI Study Coach not yet tested live</strong><br />
+    Build #20 is deployed with the Study Coach panel wired to Ollama and Langfuse, but no end-to-end test has been run (exam → results → "Generate My Study Plan" → Langfuse trace). Should be validated before proceeding to Phase 2e.<br />
+    <strong>Action:</strong> Log in as a test student, complete an exam, open the results page and click Generate. Confirm the panel renders and a trace appears in Langfuse.
+  </div>
+
+  <div class="issue info">
+    <strong>🔵 Langfuse Prisma DIRECT_URL was causing DB auth failures</strong><br />
+    Root cause identified and fixed: <code>DIRECT_URL</code> was set to the primary Postgres host without SSL, and PGO enforces SCRAM-SHA-256. Unsetting it forces Prisma to use <code>DATABASE_URL</code> (pgbouncer with <code>sslmode=require</code>) for all queries. Migrations remain disabled (<code>LANGFUSE_AUTO_POSTGRES_MIGRATION_DISABLED=true</code>) — the schema was pre-created and is healthy.
+  </div>
+
+  <div class="issue info">
+    <strong>🔵 Stale build pods in i3-evalos</strong><br />
+    Several old build pods in <code>Error</code> state exist (<code>evalos-web-6, 9, 10, 14, 15</code>). These are harmless but can be cleaned up: <code>oc delete pod -n i3-evalos -l openshift.io/build.name</code> (selecting failed ones).
+  </div>
+
+  
+  <h2>Key Credentials Reference</h2>
+  <table>
+    <tr><th>System</th><th>URL</th><th>Login</th></tr>
+    <tr><td>EvalOS (Admin)</td><td><code>evalos.i3technologies.co.ke</code></td><td>Keycloak: <code>snjagi / philipm / josephm @i3technologies.co.ke</code> | Pass: <code>Uatik@2026!wxz</code></td></tr>
+    <tr><td>EvalOS (Student)</td><td><code>evalos.i3technologies.co.ke</code></td><td>Keycloak email login | Pass: <code>REDACTED-user-password</code></td></tr>
+    <tr><td>Keycloak Admin</td><td><code>sso.i3technologies.co.ke/auth/admin</code></td><td><code>admin / REDACTED-keycloak-admin</code></td></tr>
+    <tr><td>n8n</td><td><code>n8n.i3technologies.co.ke</code></td><td><code>snjagi@i3technologies.co.ke / REDACTED-n8n-admin</code></td></tr>
+    <tr><td>Langfuse</td><td><code>langfuse.i3technologies.co.ke</code> (route fix required)</td><td><code>snjagi@i3technologies.co.ke / REDACTED-n8n-admin</code></td></tr>
+    <tr><td>Directus CMS</td><td><code>cms.i3technologies.co.ke</code></td><td>To be configured</td></tr>
+    <tr><td>Langfuse API</td><td>Internal: <code>langfuse.i3-ott.svc:3000</code></td><td>PK: <code>pk-lf-i3evalos-8ed2998c3f68449b</code></td></tr>
+  </table>
+
+  
+  <h2>Recommended Next Steps (in order)</h2>
+  <table>
+    <tr><th>#</th><th>Action</th><th>Priority</th><th>Owner</th></tr>
+    <tr>
+      <td>1</td>
+      <td>Fix Langfuse public route: <code>oc delete route langfuse-public -n i3-model-gateway</code></td>
+      <td><span class="badge red">High</span></td>
+      <td>Bob (1 command)</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Register Philip Mukiti &amp; Joseph Maina in Langfuse, then set <code>NEXT_PUBLIC_SIGN_UP_DISABLED=true</code></td>
+      <td><span class="badge red">High</span></td>
+      <td>Admins self-register</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>End-to-end test: exam attempt → results → Study Coach → Langfuse trace confirmed</td>
+      <td><span class="badge red">High</span></td>
+      <td>Any admin</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Phase 2e — AI Interview Round: spec the flow (Keycloak session gating, question + rubric, Mistral evaluation)</td>
+      <td><span class="badge yellow">Medium</span></td>
+      <td>Bob + Sebastian</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Phase 2f — Grafana dashboards: connect to Postgres (evalos_db) for attempt / pass-rate / domain metrics</td>
+      <td><span class="badge yellow">Medium</span></td>
+      <td>Bob</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>Phase 2g — Directus CMS: build question import pipeline from Directus → evalos_db</td>
+      <td><span class="badge gray">Low</span></td>
+      <td>Bob</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>Clean up stale Error build pods in <code>i3-evalos</code></td>
+      <td><span class="badge gray">Low</span></td>
+      <td>Bob (1 command)</td>
+    </tr>
+  </table>
+
+  
+  <h2>Platform Architecture (Current State)</h2>
+  <div class="section">
+    <h3>Namespace: i3-evalos</h3>
+    <p>evalos-web (Next.js 14, 2 replicas) → pgbouncer → PostgreSQL HA  |  Keycloak SSO  |  n8n webhooks  |  Ollama Study Coach  |  Langfuse tracing</p>
+    <h3>Namespace: i3-ott (Operations &amp; Tools)</h3>
+    <p>Ollama (Mistral 7B, 20Gi PVC)  |  Langfuse + Redis  |  n8n  |  Directus CMS  |  SeaweedFS object storage (3 volumes, S3-compatible, COS DR sync)  |  nginx-hls CDN  |  OME media server</p>
+    <h3>Namespace: i3-data</h3>
+    <p>PostgreSQL HA via PGO (3 primary pods)  |  pgbouncer proxy  |  Automated differential + full backups to IBM COS</p>
+    <h3>External</h3>
+    <p>IBM ROKS 4.17 — eu-de (Frankfurt)  |  IBM ICR registry (de.icr.io/i3-platform)  |  IBM COS (backup)  |  Brevo (email API)  |  DNS at ns1/ns2.host-ww.net</p>
+  </div>
+
+  <footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>

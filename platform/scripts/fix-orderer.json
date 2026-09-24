@@ -1,0 +1,21 @@
+[
+  {
+    "op": "replace",
+    "path": "/spec/template/spec/containers/0/env",
+    "value": [
+      {"name": "FABRIC_LOGGING_SPEC", "value": "INFO"},
+      {"name": "ORDERER_GENERAL_LISTENADDRESS", "value": "0.0.0.0"},
+      {"name": "ORDERER_GENERAL_LISTENPORT", "value": "7050"},
+      {"name": "ORDERER_GENERAL_BOOTSTRAPMETHOD", "value": "none"},
+      {"name": "ORDERER_CHANNELPARTICIPATION_ENABLED", "value": "true"},
+      {"name": "ORDERER_ADMIN_LISTENADDRESS", "value": "0.0.0.0:8443"},
+      {"name": "ORDERER_ADMIN_TLS_ENABLED", "value": "false"},
+      {"name": "ORDERER_GENERAL_TLS_ENABLED", "value": "false"},
+      {"name": "ORDERER_OPERATIONS_LISTENADDRESS", "value": "0.0.0.0:9443"},
+      {"name": "ORDERER_GENERAL_CLUSTER_SENDBUFFERSIZE", "value": "100"},
+      {"name": "ORDERER_FILELEDGER_LOCATION", "value": "/var/hyperledger/production/orderer"},
+      {"name": "ORDERER_GENERAL_LOCALMSPID", "value": "i3TechMSP"},
+      {"name": "ORDERER_GENERAL_LOCALMSPDIR", "value": "/var/hyperledger/production/msp"}
+    ]
+  }
+]

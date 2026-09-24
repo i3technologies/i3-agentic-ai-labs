@@ -1,4 +1,4 @@
-﻿/**
+/**
  * taskSync.ts
  * 🟡 ONE-CLICK APPROVAL GATE — sync generated tasks to Directus CRM.
  *
@@ -11,6 +11,12 @@
  *   🟢 auto    — plan generation (no sync needed)
  *   🟡 one-click — task sync to CRM (THIS FILE)
  *   🔴 never   — writes to EvalOS or Keycloak (blocked)
+ *
+ * IMP-06 / STEP-P1-08: All pending-sync state lives in Redis (TTL 300 s).
+ * Key schema:  sync:<userId>:<pendingId>  →  JSON(PendingSync)
+ * Tenant partition (<userId>) prevents cross-user key collisions under HPA.
+ * Redis client is injected via setPendingRedis() called from server.ts.
+ * Redis unavailability throws — never falls back to in-memory state.
  */
 
 import { randomUUID } from 'crypto';
@@ -19,18 +25,15 @@ import { RampUpPlan, RampUpTask } from '../orchestrator/planner';
 const DIRECTUS_URL   = process.env.DIRECTUS_URL   ?? '';
 const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN ?? '';
 
-// In-memory pending store (same pattern as mcp_connectors.py _pending dict).
-// NOTE: replace with Redis for multi-replica production deployment.
+const PENDING_TTL_SECONDS = 5 * 60; // 5 minutes
+
 interface PendingSync {
   planId:    string;
   tasks:     RampUpTask[];
   role:      string;
   userId:    string;
-  expiresAt: number;  // epoch ms
+  expiresAt: number;  // epoch ms — kept for compatibility; TTL enforced by Redis
 }
-
-const _pending = new Map<string, PendingSync>();
-const PENDING_TTL_MS = 5 * 60 * 1_000; // 5 minutes
 
 export interface SyncPreviewResult {
   pendingId:    string;
@@ -47,24 +50,56 @@ export interface SyncConfirmResult {
   error?:        string;
 }
 
+// ── Redis client (injected from server.ts after connection) ───────────────────
+// Avoids a circular-import of the top-level redis instance.
+type RedisClient = {
+  set(key: string, value: string, options: { EX: number }): Promise<unknown>;
+  get(key: string): Promise<string | null>;
+  del(key: string): Promise<unknown>;
+  keys(pattern: string): Promise<string[]>;
+};
+
+let _redis: RedisClient | null = null;
+
+/** Called once from server.ts after the Redis client connects. */
+export function setPendingRedis(client: RedisClient): void {
+  _redis = client;
+}
+
+/** Namespaced key — tenant-partitioned to prevent cross-user collisions under HPA. */
+function syncKey(userId: string, pendingId: string): string {
+  return `sync:${userId}:${pendingId}`;
+}
+
+async function redisPendingSet(userId: string, pendingId: string, entry: PendingSync): Promise<void> {
+  if (!_redis) throw new Error('Redis not initialised — call setPendingRedis() first');
+  await _redis.set(syncKey(userId, pendingId), JSON.stringify(entry), { EX: PENDING_TTL_SECONDS });
+}
+
+async function redisPendingGet(userId: string, pendingId: string): Promise<PendingSync | null> {
+  if (!_redis) throw new Error('Redis not initialised — call setPendingRedis() first');
+  const raw = await _redis.get(syncKey(userId, pendingId));
+  return raw ? (JSON.parse(raw) as PendingSync) : null;
+}
+
+async function redisPendingDel(userId: string, pendingId: string): Promise<void> {
+  if (!_redis) throw new Error('Redis not initialised — call setPendingRedis() first');
+  await _redis.del(syncKey(userId, pendingId));
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Stage 1: Prepare (returns pending_id for client to confirm)
 // ──────────────────────────────────────────────────────────────────────────────
 
-export function prepareSyncTasks(
+export async function prepareSyncTasks(
   plan:   RampUpPlan,
   userId: string,
-): SyncPreviewResult {
-  // Purge expired entries
-  const now = Date.now();
-  for (const [id, entry] of _pending) {
-    if (entry.expiresAt < now) _pending.delete(id);
-  }
-
+): Promise<SyncPreviewResult> {
+  const now       = Date.now();
   const pendingId = randomUUID();
-  const expiresAt = now + PENDING_TTL_MS;
+  const expiresAt = now + PENDING_TTL_SECONDS * 1_000;
 
-  _pending.set(pendingId, {
+  await redisPendingSet(userId, pendingId, {
     planId:    `${plan.role}-${plan.generatedAt}`,
     tasks:     plan.tasks,
     role:      plan.role,
@@ -92,7 +127,7 @@ export async function confirmSyncTasks(
   pendingId: string,
   userId:    string,
 ): Promise<SyncConfirmResult> {
-  const entry = _pending.get(pendingId);
+  const entry = await redisPendingGet(userId, pendingId);
 
   if (!entry) {
     return {
@@ -114,18 +149,8 @@ export async function confirmSyncTasks(
     };
   }
 
-  if (entry.expiresAt < Date.now()) {
-    _pending.delete(pendingId);
-    return {
-      success:      false,
-      syncedCount:  0,
-      skippedCount: 0,
-      directusIds:  [],
-      error:        'Pending sync has expired. Please generate a new plan.',
-    };
-  }
-
-  _pending.delete(pendingId);
+  // Consume the token immediately (delete before executing to prevent double-fire)
+  await redisPendingDel(userId, pendingId);
 
   if (!DIRECTUS_URL || !DIRECTUS_TOKEN) {
     console.warn('[taskSync] DIRECTUS_URL or DIRECTUS_TOKEN not set — skipping CRM sync');
@@ -188,17 +213,17 @@ export async function confirmSyncTasks(
   };
 }
 
-/** Cancel a pending sync (e.g. user clicked "Dismiss"). */
-export function cancelSyncTasks(pendingId: string): void {
-  _pending.delete(pendingId);
+/**
+ * Cancel a pending sync (e.g. user clicked "Dismiss").
+ * userId is required to resolve the tenant-partitioned key.
+ */
+export async function cancelSyncTasks(pendingId: string, userId: string): Promise<void> {
+  await redisPendingDel(userId, pendingId);
 }
 
 /** How many pending syncs are awaiting confirmation (for health endpoint). */
-export function pendingSyncCount(): number {
-  const now = Date.now();
-  let count = 0;
-  for (const entry of _pending.values()) {
-    if (entry.expiresAt >= now) count++;
-  }
-  return count;
+export async function pendingSyncCount(): Promise<number> {
+  if (!_redis) return 0;
+  const keys = await _redis.keys('sync:*');
+  return keys.length;
 }

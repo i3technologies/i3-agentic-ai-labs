@@ -1,0 +1,4 @@
+[
+  {"op":"add","path":"/spec/template/spec/securityContext","value":{"runAsUser":0,"fsGroup":33}},
+  {"op":"add","path":"/spec/template/spec/containers/0/securityContext","value":{"runAsUser":0,"allowPrivilegeEscalation":true,"readOnlyRootFilesystem":false}}
+]

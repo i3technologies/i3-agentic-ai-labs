@@ -1,0 +1,209 @@
+# ============================================================
+# IMP-10 — Ollama GPU Serving  [GAP]
+# ============================================================
+# ⚠ [GAP] GPU ACCELERATION NOT YET BENCHMARKED
+#   All first-token latency improvements are GATED pending the
+#   benchmark harness at platform/model-gateway/gpu-pool/bench_gpu.py
+#   printing PASS for every production model alias.
+#
+# This StatefulSet mirrors vllm-deploy.yaml (CPU) but schedules
+# pods exclusively on i3-gpu-pool nodes via toleration + nodeSelector.
+# It shares NO storage with the CPU Ollama StatefulSet — each
+# maintains its own PVC and model weight cache.
+#
+# Service name: ollama-gpu-service (port 11435)
+# The CPU service remains: ollama-service (port 11434) — unchanged.
+#
+# LiteLLM uses ollama-gpu-service as the *primary* api_base for
+# Tier 1/2 GPU model entries; ollama-service is the *fallback*.
+# ============================================================
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ollama-gpu
+  namespace: i3-model-gateway
+  labels:
+    app: ollama-gpu
+    app.kubernetes.io/part-of: i3-platform
+    i3.platform/pool: gpu
+  annotations:
+    i3.platform/imp: "IMP-10"
+    i3.platform/gap: "GPU performance gated — run bench_gpu.py to validate"
+spec:
+  serviceName: ollama-gpu
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama-gpu
+  template:
+    metadata:
+      labels:
+        app: ollama-gpu
+        i3.platform/pool: gpu
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "11435"
+        prometheus.io/path: "/metrics"
+    spec:
+      runtimeClassName: nvidia
+      # ── Scheduling: land ONLY on GPU nodes ─────────────────
+      nodeSelector:
+        i3.platform/pool: gpu
+      tolerations:
+        - key: i3.platform/gpu
+          operator: Exists
+          effect: NoSchedule
+      securityContext:
+        runAsUser: 0
+      # ── Init: pre-pull all production model weights ─────────
+      initContainers:
+        - name: pull-models
+          image: ollama/ollama:latest
+          securityContext:
+            runAsUser: 0
+          env:
+            - name: HOME
+              value: /root
+            - name: OLLAMA_HOME
+              value: /root/.ollama
+          command:
+            - sh
+            - -c
+            - |
+              ollama serve &
+              OLLAMA_PID=$!
+              for i in $(seq 1 20); do
+                curl -sf http://localhost:11434/api/tags && break
+                sleep 3
+              done
+              # Tier 3 — smallest, pull first
+              ollama pull granite3.1-dense:2b
+              echo "Granite 3.1 2B pulled"
+              ollama pull nomic-embed-text:v1.5
+              echo "Nomic Embed v1.5 pulled"
+              # Tier 2
+              ollama pull qwen2.5:7b-instruct-q4_K_M
+              echo "Qwen2.5 7B pulled"
+              ollama pull qwen2.5-coder:7b-instruct-q4_K_M
+              echo "Qwen2.5-Coder 7B pulled"
+              # Tier 1
+              ollama pull qwen2.5:14b-instruct-q4_K_M
+              echo "Qwen2.5 14B pulled"
+              ollama pull llava:13b-v1.6-mistral-q4
+              echo "LLaVA 13B pulled"
+              kill $OLLAMA_PID 2>/dev/null || true
+              exit 0
+          resources:
+            requests:
+              cpu: "2"
+              memory: 8Gi
+              nvidia.com/gpu: "1"
+            limits:
+              cpu: "4"
+              memory: 16Gi
+              nvidia.com/gpu: "1"
+          volumeMounts:
+            - name: ollama-gpu-data
+              mountPath: /root/.ollama
+      containers:
+        - name: ollama-gpu
+          image: ollama/ollama:latest
+          securityContext:
+            runAsUser: 0
+          env:
+            - name: HOME
+              value: /root
+            - name: OLLAMA_HOME
+              value: /root/.ollama
+            # GPU VRAM is persistent; no need for aggressive eviction.
+            - name: OLLAMA_KEEP_ALIVE
+              value: "-1"
+            # Shorter timeouts than CPU — GPU inference is faster.
+            # Benchmark harness validates these thresholds before PASS.
+            - name: OLLAMA_REQUEST_TIMEOUT
+              value: "120"
+            # Pre-warm the two most-requested models into GPU VRAM.
+            - name: OLLAMA_PRELOAD
+              value: "qwen2.5:7b-instruct-q4_K_M,granite3.1-dense:2b"
+            # Expose on 11435 so CPU (11434) and GPU (11435) can coexist
+            # in the same namespace without port conflict.
+            - name: OLLAMA_HOST
+              value: "0.0.0.0:11435"
+          ports:
+            - name: http
+              containerPort: 11435
+          resources:
+            requests:
+              cpu: "4"
+              memory: 16Gi
+              nvidia.com/gpu: "1"
+            limits:
+              cpu: "8"
+              memory: 32Gi
+              nvidia.com/gpu: "1"
+          volumeMounts:
+            - name: ollama-gpu-data
+              mountPath: /root/.ollama
+          livenessProbe:
+            httpGet:
+              path: /api/tags
+              port: 11435
+            # GPU driver init + model load can take up to 2 min
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /api/tags
+              port: 11435
+            initialDelaySeconds: 90
+            periodSeconds: 15
+  volumeClaimTemplates:
+    - metadata:
+        name: ollama-gpu-data
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 60Gi
+
+---
+# ── Headless service for StatefulSet DNS ────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama-gpu-service
+  namespace: i3-model-gateway
+  labels:
+    app: ollama-gpu
+    app.kubernetes.io/part-of: i3-platform
+    i3.platform/pool: gpu
+spec:
+  selector:
+    app: ollama-gpu
+  ports:
+    - name: http
+      port: 11435
+      targetPort: 11435
+  clusterIP: None
+
+---
+# ── ClusterIP alias for LiteLLM api_base ─────────────────────
+# LiteLLM GPU model entries use this address as primary api_base.
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama-gpu
+  namespace: i3-model-gateway
+  labels:
+    app: ollama-gpu
+    app.kubernetes.io/part-of: i3-platform
+    i3.platform/pool: gpu
+spec:
+  selector:
+    app: ollama-gpu
+  ports:
+    - name: http
+      port: 11435
+      targetPort: 11435

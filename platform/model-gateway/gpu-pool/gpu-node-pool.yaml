@@ -1,0 +1,147 @@
+# ============================================================
+# IMP-10 — GPU Node Pool  [GAP]
+# ============================================================
+# ⚠ [GAP] GPU ACCELERATION NOT YET BENCHMARKED
+#   All GPU performance claims are GATED pending the benchmark
+#   harness at platform/model-gateway/gpu-pool/bench_gpu.py
+#   printing PASS for every production model alias.
+#
+# Purpose: Dedicate g-series (NVIDIA A10 / T4) worker nodes to
+#          LLM inference. CPU pool remains at bx2.4x16 (unchanged).
+#
+# Targeting OpenShift/IKS on IBM Cloud — using MachineSet CRD.
+# Adjust spec.template.spec.providerSpec for your cloud provider.
+# ============================================================
+
+---
+# ── Namespace label for GPU scheduling ──────────────────────
+# The i3-model-gateway namespace already exists; we only add
+# the gpu-workloads label so the RuntimeClass selector applies.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-model-gateway
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.platform/gpu-workloads: "true"
+
+---
+# ── GPU MachineSet — OpenShift Machine API ──────────────────
+# Provider: IBM Cloud VPC — gx2-8x64x1v100 (NVIDIA V100 16GB)
+# Scale floor: 1 node always warm. KEDA ceiling: 3 nodes.
+# Change providerSpec.value.profile to suit your cloud account.
+# [GAP] Node count is advisory until benchmark PASS.
+apiVersion: machine.openshift.io/v1beta1
+kind: MachineSet
+metadata:
+  name: i3-gpu-pool
+  namespace: openshift-machine-api
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.platform/pool: gpu
+  annotations:
+    i3.platform/imp: "IMP-10"
+    i3.platform/gap: "GPU performance gated — run bench_gpu.py first"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      machine.openshift.io/cluster-api-machine-role: gpu-worker
+      machine.openshift.io/cluster-api-machine-type: worker
+  template:
+    metadata:
+      labels:
+        machine.openshift.io/cluster-api-machine-role: gpu-worker
+        machine.openshift.io/cluster-api-machine-type: worker
+        # Node label consumed by vllm-gpu-deploy.yaml nodeSelector
+        node-role.kubernetes.io/gpu-worker: ""
+    spec:
+      metadata:
+        labels:
+          node-role.kubernetes.io/gpu-worker: ""
+          # Taint key also set below — label is for affinity rules
+          i3.platform/pool: gpu
+      taints:
+        # Prevent non-GPU workloads landing on these nodes.
+        # Only pods with tolerations: [{key: "i3.platform/gpu", effect: NoSchedule}]
+        # will be scheduled here.
+        - key: i3.platform/gpu
+          effect: NoSchedule
+          value: "true"
+      providerSpec:
+        value:
+          apiVersion: ibmcloudproviderconfig.openshift.io/v1beta1
+          kind: IBMCloudMachineProviderSpec
+          # ── Adjust these three fields for your IBM Cloud account ──
+          region: eu-de
+          zone: eu-de-2
+          profile: gx2-8x64x1v100    # 8 vCPU · 64 GB RAM · 1× V100-16GB
+          # ─────────────────────────────────────────────────────────
+          image: rhcos-414-92-gpu
+          primaryNetworkInterface:
+            subnet: "REPLACE_WITH_SUBNET_ID"
+          resourceGroup: "REPLACE_WITH_RESOURCE_GROUP"
+          vpc: "REPLACE_WITH_VPC_ID"
+          userDataSecret:
+            name: worker-user-data
+          credentialsSecret:
+            name: ibmcloud-credentials
+
+---
+# ── NVIDIA GPU Operator — minimal install trigger ────────────
+# The full GPU Operator deploy is managed via OLM subscription.
+# This config only sets the NodeFeatureDiscovery selector so
+# the operator targets the i3-gpu-pool taint.
+# Install the operator first: `oc apply -f gpu-operator-subscription.yaml`
+# (see docs/gpu-operator-install.md — not generated here).
+apiVersion: nvidia.com/v1
+kind: ClusterPolicy
+metadata:
+  name: gpu-cluster-policy
+  annotations:
+    i3.platform/imp: "IMP-10"
+    i3.platform/gap: "Apply after GPU Operator OLM subscription is active"
+spec:
+  operator:
+    defaultRuntime: crio
+  daemonsets:
+    tolerations:
+      - key: i3.platform/gpu
+        operator: Exists
+        effect: NoSchedule
+  devicePlugin:
+    enabled: true
+  driver:
+    enabled: true
+  toolkit:
+    enabled: true
+  validator:
+    plugin:
+      env:
+        - name: WITH_WORKLOAD
+          value: "true"
+
+---
+# ── RuntimeClass: nvidia (required for GPU pods) ─────────────
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: nvidia
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+handler: nvidia
+
+---
+# ── ResourceQuota: cap GPU requests per namespace ────────────
+# Prevents runaway GPU allocation from a single tenant.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: gpu-quota
+  namespace: i3-model-gateway
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  hard:
+    requests.nvidia.com/gpu: "3"
+    limits.nvidia.com/gpu: "3"

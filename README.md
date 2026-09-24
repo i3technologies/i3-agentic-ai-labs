@@ -141,7 +141,10 @@ copy .env.example .env
 
 Edit `.env` and set:
 ```ini
-DEV_BYPASS_AUTH=true
+# HC-7: DEV_BYPASS_AUTH has been removed. Use a real Keycloak token for local dev.
+# See platform/docs/02-keycloak-sso-guide.html for local realm setup.
+KEYCLOAK_ISSUER=https://sso.i3technologies.co.ke/realms/i3
+KEYCLOAK_JWKS_URI=https://sso.i3technologies.co.ke/realms/i3/protocol/openid-connect/certs
 LITELLM_URL=http://localhost:4000/v1
 LITELLM_KEY=local-test-key
 CHROMA_HOST=localhost

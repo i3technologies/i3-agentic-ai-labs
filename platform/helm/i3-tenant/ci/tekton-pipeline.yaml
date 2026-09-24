@@ -1,0 +1,99 @@
+# ============================================================
+# Tekton Pipeline — i3-tenant chart CI (IMP-08 / Workstream B4)
+# Runs on every PR that touches platform/helm/i3-tenant/**
+# Gates: lint → template-no-masterkey → unittest
+# ============================================================
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: i3-tenant-chart-ci
+  namespace: i3-gitops
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/workstream: B4
+    i3.io/adr: IMP-08
+spec:
+  params:
+    - name: repo-url
+      type: string
+    - name: revision
+      type: string
+      default: main
+
+  workspaces:
+    - name: source
+
+  tasks:
+
+    # ── Gate 1: helm lint ─────────────────────────────────────
+    - name: helm-lint
+      taskRef:
+        name: helm-lint
+        kind: ClusterTask
+      workspaces:
+        - name: source
+          workspace: source
+      params:
+        - name: charts_dir
+          value: platform/helm/i3-tenant
+        - name: values_files
+          value: platform/helm/i3-tenant/tenants/machakos.yaml
+
+    # ── Gate 2: no master-key in rendered output ──────────────
+    - name: no-master-key-check
+      runAfter: [helm-lint]
+      taskRef:
+        name: shell-script
+        kind: ClusterTask
+      workspaces:
+        - name: source
+          workspace: source
+      params:
+        - name: script
+          value: |
+            set -euo pipefail
+            RENDER=$(helm template cust-machakos platform/helm/i3-tenant \
+              -f platform/helm/i3-tenant/tenants/machakos.yaml)
+            if echo "$RENDER" | grep -iE "(master.?key|LITELLM_MASTER_KEY)"; then
+              echo "FAIL: master-key reference found in rendered chart output"
+              exit 1
+            fi
+            echo "PASS: no master-key reference in rendered output"
+
+    # ── Gate 3: helm unittest (tests a-d) ─────────────────────
+    - name: helm-unittest
+      runAfter: [no-master-key-check]
+      taskRef:
+        name: helm-unittest
+        kind: ClusterTask
+      workspaces:
+        - name: source
+          workspace: source
+      params:
+        - name: charts_dir
+          value: platform/helm/i3-tenant
+
+    # ── Gate 4: default-deny policy assertion ─────────────────
+    - name: default-deny-check
+      runAfter: [no-master-key-check]
+      taskRef:
+        name: shell-script
+        kind: ClusterTask
+      workspaces:
+        - name: source
+          workspace: source
+      params:
+        - name: script
+          value: |
+            set -euo pipefail
+            RENDER=$(helm template cust-machakos platform/helm/i3-tenant \
+              -f platform/helm/i3-tenant/tenants/machakos.yaml)
+            if ! echo "$RENDER" | grep -q "name: default-deny-all"; then
+              echo "FAIL: default-deny-all NetworkPolicy not found"
+              exit 1
+            fi
+            if ! echo "$RENDER" | grep -q "podSelector: {}"; then
+              echo "FAIL: default-deny podSelector is not empty (should match all pods)"
+              exit 1
+            fi
+            echo "PASS: default-deny-all NetworkPolicy present and correct"

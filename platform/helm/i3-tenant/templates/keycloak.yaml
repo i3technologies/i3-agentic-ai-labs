@@ -1,0 +1,51 @@
+# ============================================================
+# i3-tenant / keycloak.yaml
+# Provisions Keycloak Group + client-scope role bindings via
+# the keycloak-operator CRDs (KeycloakGroup, KeycloakClientScope).
+# HC-4: tenant_id embedded in group path for audit traceability.
+# ============================================================
+---
+# KeycloakRealmImport — idempotent group + role creation
+# Uses the keycloak-operator v22+ API.
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: KeycloakRealmImport
+metadata:
+  name: {{ include "i3-tenant.namespace" . }}-realm-import
+  namespace: i3-auth
+  labels:
+    {{ include "i3-tenant.labels" . | nindent 4 }}
+spec:
+  keycloakCRName: i3-keycloak
+  realm:
+    id: {{ .Values.keycloak.realm | quote }}
+    realm: {{ .Values.keycloak.realm | quote }}
+    # Partial import — only the group and role definitions below are applied.
+    # Existing realm settings are NOT overwritten.
+    clients:
+      - clientId: {{ .Values.keycloak.clientId | quote }}
+        # Add tenant-scoped roles onto the existing client.
+        # keycloak-operator merges rather than replaces when id is omitted.
+        roles:
+          {{- range .Values.keycloak.roles }}
+          - name: {{ printf "%s-%s" $.Values.tenant.slug . | quote }}
+            description: {{ printf "Tenant %s — %s access" $.Values.tenant.slug . | quote }}
+            attributes:
+              tenant_id:
+                - {{ $.Values.tenant.id | quote }}
+              tier:
+                - {{ $.Values.tier | quote }}
+          {{- end }}
+    groups:
+      - name: {{ printf "tenant-%s" .Values.tenant.slug | quote }}
+        path: {{ printf "/tenants/%s" .Values.tenant.slug | quote }}
+        attributes:
+          tenant_id:
+            - {{ .Values.tenant.id | quote }}
+          tier:
+            - {{ .Values.tier | quote }}
+        realmRoles: []
+        clientRoles:
+          {{ .Values.keycloak.clientId | quote }}:
+            {{- range .Values.keycloak.roles }}
+            - {{ printf "%s-%s" $.Values.tenant.slug . | quote }}
+            {{- end }}

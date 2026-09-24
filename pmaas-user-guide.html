@@ -1,0 +1,188 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PMaaS User Guide — i3 Technologies</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.6;color:#1f2328;background:#fff}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 24px}
+  h1{font-size:26px;font-weight:700;color:#1f2328;margin-bottom:4px}
+  h2{font-size:18px;font-weight:600;color:#3b82d4;margin:32px 0 10px;padding-bottom:4px;border-bottom:2px solid #e5e7eb}
+  h3{font-size:15px;font-weight:600;color:#1f2328;margin:18px 0 6px}
+  p{margin-bottom:10px}
+  ul,ol{margin:0 0 10px 20px}
+  li{margin-bottom:4px}
+  a{color:#3b82d4;text-decoration:none}
+  a:hover{text-decoration:underline}
+  .cover{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:20px 24px;margin-bottom:28px}
+  .cover h1{margin-bottom:8px}
+  .toc{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:16px 20px;margin-bottom:28px}
+  .toc h3{margin-top:0;margin-bottom:10px;font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:#57606a}
+  .toc ol{margin-left:18px}
+  .toc li{margin-bottom:3px;font-size:14px}
+  table{width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:14px}
+  th{background:#f7f8fa;text-align:left;padding:8px 10px;border:1px solid #e5e7eb;font-weight:600}
+  td{padding:8px 10px;border:1px solid #e5e7eb;vertical-align:top}
+  tr:nth-child(even) td{background:#fafafa}
+  .steps{counter-reset:step;list-style:none;margin-left:0}
+  .steps li{counter-increment:step;display:flex;gap:12px;margin-bottom:10px;align-items:flex-start}
+  .steps li::before{content:counter(step);min-width:26px;height:26px;border-radius:50%;background:#3b82d4;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+  .note{background:#eff6ff;border-left:4px solid #3b82d4;padding:10px 14px;margin:12px 0;font-size:14px;border-radius:0 4px 4px 0}
+  .warn{background:#fffbeb;border-left:4px solid #f59e0b;padding:10px 14px;margin:12px 0;font-size:14px;border-radius:0 4px 4px 0}
+  .note strong,.warn strong{display:block;margin-bottom:2px}
+  .tag{display:inline-block;background:#e5e7eb;color:#57606a;font-size:12px;padding:1px 7px;border-radius:3px;font-family:monospace}
+  .footer{text-align:center;font-size:12px;color:#57606a;margin-top:40px;padding-top:16px;border-top:1px solid #e5e7eb}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="cover">
+    <h1>PMaaS User Guide</h1>
+    <p style="color:#57606a;margin-bottom:12px">Political Campaign Management as a Service</p>
+    <div style="font-size:13px;color:#57606a">
+      <span><strong>Platform URL:</strong> <a href="https://pmaas.i3technologies.co.ke">pmaas.i3technologies.co.ke</a></span>  
+      <span><strong>Support:</strong> <a href="mailto:support@i3technologies.co.ke">support@i3technologies.co.ke</a></span>
+    </div>
+  </div>
+
+  <div class="toc">
+    <h3>Table of Contents</h3>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#login">Login &amp; Account Setup</a></li>
+      <li><a href="#dashboard">Dashboard</a></li>
+      <li><a href="#campaigns">Managing Campaigns</a></li>
+      <li><a href="#ai-briefing">AI Campaign Briefing</a></li>
+      <li><a href="#voters">Voter &amp; Constituency Management</a></li>
+      <li><a href="#mpesa">M-Pesa Payments</a></li>
+      <li><a href="#reports">Reports &amp; Analytics</a></li>
+      <li><a href="#dawa">Dawa AI Co-worker</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+    </ol>
+  </div>
+
+  <h2 id="overview">1 — Overview</h2>
+  <p>PMaaS (Political Management as a Service) is a comprehensive campaign operations platform designed for Kenyan political campaigns. It combines voter data management, mass communication, AI-powered strategic briefings, and M-Pesa payment processing in a single, secure platform.</p>
+  <table>
+    <tr><th>Feature</th><th>Description</th></tr>
+    <tr><td>Campaign Management</td><td>Create and track multiple concurrent campaigns with milestones and budgets</td></tr>
+    <tr><td>AI Briefing</td><td>AI-generated strategic briefs based on voter data, demographics, and issue tracking</td></tr>
+    <tr><td>Voter Database</td><td>Import, segment, and manage voter records by ward, constituency, and county</td></tr>
+    <tr><td>M-Pesa Integration</td><td>Collect harambee contributions and pay field agents via Safaricom Daraja API</td></tr>
+    <tr><td>Dawa Co-worker</td><td>AI assistant for campaign strategy, speech drafting, and issue analysis</td></tr>
+  </table>
+
+  <h2 id="login">2 — Login &amp; Account Setup</h2>
+  <ol class="steps">
+    <li>Navigate to <a href="https://pmaas.i3technologies.co.ke">https://pmaas.i3technologies.co.ke</a>.</li>
+    <li>Click <strong>Sign In</strong> — you are redirected to the i3 SSO portal.</li>
+    <li>Enter your <span class="tag">@i3technologies.co.ke</span> email and password, then click <strong>Log In</strong>.</li>
+    <li>On first login, complete your profile: name, role (Campaign Manager / Field Coordinator / Finance Officer), and region.</li>
+  </ol>
+  <div class="note"><strong>Note</strong>Your role determines which modules you can access. Campaign Managers have full access; Field Coordinators see voter data and scheduling only; Finance Officers access the M-Pesa module.</div>
+
+  <h2 id="dashboard">3 — Dashboard</h2>
+  <p>The Dashboard provides a real-time overview of all active campaigns.</p>
+  <table>
+    <tr><th>Widget</th><th>Description</th></tr>
+    <tr><td>Active Campaigns</td><td>Count of running campaigns with completion percentage</td></tr>
+    <tr><td>Voter Reach</td><td>Total voters contacted this week vs. target</td></tr>
+    <tr><td>Budget Utilisation</td><td>Spend-to-date vs. approved budget (M-Pesa outflows)</td></tr>
+    <tr><td>Upcoming Events</td><td>Rallies, barazas, and meetings in the next 7 days</td></tr>
+    <tr><td>AI Brief Status</td><td>Whether the latest AI strategic brief has been generated and reviewed</td></tr>
+  </table>
+
+  <h2 id="campaigns">4 — Managing Campaigns</h2>
+  <h3>4.1 Creating a Campaign</h3>
+  <ol class="steps">
+    <li>Click <strong>Campaigns</strong> in the sidebar, then <strong>New Campaign</strong>.</li>
+    <li>Fill in campaign name, election type (General / By-election / Party Primary), target seat, and election date.</li>
+    <li>Set a campaign budget and assign a Campaign Manager.</li>
+    <li>Click <strong>Create</strong>. The campaign workspace opens with Milestones, Voter Map, and Communications tabs.</li>
+  </ol>
+  <h3>4.2 Adding Milestones</h3>
+  <ol class="steps">
+    <li>Inside the campaign, click the <strong>Milestones</strong> tab.</li>
+    <li>Click <strong>Add Milestone</strong>. Enter name, due date, responsible person, and success criteria.</li>
+    <li>Mark milestones complete by clicking the checkbox when done. Progress updates the campaign progress bar on the Dashboard.</li>
+  </ol>
+
+  <h2 id="ai-briefing">5 — AI Campaign Briefing</h2>
+  <p>The AI Briefing feature uses the on-cluster Qwen 14B model to analyse your campaign data and generate a strategic brief covering voter sentiment, key issues, and recommended talking points.</p>
+  <ol class="steps">
+    <li>Open a campaign and click the <strong>AI Brief</strong> tab.</li>
+    <li>Select the brief type: <em>Weekly Strategy</em>, <em>Event Preparation</em>, or <em>Opposition Analysis</em>.</li>
+    <li>Optionally add context: paste in recent news articles, survey data, or specific questions.</li>
+    <li>Click <strong>Generate Brief</strong>. The AI processes your campaign data and returns a structured brief (usually within 30–60 seconds).</li>
+    <li>Review the brief. Use <strong>Export PDF</strong> to save or <strong>Share</strong> to send to team members.</li>
+  </ol>
+  <div class="note"><strong>Note</strong>AI briefs are generated entirely on-cluster. No campaign data is sent to external services.</div>
+
+  <h2 id="voters">6 — Voter &amp; Constituency Management</h2>
+  <h3>6.1 Importing Voter Data</h3>
+  <ol class="steps">
+    <li>Go to <strong>Voters</strong> in the sidebar, then click <strong>Import</strong>.</li>
+    <li>Download the CSV template and populate it with voter records (ID number, name, ward, polling station, phone).</li>
+    <li>Upload the completed CSV. The system validates and deduplicates records.</li>
+  </ol>
+  <h3>6.2 Segmenting Voters</h3>
+  <p>Use the <strong>Filter</strong> panel to slice the voter database by ward, age group, gender, or contact status. Saved segments can be used as targets for SMS or WhatsApp campaigns via the Engage integration.</p>
+
+  <h2 id="mpesa">7 — M-Pesa Payments</h2>
+  <p>PMaaS integrates with the Safaricom Daraja API for both inbound collections (harambee, contributions) and outbound disbursements (field agent allowances).</p>
+  <h3>7.1 Collecting Contributions (STK Push)</h3>
+  <ol class="steps">
+    <li>Go to <strong>Payments</strong> → <strong>Collect</strong>.</li>
+    <li>Enter the contributor's phone number (format: <span class="tag">2547XXXXXXXX</span>), amount, and reference.</li>
+    <li>Click <strong>Send STK Push</strong>. The contributor receives a prompt on their phone to enter their M-Pesa PIN.</li>
+    <li>Status updates to <em>Confirmed</em> once payment completes. The transaction appears in Payments history.</li>
+  </ol>
+  <h3>7.2 Paying Field Agents (B2C)</h3>
+  <ol class="steps">
+    <li>Go to <strong>Payments</strong> → <strong>Disburse</strong>.</li>
+    <li>Select agents from your Field Staff list or upload a CSV with phone numbers and amounts.</li>
+    <li>Add a narration (e.g. "Allowance – Nairobi Rally 12 Jul") and click <strong>Confirm Disbursement</strong>.</li>
+    <li>Each agent receives a Safaricom SMS confirmation. Transactions are logged with timestamps.</li>
+  </ol>
+  <div class="warn"><strong>Warning</strong>Disbursements are irreversible once confirmed. Double-check all phone numbers and amounts before proceeding.</div>
+
+  <h2 id="reports">8 — Reports &amp; Analytics</h2>
+  <table>
+    <tr><th>Report</th><th>Description</th></tr>
+    <tr><td>Voter Contact Report</td><td>Calls/SMSes made per ward; response rates and follow-up status</td></tr>
+    <tr><td>Financial Summary</td><td>All M-Pesa inflows and outflows with running balance</td></tr>
+    <tr><td>Campaign Progress</td><td>Milestones achieved vs. planned; days to election</td></tr>
+    <tr><td>Event Attendance</td><td>RSVP vs. actual headcount for rallies and barazas</td></tr>
+  </table>
+  <p>All reports can be exported as CSV or PDF via the <strong>Export</strong> button on each report page.</p>
+
+  <h2 id="dawa">9 — Dawa AI Co-worker</h2>
+  <p>Dawa is PMaaS's embedded AI assistant, specialised in political campaign strategy, communications drafting, and Kenya-specific electoral context.</p>
+  <table>
+    <tr><th>Task</th><th>Sample Prompt</th></tr>
+    <tr><td>Draft a speech</td><td>"Draft a 5-minute rally speech for a gubernatorial candidate focused on youth employment in Nairobi."</td></tr>
+    <tr><td>Analyse an issue</td><td>"What are the top 3 concerns for farmers in the Mt Kenya region heading into the 2027 election?"</td></tr>
+    <tr><td>Prepare for a debate</td><td>"What questions is my opponent likely to raise about road infrastructure in Kisumu County?"</td></tr>
+    <tr><td>Write a press statement</td><td>"Write a press statement responding to allegations about delayed CDF disbursements."</td></tr>
+    <tr><td>Voter messaging</td><td>"Draft 3 SMS messages (under 160 chars each) urging voter registration ahead of the deadline."</td></tr>
+  </table>
+  <p>Access Dawa from the chat bubble (bottom-right) on any PMaaS page.</p>
+
+  <h2 id="troubleshooting">10 — Troubleshooting</h2>
+  <table>
+    <tr><th>Issue</th><th>Fix</th></tr>
+    <tr><td>M-Pesa STK push not received</td><td>Confirm phone number format is <span class="tag">2547XXXXXXXX</span>. Ensure M-Pesa is active on the SIM. Retry after 2 minutes.</td></tr>
+    <tr><td>AI Brief taking too long</td><td>Large campaigns with many voter records may take up to 2 minutes. If it exceeds 3 minutes, click Cancel and retry.</td></tr>
+    <tr><td>CSV import fails</td><td>Download a fresh template — column order must match exactly. Ensure phone numbers have no spaces or dashes.</td></tr>
+    <tr><td>Cannot see Payments module</td><td>Your role may not have Finance access. Contact your Campaign Manager to update your permissions.</td></tr>
+    <tr><td>Login loop</td><td>Clear cookies for <span class="tag">pmaas.i3technologies.co.ke</span> and <span class="tag">sso.i3technologies.co.ke</span>, then retry.</td></tr>
+  </table>
+  <p><strong>Support:</strong> <a href="mailto:support@i3technologies.co.ke">support@i3technologies.co.ke</a></p>
+
+  <div class="footer">Made with IBM Bob</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,462 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 Technologies — Master AI Platform Plan v3.0</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:13px;line-height:1.65;color:#1f2328;background:#fff;padding:24px 14px 60px}
+.page{max-width:860px;margin:0 auto}
+h1{font-size:23px;font-weight:800;margin-bottom:3px;letter-spacing:-.3px}
+.meta{font-size:11.5px;color:#57606a;border-bottom:3px solid #1f2328;padding-bottom:10px;margin-bottom:22px}
+/* Section headers */
+.sec{font-size:14px;font-weight:800;color:#fff;background:#1e3a5f;padding:7px 14px;margin:28px 0 0;border-radius:4px 4px 0 0;letter-spacing:.3px;display:flex;align-items:center;gap:10px}
+.sec .snum{background:rgba(255,255,255,.2);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.block{border:1px solid #d0d7de;border-top:none;border-radius:0 0 6px 6px;margin-bottom:4px}
+/* Subsection */
+.sub{font-size:12.5px;font-weight:700;color:#1e3a5f;background:#f0f4f8;padding:6px 14px;border-bottom:1px solid #d0d7de;display:flex;align-items:center;gap:8px}
+p{padding:6px 14px;font-size:13px;color:#1f2328;margin:0}
+ul,ol{padding:4px 14px 8px 32px}
+li{margin-bottom:3px;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#f0f4f8;text-align:left;padding:6px 9px;font-weight:600;font-size:11px;color:#57606a;border:1px solid #d0d7de}
+td{padding:6px 9px;border:1px solid #d0d7de;vertical-align:top;word-break:break-word}
+tr:nth-child(even) td{background:#fafbfc}
+code{font-family:ui-monospace,monospace;font-size:11px;background:#f3f4f6;padding:1px 5px;border-radius:3px}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10.5px;font-weight:700;white-space:nowrap}
+.ok{background:#d1fae5;color:#065f46}
+.warn{background:#fef9c3;color:#854d0e}
+.new{background:#dbeafe;color:#1e40af}
+.ai{background:#ede9fe;color:#5b21b6}
+.hot{background:#fee2e2;color:#991b1b}
+.gray{background:#f3f4f6;color:#374151}
+.orange{background:#ffedd5;color:#9a3412}
+/* Grid layouts */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 14px}
+/* Card */
+.card{background:#f7f8fa;border:1px solid #d0d7de;border-radius:5px;padding:10px 12px}
+.card-title{font-size:12px;font-weight:700;color:#1e3a5f;margin-bottom:5px;display:flex;align-items:center;gap:6px}
+.card-body{font-size:12px;color:#57606a}
+/* Arch diagram via table */
+.arch{width:100%;margin:10px 14px;max-width:820px}
+.arch td{text-align:center;padding:8px;border-radius:4px;font-size:11px;font-weight:600;border:2px solid transparent}
+.layer-label{font-size:10px;font-weight:700;color:#57606a;text-transform:uppercase;letter-spacing:.5px;padding:4px 14px;background:#f0f4f8;border-top:1px solid #d0d7de;border-bottom:1px solid #d0d7de}
+/* Phase boxes */
+.phase{background:#f7f8fa;border:1px solid #d0d7de;border-radius:4px;padding:10px 12px;margin:8px 14px}
+.phase-hdr{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.phase-title{font-size:13px;font-weight:700;color:#1f2328}
+.phase-tag{font-size:10px;background:#1e3a5f;color:#fff;padding:2px 8px;border-radius:10px;font-weight:700}
+.phase-weeks{font-size:10px;color:#57606a}
+/* Info boxes */
+.infobox{border-left:4px solid #3b82d4;background:#eff6ff;padding:8px 12px;margin:8px 14px;border-radius:0 4px 4px 0;font-size:12.5px}
+.warnbox{border-left:4px solid #f59e0b;background:#fffbeb;padding:8px 12px;margin:8px 14px;border-radius:0 4px 4px 0;font-size:12.5px}
+.notebox{border-left:4px solid #8b5cf6;background:#f5f3ff;padding:8px 12px;margin:8px 14px;border-radius:0 4px 4px 0;font-size:12.5px}
+.ns-row{display:grid;grid-template-columns:140px 1fr 90px 90px;gap:0;font-size:12px;border-bottom:1px solid #e5e7eb;padding:5px 14px;align-items:center}
+.ns-row:last-child{border-bottom:none}
+.ns-row.hdr{font-weight:700;font-size:11px;color:#57606a;background:#f0f4f8;border-bottom:2px solid #d0d7de}
+footer{margin-top:48px;padding-top:12px;border-top:1px solid #e5e7eb;text-align:center;font-size:12px;color:#57606a}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>i3 Technologies — Master AI Platform Implementation Plan v3.0</h1>
+<div class="meta">
+  <strong>Date:</strong> 10 September 2026  · 
+  <strong>Cluster:</strong> IBM ROKS 4.17, eu-de (Frankfurt), 12 × bx2.4x16 nodes, 192 GB RAM  · 
+  <strong>Constraint:</strong> IBM Credits = Compute only. 100% open-source AI stack.  · 
+  <strong>Scope:</strong> i3 Internal Platform + Commercial Products + AI Lab + PMaaS + AfroERP + i3-Engage  · 
+  <strong>Note:</strong> 8 Customer Solution deployments are EXCLUDED — separate server.
+</div>
+
+
+<div class="sec"><span class="snum">1</span> Strategic Context &amp; Architecture Principles</div>
+<div class="block">
+  <div class="infobox">
+    <strong>Core Mandate:</strong> Build a fully commercialisable, open-source AI platform on IBM ROKS compute. Every service must be licensable, white-labelable, or offered as SaaS. The platform serves: (1) i3 internal operations, (2) commercial AI product suite (PMaaS, AfroERP, i3-Engage, EvalOS, AI Lab), (3) training — Bootcamps, Agentic AI Summit, Hackathons, Customer Workshops. The 8 customer solution deployments run on a separate server and are referenced here only for integration points.
+  </div>
+  <div class="notebox">
+    <strong>Key architectural decision:</strong> Every customer-facing solution gets an <strong>AI Co-worker</strong> (chat + voice + tools sidebar), an <strong>autonomous agent</strong> layer for background tasks, and a <strong>multimodal interface</strong> (text, voice, image). All AI runs through a single <strong>LiteLLM gateway</strong> so models can be swapped without touching application code.
+  </div>
+  <div class="sub">The 6 Platform Products (On This Server)</div>
+  <div class="grid2" style="padding-bottom:12px">
+    <div class="card"><div class="card-title"><span class="badge new">1</span> EvalOS — AI Skills Assessment Platform</div><div class="card-body">Certification readiness, coding labs, AI interview, talent intelligence. Target: enterprises, universities, certification bodies.</div></div>
+    <div class="card"><div class="card-title"><span class="badge new">2</span> PMaaS — Political Campaign OS</div><div class="card-body">AI voice-clone voter outreach, war room analytics, ward targeting, M-Pesa donations. Target: Kenyan political candidates.</div></div>
+    <div class="card"><div class="card-title"><span class="badge new">3</span> AfroERP — African Business OS</div><div class="card-body">ERPNext + CRM + M-Pesa + KRA eTIMS + AI agents. Target: Kenyan SMEs, pan-African expansion.</div></div>
+    <div class="card"><div class="card-title"><span class="badge new">4</span> i3-Engage Cloud — Customer 360 CDP</div><div class="card-body">Omnichannel CDP + WhatsApp/SMS/Email automation + AI campaign agents. Target: agencies, banks, SACCOs, insurers.</div></div>
+    <div class="card"><div class="card-title"><span class="badge ai">5</span> AI Lab — Innovation &amp; Training Hub</div><div class="card-body">Bootcamps, Hackathons, Agentic AI Summit, Customer Workshops. Per-cohort isolated sandboxes. Commercial training.</div></div>
+    <div class="card"><div class="card-title"><span class="badge ai">6</span> Onboarding Agent — Platform Entry Point</div><div class="card-body">Agentic onboarding for all platform products. Connects Keycloak, Directus, EvalOS, MCP connectors.</div></div>
+  </div>
+</div>
+
+
+<div class="sec"><span class="snum">2</span> Complete Open-Source AI Stack — All Components</div>
+<div class="block">
+  <div class="sub">2.1 — Core AI Infrastructure (100% Open-Source)</div>
+  <table>
+    <tr><th>Component</th><th>Technology</th><th>Licence</th><th>Replaces</th><th>Purpose</th></tr>
+    <tr><td><strong>LLM Inference</strong></td><td>Ollama 0.5+</td><td>MIT</td><td>watsonx.ai SaaS</td><td>Serves all language models via REST API. CPU-optimised GGUF. On-demand model loading.</td></tr>
+    <tr><td><strong>AI Gateway / Router</strong></td><td>LiteLLM Proxy</td><td>MIT</td><td>watsonx Orchestrate orchestration</td><td>OpenAI-compatible API. Routes to correct model, retries, rate-limits, logs all calls to Langfuse.</td></tr>
+    <tr><td><strong>Agent Orchestration</strong></td><td>LangGraph (Python) + LangChain</td><td>MIT</td><td>watsonx Orchestrate agent flows</td><td>Multi-agent workflows. Graph-based stateful agent execution. Tool calling. Used in: admissions-agent, study-coach, PMaaS caller agent, AfroERP finance agent.</td></tr>
+    <tr><td><strong>Agentic Co-worker UI</strong></td><td>Open WebUI (LibreChat fork)</td><td>MIT</td><td>Claude co-worker / ChatGPT</td><td>Full-featured chat UI with tools sidebar, code execution, file upload, voice, RAG toggle, agent switching. White-labelable.</td></tr>
+    <tr><td><strong>Voice Synthesis (TTS)</strong></td><td>Coqui TTS / XTTS-v2</td><td>MPL-2.0</td><td>ElevenLabs / Azure TTS</td><td>High-quality multilingual TTS. XTTS-v2 = zero-shot voice cloning from 6 seconds of audio. Powers PMaaS AI caller.</td></tr>
+    <tr><td><strong>Voice Recognition (STT)</strong></td><td>OpenAI Whisper (faster-whisper)</td><td>MIT</td><td>Google Speech API</td><td>Multilingual speech-to-text. Supports Swahili, English, Kikuyu. Used in: AI interviews, PMaaS inbound, AI Lab voice queries.</td></tr>
+    <tr><td><strong>Voice Cloning</strong></td><td>XTTS-v2 (Coqui)</td><td>MPL-2.0</td><td>ElevenLabs voice cloning</td><td>Clone any voice from sample audio. Candidate voice cloning for PMaaS. Trainer voice cloning for AI Lab. On-cluster, private data.</td></tr>
+    <tr><td><strong>Embeddings</strong></td><td>nomic-embed-text:v1.5 (Ollama)</td><td>Apache 2.0</td><td>OpenAI text-embedding</td><td>768-dim dense embeddings for RAG. 274 MB, CPU-native. Used by ChromaDB for all vector search.</td></tr>
+    <tr><td><strong>Vector Database</strong></td><td>ChromaDB</td><td>Apache 2.0</td><td>Pinecone / Weaviate (SaaS)</td><td>On-cluster vector store. Collections: exam-corpus, onboarding-docs, erpnext-kb, engage-campaigns, pmaas-voter-data.</td></tr>
+    <tr><td><strong>Workflow / Agent Automation</strong></td><td>n8n (self-hosted)</td><td>Sustainable Use</td><td>Zapier / watsonx Orchestrate flows</td><td>Event-driven automation. Connects all services. Already live. Extended with AI nodes for each product.</td></tr>
+    <tr><td><strong>LLM Observability</strong></td><td>Langfuse v2</td><td>MIT</td><td>IBM OpenScale</td><td>Trace every LLM call: latency, tokens, cost, errors. Per-product dashboards. Already partially live.</td></tr>
+    <tr><td><strong>Multimodal (Vision)</strong></td><td>LLaVA:13B Q4 (Ollama)</td><td>Apache 2.0</td><td>watsonx granite-vision</td><td>Image + text understanding. Document OCR, certificate validation, diagram analysis in coding labs.</td></tr>
+    <tr><td><strong>Code Execution Sandbox</strong></td><td>EvalOS sandbox daemon (existing)</td><td>i3 proprietary</td><td>—</td><td>Safe code execution for AI Lab labs and EvalOS coding assessments. Already live in i3-evalos.</td></tr>
+    <tr><td><strong>Real-time AI Streaming</strong></td><td>Server-Sent Events (SSE) + WebSockets</td><td>Standard</td><td>—</td><td>Stream LLM tokens to UI as generated. Used in: Co-worker chat, Study Coach, AI interview feedback.</td></tr>
+    <tr><td><strong>Secrets Management</strong></td><td>OpenBao (HashiCorp Vault fork)</td><td>MPL-2.0</td><td>HashiCorp Vault (proprietary)</td><td>Already live (3-node HA in i3-security). All API keys, model keys, DB passwords stored here.</td></tr>
+  </table>
+
+  <div class="sub">2.2 — LLM Model Stack (All On-Cluster, CPU-Optimised)</div>
+  <table>
+    <tr><th>Model</th><th>Size</th><th>Licence</th><th>Tier</th><th>Primary Use Cases</th><th>Namespace</th></tr>
+    <tr><td><code>qwen2.5:14b-instruct-q4_K_M</code></td><td>9.0 GB</td><td>Apache 2.0</td><td><span class="badge ai">Tier 1 Heavy</span></td><td>PMaaS war room reports, AfroERP financial analysis, EvalOS AI interview evaluation, complex agent reasoning</td><td>i3-model-gateway</td></tr>
+    <tr><td><code>llava:13b-v1.6-mistral-q4</code></td><td>8.0 GB</td><td>Apache 2.0</td><td><span class="badge ai">Tier 1 Vision</span></td><td>Document OCR, certificate validation, coding lab diagram analysis, image Q&amp;A in AI Lab</td><td>i3-model-gateway</td></tr>
+    <tr><td><code>qwen2.5:7b-instruct-q4_K_M</code></td><td>4.7 GB</td><td>Apache 2.0</td><td><span class="badge new">Tier 2 RAG</span></td><td>EvalOS Study Coach, Onboarding Agent RAG, i3-Engage campaign suggestions, AfroERP assistant</td><td>i3-model-gateway</td></tr>
+    <tr><td><code>qwen2.5-coder:7b-instruct-q4_K_M</code></td><td>4.7 GB</td><td>Apache 2.0</td><td><span class="badge new">Tier 2 Code</span></td><td>AI Lab coding labs, EvalOS code assessment, AfroERP scripting assistant, Co-worker code mode</td><td>i3-model-gateway</td></tr>
+    <tr><td><code>mistral:7b-instruct-q4_K_M</code></td><td>4.4 GB</td><td>Apache 2.0</td><td><span class="badge new">Tier 2 Chat</span></td><td>EvalOS Study Coach (current), general chat baseline — already running</td><td>i3-ott</td></tr>
+    <tr><td><code>granite3.1-dense:2b</code></td><td>1.6 GB</td><td>Apache 2.0</td><td><span class="badge gray">Tier 3 Fast</span></td><td>Intent routing, quick classifications, short answer checks — already running</td><td>i3-model-gateway</td></tr>
+    <tr><td><code>nomic-embed-text:v1.5</code></td><td>0.3 GB</td><td>Apache 2.0</td><td><span class="badge gray">Tier 3 Embed</span></td><td>All RAG embeddings: ChromaDB ingest + query for all products</td><td>i3-model-gateway</td></tr>
+    <tr><td><code>XTTS-v2</code> (Coqui)</td><td>~1.8 GB</td><td>MPL-2.0</td><td><span class="badge orange">Voice TTS</span></td><td>Voice synthesis + cloning. PMaaS AI caller. AI Lab trainer voice. EvalOS audio feedback.</td><td>i3-voice</td></tr>
+    <tr><td><code>faster-whisper-large-v3</code></td><td>~1.5 GB</td><td>MIT</td><td><span class="badge orange">Voice STT</span></td><td>Speech-to-text. AI interviews, PMaaS inbound calls, AI Lab voice interaction.</td><td>i3-voice</td></tr>
+  </table>
+  <p style="padding:8px 14px;font-size:12px;color:#57606a"><strong>Total peak RAM (all models loaded):</strong> ~36 GB. Ollama uses on-demand loading — peak concurrent = 2 models ≈ 18 GB. i3-model-gateway quota: 64 Gi. Headroom: comfortable.</p>
+</div>
+
+
+<div class="sec"><span class="snum">3</span> Namespace Topology — Full Updated Architecture</div>
+<div class="block">
+  <div class="ns-row hdr"><span>Namespace</span><span>Services</span><span>Quota RAM</span><span>Status</span></div>
+  <div class="ns-row"><code>i3-data</code><span>PostgreSQL HA (PGO, 3-node) + pgbouncer · All product DBs</span><span>32 Gi</span><span><span class="badge ok">Live ✓</span></span></div>
+  <div class="ns-row"><code>i3-messaging</code><span>Apache Kafka KRaft (3 brokers) · Event bus for all products</span><span>16 Gi</span><span><span class="badge ok">Live ✓</span></span></div>
+  <div class="ns-row"><code>i3-security</code><span>OpenBao (3-node HA) · All secrets</span><span>8 Gi</span><span><span class="badge ok">Live ✓</span></span></div>
+  <div class="ns-row"><code>i3-auth</code><span>Keycloak (SSO for all products) · Realms: i3, pmaas, afroerp, engage, ailab</span><span>8 Gi</span><span><span class="badge ok">Live ✓</span></span></div>
+  <div class="ns-row"><code>i3-gitops</code><span>ArgoCD + Tekton Pipelines · GitOps for all deployments</span><span>16 Gi</span><span><span class="badge ok">Live ✓</span></span></div>
+  <div class="ns-row"><code>i3-model-gateway</code><span>LiteLLM Proxy · Ollama (Qwen14B+7B+Coder, LLaVA, Granite, Nomic) · Langfuse (gateway) · KEDA autoscaler</span><span>64 Gi</span><span><span class="badge warn">Partial — models pending</span></span></div>
+  <div class="ns-row"><code>i3-ai-lab</code><span>Open WebUI (Co-worker) · ChromaDB · JupyterHub · Cohort provisioner · RAG pipeline · Code executor</span><span>48 Gi</span><span><span class="badge hot">NEW — to build</span></span></div>
+  <div class="ns-row"><code>i3-voice</code><span>XTTS-v2 TTS service · faster-whisper STT · Voice clone API · WebRTC bridge</span><span>16 Gi (new)</span><span><span class="badge hot">NEW namespace</span></span></div>
+  <div class="ns-row"><code>i3-evalos</code><span>EvalOS Web (Next.js) · Sandbox daemon · Study Coach · AI Interview · Leaderboard · Question Bank</span><span>32 Gi</span><span><span class="badge ok">Live ✓ — extending</span></span></div>
+  <div class="ns-row"><code>i3-ott</code><span>OvenMediaEngine (live streaming) · SeaweedFS (500GB×3) · nginx-HLS · n8n · Directus CMS · Langfuse (EvalOS) · Redis · Ollama Mistral 7B</span><span>64 Gi</span><span><span class="badge ok">Live ✓</span></span></div>
+  <div class="ns-row"><code>i3-admissions</code><span>Admissions Agent (FastAPI) · ChromaDB · MCP Connectors · Onboarding Agent</span><span>32 Gi</span><span><span class="badge ok">Live ✓ — extending</span></span></div>
+  <div class="ns-row"><code>i3-pmaas</code><span>PMaaS Web (Next.js) · Campaign Agent · Voter Call Agent · Voice Clone pipeline · War Room dashboard · M-Pesa webhook</span><span>24 Gi (new)</span><span><span class="badge hot">NEW namespace</span></span></div>
+  <div class="ns-row"><code>i3-afroerp</code><span>ERPNext (Frappe) · Custom Kenya modules (M-Pesa, KRA eTIMS) · AfroERP AI Agent · Frappe workers</span><span>32 Gi (new)</span><span><span class="badge hot">NEW namespace</span></span></div>
+  <div class="ns-row"><code>i3-engage</code><span>i3-Engage Web · SMPP gateway · WhatsApp Cloud API relay · Campaign AI Agent · CDP analytics · Kafka consumers</span><span>16 Gi (new)</span><span><span class="badge hot">NEW namespace</span></span></div>
+  <div class="ns-row"><code>i3-monitoring</code><span>Prometheus · Grafana (all product dashboards) · Alertmanager · Loki (logs)</span><span>16 Gi</span><span><span class="badge ok">Live ✓ — extending</span></span></div>
+  <div class="ns-row"><code>ai-lab-cohort-*</code><span>Dynamic per-cohort sandboxes (provisioned by cohort-provisioner CronJob)</span><span>64 Gi shared</span><span><span class="badge ok">Provisioner live ✓</span></span></div>
+</div>
+
+
+<div class="sec"><span class="snum">4</span> AI Co-worker — The Universal Interface</div>
+<div class="block">
+  <div class="infobox">
+    Every product gets an <strong>AI Co-worker</strong> — a Claude-like persistent chat+tools sidebar embedded in the app UI. Built on <strong>Open WebUI</strong> (MIT, self-hosted, white-labelable). Each product has its own white-labelled instance with its own system prompt, tool set, and RAG corpus. All route through LiteLLM gateway.
+  </div>
+  <div class="sub">Features — All Products</div>
+  <div class="grid3">
+    <div class="card"><div class="card-title">💬 Chat Interface</div><div class="card-body">Streaming responses, markdown rendering, code blocks with copy, conversation history, context window management.</div></div>
+    <div class="card"><div class="card-title">🎤 Voice Mode</div><div class="card-body">Push-to-talk via Whisper STT → LLM → XTTS-v2 TTS. Full voice conversation in browser. Swahili + English.</div></div>
+    <div class="card"><div class="card-title">📎 File Upload</div><div class="card-body">Upload PDF, DOCX, images → parsed and injected into context or indexed into ChromaDB for RAG.</div></div>
+    <div class="card"><div class="card-title">🔧 Tools Sidebar</div><div class="card-body">Per-product tools: web search, code executor, database queries, API calls, calendar, document generation.</div></div>
+    <div class="card"><div class="card-title">🤖 Agent Mode</div><div class="card-body">Switch between chat (single-turn), RAG (retrieval-augmented), and Agent (multi-step autonomous task execution).</div></div>
+    <div class="card"><div class="card-title">📊 Model Switcher</div><div class="card-body">Users can select: Fast (Qwen 7B), Code (Qwen-Coder 7B), Heavy (Qwen 14B), Vision (LLaVA). All via LiteLLM.</div></div>
+  </div>
+  <div class="sub">Per-Product Co-worker Identities</div>
+  <table>
+    <tr><th>Product</th><th>Co-worker Name</th><th>System Prompt Focus</th><th>Key Tools</th><th>Default Model</th></tr>
+    <tr><td>EvalOS</td><td><strong>Zuri</strong> — Study Coach</td><td>IBM certification expert, encouraging tutor, learning path advisor</td><td>Exam history lookup, domain analysis, study plan generator, question explainer</td><td>qwen-fast</td></tr>
+    <tr><td>PMaaS</td><td><strong>Dawa</strong> — Campaign Strategist</td><td>Kenyan political campaign expert, voter mobilisation, messaging strategy</td><td>Voter data query, ward heatmap, WhatsApp blast trigger, call campaign launcher</td><td>qwen-heavy</td></tr>
+    <tr><td>AfroERP</td><td><strong>Mfumo</strong> — Business Assistant</td><td>ERPNext expert, Kenyan tax &amp; compliance, M-Pesa transactions, business analytics</td><td>ERP module actions (create invoice, PO, journal), M-Pesa status check, KRA eTIMS filing</td><td>qwen-fast</td></tr>
+    <tr><td>i3-Engage</td><td><strong>Nuru</strong> — Campaign Manager</td><td>Digital marketing, SMS/WhatsApp campaign strategy, customer segmentation, compliance</td><td>Segment builder, campaign launcher, A/B test designer, analytics report generator</td><td>qwen-fast</td></tr>
+    <tr><td>AI Lab</td><td><strong>Sage</strong> — Lab Instructor</td><td>Cloud, DevOps, AI/ML technical mentor. Socratic teaching style. Code reviewer.</td><td>Code executor, lab environment control, hint generator, solution reviewer, resource finder</td><td>qwen-coder</td></tr>
+    <tr><td>Onboarding</td><td><strong>Karibu</strong> — Welcome Agent</td><td>i3 platform orientation, product discovery, role-based access guide</td><td>Product navigation, account setup, FAQ, ticket creation, demo launcher</td><td>granite-nano</td></tr>
+  </table>
+</div>
+
+
+<div class="sec"><span class="snum">5</span> Voice Cloning &amp; Voice AI Stack</div>
+<div class="block">
+  <div class="warnbox"><strong>New namespace required:</strong> <code>i3-voice</code> — dedicated to all voice AI services. Quota: 16 Gi RAM, 8 vCPU. Serves all products via internal REST API.</div>
+  <div class="sub">Voice Services Architecture</div>
+  <table>
+    <tr><th>Service</th><th>Technology</th><th>API Endpoint</th><th>Used By</th></tr>
+    <tr><td><strong>Text-to-Speech</strong></td><td>Coqui XTTS-v2 (FastAPI wrapper)</td><td><code>/v1/tts</code> · params: text, voice_id, language</td><td>All products — Co-worker voice replies, PMaaS outbound calls, AI Lab instructor voice</td></tr>
+    <tr><td><strong>Voice Cloning</strong></td><td>XTTS-v2 speaker encoder</td><td><code>/v1/clone</code> · upload 6s WAV → returns voice_id</td><td>PMaaS (candidate voice cloning), AI Lab (trainer voice), EvalOS (audio feedback)</td></tr>
+    <tr><td><strong>Speech-to-Text</strong></td><td>faster-whisper large-v3 (FastAPI)</td><td><code>/v1/transcribe</code> · upload audio → returns transcript + language</td><td>Co-worker voice mode, AI Interview (spoken answers), PMaaS inbound call transcription</td></tr>
+    <tr><td><strong>Voice Pipeline</strong></td><td>WebRTC (in-browser) → STT → LLM → TTS → WebRTC</td><td>Full-duplex voice conversation</td><td>Co-worker voice mode across all products</td></tr>
+    <tr><td><strong>PMaaS AI Caller</strong></td><td>Asterisk (SIP) + XTTS-v2 + Whisper + LLM agent</td><td>Outbound PSTN calls via SIP trunk</td><td>PMaaS voter outreach — cloned candidate voice, real-time Q&amp;A with voters</td></tr>
+  </table>
+  <div class="sub">PMaaS Voice Clone Flow</div>
+  <p>1. Campaign admin uploads 30–60s of candidate voice audio · 2. XTTS-v2 extracts speaker embedding → stores as <code>voice_id</code> in OpenBao · 3. Campaign content team writes call scripts · 4. LLM generates personalised variations per voter segment · 5. XTTS-v2 renders audio in candidate's cloned voice · 6. Asterisk dials voter numbers via SIP trunk · 7. Whisper transcribes voter responses → LLM generates live response → XTTS-v2 speaks reply · 8. Full conversation logged to Langfuse + Kafka topic <code>pmaas.voter-interactions</code></p>
+</div>
+
+
+<div class="sec"><span class="snum">6</span> EvalOS — AI-Native Skills Assessment Platform (Extended)</div>
+<div class="block">
+  <div class="sub">Existing (Live)</div>
+  <p>Exam engine (360 questions, 6 sets), Keycloak SSO, certificates, n8n email, Study Coach (Mistral 7B), Leaderboard, Question Bank admin, anti-cheat. 17 attempts, 13 passes.</p>
+  <div class="sub">New AI Features to Build</div>
+  <table>
+    <tr><th>Feature</th><th>Description</th><th>AI Component</th><th>Phase</th></tr>
+    <tr><td><strong>AI Interview Round</strong></td><td>5 questions (3 text + 2 code) per exam. LLM evaluates against rubric. Score + written feedback returned.</td><td>qwen-heavy (evaluation) · qwen-coder (code Qs)</td><td>Phase 3</td></tr>
+    <tr><td><strong>Adaptive Assessment Engine</strong></td><td>LLM generates follow-up questions based on previous answers. Dynamic difficulty adjustment.</td><td>qwen-fast (question generation)</td><td>Phase 4</td></tr>
+    <tr><td><strong>Coding Lab</strong></td><td>Monaco editor + sandbox execution + AI code reviewer. Supports JS, Python, SQL. LLM explains errors and suggests fixes.</td><td>qwen-coder · existing sandbox daemon</td><td>Phase 3</td></tr>
+    <tr><td><strong>AI Question Generator</strong></td><td>Admin: input topic + difficulty → LLM generates 5 MCQ/MR questions with explanations → human review → Directus → evalos_db.</td><td>qwen-heavy (generation) · qwen-fast (review)</td><td>Phase 2</td></tr>
+    <tr><td><strong>Talent Intelligence Dashboard</strong></td><td>Per-candidate skills graph. Domain mastery scores, trend over time, peer comparison, recommended learning paths.</td><td>LLM-generated narrative · Grafana charts</td><td>Phase 4</td></tr>
+    <tr><td><strong>Skills Graph (i3 IP)</strong></td><td>Competency taxonomy stored in PostgreSQL. Maps questions to skills. Enables gap analysis and certification readiness score.</td><td>Graph traversal + LLM narrative</td><td>Phase 3</td></tr>
+    <tr><td><strong>Open Badges 3.0</strong></td><td>Verifiable digital credentials (W3C VC). Issued on pass. Linked to LinkedIn. QR code validation.</td><td>Credential issuance service</td><td>Phase 3</td></tr>
+    <tr><td><strong>Zuri Co-worker</strong></td><td>Persistent AI sidebar on all EvalOS pages. Study plans, question explainers, domain deep-dives, practice Q generation.</td><td>Open WebUI embed · qwen-fast · LiteLLM</td><td>Phase 2</td></tr>
+    <tr><td><strong>White-label Mode</strong></td><td>Multi-tenant EvalOS. Universities and certification bodies get their own branded instance, question bank, and Keycloak realm.</td><td>Tenant isolation via Keycloak realms</td><td>Phase 5</td></tr>
+  </table>
+</div>
+
+
+<div class="sec"><span class="snum">7</span> PMaaS 4.0 — Political Campaign Operating System</div>
+<div class="block">
+  <div class="sub">New Namespace: i3-pmaas · Tech Stack</div>
+  <table>
+    <tr><th>Component</th><th>Technology</th><th>Description</th></tr>
+    <tr><td>PMaaS Web App</td><td>Next.js 14 + Tailwind</td><td>Campaign dashboard: ward map, voter database, media centre, M-Pesa donations, manifesto tracker</td></tr>
+    <tr><td>Campaign Agent</td><td>LangGraph + Python</td><td>Autonomous agent: monitors voter sentiment, generates daily briefings, recommends ward targeting priorities</td></tr>
+    <tr><td>AI Caller Engine</td><td>Asterisk (SIP) + XTTS-v2 + Whisper + LLM</td><td>Outbound voter calls in candidate's cloned voice. Handles inbound questions via live LLM response.</td></tr>
+    <tr><td>WhatsApp Bot</td><td>n8n + WhatsApp Cloud API (Meta)</td><td>Voter Q&amp;A bot, manifesto delivery, mobilisation reminders, M-Pesa donation link</td></tr>
+    <tr><td>War Room Dashboard</td><td>Grafana + PostgreSQL (pmaas_db)</td><td>Realtime ward heatmap, call success rates, sentiment trends, prediction model confidence</td></tr>
+    <tr><td>M-Pesa Integration</td><td>Daraja API (v2) · n8n webhook</td><td>Donation collection, supporter registration, volunteer registration</td></tr>
+    <tr><td>Dawa Co-worker</td><td>Open WebUI (PMaaS white-label)</td><td>Campaign strategist AI: messaging, targeting, media, policy Q&amp;A in candidate's context</td></tr>
+    <tr><td>Vector Corpus</td><td>ChromaDB collection: <code>pmaas-manifesto</code></td><td>Candidate manifesto + policy positions embedded for RAG. Dawa answers voter questions grounded in manifesto.</td></tr>
+  </table>
+  <div class="sub">AI Agents in PMaaS</div>
+  <ul>
+    <li><strong>Voice Caller Agent:</strong> Schedules outbound calls, manages SIP session, conducts conversation, logs outcome to pmaas_db</li>
+    <li><strong>Sentiment Monitor:</strong> Reads Kafka topic (WhatsApp/call transcripts) → LLM sentiment analysis → updates ward heatmap every hour</li>
+    <li><strong>Daily Briefing Agent:</strong> 06:00 daily → pulls latest data → Qwen 14B generates 1-page campaign briefing for candidate → sends via WhatsApp</li>
+    <li><strong>Content Agent:</strong> Given a topic/event → generates 5 social media post variants (Twitter/X, Facebook, TikTok) in candidate's voice</li>
+    <li><strong>Manifesto Q&amp;A Agent:</strong> RAG over manifesto corpus → answers voter questions accurately, logged to Langfuse</li>
+  </ul>
+</div>
+
+
+<div class="sec"><span class="snum">8</span> AfroERP — AI-Powered African Business OS</div>
+<div class="block">
+  <div class="sub">New Namespace: i3-afroerp · Tech Stack</div>
+  <table>
+    <tr><th>Component</th><th>Technology</th><th>Description</th></tr>
+    <tr><td>ERP Core</td><td>ERPNext 15 (Frappe Framework)</td><td>Full open-source ERP: Accounts, HR, Inventory, Manufacturing, CRM. MIT licence.</td></tr>
+    <tr><td>Kenya Modules</td><td>Custom Frappe apps</td><td>M-Pesa STK Push/B2C (Daraja v2), KRA eTIMS e-invoicing, KRA Tax Tables, KRA PIN validation</td></tr>
+    <tr><td>MariaDB</td><td>MariaDB 10.6 (StatefulSet)</td><td>ERPNext requires MariaDB (not PostgreSQL). Dedicated StatefulSet in i3-afroerp with 50Gi PVC.</td></tr>
+    <tr><td>Redis</td><td>Redis (existing i3-ott or dedicated)</td><td>Frappe queue + cache. Shared or dedicated depending on load.</td></tr>
+    <tr><td>AfroERP AI Agent</td><td>LangGraph + LiteLLM + ERPNext REST API</td><td>Autonomous ERP agent: creates journal entries, reconciles M-Pesa transactions, generates financial reports, flags anomalies</td></tr>
+    <tr><td>Mfumo Co-worker</td><td>Open WebUI (AfroERP white-label)</td><td>Ask natural language ERP questions: "Show overdue invoices", "Reconcile M-Pesa July", "Draft purchase order for supplier X"</td></tr>
+    <tr><td>CRM Module</td><td>ERPNext CRM + custom pipeline</td><td>Lead management, opportunity tracking, WhatsApp follow-up via n8n, AI lead scoring via LLM</td></tr>
+    <tr><td>Vector Corpus</td><td>ChromaDB: <code>afroerp-kb</code></td><td>ERPNext documentation, KRA guidelines, i3 SOPs embedded for RAG. Mfumo answers accounting questions accurately.</td></tr>
+  </table>
+  <div class="sub">AI Agents in AfroERP</div>
+  <ul>
+    <li><strong>M-Pesa Reconciliation Agent:</strong> Daily 23:00 → fetch M-Pesa statement → LLM matches transactions → creates reconciliation journal in ERPNext → flags unmatched items for human review</li>
+    <li><strong>KRA eTIMS Agent:</strong> On invoice posting → auto-formats for eTIMS → submits to KRA API → records response → alerts on failure</li>
+    <li><strong>Financial Narrative Agent:</strong> Month-end → pulls P&amp;L / Balance Sheet → Qwen 14B generates plain-English management narrative → email to directors via n8n</li>
+    <li><strong>AI Lead Scorer:</strong> On new CRM lead → LLM scores 0-100 based on company size, industry, engagement history → updates ERPNext lead record</li>
+  </ul>
+</div>
+
+
+<div class="sec"><span class="snum">9</span> i3-Engage Cloud — Customer 360 CDP + Omnichannel</div>
+<div class="block">
+  <div class="sub">New Namespace: i3-engage · Tech Stack</div>
+  <table>
+    <tr><th>Component</th><th>Technology</th><th>Description</th></tr>
+    <tr><td>Engage Web App</td><td>Next.js 14 (new)</td><td>CDP dashboard: contact profiles, segments, campaign builder, analytics, billing</td></tr>
+    <tr><td>SMS Gateway</td><td>Africa's Talking API (or SMPP direct)</td><td>Bulk SMS dispatch. Webhook receipts to Kafka. Cost-per-message model.</td></tr>
+    <tr><td>WhatsApp Gateway</td><td>WhatsApp Business Cloud API (Meta)</td><td>Campaign messages + conversational flows. 24h session management.</td></tr>
+    <tr><td>Email</td><td>Brevo API (existing) + n8n</td><td>Already live for EvalOS. Extended for Engage campaigns.</td></tr>
+    <tr><td>CDP Core</td><td>PostgreSQL (engage_db) + Kafka streams</td><td>Unified customer profile: all touch-points merged by email/phone. Real-time event streaming via Kafka.</td></tr>
+    <tr><td>Payment Integration</td><td>M-Pesa Daraja + Paystack</td><td>In-message payment links. USSD fallback. Webhook to Kafka.</td></tr>
+    <tr><td>Nuru Co-worker</td><td>Open WebUI (Engage white-label)</td><td>Campaign AI: "Create a segment of churned customers in Nairobi", "Draft a win-back WhatsApp sequence"</td></tr>
+    <tr><td>Campaign AI Agent</td><td>LangGraph + LiteLLM</td><td>Autonomous campaign management: A/B test monitoring, send-time optimisation, churn prediction, engagement scoring</td></tr>
+    <tr><td>Vector Corpus</td><td>ChromaDB: <code>engage-brand-kb</code></td><td>Per-tenant brand voice, product catalogue, compliance rules. Nuru generates on-brand content.</td></tr>
+  </table>
+  <div class="sub">AI Agents in i3-Engage</div>
+  <ul>
+    <li><strong>Segment Builder Agent:</strong> Natural language → SQL segment query → preview count → one-click launch</li>
+    <li><strong>Content Generator:</strong> Input: campaign goal + target segment → outputs: SMS (160 chars), WhatsApp message, email subject + body — all compliant with brand voice</li>
+    <li><strong>Send-Time Optimiser:</strong> Analyses historical engagement data → LLM reasoning → recommends optimal send time per segment</li>
+    <li><strong>Churn Predictor:</strong> Daily batch → scores all contacts for churn risk → flags high-risk for win-back campaign → auto-creates draft campaign for approval</li>
+  </ul>
+</div>
+
+
+<div class="sec"><span class="snum">10</span> AI Lab — Hackathons, Bootcamps &amp; Commercial Training</div>
+<div class="block">
+  <div class="infobox">The AI Lab serves three commercial audiences: (1) <strong>Internal i3 developers</strong> building platform features, (2) <strong>Bootcamp students</strong> (IBM cloud, AI/ML, DevOps tracks), (3) <strong>Enterprise customers</strong> attending Agentic AI Summit workshops and Hackathon events. Each cohort gets an isolated namespace with its own Jupyter environment, code sandbox, and LLM access quota.</div>
+  <div class="sub">AI Lab Core Services (i3-ai-lab namespace)</div>
+  <table>
+    <tr><th>Component</th><th>Technology</th><th>Purpose</th></tr>
+    <tr><td>Open WebUI (Sage Co-worker)</td><td>Open WebUI — white-labelled as "Sage"</td><td>Primary student interface. Chat, voice, code execution, file upload, RAG over lab materials.</td></tr>
+    <tr><td>JupyterHub</td><td>JupyterHub + JupyterLab (MIT)</td><td>Per-student Jupyter server. Pre-loaded with AI/ML kernels: Python 3.11, langchain, transformers, pandas.</td></tr>
+    <tr><td>ChromaDB</td><td>ChromaDB (lab corpus)</td><td>Lab materials, IBM docs, i3 platform docs embedded for Sage RAG.</td></tr>
+    <tr><td>Code Execution API</td><td>EvalOS sandbox daemon (existing) + new endpoint</td><td>Isolated code execution for lab exercises. Supports Python, JS, SQL, Bash.</td></tr>
+    <tr><td>Lab Content Manager</td><td>Directus CMS (existing)</td><td>Lab guides, challenge briefs, rubrics, slide decks stored in Directus. Retrieved by Sage via API.</td></tr>
+    <tr><td>Cohort Provisioner</td><td>Python CronJob (existing in platform/ai-lab)</td><td>Auto-creates per-cohort namespaces with RBAC, quotas, network policies. Triggered by EvalOS enrolment.</td></tr>
+    <tr><td>Lab Scoreboard</td><td>EvalOS Leaderboard (reused)</td><td>Hackathon and bootcamp scores. Real-time rankings during events.</td></tr>
+  </table>
+  <div class="sub">Commercial Training Tracks</div>
+  <div class="grid3">
+    <div class="card"><div class="card-title">🏕️ Bootcamp Tracks</div><div class="card-body">IBM Cloud Fundamentals · AI/ML Engineering · Agentic AI Development · DevOps/OpenShift · Data Engineering. 4–12 week formats. EvalOS assessments + AI Lab labs = completion certificates.</div></div>
+    <div class="card"><div class="card-title">⚡ Hackathon Mode</div><div class="card-body">48–72 hour events. Teams get isolated AI Lab namespaces, LiteLLM quota, Sage co-worker, ChromaDB, sandbox. EvalOS leaderboard shows real-time scores. Public URL per event.</div></div>
+    <div class="card"><div class="card-title">🎯 Agentic AI Summit</div><div class="card-body">1–3 day enterprise workshops. Hands-on: build LangGraph agent, connect to LiteLLM, trace with Langfuse. Each attendee gets sandbox. Certificate via EvalOS on completion.</div></div>
+  </div>
+  <div class="sub">LLM Reference File — <code>platform/ai-lab/llm-models-directory.md</code></div>
+  <p>A dedicated file will be created documenting all models: name, size, licence, use cases, Ollama pull command, performance benchmarks, recommended settings, and which products use them. This serves as the definitive reference for developers and trainers.</p>
+</div>
+
+
+<div class="sec"><span class="snum">11</span> Multimodal Harness — Unified Input/Output Pipeline</div>
+<div class="block">
+  <div class="sub">Supported Modalities Per Product</div>
+  <table>
+    <tr><th>Modality</th><th>Technology</th><th>EvalOS</th><th>PMaaS</th><th>AfroERP</th><th>i3-Engage</th><th>AI Lab</th></tr>
+    <tr><td>Text Chat</td><td>Open WebUI + LiteLLM</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Voice Input (STT)</td><td>faster-whisper</td><td>✓ Interview</td><td>✓ Voter calls</td><td>✓ Commands</td><td>✓ Chatbot</td><td>✓ Lab assistant</td></tr>
+    <tr><td>Voice Output (TTS)</td><td>XTTS-v2</td><td>✓ Feedback</td><td>✓ AI Caller</td><td>✓ Readback</td><td>✓ IVR</td><td>✓ Instructor</td></tr>
+    <tr><td>Voice Clone</td><td>XTTS-v2 speaker encoder</td><td>—</td><td>✓ Candidate</td><td>—</td><td>✓ Brand voice</td><td>✓ Demo</td></tr>
+    <tr><td>Image/Document</td><td>LLaVA:13B</td><td>✓ Lab diagrams</td><td>✓ Posters/flyers</td><td>✓ Receipts/invoices</td><td>✓ Creative review</td><td>✓ Diagram analysis</td></tr>
+    <tr><td>Code Execution</td><td>EvalOS sandbox</td><td>✓ Coding lab</td><td>—</td><td>✓ Script runner</td><td>—</td><td>✓ All labs</td></tr>
+    <tr><td>File Upload</td><td>Open WebUI + SeaweedFS</td><td>✓ Study docs</td><td>✓ Manifesto</td><td>✓ Statements</td><td>✓ Brand assets</td><td>✓ Lab files</td></tr>
+  </table>
+</div>
+
+
+<div class="sec"><span class="snum">12</span> Phased Implementation Roadmap</div>
+<div class="block">
+
+  <div class="phase">
+    <div class="phase-hdr"><span class="phase-tag">PHASE 0</span><span class="phase-title">Platform Hygiene — Fix All Blockers</span><span class="phase-weeks">Week 1 · Days 1–5</span></div>
+    <table><tr><th>#</th><th>Action</th><th>Who</th></tr>
+      <tr><td>0.1</td><td>Delete conflicting Langfuse route in i3-model-gateway (<code>oc delete route langfuse-public -n i3-model-gateway</code>)</td><td>Bob</td></tr>
+      <tr><td>0.2</td><td>Set real NEXTAUTH_SECRET + SALT for i3-model-gateway Langfuse</td><td>Bob</td></tr>
+      <tr><td>0.3</td><td>Register Philip + Joseph in Langfuse · close signup</td><td>Admins</td></tr>
+      <tr><td>0.4</td><td>Generate LiteLLM master key · set SeaweedFS HMAC · change OME API token</td><td>Bob</td></tr>
+      <tr><td>0.5</td><td>Get Directus static token → set in n8n-secrets</td><td>Sebastian</td></tr>
+      <tr><td>0.6</td><td>Clean stale Error build pods in i3-evalos</td><td>Bob</td></tr>
+      <tr><td>0.7</td><td>Create <code>platform/ai-lab/llm-models-directory.md</code> — definitive LLM reference</td><td>Bob</td></tr>
+      <tr><td>0.8</td><td>Create skeleton folders: <code>platform/pmaas/</code>, <code>platform/afroerp/</code>, <code>platform/engage/</code>, <code>platform/voice/</code></td><td>Bob</td></tr>
+    </table>
+  </div>
+
+  <div class="phase">
+    <div class="phase-hdr"><span class="phase-tag">PHASE 1</span><span class="phase-title">AI Gateway — OSS Models Live + Co-worker Foundation</span><span class="phase-weeks">Week 1–2 · Days 5–14</span></div>
+    <table><tr><th>#</th><th>Action</th></tr>
+      <tr><td>1.1</td><td>Expand Ollama PVC (i3-model-gateway): 50 Gi → 80 Gi</td></tr>
+      <tr><td>1.2</td><td>Pull all Tier-2/3 models: <code>nomic-embed-text</code>, <code>qwen2.5:7b-q4</code>, <code>qwen2.5-coder:7b-q4</code></td></tr>
+      <tr><td>1.3</td><td>Pull Tier-1 models: <code>qwen2.5:14b-q4</code>, <code>llava:13b-q4</code></td></tr>
+      <tr><td>1.4</td><td>Update LiteLLM config: remove watsonx entries, add all Qwen/LLaVA/nomic models</td></tr>
+      <tr><td>1.5</td><td>Deploy <strong>Open WebUI</strong> to <code>i3-ai-lab</code> as "Sage" — base config, LiteLLM backend</td></tr>
+      <tr><td>1.6</td><td>Deploy <strong>ChromaDB</strong> to <code>i3-ai-lab</code> with 20 Gi PVC</td></tr>
+      <tr><td>1.7</td><td>Wire nomic-embed-text → ChromaDB embedding pipeline (Python job)</td></tr>
+      <tr><td>1.8</td><td>Smoke test full stack: query Sage → LiteLLM → Qwen 7B → Langfuse trace visible</td></tr>
+    </table>
+  </div>
+
+  <div class="phase">
+    <div class="phase-hdr"><span class="phase-tag">PHASE 2</span><span class="phase-title">EvalOS Extensions + Zuri Co-worker</span><span class="phase-weeks">Week 2–3 · Days 10–21</span></div>
+    <table><tr><th>#</th><th>Action</th></tr>
+      <tr><td>2.1</td><td>Upgrade Study Coach: route through LiteLLM (qwen-fast), add streaming SSE response</td></tr>
+      <tr><td>2.2</td><td>Add <strong>Zuri Co-worker</strong> sidebar to EvalOS (Open WebUI embed, EvalOS theme, study tools)</td></tr>
+      <tr><td>2.3</td><td>Build <strong>AI Question Generator</strong> in admin panel: topic → LLM → draft questions → Directus → review → approve → sync to evalos_db</td></tr>
+      <tr><td>2.4</td><td>Embed exam corpus into ChromaDB (<code>i3-exam-corpus</code> collection) for RAG-augmented Study Coach</td></tr>
+      <tr><td>2.5</td><td>Build <strong>AI Interview Round</strong>: /app/interview route, Monaco editor, qwen-coder evaluation, Langfuse traces</td></tr>
+      <tr><td>2.6</td><td>Build <strong>Coding Lab</strong>: sandboxed code execution + AI code review endpoint</td></tr>
+      <tr><td>2.7</td><td>Build → rebuild evalos-web #21 → deploy</td></tr>
+    </table>
+  </div>
+
+  <div class="phase">
+    <div class="phase-hdr"><span class="phase-tag">PHASE 3</span><span class="phase-title">Voice Stack + PMaaS Foundation</span><span class="phase-weeks">Week 3–5 · Days 21–35</span></div>
+    <table><tr><th>#</th><th>Action</th></tr>
+      <tr><td>3.1</td><td>Create <code>i3-voice</code> namespace with quota (16 Gi RAM)</td></tr>
+      <tr><td>3.2</td><td>Deploy <strong>XTTS-v2 TTS service</strong> (FastAPI, Coqui) to i3-voice · <code>POST /v1/tts</code></td></tr>
+      <tr><td>3.3</td><td>Deploy <strong>faster-whisper STT service</strong> (FastAPI) to i3-voice · <code>POST /v1/transcribe</code></td></tr>
+      <tr><td>3.4</td><td>Build voice clone API: <code>POST /v1/clone</code> → accepts WAV → returns voice_id stored in OpenBao</td></tr>
+      <tr><td>3.5</td><td>Wire voice into Open WebUI (Sage/Zuri): push-to-talk → STT → LLM → TTS → audio playback</td></tr>
+      <tr><td>3.6</td><td>Create <code>i3-pmaas</code> namespace + skeleton deployment</td></tr>
+      <tr><td>3.7</td><td>Deploy PMaaS Web (Next.js) with Keycloak realm <code>pmaas</code></td></tr>
+      <tr><td>3.8</td><td>Deploy <strong>Dawa Co-worker</strong> (Open WebUI, PMaaS theme) with manifesto RAG</td></tr>
+      <tr><td>3.9</td><td>Build PMaaS Campaign Agent (LangGraph): ward targeting, daily briefing, content generation</td></tr>
+      <tr><td>3.10</td><td>Build PMaaS AI Caller: Asterisk SIP + XTTS-v2 + Whisper + LLM agent loop</td></tr>
+    </table>
+  </div>
+
+  <div class="phase">
+    <div class="phase-hdr"><span class="phase-tag">PHASE 4</span><span class="phase-title">AfroERP + i3-Engage + AI Lab Full Build</span><span class="phase-weeks">Week 5–8 · Days 35–56</span></div>
+    <table><tr><th>#</th><th>Action</th></tr>
+      <tr><td>4.1</td><td>Create <code>i3-afroerp</code> namespace · deploy ERPNext 15 (Frappe + MariaDB StatefulSet + Redis)</td></tr>
+      <tr><td>4.2</td><td>Build Kenya custom Frappe apps: M-Pesa Daraja, KRA eTIMS, tax tables</td></tr>
+      <tr><td>4.3</td><td>Deploy <strong>Mfumo Co-worker</strong> + AfroERP AI Agent (LangGraph + ERPNext REST API)</td></tr>
+      <tr><td>4.4</td><td>Create <code>i3-engage</code> namespace · deploy Engage Web (Next.js) with CDP PostgreSQL</td></tr>
+      <tr><td>4.5</td><td>Build Engage messaging layer: Kafka consumers for SMS/WhatsApp/Email events</td></tr>
+      <tr><td>4.6</td><td>Deploy <strong>Nuru Co-worker</strong> + Campaign AI Agent (LangGraph)</td></tr>
+      <tr><td>4.7</td><td>Deploy <strong>JupyterHub</strong> to i3-ai-lab with per-user spawner</td></tr>
+      <tr><td>4.8</td><td>Populate AI Lab ChromaDB: IBM docs, i3 platform docs, bootcamp materials</td></tr>
+      <tr><td>4.9</td><td>Build Hackathon mode: per-event namespace provisioning + public leaderboard URL</td></tr>
+    </table>
+  </div>
+
+  <div class="phase">
+    <div class="phase-hdr"><span class="phase-tag">PHASE 5</span><span class="phase-title">Grafana Dashboards + Observability + Commercialisation</span><span class="phase-weeks">Week 8–10 · Days 56–70</span></div>
+    <table><tr><th>#</th><th>Action</th></tr>
+      <tr><td>5.1</td><td>Grafana: EvalOS dashboard (attempts, pass rates, domain heatmap, AI usage)</td></tr>
+      <tr><td>5.2</td><td>Grafana: LiteLLM dashboard (model usage, latency P95, tokens/day, error rates)</td></tr>
+      <tr><td>5.3</td><td>Grafana: PMaaS dashboard (calls made, voter reach, sentiment trend, ward map)</td></tr>
+      <tr><td>5.4</td><td>Grafana: Business metrics dashboard (all products: DAU, API calls, revenue events)</td></tr>
+      <tr><td>5.5</td><td>Grafana: Keycloak auth with OIDC (secure all dashboards)</td></tr>
+      <tr><td>5.6</td><td>EvalOS white-label mode: multi-tenant setup, per-tenant Keycloak realms</td></tr>
+      <tr><td>5.7</td><td>LiteLLM usage billing: per-tenant token counting → n8n billing webhook → AfroERP invoice</td></tr>
+      <tr><td>5.8</td><td>EvalOS Open Badges 3.0: verifiable credentials issuance on pass</td></tr>
+      <tr><td>5.9</td><td>Talent Intelligence Dashboard: skills graph, mastery scores, learning paths</td></tr>
+    </table>
+  </div>
+
+</div>
+
+
+<div class="sec"><span class="snum">13</span> Repository Structure — New Folders to Create</div>
+<div class="block">
+  <table>
+    <tr><th>Folder</th><th>Contents</th><th>Status</th></tr>
+    <tr><td><code>platform/pmaas/</code></td><td>PMaaS K8s manifests: pmaas-deploy.yaml, campaign-agent-deploy.yaml, ai-caller-deploy.yaml, voice-clone-pipeline.yaml</td><td><span class="badge hot">New</span></td></tr>
+    <tr><td><code>platform/afroerp/</code></td><td>ERPNext StatefulSet, MariaDB, Redis, AfroERP AI agent, Kenya modules Dockerfile</td><td><span class="badge hot">New</span></td></tr>
+    <tr><td><code>platform/engage/</code></td><td>i3-Engage Web deploy, Kafka consumers, Campaign Agent, SMPP gateway config</td><td><span class="badge hot">New</span></td></tr>
+    <tr><td><code>platform/voice/</code></td><td>XTTS-v2 Dockerfile + FastAPI wrapper, faster-whisper service, voice-clone API, Asterisk config for PMaaS</td><td><span class="badge hot">New</span></td></tr>
+    <tr><td><code>platform/ai-lab/open-webui/</code></td><td>Open WebUI deploy, per-product white-label configs (Zuri/Sage/Dawa/Mfumo/Nuru/Karibu), tool definitions</td><td><span class="badge hot">New</span></td></tr>
+    <tr><td><code>platform/ai-lab/jupyterhub/</code></td><td>JupyterHub config, per-kernel Dockerfiles, lab content, Makefile for cohort setup</td><td><span class="badge hot">New</span></td></tr>
+    <tr><td><code>platform/ai-lab/llm-models-directory.md</code></td><td>Definitive LLM reference: all models, sizes, licences, pull commands, use cases, benchmarks</td><td><span class="badge hot">New</span></td></tr>
+    <tr><td><code>platform/evalos/web/src/app/interview/</code></td><td>AI Interview Round: page.tsx, interview-client.tsx, Monaco editor, rubric evaluator</td><td><span class="badge warn">To Build</span></td></tr>
+    <tr><td><code>platform/evalos/web/src/app/lab/</code></td><td>Coding Lab: page.tsx, lab-client.tsx, sandbox runner, AI code review panel</td><td><span class="badge warn">To Build</span></td></tr>
+    <tr><td><code>PMAAS/platform/</code></td><td>PMaaS platform implementation docs, architecture, API specs</td><td><span class="badge hot">New</span></td></tr>
+    <tr><td><code>ERPCRM/platform/</code></td><td>AfroERP + i3-Engage platform implementation docs, Kenya compliance specs</td><td><span class="badge hot">New</span></td></tr>
+  </table>
+</div>
+
+
+<div class="sec"><span class="snum">14</span> Commercialisation Model</div>
+<div class="block">
+  <div class="grid2" style="padding-bottom:12px">
+    <div class="card"><div class="card-title">💰 EvalOS — SaaS</div><div class="card-body"><strong>Tiers:</strong> Starter (5 users, 1 exam bank, $49/mo) · Professional (50 users, full AI, $199/mo) · Enterprise (white-label, unlimited, $999/mo) · Per-assessment API pricing for third-party integration. Open Badges 3.0 = premium feature.</div></div>
+    <div class="card"><div class="card-title">💰 PMaaS — Campaign Licence</div><div class="card-body"><strong>Per election cycle licence:</strong> Ward Councillor (KES 150K) · MCA/MP (KES 500K) · Governor (KES 2M) · AI Caller minutes billed separately. Voice clone = premium add-on.</div></div>
+    <div class="card"><div class="card-title">💰 AfroERP — SaaS + Implementation</div><div class="card-body"><strong>SaaS:</strong> Starter (KES 8K/mo) · Growth (KES 25K/mo) · Enterprise (custom). <strong>Implementation:</strong> KES 150K–500K one-time for Kenya compliance modules. M-Pesa transaction margin.</div></div>
+    <div class="card"><div class="card-title">💰 i3-Engage — Usage-Based</div><div class="card-body"><strong>Base:</strong> KES 5K/mo platform fee. <strong>Usage:</strong> SMS (KES 0.8/message), WhatsApp (WhatsApp fees + 30% margin), AI tokens (per 1K tokens above free tier). Payment processing margin (0.5%).</div></div>
+    <div class="card"><div class="card-title">💰 AI Lab — Training Revenue</div><div class="card-body"><strong>Bootcamp:</strong> KES 35K–85K per student per track. <strong>Hackathon hosting:</strong> KES 200K–500K per event. <strong>Agentic AI Summit workshop:</strong> KES 150K/day/enterprise team. <strong>Custom corporate training:</strong> KES 500K+ per engagement.</div></div>
+    <div class="card"><div class="card-title">💰 LiteLLM AI Gateway — API Service</div><div class="card-body">Offer AI API access to developers in East Africa: pay-as-you-go token pricing. No GPU needed — CPU inference covers SME demand. White-label AI API for other SaaS companies in the region.</div></div>
+  </div>
+</div>
+
+<footer>Made with IBM Bob  ·  i3 Technologies  ·  10 September 2026  ·  Confidential — For internal review and planning purposes</footer>
+</div>
+</body>
+</html>

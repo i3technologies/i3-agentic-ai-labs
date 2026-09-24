@@ -1,0 +1,270 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 Platform — CNAME Mapping Guide</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.6;color:#1f2328;background:#fff}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 24px}
+  h1{font-size:24px;font-weight:700;margin-bottom:4px}
+  h2{font-size:16px;font-weight:600;color:#3b82d4;margin:28px 0 10px;padding-bottom:4px;border-bottom:2px solid #e5e7eb}
+  h3{font-size:14px;font-weight:600;margin:16px 0 6px}
+  p{margin-bottom:10px}
+  ul{margin:0 0 10px 20px}
+  li{margin-bottom:4px}
+  a{color:#3b82d4;text-decoration:none}
+  .cover{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:18px 22px;margin-bottom:24px}
+  .cover p{margin:0;color:#57606a;font-size:13px}
+  table{width:100%;border-collapse:collapse;margin:10px 0 18px;font-size:13px}
+  th{background:#f7f8fa;text-align:left;padding:8px 10px;border:1px solid #e5e7eb;font-weight:600;white-space:nowrap}
+  td{padding:8px 10px;border:1px solid #e5e7eb;vertical-align:top;word-break:break-all}
+  tr:nth-child(even) td{background:#fafafa}
+  .tag{display:inline-block;background:#e5e7eb;color:#57606a;font-size:11px;padding:1px 6px;border-radius:3px;font-family:monospace;white-space:nowrap}
+  .badge{display:inline-block;font-size:11px;padding:1px 7px;border-radius:3px;font-weight:600}
+  .cname{background:#dbeafe;color:#1d4ed8}
+  .a{background:#dcfce7;color:#166534}
+  .note{background:#eff6ff;border-left:4px solid #3b82d4;padding:10px 14px;margin:12px 0;font-size:13px;border-radius:0 4px 4px 0}
+  .warn{background:#fffbeb;border-left:4px solid #f59e0b;padding:10px 14px;margin:12px 0;font-size:13px;border-radius:0 4px 4px 0}
+  .note strong,.warn strong{display:block;margin-bottom:3px}
+  .steps{counter-reset:step;list-style:none;margin-left:0}
+  .steps li{counter-increment:step;display:flex;gap:10px;margin-bottom:8px}
+  .steps li::before{content:counter(step);min-width:22px;height:22px;border-radius:50%;background:#3b82d4;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+  .footer{text-align:center;font-size:12px;color:#57606a;margin-top:40px;padding-top:16px;border-top:1px solid #e5e7eb}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="cover">
+    <h1>i3 Platform — CNAME Mapping Guide</h1>
+    <p style="margin-top:6px">All DNS records to configure in cPanel › Zone Editor for <strong>i3technologies.co.ke</strong><br />
+    IBM ROKS Ingress: <strong>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</strong>  |  Updated: September 2026</p>
+  </div>
+
+  <div class="note"><strong>Before you start</strong>Log in to cPanel → <strong>Domains → Zone Editor</strong> → click <strong>Manage</strong> next to <code>i3technologies.co.ke</code>. All records below are <span class="badge cname">CNAME</span> type unless otherwise marked. TTL = 300 (5 minutes) during initial setup; increase to 3600 after confirming.</div>
+
+  <h2>Step-by-Step: Adding a CNAME in cPanel</h2>
+  <ol class="steps">
+    <li>In Zone Editor click <strong>+ Add Record</strong>.</li>
+    <li>Set <strong>Type</strong> to <code>CNAME</code>.</li>
+    <li>Enter the <strong>Name</strong> (subdomain only — e.g. <code>evalos</code>) in the Name field.</li>
+    <li>Paste the <strong>CNAME Target</strong> value in the Record field. Ensure it ends with a dot (<code>.</code>) or cPanel will append the root domain — remove the trailing dot if cPanel does not accept it.</li>
+    <li>Set TTL to <code>300</code> and click <strong>Save Record</strong>.</li>
+    <li>Repeat for each row in the tables below.</li>
+    <li>After all records are saved, verify with: <span class="tag">nslookup evalos.i3technologies.co.ke</span></li>
+  </ol>
+
+  <div class="warn"><strong>Important — Trailing dot</strong>Some cPanel versions require the trailing dot on CNAME targets (<code>router-default.apps....cloud.</code>); others strip it automatically. If you see a validation error, remove the trailing dot and retry.</div>
+
+  
+  <h2>1 — Platform Applications</h2>
+  <table>
+    <tr>
+      <th>Subdomain (Name)</th>
+      <th>Type</th>
+      <th>CNAME Target (Record)</th>
+      <th>Product</th>
+    </tr>
+    <tr>
+      <td><span class="tag">evalos</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>EvalOS — Skills Assessment</td>
+    </tr>
+    <tr>
+      <td><span class="tag">pmaas</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>PMaaS — Campaign Management</td>
+    </tr>
+    <tr>
+      <td><span class="tag">engage</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>Engage — SMS &amp; WhatsApp</td>
+    </tr>
+    <tr>
+      <td><span class="tag">afroerp</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>AfroERP — ERP + M-Pesa + eTIMS</td>
+    </tr>
+    <tr>
+      <td><span class="tag">jupyter</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>JupyterHub — AI Lab Notebooks</td>
+    </tr>
+    <tr>
+      <td><span class="tag">sage</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>Sage — Open WebUI AI Chat</td>
+    </tr>
+  </table>
+
+  
+  <h2>2 — Identity, Auth &amp; Infrastructure</h2>
+  <table>
+    <tr>
+      <th>Subdomain (Name)</th>
+      <th>Type</th>
+      <th>CNAME Target (Record)</th>
+      <th>Service</th>
+    </tr>
+    <tr>
+      <td><span class="tag">sso</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>Keycloak SSO — all products</td>
+    </tr>
+    <tr>
+      <td><span class="tag">vault</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>OpenBao — secrets management</td>
+    </tr>
+    <tr>
+      <td><span class="tag">gitops</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>ArgoCD — GitOps dashboard</td>
+    </tr>
+    <tr>
+      <td><span class="tag">tracing</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>Langfuse — LLM observability</td>
+    </tr>
+    <tr>
+      <td><span class="tag">cms</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>Directus CMS</td>
+    </tr>
+    <tr>
+      <td><span class="tag">n8n</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>n8n — workflow automation</td>
+    </tr>
+    <tr>
+      <td><span class="tag">storage</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>SeaweedFS S3 gateway</td>
+    </tr>
+  </table>
+
+  
+  <h2>3 — AI Co-worker Subdomains</h2>
+  <table>
+    <tr>
+      <th>Subdomain (Name)</th>
+      <th>Type</th>
+      <th>CNAME Target (Record)</th>
+      <th>Co-worker</th>
+    </tr>
+    <tr>
+      <td><span class="tag">zuri</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>Zuri — EvalOS AI assistant</td>
+    </tr>
+    <tr>
+      <td><span class="tag">dawa</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>Dawa — PMaaS AI assistant</td>
+    </tr>
+    <tr>
+      <td><span class="tag">nuru</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>Nuru — Engage AI assistant</td>
+    </tr>
+    <tr>
+      <td><span class="tag">mfumo</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>Mfumo — AfroERP AI assistant</td>
+    </tr>
+  </table>
+
+  
+  <h2>4 — Voice Stack</h2>
+  <table>
+    <tr>
+      <th>Subdomain (Name)</th>
+      <th>Type</th>
+      <th>CNAME Target (Record)</th>
+      <th>Service</th>
+    </tr>
+    <tr>
+      <td><span class="tag">tts</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>Text-to-Speech API</td>
+    </tr>
+    <tr>
+      <td><span class="tag">stt</span></td>
+      <td><span class="badge cname">CNAME</span></td>
+      <td><span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span></td>
+      <td>Speech-to-Text API</td>
+    </tr>
+  </table>
+
+  
+  <h2>5 — Quick Reference: All 20 Records</h2>
+  <table>
+    <tr><th>#</th><th>Full DNS Name</th><th>Type</th><th>Points to</th></tr>
+    <tr><td>1</td><td>evalos.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>2</td><td>pmaas.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>3</td><td>engage.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>4</td><td>afroerp.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>5</td><td>jupyter.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>6</td><td>sage.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>7</td><td>sso.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>8</td><td>vault.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>9</td><td>gitops.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>10</td><td>tracing.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>11</td><td>cms.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>12</td><td>n8n.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>13</td><td>storage.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>14</td><td>zuri.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>15</td><td>dawa.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>16</td><td>nuru.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>17</td><td>mfumo.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>18</td><td>tts.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>19</td><td>stt.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>20</td><td>api.i3technologies.co.ke</td><td><span class="badge cname">CNAME</span></td><td>router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</td></tr>
+  </table>
+
+  <h2>6 — Verifying Records</h2>
+  <p>After saving all records, wait 5–10 minutes for DNS propagation (TTL=300), then verify each subdomain resolves:</p>
+  <table>
+    <tr><th>Check</th><th>Command</th><th>Expected Result</th></tr>
+    <tr><td>DNS resolution</td><td><span class="tag">nslookup evalos.i3technologies.co.ke</span></td><td>Returns CNAME pointing to <code>router-default.apps…cloud</code></td></tr>
+    <tr><td>HTTPS reachable</td><td><span class="tag">curl -I https://evalos.i3technologies.co.ke</span></td><td>HTTP 200 or 301 (redirect to HTTPS)</td></tr>
+    <tr><td>Online checker</td><td><a href="https://dnschecker.org">dnschecker.org</a></td><td>All global nodes show green for each subdomain</td></tr>
+    <tr><td>SSL certificate</td><td>Browser padlock → Certificate → Issued to</td><td>Wildcard cert from Let's Encrypt or IBM-managed CA</td></tr>
+  </table>
+
+  <div class="note"><strong>SSL / TLS</strong>All routes in OpenShift are configured with <code>tls.termination: edge</code> — TLS is terminated at the HAProxy ingress. The CNAME points to the IBM ROKS router which holds the wildcard TLS certificate. No additional SSL setup is needed in cPanel.</div>
+
+  <h2>7 — Troubleshooting</h2>
+  <table>
+    <tr><th>Symptom</th><th>Likely Cause</th><th>Fix</th></tr>
+    <tr><td>DNS doesn't resolve after 30 min</td><td>Old TTL caching</td><td>Flush local DNS: <span class="tag">ipconfig /flushdns</span> (Windows) or <span class="tag">sudo dscacheutil -flushcache</span> (macOS)</td></tr>
+    <tr><td>Browser shows "SSL error"</td><td>HTTP route reached instead of HTTPS</td><td>Verify the OpenShift Route has <code>insecureEdgeTerminationPolicy: Redirect</code> set</td></tr>
+    <tr><td>502 Bad Gateway on subdomain</td><td>Route exists in DNS but no matching OpenShift Route object</td><td>Check <span class="tag">oc get routes -A</span> — ensure the route's <code>host:</code> matches the subdomain exactly</td></tr>
+    <tr><td>CNAME rejected in cPanel</td><td>Root domain CNAME not allowed (RFC 1034)</td><td>Never add a CNAME for the bare domain <code>i3technologies.co.ke</code> — subdomains only</td></tr>
+    <tr><td>"Already exists" error</td><td>Previous A record for same subdomain</td><td>Delete the existing A record first, then add the CNAME</td></tr>
+  </table>
+
+  <div class="footer">Made with IBM Bob</div>
+</div>
+</body>
+</html>

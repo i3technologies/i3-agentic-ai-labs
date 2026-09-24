@@ -1,0 +1,23 @@
+agent_id: base-scan-agent-v1
+name: i3 Onboarding Base-Scan Subagent
+version: "1.0.0"
+autonomy_tier: L1          # L0=human-in-loop, L1=supervised; HC-3 ceiling
+# IMP-12: risk_tier 1 — read-only subagent; postgres.members.write is forbidden
+risk_tier: 1
+approval_policy: auto
+allowed_tools:
+  - chroma.search
+  - litellm.chat
+  - onboarding_db.read
+forbidden_tools:
+  - onboarding_db.write
+  - kafka.produce
+  - keycloak.user.create
+  - postgres.members.write
+  - admissions_db.write
+  - github.pr.create
+cost_budget_tokens: 20000  # per scan call — subagent role, lighter budget
+guardrail_policy: lobster-trap-v1
+owner: i3-technologies
+state: active
+tenant_id: "00000000-0000-0000-0000-000000000001"

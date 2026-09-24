@@ -1,0 +1,40 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-db-clients
+  namespace: i3-data
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - i3-model-gateway
+                  - i3-admissions
+                  - i3-evalos
+                  - i3-ai-lab
+                  - i3-gitops
+                  - i3-auth
+                  - i3-ott
+                  - i3-sit
+                  - i3-talent
+                  - i3-ar
+                  - i3-ford
+                  - i3-edbridge
+                  - i3-pmaas
+                  - i3-onboarding
+                  - i3-social
+                  - i3-voice
+                  - i3-smartlab
+                  - i3-engage
+                  - i3-consent
+                  - i3-agent-mesh
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-data

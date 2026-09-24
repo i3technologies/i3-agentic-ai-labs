@@ -11,6 +11,7 @@ const LITELLM_KEY = process.env.LITELLM_KEY ?? ''
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000001'
 
   const { question } = await req.json()
   if (!question?.trim()) return NextResponse.json({ error: 'Question required' }, { status: 400 })
@@ -46,8 +47,10 @@ Give a concise, practical answer in 2–4 sentences. Focus on actionable insight
     const resp = await fetch(`${LITELLM_URL}/chat/completions`, {
       method: 'POST',
       headers: {
-        'Content-Type':  'application/json',
-        'Authorization': `Bearer ${LITELLM_KEY}`,
+        'Content-Type':         'application/json',
+        'Authorization':        `Bearer ${LITELLM_KEY}`,
+        'x-litellm-max-tokens': '400',
+        'x-litellm-metadata':   JSON.stringify({ tenant_id: tenantId, agent_id: 'pmaas-ask-route' }),
       },
       body: JSON.stringify({
         model:       'qwen-fast',

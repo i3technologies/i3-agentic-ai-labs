@@ -1,0 +1,986 @@
+
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>i3 Agentic AI Platform — Complete User Documentation</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.7;background:#fff;color:#1f2328}
+.wrap{max-width:900px;margin:0 auto;padding:32px 20px 60px}
+.cover{background:#0550ae;color:#fff;padding:40px 36px;border-radius:8px;margin-bottom:36px}
+.cover h1{font-size:28px;font-weight:800;margin-bottom:6px}
+.cover .sub{font-size:16px;opacity:.88;margin-top:6px}
+.cover .meta{margin-top:18px;font-size:12px;opacity:.65;display:flex;flex-wrap:wrap;gap:20px}
+h2{font-size:17px;font-weight:700;margin:40px 0 14px;padding-bottom:8px;border-bottom:2px solid #0550ae;color:#0550ae;text-transform:uppercase;letter-spacing:.04em}
+h3{font-size:14px;font-weight:700;margin:22px 0 8px;color:#1f2328;border-left:3px solid #0550ae;padding-left:9px}
+h4{font-size:13px;font-weight:700;margin:16px 0 6px;color:#57606a;text-transform:uppercase;letter-spacing:.03em}
+p{margin-bottom:12px}
+ul,ol{padding-left:22px;margin-bottom:12px}
+li{margin:5px 0}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:18px}
+th{background:#0550ae;color:#fff;text-align:left;padding:8px 11px;font-weight:600}
+td{padding:8px 11px;border:1px solid #e5e7eb;vertical-align:top}
+tr:nth-child(even) td{background:#f7f8fa}
+code{font-family:"Consolas","Courier New",monospace;font-size:12px;background:#f0f0f0;padding:1px 5px;border-radius:3px}
+pre{background:#1f2328;color:#e6edf3;padding:16px 18px;border-radius:5px;font-size:12px;font-family:"Consolas","Courier New",monospace;overflow-x:auto;margin:10px 0 18px;line-height:1.55}
+.note{background:#ddf4ff;border-left:4px solid #0550ae;padding:11px 15px;border-radius:0 4px 4px 0;margin:14px 0;font-size:13px}
+.warn{background:#fffbea;border-left:4px solid #d4a017;padding:11px 15px;border-radius:0 4px 4px 0;margin:14px 0;font-size:13px}
+.tip{background:#e6ffed;border-left:4px solid #2da44e;padding:11px 15px;border-radius:0 4px 4px 0;margin:14px 0;font-size:13px}
+.url{color:#0550ae;font-size:13px}
+.app-header{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:flex-start;gap:16px}
+.app-header .app-icon{width:42px;height:42px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff}
+.app-header .app-info h3{margin:0 0 3px;border:none;padding:0;font-size:14px;color:#1f2328}
+.app-header .app-info .app-url{font-size:12px;color:#0550ae}
+.app-header .app-info .app-desc{font-size:12px;color:#57606a;margin-top:3px}
+.kbd{display:inline-block;background:#f0f0f0;border:1px solid #ccc;border-radius:3px;padding:1px 6px;font-family:monospace;font-size:11px;color:#1f2328}
+.step-num{display:inline-block;background:#0550ae;color:#fff;border-radius:50%;width:20px;height:20px;font-size:11px;font-weight:700;text-align:center;line-height:20px;margin-right:7px;flex-shrink:0}
+.steps li{display:flex;align-items:flex-start;margin:10px 0}
+.toc{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:18px 22px;margin-bottom:32px;column-count:2;column-gap:28px;font-size:13px}
+.toc a{color:#0550ae;text-decoration:none}
+.toc li{margin:5px 0;list-style:disc;margin-left:16px}
+.toc h4{column-span:all;margin:0 0 10px;font-size:14px;color:#1f2328;text-transform:uppercase;letter-spacing:.05em}
+.role-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;margin-left:6px}
+.role-all{background:#ddf4ff;color:#0550ae}
+.role-student{background:#e6ffed;color:#116329}
+.role-instructor{background:#fff3cd;color:#856404}
+.role-admin{background:#ffebe9;color:#cf222e}
+footer{margin-top:52px;padding-top:12px;border-top:1px solid #e5e7eb;text-align:center;font-size:12px;color:#57606a}
+@media(max-width:640px){.toc{column-count:1}.app-header{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="cover">
+  <h1>i3 Agentic AI Platform</h1>
+  <div class="sub">Complete User Documentation — All Applications</div>
+  <div class="meta">
+    <span>Domain: i3technologies.co.ke</span>
+    <span>SSO: sso.i3technologies.co.ke</span>
+    <span>Version: September 2026</span>
+    <span>Cluster: ROKS Frankfurt (eu-de)</span>
+  </div>
+</div>
+
+<div class="toc">
+  <h4>Table of Contents</h4>
+  <ul>
+    <li><a href="#sso">1. SSO Login (All Apps)</a></li>
+    <li><a href="#evalos">2. EvalOS — Exams &amp; Assessments</a></li>
+    <li><a href="#ailab">3. AI Lab — JupyterHub</a></li>
+    <li><a href="#sage">4. Sage — AI Chat Workbench</a></li>
+    <li><a href="#admissions">5. Admissions Chatbot</a></li>
+    <li><a href="#engage">6. Engage — CRM &amp; CDP</a></li>
+    <li><a href="#pmaas">7. PMaaS — Campaign OS</a></li>
+    <li><a href="#afroerp">8. AfroERP — Business OS</a></li>
+    <li><a href="#cms">9. Directus CMS</a></li>
+    <li><a href="#ott">10. OTT Live Streaming</a></li>
+    <li><a href="#n8n">11. n8n Automation</a></li>
+    <li><a href="#litellm">12. LiteLLM API (Developers)</a></li>
+    <li><a href="#langfuse">13. Langfuse (Instructors)</a></li>
+    <li><a href="#grafana">14. Grafana Dashboards</a></li>
+    <li><a href="#instructor-evalos">15. Instructor: EvalOS Exam Mgmt</a></li>
+    <li><a href="#instructor-ailab">16. Instructor: AI Lab Cohorts</a></li>
+    <li><a href="#instructor-ott">17. Instructor: OTT Broadcasting</a></li>
+  </ul>
+</div>
+
+
+<h2 id="sso">1. Single Sign-On (SSO) — All Users <span class="role-badge role-all">All Roles</span></h2>
+
+<div class="app-header">
+  <div class="app-icon" style="background:#0550ae">🔑</div>
+  <div class="app-info">
+    <h3>Keycloak SSO</h3>
+    <div class="app-url">https://sso.i3technologies.co.ke</div>
+    <div class="app-desc">Single login gateway for all i3 Platform applications. Log in once, access everything.</div>
+  </div>
+</div>
+
+<h3>First Login</h3>
+<ol>
+  <li>Navigate to <span class="url">https://sso.i3technologies.co.ke/realms/i3/account</span></li>
+  <li>Enter the <strong>username and temporary password</strong> provided by your administrator.</li>
+  <li>You will immediately be asked to <strong>create a new password.</strong></li>
+  <li>Password requirements:
+    <ul>
+      <li>Minimum 12 characters</li>
+      <li>At least one uppercase letter, one lowercase letter</li>
+      <li>At least one digit and one special character</li>
+    </ul>
+  </li>
+  <li>After changing your password, you are taken to the <strong>Account Portal</strong>.</li>
+</ol>
+
+<h3>Account Portal — What You Can Do</h3>
+<p>Visit <span class="url">https://sso.i3technologies.co.ke/realms/i3/account</span> to:</p>
+<ul>
+  <li>Update your personal details (name, email)</li>
+  <li>Change your password → <strong>Account Security → Signing In → Password</strong></li>
+  <li>Set up a <strong>2FA authenticator app (TOTP)</strong> → <strong>Account Security → Signing In → Set up Authenticator</strong></li>
+  <li>Review active sessions and revoke access from unknown devices → <strong>Device Activity</strong></li>
+  <li>View which applications you have authorised → <strong>Applications</strong></li>
+</ul>
+
+<h3>Accessing Any Application</h3>
+<p>Simply navigate to any i3 application URL. You are redirected to SSO automatically. Once authenticated, the session lasts up to <strong>10 hours</strong> and is shared across all i3 applications — no need to log in again.</p>
+
+<h3>Forgotten Password</h3>
+<ol>
+  <li>On any application's login page, click <strong>Forgot Password?</strong></li>
+  <li>Enter your registered email address.</li>
+  <li>Check your inbox for a reset link (valid for <strong>15 minutes</strong>).</li>
+  <li>Click the link and set your new password.</li>
+</ol>
+
+<div class="warn"><strong>Session Timeout:</strong> Your session expires after 10 hours of inactivity. If you are in an EvalOS exam when it expires, your answers are automatically saved — just log in again and click Resume.</div>
+
+
+<h2 id="evalos">2. EvalOS — AI-Enhanced Assessment Platform <span class="role-badge role-student">Students</span></h2>
+
+<div class="app-header">
+  <div class="app-icon" style="background:#cf222e">📝</div>
+  <div class="app-info">
+    <h3>EvalOS Exam Engine</h3>
+    <div class="app-url">https://evalos.i3technologies.co.ke</div>
+    <div class="app-desc">Secure exam platform with isolated Firecracker sandbox VMs for live code execution. MCQ, short-answer, and coding questions.</div>
+  </div>
+</div>
+
+<h3>Getting Started</h3>
+<ol>
+  <li>Navigate to <span class="url">https://evalos.i3technologies.co.ke</span> — you are redirected to SSO.</li>
+  <li>Log in with your i3 credentials.</li>
+  <li>Your <strong>Dashboard</strong> shows:
+    <ul>
+      <li>Upcoming exams with countdown timers</li>
+      <li>Past attempts and scores</li>
+      <li>Available practice exercises</li>
+    </ul>
+  </li>
+</ol>
+
+<h3>Starting an Exam</h3>
+<ol>
+  <li>Click the exam name on your Dashboard.</li>
+  <li>Read the rules and duration on the pre-exam screen carefully.</li>
+  <li>Click <strong>Begin Exam.</strong></li>
+  <li>The platform automatically:
+    <ul>
+      <li>Locks your browser into fullscreen mode</li>
+      <li>Randomises question order and shuffles MCQ answer options</li>
+      <li>Starts the countdown timer</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="warn"><strong>Do not exit fullscreen</strong> or switch tabs during an exam. These events are logged. After 3 fullscreen exits or 5 focus losses, your attempt is flagged for instructor review.</div>
+
+<h3>The Exam Interface</h3>
+<table>
+  <tr><th>Panel</th><th>Contents</th></tr>
+  <tr><td>Left</td><td>Question list with progress indicators — green = answered, grey = skipped</td></tr>
+  <tr><td>Centre</td><td>Current question: MCQ options, short answer text box, or code editor</td></tr>
+  <tr><td>Right</td><td>Countdown timer, Submit Exam button, reference materials (if provided)</td></tr>
+</table>
+
+<h3>Submitting Code (Coding Questions)</h3>
+<ol>
+  <li>Type or paste your code in the code editor (centre panel).</li>
+  <li>Click <strong>Run Tests</strong> to execute your code against the visible test cases in a secure sandbox VM.</li>
+  <li>Results appear below the editor: pass/fail per test case, standard output, and execution time.</li>
+  <li>You may revise and re-run as many times as you like before the timer expires.</li>
+  <li>Click <strong>Submit Question</strong> to lock your final answer for that question.</li>
+</ol>
+
+<div class="note"><strong>Sandbox boot time:</strong> Each VM boots in ~125 ms. Execution time-limit per run is 30 seconds.</div>
+
+<h3>Execution Environments</h3>
+<table>
+  <tr><th>Profile</th><th>Environment</th><th>Used For</th></tr>
+  <tr><td>A</td><td>Python 3.11 + PyTorch + HuggingFace</td><td>AI/ML coding tasks</td></tr>
+  <tr><td>B</td><td>Terraform + kubectl (dry-run)</td><td>IaC / DevOps tasks</td></tr>
+  <tr><td>C</td><td>Rust / C++ / ROS 2</td><td>Systems programming</td></tr>
+  <tr><td>D</td><td>Dual-VM security lab</td><td>Cybersecurity practicals</td></tr>
+</table>
+
+<h3>Anti-Cheat Monitoring</h3>
+<p>EvalOS monitors your browser behaviour during exams. The following events are logged:</p>
+<table>
+  <tr><th>Event</th><th>Flag Threshold</th></tr>
+  <tr><td>Window focus lost (switching away)</td><td>5 events before flag</td></tr>
+  <tr><td>Fullscreen exit</td><td>3 events before flag</td></tr>
+  <tr><td>Clipboard events (copy / paste)</td><td>10 events before flag</td></tr>
+  <tr><td>Tab switch</td><td>Logged every occurrence</td></tr>
+</table>
+<div class="tip">Being flagged <strong>does not immediately disqualify you.</strong> Your instructor reviews the flag before any decision is made.</div>
+
+<h3>If Your Exam Is Interrupted</h3>
+<p>If your browser crashes, power cuts out, or your internet drops:</p>
+<ol>
+  <li>Return to <span class="url">https://evalos.i3technologies.co.ke</span> and log in.</li>
+  <li>Your Dashboard shows the in-progress attempt.</li>
+  <li>Click <strong>Resume</strong> — your answers and timer state are fully restored from the server.</li>
+</ol>
+
+<h3>Viewing Your Results</h3>
+<p>After your instructor publishes grades:</p>
+<ol>
+  <li>Go to <strong>My Results</strong> on the Dashboard.</li>
+  <li>Click any attempt to see: overall score, pass/fail, per-question breakdown, sandbox execution output, and instructor comments.</li>
+</ol>
+
+
+<h2 id="ailab">3. AI Lab — JupyterHub Workbench <span class="role-badge role-student">Students &amp; Instructors</span></h2>
+
+<div class="app-header">
+  <div class="app-icon" style="background:#7c5cd8">🔬</div>
+  <div class="app-info">
+    <h3>AI Lab — JupyterHub</h3>
+    <div class="app-url">https://jupyter.i3technologies.co.ke</div>
+    <div class="app-desc">Personal Jupyter notebook workbenches with GPU access for AI/ML coursework and research. Powered by Red Hat OpenShift AI.</div>
+  </div>
+</div>
+
+<h3>Accessing Your Workbench</h3>
+<ol>
+  <li>Navigate to <span class="url">https://jupyter.i3technologies.co.ke</span>.</li>
+  <li>Log in via SSO (your i3 credentials).</li>
+  <li>Select your <strong>notebook image:</strong>
+    <ul>
+      <li><strong>PyTorch 2.x</strong> — for deep learning</li>
+      <li><strong>TensorFlow 2.x</strong> — for Keras/TF projects</li>
+      <li><strong>Minimal Python</strong> — for general coursework and data science</li>
+    </ul>
+  </li>
+  <li>Choose a <strong>container size</strong> (your instructor sets the maximum available):
+    <ul>
+      <li>Small: 2 CPU / 4 GB RAM</li>
+      <li>Medium: 4 CPU / 8 GB RAM / 0.5 GPU</li>
+      <li>Large: 8 CPU / 16 GB RAM / 1 GPU</li>
+    </ul>
+  </li>
+  <li>Click <strong>Start Server.</strong> Wait 30–60 seconds for initialisation.</li>
+</ol>
+
+<h3>Saving Your Work</h3>
+<ul>
+  <li>Your home directory (<code>/opt/app-root/src</code>) is a <strong>persistent volume</strong> — files survive server restarts.</li>
+  <li>Do not store datasets larger than 5 GB in your home directory — use the shared S3 bucket instead.</li>
+  <li>Commit notebooks to your Git repository regularly.</li>
+  <li>Temporary large checkpoints should go to <code>/tmp</code>.</li>
+</ul>
+
+<h3>Using the LiteLLM AI API from Your Notebook</h3>
+<pre>
+import openai
+
+client = openai.OpenAI(
+    api_key="&lt;your-litellm-api-key&gt;",   # Request from your instructor
+    base_url="http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000"
+)
+
+response = client.chat.completions.create(
+    model="granite-nano",    # Tier 3: fast, always-warm
+    messages=[{"role": "user", "content": "Explain gradient descent"}]
+)
+print(response.choices[0].message.content)
+</pre>
+
+<h3>Available AI Models</h3>
+<table>
+  <tr><th>Model Name</th><th>Tier</th><th>Best For</th></tr>
+  <tr><td><code>granite-nano</code></td><td>3 — Edge</td><td>Quick queries, classification, chat</td></tr>
+  <tr><td><code>embed</code></td><td>3 — Edge</td><td>Text embeddings for RAG</td></tr>
+  <tr><td><code>qwen-fast</code></td><td>2 — RAG</td><td>RAG pipelines, reasoning, longer context</td></tr>
+  <tr><td><code>coder</code></td><td>2 — RAG</td><td>Code generation and debugging</td></tr>
+  <tr><td><code>qwen-heavy</code></td><td>1 — Heavy</td><td>Complex reasoning, full context tasks</td></tr>
+  <tr><td><code>vision</code></td><td>1 — Heavy</td><td>Multimodal / image understanding</td></tr>
+</table>
+
+<h3>Stopping Your Workbench</h3>
+<div class="warn">Always stop your server when not in use to free cluster resources (especially GPU).</div>
+<ol>
+  <li>Click your username in the top right → <strong>Log Out.</strong></li>
+  <li>On the JupyterHub control panel, click <strong>Stop My Server.</strong></li>
+</ol>
+
+
+<h2 id="sage">4. Sage — AI Chat Workbench <span class="role-badge role-all">All Users</span></h2>
+
+<div class="app-header">
+  <div class="app-icon" style="background:#2da44e">🧠</div>
+  <div class="app-info">
+    <h3>Sage (Open WebUI)</h3>
+    <div class="app-url">https://sage.i3technologies.co.ke</div>
+    <div class="app-desc">Interactive AI chat interface powered by the i3 Model Gateway. Supports multi-turn conversations, file uploads, and RAG.</div>
+  </div>
+</div>
+
+<h3>Using Sage</h3>
+<ol>
+  <li>Navigate to <span class="url">https://sage.i3technologies.co.ke</span> and log in via SSO.</li>
+  <li>Select a model from the model picker at the top of the chat window.</li>
+  <li>Type your message and press <kbd class="kbd">Enter</kbd> or click the send button.</li>
+  <li>Use the <strong>+</strong> button to upload files (PDF, code, images) for the AI to analyse.</li>
+</ol>
+
+<h3>Tips for Best Results</h3>
+<ul>
+  <li>Use <code>granite-nano</code> for quick lookups and simple questions.</li>
+  <li>Use <code>qwen-fast</code> for document analysis and multi-step reasoning.</li>
+  <li>Use <code>coder</code> specifically for code generation, debugging, and explanation.</li>
+  <li>Use <code>vision</code> when uploading images or diagrams for analysis.</li>
+  <li>Start a <strong>New Chat</strong> for each new topic to keep context clean.</li>
+</ul>
+
+
+<h2 id="admissions">5. Admissions AI Chatbot <span class="role-badge role-all">Prospective Students</span></h2>
+
+<div class="app-header">
+  <div class="app-icon" style="background:#0550ae">🎓</div>
+  <div class="app-info">
+    <h3>Admissions Assistant</h3>
+    <div class="app-url">https://admissions.i3technologies.co.ke</div>
+    <div class="app-desc">AI-powered chatbot for programme enquiries, fees, schedules, and booking admissions calls. No login required.</div>
+  </div>
+</div>
+
+<h3>Starting a Conversation</h3>
+<ol>
+  <li>Navigate to <span class="url">https://admissions.i3technologies.co.ke</span> — no login required.</li>
+  <li>Type your question in the chat box and press <kbd class="kbd">Enter</kbd> or click <strong>Send.</strong></li>
+  <li>The assistant responds in real time with streaming tokens.</li>
+  <li>Continue the conversation — it remembers what you asked within the session.</li>
+</ol>
+
+<h3>What the Assistant Can Help With</h3>
+<ul>
+  <li>Programme descriptions, modules, and entry requirements</li>
+  <li>Fee structures, payment plans, and scholarship options</li>
+  <li>Application deadlines and intake dates</li>
+  <li>Student services, campus facilities, and support</li>
+  <li>Scheduling an introductory call with an admissions officer</li>
+</ul>
+
+<h3>Booking an Admissions Call</h3>
+<p>Ask the assistant to book a call. It will:</p>
+<ol>
+  <li>Ask for your name, email, preferred date, and time.</li>
+  <li>Show you a summary of the booking.</li>
+  <li>Wait for your <strong>explicit confirmation</strong> ("Yes, please book this").</li>
+  <li>Only after confirmation does it create the calendar event and CRM record.</li>
+</ol>
+
+<h3>What the Assistant Cannot Do</h3>
+<ul>
+  <li>Access your personal application files or student records</li>
+  <li>Guarantee admission or provide unofficial offers</li>
+  <li>Answer questions outside admissions and programme topics</li>
+</ul>
+
+<div class="note"><strong>Security:</strong> All messages pass through a prompt injection firewall. Attempts to manipulate or jailbreak the assistant are automatically blocked and logged.</div>
+
+
+<h2 id="engage">6. Engage — Customer 360 CDP <span class="role-badge role-instructor">Marketing &amp; Sales Teams</span></h2>
+
+<div class="app-header">
+  <div class="app-icon" style="background:#3b82d4">📊</div>
+  <div class="app-info">
+    <h3>Engage CRM / CDP</h3>
+    <div class="app-url">https://engage.i3technologies.co.ke</div>
+    <div class="app-desc">Customer data platform for omnichannel campaigns — SMS, WhatsApp, and Email. AI-powered campaign agent with autonomous segment building and optimisation.</div>
+  </div>
+</div>
+
+<h3>Logging In</h3>
+<ol>
+  <li>Navigate to <span class="url">https://engage.i3technologies.co.ke</span>.</li>
+  <li>Click <strong>Sign In with SSO</strong> — you are authenticated via Keycloak.</li>
+  <li>Your dashboard shows your contacts, active campaigns, and recent message performance.</li>
+</ol>
+
+<h3>Managing Contacts</h3>
+<ul>
+  <li>Go to <strong>Contacts</strong> to view, search, and filter your contact database.</li>
+  <li>Import contacts via CSV: <strong>Contacts → Import → Upload CSV.</strong></li>
+  <li>Each contact has a 360 profile: demographics, purchase history, engagement score, and interaction timeline.</li>
+  <li>Use <strong>Segments</strong> to group contacts by behaviour, demographics, or custom criteria.</li>
+</ul>
+
+<h3>Creating a Campaign</h3>
+<ol>
+  <li>Go to <strong>Campaigns → New Campaign.</strong></li>
+  <li>Choose the channel: <strong>SMS, WhatsApp,</strong> or <strong>Email.</strong></li>
+  <li>Select a <strong>Segment</strong> (who receives the message).</li>
+  <li>Write your message or click <strong>Generate with AI</strong> — the Campaign Agent drafts personalised content.</li>
+  <li>Set a schedule: send now or schedule for a future date/time.</li>
+  <li>Click <strong>Preview &amp; Send</strong> → confirm to launch.</li>
+</ol>
+
+<h3>Nuru AI Co-worker</h3>
+<p>Visit <span class="url">https://nuru.i3technologies.co.ke</span> — your AI assistant for the Engage platform. Ask Nuru to:</p>
+<ul>
+  <li>Analyse campaign performance and suggest improvements</li>
+  <li>Draft message content for any channel</li>
+  <li>Explain customer segment characteristics</li>
+  <li>Predict churn risk for segments</li>
+</ul>
+
+<h3>Campaign Reports</h3>
+<ul>
+  <li>Go to <strong>Reports</strong> to see open rates, click rates, unsubscribes, and delivery statistics.</li>
+  <li>Filter by campaign, channel, date range, or segment.</li>
+  <li>A/B test results are shown automatically when you ran a split test.</li>
+</ul>
+
+
+<h2 id="pmaas">7. PMaaS — Political Campaign Operating System <span class="role-badge role-instructor">Campaign Teams</span></h2>
+
+<div class="app-header">
+  <div class="app-icon" style="background:#7c5cd8">🗳️</div>
+  <div class="app-info">
+    <h3>PMaaS Campaign Dashboard</h3>
+    <div class="app-url">https://pmaas.i3technologies.co.ke</div>
+    <div class="app-desc">AI-powered political campaign management system — ward-level targeting, manifesto RAG, voter interaction analytics, and autonomous campaign briefings.</div>
+  </div>
+</div>
+
+<h3>Logging In</h3>
+<ol>
+  <li>Navigate to <span class="url">https://pmaas.i3technologies.co.ke</span>.</li>
+  <li>Log in via Keycloak SSO.</li>
+  <li>Your dashboard shows today's AI-generated campaign briefing, ward performance, and pending actions.</li>
+</ol>
+
+<h3>Campaign Briefing</h3>
+<p>Every morning, the Campaign Agent automatically generates:</p>
+<ul>
+  <li>Ward-level sentiment analysis</li>
+  <li>Priority areas requiring canvassing</li>
+  <li>Recommended messaging by demographic group</li>
+  <li>Voter interaction summary from the previous day</li>
+</ul>
+<p>Find the briefing on the Dashboard under <strong>Today's Briefing.</strong></p>
+
+<h3>Manifesto Q&amp;A</h3>
+<ol>
+  <li>Go to <strong>Manifesto Q&amp;A.</strong></li>
+  <li>Type a policy question or voter concern.</li>
+  <li>The system retrieves relevant manifesto excerpts and generates a clear, candidate-aligned response.</li>
+  <li>Use this to prepare talking points for rallies, interviews, or canvassing.</li>
+</ol>
+
+<h3>Voter Interaction Management</h3>
+<ul>
+  <li>Log voter interactions under <strong>Interactions → New Interaction.</strong></li>
+  <li>Record: voter name, ward, issue raised, sentiment, and follow-up required.</li>
+  <li>The Campaign Agent analyses patterns and surfaces hot-button issues automatically.</li>
+</ul>
+
+<h3>Dawa AI Co-worker</h3>
+<p>Visit <span class="url">https://dawa.i3technologies.co.ke</span> — your dedicated campaign AI assistant. Ask Dawa to:</p>
+<ul>
+  <li>Draft speech sections or manifesto summaries</li>
+  <li>Generate WhatsApp broadcast messages for specific wards</li>
+  <li>Analyse competitor sentiment</li>
+  <li>Create ward-specific canvassing scripts</li>
+</ul>
+
+
+<h2 id="afroerp">8. AfroERP — AI-Powered African Business OS <span class="role-badge role-instructor">Business Users</span></h2>
+
+<div class="app-header">
+  <div class="app-icon" style="background:#2da44e">📦</div>
+  <div class="app-info">
+    <h3>AfroERP (ERPNext)</h3>
+    <div class="app-url">https://afroerp.i3technologies.co.ke</div>
+    <div class="app-desc">Full-featured ERP built on Frappe/ERPNext with Kenya-specific modules: M-Pesa Daraja payments and KRA eTIMS e-invoicing compliance.</div>
+  </div>
+</div>
+
+<h3>Logging In</h3>
+<ol>
+  <li>Navigate to <span class="url">https://afroerp.i3technologies.co.ke</span>.</li>
+  <li>Enter your credentials (provided by your system administrator).</li>
+  <li>Standard users are created within ERPNext — not via Keycloak SSO.</li>
+</ol>
+
+<h3>Core ERP Modules</h3>
+<table>
+  <tr><th>Module</th><th>Purpose</th></tr>
+  <tr><td>Accounts</td><td>Chart of accounts, journals, financial reports</td></tr>
+  <tr><td>Selling</td><td>Sales orders, quotations, customer management</td></tr>
+  <tr><td>Buying</td><td>Purchase orders, supplier management</td></tr>
+  <tr><td>Stock</td><td>Inventory, warehouses, stock movements</td></tr>
+  <tr><td>HR</td><td>Employees, payroll, leave management</td></tr>
+  <tr><td>Projects</td><td>Project tracking and timesheets</td></tr>
+</table>
+
+<h3>Kenya-Specific: M-Pesa Payments</h3>
+<ol>
+  <li>Go to <strong>AfroERP Kenya → M-Pesa Payments.</strong></li>
+  <li>Create a payment request linked to an invoice.</li>
+  <li>The customer receives an <strong>STK Push</strong> on their phone for approval.</li>
+  <li>Once approved, the payment is automatically reconciled against the invoice.</li>
+</ol>
+
+<h3>Kenya-Specific: KRA eTIMS e-Invoicing</h3>
+<ol>
+  <li>Invoices above the eTIMS threshold are automatically submitted to KRA.</li>
+  <li>Go to <strong>AfroERP Kenya → eTIMS Submissions</strong> to view submission status.</li>
+  <li>A QR code is appended to each compliant invoice for customer verification.</li>
+</ol>
+
+<h3>Mfumo AI Co-worker</h3>
+<p>Visit <span class="url">https://mfumo.i3technologies.co.ke</span> — your AI business assistant. Ask Mfumo to:</p>
+<ul>
+  <li>Explain financial reports in plain language</li>
+  <li>Draft purchase orders or customer communications</li>
+  <li>Analyse stock levels and recommend reorder quantities</li>
+  <li>Answer payroll and HR policy questions</li>
+</ul>
+
+
+<h2 id="cms">9. Directus CMS — Content Management <span class="role-badge role-instructor">Instructors &amp; Admins</span></h2>
+
+<div class="app-header">
+  <div class="app-icon" style="background:#cf222e">📋</div>
+  <div class="app-info">
+    <h3>Directus CMS</h3>
+    <div class="app-url">https://cms.i3technologies.co.ke</div>
+    <div class="app-desc">Headless CMS for managing course content, VOD recordings, class schedules, programme guides, and platform metadata.</div>
+  </div>
+</div>
+
+<h3>Logging In</h3>
+<ol>
+  <li>Navigate to <span class="url">https://cms.i3technologies.co.ke</span>.</li>
+  <li>Click <strong>Login with Keycloak</strong> — authenticated via SSO, no separate password required.</li>
+</ol>
+
+<h3>Content Collections</h3>
+<table>
+  <tr><th>Collection</th><th>Purpose</th><th>Who Manages</th></tr>
+  <tr><td><strong>vod_recordings</strong></td><td>VOD metadata: title, HLS URL, subtitles, duration</td><td>Instructors (auto-populated by OTT pipeline)</td></tr>
+  <tr><td><strong>courses</strong></td><td>Course catalogue, descriptions, fees</td><td>Admins</td></tr>
+  <tr><td><strong>class_schedules</strong></td><td>Timetable for live and recorded sessions</td><td>Instructors</td></tr>
+  <tr><td><strong>instructors</strong></td><td>Instructor profiles</td><td>Admins</td></tr>
+  <tr><td><strong>programme_guides</strong></td><td>PDF uploads for Admissions RAG chatbot</td><td>Admins</td></tr>
+</table>
+
+<h3>Uploading Programme Documents (for Admissions Bot)</h3>
+<ol>
+  <li>Go to <strong>Collections → programme_guides.</strong></li>
+  <li>Click <strong>+ Create Item.</strong></li>
+  <li>Upload the PDF in the <strong>document</strong> field.</li>
+  <li>Set <strong>status</strong> to <code>published</code>.</li>
+  <li>Save — the n8n automation pipeline indexes it into the chatbot within 5 minutes.</li>
+</ol>
+
+<h3>Managing VOD Recordings</h3>
+<p>VOD records are created automatically after each live stream ends. You can edit them to:</p>
+<ul>
+  <li>Update the title and description</li>
+  <li>Set a thumbnail image</li>
+  <li>Change visibility: <code>draft</code> / <code>published</code> / <code>archived</code></li>
+  <li>Add chapter markers for student navigation</li>
+</ul>
+
+
+<h2 id="ott">10. OTT — Live Streaming &amp; VOD <span class="role-badge role-student">All Users</span></h2>
+
+<div class="app-header">
+  <div class="app-icon" style="background:#d4a017">📺</div>
+  <div class="app-info">
+    <h3>OTT Streaming Platform</h3>
+    <div class="app-url">Live: https://stream.i3technologies.co.ke  |  VOD: https://hls.i3technologies.co.ke</div>
+    <div class="app-desc">Live lectures and recorded sessions delivered via OvenMediaEngine with 4 adaptive quality levels and AI-generated subtitles.</div>
+  </div>
+</div>
+
+<h3>Watching a Live Stream</h3>
+<ol>
+  <li>Navigate to <span class="url">https://stream.i3technologies.co.ke</span>.</li>
+  <li>Log in with your i3 credentials.</li>
+  <li>Select the active stream from the schedule.</li>
+  <li>The player automatically selects the best quality for your connection.</li>
+  <li>Use the quality selector (⚙) to manually choose: <strong>1080p / 720p / 480p / 240p.</strong></li>
+</ol>
+
+<h3>Watching a Recorded Lecture</h3>
+<ol>
+  <li>Navigate to <span class="url">https://hls.i3technologies.co.ke</span> or browse VOD from your course portal.</li>
+  <li>Search or browse for the lecture by title or instructor.</li>
+  <li>Click <strong>Watch</strong> — the HLS player loads automatically.</li>
+  <li>AI-generated subtitles are available via the <strong>CC</strong> button.</li>
+</ol>
+
+<h3>Player Keyboard Shortcuts</h3>
+<table>
+  <tr><th>Key</th><th>Action</th></tr>
+  <tr><td><kbd class="kbd">Space</kbd></td><td>Play / Pause</td></tr>
+  <tr><td><kbd class="kbd">← / →</kbd></td><td>Seek ±10 seconds</td></tr>
+  <tr><td><kbd class="kbd">↑ / ↓</kbd></td><td>Volume up / down</td></tr>
+  <tr><td><kbd class="kbd">F</kbd></td><td>Toggle fullscreen</td></tr>
+  <tr><td><kbd class="kbd">C</kbd></td><td>Toggle subtitles / captions</td></tr>
+  <tr><td><kbd class="kbd">1</kbd> – <kbd class="kbd">4</kbd></td><td>Switch quality: 1=240p, 2=480p, 3=720p, 4=1080p</td></tr>
+</table>
+
+
+<h2 id="n8n">11. n8n Workflow Automation <span class="role-badge role-instructor">Instructors &amp; Admins</span></h2>
+
+<div class="app-header">
+  <div class="app-icon" style="background:#e44d26">⚡</div>
+  <div class="app-info">
+    <h3>n8n Automation Engine</h3>
+    <div class="app-url">https://n8n.i3technologies.co.ke</div>
+    <div class="app-desc">No-code workflow automation for post-class content processing, enrolment, notifications, and CMS integrations.</div>
+  </div>
+</div>
+
+<h3>Logging In</h3>
+<p>Navigate to <span class="url">https://n8n.i3technologies.co.ke</span> and log in with your i3 SSO credentials.</p>
+
+<h3>Pre-Built Workflows</h3>
+
+<h4>1. OTT Post-Class Pipeline (Automatic)</h4>
+<p>Runs automatically when a live stream ends:</p>
+<ol>
+  <li>Receives the stream name and recording path from OvenMediaEngine</li>
+  <li>Runs FFmpeg ABR transcode into 4 quality levels</li>
+  <li>Generates AI subtitles via Whisper</li>
+  <li>Uploads to SeaweedFS VOD bucket</li>
+  <li>Creates/updates the Directus CMS record</li>
+</ol>
+<div class="tip">This workflow runs automatically — you do not need to trigger it. Monitor its status in n8n → Executions.</div>
+
+<h4>2. Auto-Enrolment Workflow (Automatic)</h4>
+<p>Triggered when a student passes an EvalOS admissions assessment:</p>
+<ol>
+  <li>Receives student data from EvalOS</li>
+  <li>Creates a cohort namespace if it does not exist</li>
+  <li>Sends a welcome email with login credentials</li>
+  <li>Creates a CRM record</li>
+</ol>
+
+<h4>3. Manual Content Pipeline Trigger</h4>
+<p>If a recording was missed by the automatic webhook:</p>
+<ol>
+  <li>Open <strong>OTT Post-Class Pipeline</strong> in n8n.</li>
+  <li>Click <strong>Execute Workflow.</strong></li>
+  <li>Fill in <code>stream_name</code> and <code>recording_path</code>.</li>
+  <li>Click <strong>Run.</strong></li>
+</ol>
+
+<h3>Creating a New Workflow</h3>
+<ol>
+  <li>Click <strong>+ New Workflow</strong> in the top right.</li>
+  <li>Search for nodes in the left panel (e.g. "HTTP Request", "Postgres", "Send Email").</li>
+  <li>Connect nodes by dragging from one output to the next input.</li>
+  <li>Use <strong>Test Step</strong> to validate each node individually.</li>
+  <li>Click <strong>Save</strong> then <strong>Activate</strong> to enable automatic triggering.</li>
+</ol>
+
+
+<h2 id="litellm">12. LiteLLM API — For Developers <span class="role-badge role-instructor">Developers</span></h2>
+
+<div class="app-header">
+  <div class="app-icon" style="background:#0550ae">🤖</div>
+  <div class="app-info">
+    <h3>LiteLLM Model Gateway</h3>
+    <div class="app-url">https://litellm.i3technologies.co.ke</div>
+    <div class="app-desc">OpenAI-compatible API proxy for all i3 AI models. Request your personal API key from your instructor or administrator.</div>
+  </div>
+</div>
+
+<h3>Requesting an API Key</h3>
+<p>Ask your instructor or IT administrator for a personal LiteLLM API key. Keys have per-model access restrictions and budget caps set by your administrator.</p>
+
+<h3>Making API Calls</h3>
+<pre>
+import openai
+
+client = openai.OpenAI(
+    api_key="sk-litellm-YOUR-KEY-HERE",
+    base_url="https://litellm.i3technologies.co.ke"
+)
+
+# Chat completion
+response = client.chat.completions.create(
+    model="qwen-fast",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "What is the capital of Kenya?"}
+    ]
+)
+print(response.choices[0].message.content)
+
+# Text embedding (for RAG)
+embed_resp = client.embeddings.create(
+    model="embed",
+    input="Text to embed for vector search"
+)
+vector = embed_resp.data[0].embedding
+</pre>
+
+<h3>Available Models &amp; When to Use Them</h3>
+<table>
+  <tr><th>Model</th><th>Speed</th><th>Best For</th></tr>
+  <tr><td><code>granite-nano</code></td><td>Fastest (&lt;5s)</td><td>Quick questions, intent routing, simple chat</td></tr>
+  <tr><td><code>embed</code></td><td>Very fast</td><td>Text embeddings for semantic search / RAG</td></tr>
+  <tr><td><code>qwen-fast</code></td><td>Medium (10–45s)</td><td>RAG pipelines, document Q&amp;A, longer context</td></tr>
+  <tr><td><code>coder</code></td><td>Medium</td><td>Code generation, debugging, code review</td></tr>
+  <tr><td><code>qwen-heavy</code></td><td>Slower (30–120s)</td><td>Complex multi-step reasoning, analysis</td></tr>
+  <tr><td><code>vision</code></td><td>Slower</td><td>Image analysis, multimodal tasks</td></tr>
+</table>
+
+
+<h2 id="langfuse">13. Langfuse — LLM Observability <span class="role-badge role-instructor">Instructors &amp; Admins</span></h2>
+
+<div class="app-header">
+  <div class="app-icon" style="background:#57606a">📈</div>
+  <div class="app-info">
+    <h3>Langfuse Traces</h3>
+    <div class="app-url">https://langfuse.i3technologies.co.ke</div>
+    <div class="app-desc">Every LLM API call made through the platform is captured here — latency, tokens, cost, and quality scores.</div>
+  </div>
+</div>
+
+<h3>Logging In</h3>
+<p>Navigate to <span class="url">https://langfuse.i3technologies.co.ke</span>. Log in with your admin credentials (provided by IT). The public key and secret key for the EvalOS project are pre-configured.</p>
+
+<h3>Viewing AI Usage by Student</h3>
+<ol>
+  <li>Go to <strong>Traces.</strong></li>
+  <li>Filter by <strong>User ID</strong> (this is the student's Keycloak username).</li>
+  <li>You can see every LLM call made from the AI Lab: model used, prompt, response, tokens consumed, cost, and latency.</li>
+</ol>
+
+<h3>Key Metrics</h3>
+<table>
+  <tr><th>Metric</th><th>Where to Find It</th></tr>
+  <tr><td>Response time (P95 latency)</td><td>Dashboard → Latency</td></tr>
+  <tr><td>Error rate</td><td>Dashboard → Errors</td></tr>
+  <tr><td>Token spend (cost)</td><td>Dashboard → Cost</td></tr>
+  <tr><td>Cache hit rate</td><td>Traces → Metadata</td></tr>
+</table>
+
+
+<h2 id="grafana">14. Grafana — Platform Dashboards <span class="role-badge role-admin">Admins</span></h2>
+
+<div class="app-header">
+  <div class="app-icon" style="background:#e44d26">📊</div>
+  <div class="app-info">
+    <h3>Grafana Monitoring</h3>
+    <div class="app-url">https://grafana.i3technologies.co.ke</div>
+    <div class="app-desc">Real-time platform health dashboards — pod status, LiteLLM throughput, Kafka lag, sandbox VM boot times, and storage usage.</div>
+  </div>
+</div>
+
+<h3>Logging In</h3>
+<p>Navigate to <span class="url">https://grafana.i3technologies.co.ke</span>. Log in using admin credentials (retrieved from the cluster — ask your IT administrator).</p>
+
+<h3>Key Dashboards</h3>
+<table>
+  <tr><th>Dashboard</th><th>What It Shows</th></tr>
+  <tr><td>Platform Overview</td><td>All namespace health, pod counts, PVC usage</td></tr>
+  <tr><td>LiteLLM Gateway</td><td>Request rate, latency, token usage per model</td></tr>
+  <tr><td>EvalOS Sandbox</td><td>Submission rate, VM boot time (P95 target: &lt;200ms)</td></tr>
+  <tr><td>Kafka Consumers</td><td>Topic throughput, consumer group lag</td></tr>
+  <tr><td>PostgreSQL</td><td>Connection pool usage, query times, replication lag</td></tr>
+</table>
+
+<h3>Adding a Dashboard</h3>
+<ol>
+  <li>Go to <strong>Dashboards → Import.</strong></li>
+  <li>Paste a Grafana dashboard JSON or enter a Grafana.com dashboard ID.</li>
+  <li>Select <strong>Prometheus</strong> as the data source.</li>
+  <li>Click <strong>Import.</strong></li>
+</ol>
+
+
+<h2 id="instructor-evalos">15. Instructor Guide — EvalOS Exam Management <span class="role-badge role-instructor">Instructors</span></h2>
+
+<h3>Creating an Exam</h3>
+<ol>
+  <li>Log in to EvalOS with your instructor credentials.</li>
+  <li>Go to <strong>Instructor Panel → Exams → New Exam.</strong></li>
+  <li>Fill in: Title, Description, Duration (minutes), Execution Profile (A/B/C/D), Pass Score (%), and Draw Specification.</li>
+</ol>
+
+<h4>Draw Specification (JSON)</h4>
+<p>Controls which questions are randomly drawn per student attempt — preventing answer sharing:</p>
+<pre>
+[
+  { "topic": "python-fundamentals", "count": 5, "difficulty_min": 1, "difficulty_max": 3 },
+  { "topic": "ml-concepts",         "count": 3, "difficulty_min": 2, "difficulty_max": 4 },
+  { "topic": "pytorch-practicals",  "count": 2, "difficulty_min": 3, "difficulty_max": 5 }
+]
+</pre>
+
+<h3>Managing the Question Bank</h3>
+<ol>
+  <li>Go to <strong>Question Bank → Add Question.</strong></li>
+  <li>Choose type: <strong>MCQ, Short Answer,</strong> or <strong>Code.</strong></li>
+  <li>For Code questions, provide:
+    <ul>
+      <li><strong>Stem</strong> — the problem description</li>
+      <li><strong>Test cases</strong> — input/expected output pairs</li>
+      <li><strong>Test harness</strong> — wrapper code injected around the student's submission</li>
+      <li><strong>Bloom level</strong> — Recall / Understand / Apply / Analyse / Evaluate / Create</li>
+    </ul>
+  </li>
+  <li>Set <code>is_active = true</code> to include in future draws.</li>
+</ol>
+
+<h3>Publishing &amp; Scheduling an Exam</h3>
+<ol>
+  <li>Open the exam and click <strong>Publish.</strong></li>
+  <li>Set <strong>Available From</strong> and <strong>Available Until</strong> dates and times.</li>
+  <li>Assign to a <strong>Cohort</strong> — students in that cohort will see it on their Dashboard.</li>
+</ol>
+
+<h3>Reviewing Anti-Cheat Flags</h3>
+<ol>
+  <li>Go to <strong>Instructor Panel → Submissions.</strong></li>
+  <li>Flagged attempts show a ⚠ icon.</li>
+  <li>Click to see: anti-cheat event timeline, sandbox execution logs, and MOSS plagiarism score (code questions).</li>
+  <li>Options: <strong>Dismiss</strong> the flag, <strong>Mark for Review,</strong> or <strong>Void the Attempt.</strong></li>
+</ol>
+
+<h3>Grading</h3>
+<ul>
+  <li>Code questions are auto-graded by test case pass/fail.</li>
+  <li>Short-answer and essay questions: open the attempt → enter score and optional comment per question → click <strong>Save Grades.</strong></li>
+  <li>Click <strong>Publish Results</strong> to make scores visible to students.</li>
+</ul>
+
+
+<h2 id="instructor-ailab">16. Instructor Guide — AI Lab Cohort Management <span class="role-badge role-instructor">Instructors</span></h2>
+
+<h3>Provisioning a New Cohort</h3>
+<pre>
+# From the workspace root (PowerShell)
+make provision-cohort COHORT=2 STUDENTS="alice,bob,carol,david" GPU_QUOTA=1
+</pre>
+<p>This creates: a <code>cohort-2</code> namespace with ResourceQuotas and NetworkPolicies, per-student RBAC roles, and JupyterHub profiles. Set <code>GPU_QUOTA=0</code> to disable GPU for the cohort.</p>
+
+<h3>Adjusting a Student's Resource Quota</h3>
+<pre>
+oc patch resourcequota student-alice-quota -n cohort-2 \
+  --type=merge \
+  -p '{"spec":{"hard":{"limits.nvidia.com/gpu":"2"}}}'
+</pre>
+
+<h3>Monitoring Student AI Usage</h3>
+<ol>
+  <li>Navigate to <span class="url">https://langfuse.i3technologies.co.ke</span>.</li>
+  <li>Go to <strong>Traces</strong> and filter by <code>user_id</code> (student's Keycloak username).</li>
+  <li>See every LLM API call: model, prompt, response, token count, cost, and latency.</li>
+</ol>
+
+<h3>Stopping a Cohort's Workbenches (Free GPU)</h3>
+<pre>
+# Scale all single-user servers in a cohort to zero
+oc get pods -n cohort-2 -l component=singleuser-server \
+  -o name | xargs oc delete -n cohort-2
+</pre>
+
+
+<h2 id="instructor-ott">17. Instructor Guide — OTT Live Broadcasting <span class="role-badge role-instructor">Instructors</span></h2>
+
+<h3>Equipment Required</h3>
+<ul>
+  <li><strong>OBS Studio</strong> v30+ — free and open source (<span class="url">https://obsproject.com</span>)</li>
+  <li>Stable internet: minimum 6 Mbps upload for 1080p30</li>
+  <li>Optional: dedicated HDMI capture card for external cameras</li>
+</ul>
+
+<h3>OBS Setup — RTMP Ingest (Standard)</h3>
+<ol>
+  <li>Open OBS → <strong>Settings → Stream.</strong></li>
+  <li>Set:
+    <ul>
+      <li><strong>Service:</strong> Custom</li>
+      <li><strong>Server:</strong> <code>rtmp://ingest.i3technologies.co.ke:1935/live</code></li>
+      <li><strong>Stream Key:</strong> your stream key (obtain from your admin)</li>
+    </ul>
+  </li>
+  <li>Under <strong>Settings → Output:</strong>
+    <ul>
+      <li>Video Bitrate: <strong>4000 Kbps</strong> (1080p30)</li>
+      <li>Audio Bitrate: <strong>128</strong></li>
+      <li>Encoder: <strong>x264</strong> or hardware encoder if available</li>
+    </ul>
+  </li>
+  <li>Click <strong>OK</strong> then <strong>Start Streaming.</strong></li>
+</ol>
+
+<h3>OBS Setup — SRT Ingest (Lower Latency &lt;2s)</h3>
+<ol>
+  <li><strong>Settings → Stream → Service:</strong> Custom</li>
+  <li><strong>Server:</strong> <code>srt://ingest.i3technologies.co.ke:9999?streamid=live/&lt;your-key&gt;</code></li>
+  <li>Start streaming as normal.</li>
+</ol>
+
+<h3>Recommended OBS Video Settings</h3>
+<table>
+  <tr><th>Setting</th><th>Value</th></tr>
+  <tr><td>Base (Canvas) Resolution</td><td>1920×1080</td></tr>
+  <tr><td>Output (Scaled) Resolution</td><td>1920×1080</td></tr>
+  <tr><td>FPS</td><td>30</td></tr>
+  <tr><td>Keyframe Interval</td><td>2 seconds</td></tr>
+</table>
+
+<h3>During a Stream</h3>
+<ul>
+  <li>Your stream appears at <span class="url">https://stream.i3technologies.co.ke</span> within 3–5 seconds.</li>
+  <li>Viewers can watch in WebRTC (lowest latency) or LL-HLS.</li>
+  <li>The platform automatically creates 4 quality levels: 1080p, 720p, 480p, 240p.</li>
+</ul>
+
+<h3>After Your Stream Ends</h3>
+<p>When you click <strong>Stop Streaming</strong> in OBS:</p>
+<ol>
+  <li>OvenMediaEngine automatically triggers the OTT pipeline.</li>
+  <li>The pipeline transcodes the recording and generates AI subtitles.</li>
+  <li>The VOD recording appears in Directus CMS within <strong>10–15 minutes.</strong></li>
+  <li>Students can watch the recorded lecture at <span class="url">https://hls.i3technologies.co.ke</span>.</li>
+</ol>
+
+<div class="tip">If the VOD does not appear after 20 minutes, re-trigger the pipeline manually in n8n (see Section 11 — Manual Content Pipeline Trigger).</div>
+
+
+<h2>All Application URLs at a Glance</h2>
+<table>
+  <tr><th>Application</th><th>URL</th><th>Who Accesses</th></tr>
+  <tr><td>SSO / Account Portal</td><td><span class="url">https://sso.i3technologies.co.ke</span></td><td>All users</td></tr>
+  <tr><td>EvalOS Exam Engine</td><td><span class="url">https://evalos.i3technologies.co.ke</span></td><td>Students, Instructors</td></tr>
+  <tr><td>AI Lab (JupyterHub)</td><td><span class="url">https://jupyter.i3technologies.co.ke</span></td><td>Students, Instructors</td></tr>
+  <tr><td>Sage (AI Chat)</td><td><span class="url">https://sage.i3technologies.co.ke</span></td><td>All users</td></tr>
+  <tr><td>Admissions Chatbot</td><td><span class="url">https://admissions.i3technologies.co.ke</span></td><td>Prospective students (public)</td></tr>
+  <tr><td>Engage CRM</td><td><span class="url">https://engage.i3technologies.co.ke</span></td><td>Marketing &amp; sales teams</td></tr>
+  <tr><td>Nuru (Engage AI)</td><td><span class="url">https://nuru.i3technologies.co.ke</span></td><td>Engage users</td></tr>
+  <tr><td>PMaaS Campaign OS</td><td><span class="url">https://pmaas.i3technologies.co.ke</span></td><td>Campaign teams</td></tr>
+  <tr><td>Dawa (PMaaS AI)</td><td><span class="url">https://dawa.i3technologies.co.ke</span></td><td>PMaaS users</td></tr>
+  <tr><td>AfroERP</td><td><span class="url">https://afroerp.i3technologies.co.ke</span></td><td>Business / finance teams</td></tr>
+  <tr><td>Mfumo (AfroERP AI)</td><td><span class="url">https://mfumo.i3technologies.co.ke</span></td><td>AfroERP users</td></tr>
+  <tr><td>Directus CMS</td><td><span class="url">https://cms.i3technologies.co.ke</span></td><td>Instructors, Admins</td></tr>
+  <tr><td>Live Stream</td><td><span class="url">https://stream.i3technologies.co.ke</span></td><td>Students (viewing)</td></tr>
+  <tr><td>VOD / HLS</td><td><span class="url">https://hls.i3technologies.co.ke</span></td><td>Students</td></tr>
+  <tr><td>n8n Automation</td><td><span class="url">https://n8n.i3technologies.co.ke</span></td><td>Instructors, Admins</td></tr>
+  <tr><td>LiteLLM API</td><td><span class="url">https://litellm.i3technologies.co.ke</span></td><td>Developers, Admins</td></tr>
+  <tr><td>Langfuse Traces</td><td><span class="url">https://langfuse.i3technologies.co.ke</span></td><td>Instructors, Admins</td></tr>
+  <tr><td>Grafana Dashboards</td><td><span class="url">https://grafana.i3technologies.co.ke</span></td><td>Admins</td></tr>
+  <tr><td>Argo CD GitOps</td><td><span class="url">https://argocd.i3technologies.co.ke</span></td><td>Admins</td></tr>
+  <tr><td>Nextcloud</td><td><span class="url">https://nextcloud.i3technologies.co.ke</span></td><td>All users (file sharing)</td></tr>
+  <tr><td>Moodle / EdBridge</td><td><span class="url">https://moodle.i3technologies.co.ke</span></td><td>Students, Instructors</td></tr>
+  <tr><td>SIT Tutor</td><td><span class="url">https://tutor.sit.i3technologies.co.ke</span></td><td>SIT students (LiteLLM powered)</td></tr>
+</table>
+
+<footer>Made with IBM Bob  |  i3 Technologies Ltd  |  Complete User Documentation  |  September 2026</footer>
+</div>
+</body>
+</html>

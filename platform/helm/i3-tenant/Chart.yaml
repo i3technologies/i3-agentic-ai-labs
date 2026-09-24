@@ -1,0 +1,23 @@
+apiVersion: v2
+name: i3-tenant
+description: >
+  i3 Platform — per-tenant namespace template.
+  Provisions: OpenShift Namespace, Keycloak group + client roles,
+  ResourceQuota (tiered), default-deny NetworkPolicy, ExternalSecret
+  (LiteLLM virtual key from Vault), and Prometheus scrape labels.
+type: application
+version: 0.1.0
+appVersion: "1.0"
+keywords:
+  - i3
+  - multi-tenant
+  - namespace
+  - keycloak
+  - litellm
+home: https://i3technologies.co.ke
+maintainers:
+  - name: i3 Platform Team
+    email: platform@i3technologies.co.ke
+annotations:
+  i3.io/adr: IMP-08
+  i3.io/workstream: B4

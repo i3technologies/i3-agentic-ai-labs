@@ -1,0 +1,222 @@
+---
+# ── Namespace ────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-social
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+
+---
+# ── Secrets ──────────────────────────────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: social-secrets
+  namespace: i3-social
+type: Opaque
+# SCRUBBED (STEP-P1-01): plaintext credentials removed.
+# Retrieve at runtime via OpenBao:
+#   POSTGRES_PASSWORD       → vault kv get -field=password i3/social/db
+#   NEXTCLOUD_ADMIN_PASSWORD → vault kv get -field=password i3/social/admin
+stringData:
+  POSTGRES_HOST: "i3-postgres-pgbouncer.i3-data.svc"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "social_db"
+  POSTGRES_USER: "socialapp"
+  POSTGRES_PASSWORD: ""         # vault kv get -field=password i3/social/db
+  NEXTCLOUD_ADMIN_USER: "i3admin"
+  NEXTCLOUD_ADMIN_PASSWORD: ""  # vault kv get -field=password i3/social/admin
+  REDIS_HOST: "redis.i3-social.svc"
+  REDIS_PORT: "6379"
+  NEXTCLOUD_TRUSTED_DOMAINS: "nextcloud.i3technologies.co.ke"
+
+---
+# ── Redis for Nextcloud ───────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: i3-social
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          command: ["redis-server", "--save", "20", "1", "--loglevel", "warning"]
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: i3-social
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+
+---
+# ── PVC for Nextcloud data ────────────────────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: social-data
+  namespace: i3-social
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: ibmc-vpc-block-retain-10iops-tier
+  resources:
+    requests:
+      storage: 50Gi
+
+---
+# ── Nextcloud Deployment ──────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud
+  namespace: i3-social
+  labels:
+    app: nextcloud
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nextcloud
+  template:
+    metadata:
+      labels:
+        app: nextcloud
+    spec:
+      initContainers:
+        - name: wait-for-db
+          image: postgres:16-alpine
+          command: ["sh", "-c", "until pg_isready -h i3-postgres-pgbouncer.i3-data.svc -p 5432; do sleep 3; done"]
+      containers:
+        - name: nextcloud
+          image: nextcloud:28-apache
+          ports:
+            - containerPort: 80
+              name: http
+          env:
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: social-secrets
+                  key: POSTGRES_HOST
+            - name: POSTGRES_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: social-secrets
+                  key: POSTGRES_PORT
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: social-secrets
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: social-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: social-secrets
+                  key: POSTGRES_PASSWORD
+            - name: NEXTCLOUD_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: social-secrets
+                  key: NEXTCLOUD_ADMIN_USER
+            - name: NEXTCLOUD_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: social-secrets
+                  key: NEXTCLOUD_ADMIN_PASSWORD
+            - name: NEXTCLOUD_TRUSTED_DOMAINS
+              value: "nextcloud.i3technologies.co.ke"
+            - name: REDIS_HOST
+              value: "redis.i3-social.svc"
+            - name: REDIS_PORT
+              value: "6379"
+          volumeMounts:
+            - name: data
+              mountPath: /var/www/html
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+          readinessProbe:
+            httpGet:
+              path: /status.php
+              port: 80
+            initialDelaySeconds: 90
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: social-data
+
+---
+# ── Service ───────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: nextcloud
+  namespace: i3-social
+spec:
+  selector:
+    app: nextcloud
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+
+---
+# ── Route ─────────────────────────────────────────────────────
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: social-public
+  namespace: i3-social
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  host: nextcloud.i3technologies.co.ke
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  to:
+    kind: Service
+    name: nextcloud

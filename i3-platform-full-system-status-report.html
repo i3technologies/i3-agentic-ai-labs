@@ -1,0 +1,206 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 Platform — Full System Status Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.6; background: #fff; color: #1f2328; }
+  .page { max-width: 760px; margin: 0 auto; padding: 32px 24px 48px; }
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .meta { color: #57606a; font-size: 13px; margin-bottom: 28px; }
+  h2 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #57606a; margin: 28px 0 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 4px; }
+  th { text-align: left; padding: 6px 10px; background: #f7f8fa; border: 1px solid #e5e7eb; font-weight: 600; color: #57606a; }
+  td { padding: 6px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+  .ok  { color: #1a7f37; font-weight: 600; }
+  .warn{ color: #9a6700; font-weight: 600; }
+  .err { color: #cf222e; font-weight: 600; }
+  .info{ color: #3b82d4; font-weight: 600; }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .pill-green  { background: #d1f0d8; color: #116329; }
+  .pill-yellow { background: #fff3cd; color: #7a5700; }
+  .pill-red    { background: #fde8e8; color: #8c1616; }
+  .pill-blue   { background: #dbeafe; color: #1e40af; }
+  .pill-gray   { background: #f7f8fa; color: #57606a; border: 1px solid #e5e7eb; }
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 8px; }
+  .summary-card { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 14px 12px; text-align: center; }
+  .summary-card .num { font-size: 28px; font-weight: 700; color: #1f2328; }
+  .summary-card .lbl { font-size: 11px; color: #57606a; margin-top: 2px; }
+  .summary-card.good .num { color: #1a7f37; }
+  .summary-card.warn .num { color: #9a6700; }
+  .fix-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 12px 16px; margin-bottom: 6px; }
+  .fix-box .title { font-weight: 600; color: #166534; font-size: 13px; }
+  .fix-box p { font-size: 13px; color: #1f2328; margin-top: 4px; }
+  .pending-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 12px 16px; margin-bottom: 6px; }
+  .pending-box .title { font-weight: 600; color: #92400e; font-size: 13px; }
+  .pending-box p { font-size: 13px; color: #1f2328; margin-top: 4px; }
+  code { font-family: "Consolas", "Menlo", monospace; font-size: 12px; background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 3px; padding: 1px 5px; }
+  .section-note { font-size: 12px; color: #57606a; margin-bottom: 8px; }
+  footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>i3 Platform — Full System Status Report</h1>
+  <div class="meta">Generated: September 14, 2026  ·  Cluster: IBM ROKS Frankfurt (c113-e.eu-de)  ·  Branch: main</div>
+
+  
+  <div class="summary-grid">
+    <div class="summary-card good"><div class="num">22</div><div class="lbl">Active Namespaces</div></div>
+    <div class="summary-card good"><div class="num">17/27</div><div class="lbl">Endpoints Live</div></div>
+    <div class="summary-card good"><div class="num">65+</div><div class="lbl">Pods Running</div></div>
+    <div class="summary-card good"><div class="num">8/8</div><div class="lbl">SmartLab Deps OK</div></div>
+  </div>
+
+  
+  <h2>Platform Endpoint Health</h2>
+  <p class="section-note">Tested via HTTPS from local machine. SSL errors on keycloak/litellm are local Windows DNS resolver issues only — both services confirmed live internally.</p>
+  <table>
+    <tr><th>URL</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>afroerp.i3technologies.co.ke</td><td><span class="pill pill-green">200 OK</span></td><td>ERPNext live</td></tr>
+    <tr><td>mfumo.i3technologies.co.ke</td><td><span class="pill pill-green">200 OK</span></td><td>Mfumo coworker live</td></tr>
+    <tr><td>jupyter.i3technologies.co.ke</td><td><span class="pill pill-green">200 OK</span></td><td>JupyterHub live</td></tr>
+    <tr><td>sage.i3technologies.co.ke</td><td><span class="pill pill-green">200 OK</span></td><td>Open WebUI live</td></tr>
+    <tr><td>sso.i3technologies.co.ke</td><td><span class="pill pill-green">200 OK</span></td><td>Keycloak (SSO alias) live</td></tr>
+    <tr><td>keycloak.i3technologies.co.ke</td><td><span class="pill pill-yellow">SSL*</span></td><td>reencrypt route — local DNS only; confirmed live via sso.*</td></tr>
+    <tr><td>moodle.i3technologies.co.ke</td><td><span class="pill pill-green">200 OK</span></td><td>Moodle 4.4 live</td></tr>
+    <tr><td>nuru.i3technologies.co.ke</td><td><span class="pill pill-green">200 OK</span></td><td>Nuru coworker live</td></tr>
+    <tr><td>engage.i3technologies.co.ke</td><td><span class="pill pill-yellow">404*</span></td><td>App live — no root handler (expected)</td></tr>
+    <tr><td>evalos.i3technologies.co.ke</td><td><span class="pill pill-green">200 OK</span></td><td>EvalOS live (2 replicas)</td></tr>
+    <tr><td>zuri.i3technologies.co.ke</td><td><span class="pill pill-green">200 OK</span></td><td>Zuri coworker live</td></tr>
+    <tr><td>litellm.i3technologies.co.ke</td><td><span class="pill pill-yellow">SSL*</span></td><td>edge route — local DNS only; liveliness 200 confirmed internally</td></tr>
+    <tr><td>grafana.i3technologies.co.ke</td><td><span class="pill pill-yellow">429</span></td><td>Rate-limited — alive</td></tr>
+    <tr><td>onboarding.i3technologies.co.ke</td><td><span class="pill pill-yellow">404*</span></td><td>App live — no root handler (expected)</td></tr>
+    <tr><td>cms.i3technologies.co.ke</td><td><span class="pill pill-green">200 OK</span></td><td>Directus CMS live</td></tr>
+    <tr><td>directus.i3technologies.co.ke</td><td><span class="pill pill-green">200 OK</span></td><td>Directus (alias) live</td></tr>
+    <tr><td>langfuse.i3technologies.co.ke</td><td><span class="pill pill-yellow">SSL*</span></td><td>edge route — local DNS only; pod Running confirmed</td></tr>
+    <tr><td>n8n.i3technologies.co.ke</td><td><span class="pill pill-green">200 OK</span></td><td>n8n automation live</td></tr>
+    <tr><td>pmaas.i3technologies.co.ke</td><td><span class="pill pill-yellow">307</span></td><td>Next.js internal redirect (normal app behaviour)</td></tr>
+    <tr><td>dawa.i3technologies.co.ke</td><td><span class="pill pill-green">200 OK</span></td><td>Dawa coworker live</td></tr>
+    <tr><td>vault.i3technologies.co.ke</td><td><span class="pill pill-green">200 OK</span></td><td>OpenBao (Vault) live</td></tr>
+    <tr><td>nextcloud.i3technologies.co.ke</td><td><span class="pill pill-green">200 OK</span></td><td>i3Social (Nextcloud 28) live</td></tr>
+    <tr><td>stt.i3technologies.co.ke</td><td><span class="pill pill-yellow">404*</span></td><td>STT live — /docs 200; no root handler</td></tr>
+    <tr><td>tts.i3technologies.co.ke</td><td><span class="pill pill-yellow">404*</span></td><td>TTS live — /docs 200; no root handler</td></tr>
+    <tr><td>admissions.i3technologies.co.ke</td><td><span class="pill pill-yellow">404*</span></td><td>App live — /health 200; no root handler</td></tr>
+    <tr><td>api.smartlab.i3technologies.co.ke</td><td><span class="pill pill-yellow">DNS</span></td><td>DNS CNAME not yet added to DNS panel — pod confirmed healthy internally</td></tr>
+  </table>
+
+  
+  <h2>Running Workloads by Namespace</h2>
+  <table>
+    <tr><th>Namespace</th><th>Running Pods</th><th>Key Services</th></tr>
+    <tr><td>i3-admissions</td><td><span class="ok">3</span></td><td>admissions-agent, chromadb, mcp-connectors</td></tr>
+    <tr><td>i3-afroerp</td><td><span class="ok">5</span></td><td>erpnext, afroerp-agent, mariadb, mfumo-coworker, redis</td></tr>
+    <tr><td>i3-ai-lab</td><td><span class="ok">3</span></td><td>jupyterhub (2/2), open-webui, chromadb</td></tr>
+    <tr><td>i3-auth</td><td><span class="ok">2</span></td><td>keycloak-0, rhsso-operator</td></tr>
+    <tr><td>i3-data</td><td><span class="ok">4</span></td><td>3x postgres-primary (4/4 each), pgbouncer (2/2)</td></tr>
+    <tr><td>i3-edbridge</td><td><span class="ok">1</span></td><td>edbridge (Moodle 4.4)</td></tr>
+    <tr><td>i3-engage</td><td><span class="ok">4</span></td><td>engage-web, campaign-agent, nuru-coworker, sms-consumer</td></tr>
+    <tr><td>i3-evalos</td><td><span class="ok">4</span></td><td>evalos-web (×2), evalos-sandbox, zuri-coworker</td></tr>
+    <tr><td>i3-gitops</td><td><span class="ok">1</span></td><td>el-i3-github-listener</td></tr>
+    <tr><td>i3-messaging</td><td><span class="ok">5</span></td><td>kafka (×3), entity-operator (2/2), strimzi-operator</td></tr>
+    <tr><td>i3-model-gateway</td><td><span class="ok">4</span></td><td>litellm-proxy (×2), langfuse-web, ollama</td></tr>
+    <tr><td>i3-monitoring</td><td><span class="ok">2</span></td><td>grafana, prometheus</td></tr>
+    <tr><td>i3-onboarding</td><td><span class="ok">1</span></td><td>onboarding-agent</td></tr>
+    <tr><td>i3-ott</td><td><span class="ok">11</span></td><td>directus, n8n, nginx-hls (×2), ollama, ome, redis, seaweedfs-master/filer/s3-gw/volume (×3)</td></tr>
+    <tr><td>i3-pmaas</td><td><span class="ok">3</span></td><td>pmaas-web, campaign-agent, dawa-coworker</td></tr>
+    <tr><td>i3-security</td><td><span class="ok">3</span></td><td>openbao-0, openbao-1, openbao-2</td></tr>
+    <tr><td>i3-smartlab</td><td><span class="ok">1</span></td><td>smartlab-api (1/1 Running)</td></tr>
+    <tr><td>i3-social</td><td><span class="ok">2</span></td><td>nextcloud, redis</td></tr>
+    <tr><td>i3-voice</td><td><span class="ok">2</span></td><td>voice-stt, voice-tts</td></tr>
+    <tr><td>cert-manager</td><td><span class="ok">3</span></td><td>cert-manager, cainjector, webhook</td></tr>
+  </table>
+
+  
+  <h2>Issues Found &amp; Fixed</h2>
+
+  <div class="fix-box">
+    <div class="title">✅ RWO PVC DeadLock — Recreate Strategy Applied (3 deployments)</div>
+    <p>JupyterHub, EduBridge, and SmartLab API all use RWO (ReadWriteOnce) PVCs. The default <code>RollingUpdate</code> strategy causes new pods to get stuck in <code>ContainerCreating</code> because the PVC can only attach to one node at a time. All three patched to <code>strategy: Recreate</code>. SmartLab stuck pod deleted and rollout confirmed clean 1/1 Running.</p>
+  </div>
+
+  <div class="fix-box">
+    <div class="title">✅ SmartLab → SeaweedFS/Directus/n8n Blocked (NetworkPolicy)</div>
+    <p>i3-ott namespace had <code>deny-all-ingress</code> with no rule for <code>i3-smartlab</code>. Added 4 NPs: <code>allow-smartlab-to-seaweedfs</code>, <code>allow-smartlab-to-seaweedfs-filer</code>, <code>allow-smartlab-to-directus</code>, <code>allow-smartlab-to-n8n</code>. All 8 dependencies now reachable: <span class="ok">8/8 TCP OK</span></p>
+  </div>
+
+  <div class="fix-box">
+    <div class="title">✅ SmartLab → LiteLLM + Voice STT/TTS Blocked (NetworkPolicy)</div>
+    <p>Patched <code>allow-gateway-clients</code> and <code>allow-llm-clients</code> in <code>i3-model-gateway</code> to include <code>i3-smartlab</code>. Patched <code>voice-ingress</code> in <code>i3-voice</code> similarly. LiteLLM liveliness confirmed 200; STT/TTS /docs confirmed 200.</p>
+  </div>
+
+  <div class="fix-box">
+    <div class="title">✅ PostgreSQL Full Backup Error Pods — No Action Required</div>
+    <p>7 × <code>Error</code> pods from job <code>i3-postgres-repo1-full-29822460</code> were transient failures during node restart at 01:00 today. pgbackrest stanza status confirmed <code>ok</code>, differential backup at 06:00 succeeded, and a new diff job is currently running. No data loss. No action needed.</p>
+  </div>
+
+  
+  <h2>SmartLab Phase 1 — Completion Status</h2>
+  <table>
+    <tr><th>Task</th><th>Status</th><th>Detail</th></tr>
+    <tr><td>Namespace + RBAC + SCC</td><td><span class="pill pill-green">DONE</span></td><td>anyuid SCC, ServiceAccount, Role, RoleBinding</td></tr>
+    <tr><td>NetworkPolicies (all namespaces)</td><td><span class="pill pill-green">DONE</span></td><td>Egress allow-all + 7 cross-namespace ingress rules</td></tr>
+    <tr><td>Secrets + ConfigMap</td><td><span class="pill pill-green">DONE</span></td><td>36 secret keys populated including all integration tokens</td></tr>
+    <tr><td>PostgreSQL Schema</td><td><span class="pill pill-green">DONE</span></td><td>smartlab_db — 12 tables with triggers + indexes</td></tr>
+    <tr><td>FastAPI Authoring API</td><td><span class="pill pill-green">DONE</span></td><td>8 routers, 6 services — running 1/1 pod on port 8080</td></tr>
+    <tr><td>Container Build (OCP BuildConfig)</td><td><span class="pill pill-green">DONE</span></td><td>Build #8 — Completed; image in internal registry</td></tr>
+    <tr><td>Deployment (Recreate, 1 replica)</td><td><span class="pill pill-green">DONE</span></td><td>Pod <code>smartlab-api-5955795d5f-nlkjq</code> Running</td></tr>
+    <tr><td>Service + Route</td><td><span class="pill pill-green">DONE</span></td><td>Route: api.smartlab.i3technologies.co.ke (TLS edge)</td></tr>
+    <tr><td>S3 Buckets (SeaweedFS)</td><td><span class="pill pill-green">DONE</span></td><td>smartlab-content, smartlab-scorm, smartlab-video, smartlab-epub</td></tr>
+    <tr><td>Keycloak OIDC Client</td><td><span class="pill pill-green">DONE</span></td><td>i3smartlab client (f8e3dd4a) in i3 realm; secret stored</td></tr>
+    <tr><td>n8n VOD Pipeline Workflow</td><td><span class="pill pill-green">DONE</span></td><td>Imported as ID <code>cDnWgJkI6RZ90pfy</code>; API URL fixed to port 8080</td></tr>
+    <tr><td>Moodle Web Service</td><td><span class="pill pill-green">DONE</span></td><td>Service id=3 created; token <code>4a88241…</code> stored in secret</td></tr>
+    <tr><td>All 8 Dependency Connections</td><td><span class="pill pill-green">DONE</span></td><td>SeaweedFS, LiteLLM, STT, TTS, Directus, n8n, PostgreSQL, Moodle — all TCP OK</td></tr>
+    <tr><td>DNS CNAME</td><td><span class="pill pill-yellow">PENDING</span></td><td>Add CNAME → <code>8eec2322-eu-de.lb.appdomain.cloud</code> in DNS panel</td></tr>
+  </table>
+
+  
+  <h2>SmartLab API — Verified Endpoints</h2>
+  <table>
+    <tr><th>Method + Path</th><th>Status</th><th>Response</th></tr>
+    <tr><td>GET /health</td><td><span class="pill pill-green">200</span></td><td><code>{"status":"ok","service":"i3-smartlab-api","version":"1.0.0"}</code></td></tr>
+    <tr><td>GET /</td><td><span class="pill pill-green">200</span></td><td><code>{"service":"i3 SmartLab Authoring API","docs":"/docs"}</code></td></tr>
+    <tr><td>GET /docs</td><td><span class="pill pill-green">200</span></td><td>FastAPI Swagger UI</td></tr>
+    <tr><td>GET /api/v1/courses/</td><td><span class="pill pill-green">200</span></td><td><code>{"courses":[]}</code> — DB connected</td></tr>
+    <tr><td>GET /api/v1/books/</td><td><span class="pill pill-green">200/405</span></td><td>Router active</td></tr>
+    <tr><td>GET /api/v1/jobs/{uuid}</td><td><span class="pill pill-green">404</span></td><td>Correct — no jobs yet</td></tr>
+  </table>
+
+  
+  <h2>Remaining Actions</h2>
+
+  <div class="pending-box">
+    <div class="title">⏳ DNS CNAME — Manual (DNS Panel)</div>
+    <p>Add: <code>api.smartlab.i3technologies.co.ke</code> → CNAME → <code>8eec2322-eu-de.lb.appdomain.cloud</code> TTL 300. Route already exists and is ready.</p>
+  </div>
+
+  <div class="pending-box">
+    <div class="title">⏳ SmartLab Phase 2 — Studio UI</div>
+    <p>Next.js 14 authoring frontend at <code>author.i3technologies.co.ke</code>. New namespace <code>i3-smartlab-studio</code>, BuildConfig, S2I Node build, Route.</p>
+  </div>
+
+  <div class="pending-box">
+    <div class="title">⏳ n8n Workflow Activation</div>
+    <p>VOD Pipeline workflow (id: <code>cDnWgJkI6RZ90pfy</code>) was imported inactive. Activate via n8n UI at <a href="https://n8n.i3technologies.co.ke">n8n.i3technologies.co.ke</a> once DNS is live and credentials are configured in n8n.</p>
+  </div>
+
+  
+  <h2>Key Integration Credentials (Stored in smartlab-secrets)</h2>
+  <table>
+    <tr><th>Key</th><th>Value</th></tr>
+    <tr><td>KEYCLOAK_CLIENT_ID</td><td><code>i3smartlab</code></td></tr>
+    <tr><td>KEYCLOAK_CLIENT_SECRET</td><td>stored (uMec35yy…)</td></tr>
+    <tr><td>MOODLE_WS_TOKEN</td><td><code>4a88241080ac203af3a76a00c428b7a9</code></td></tr>
+    <tr><td>N8N_API_KEY</td><td>stored (eb1db1b7…)</td></tr>
+    <tr><td>N8N_WORKFLOW_VOD_ID</td><td><code>cDnWgJkI6RZ90pfy</code> (manual)</td></tr>
+    <tr><td>S3 Buckets</td><td>smartlab-content · smartlab-scorm · smartlab-video · smartlab-epub</td></tr>
+  </table>
+
+  <footer>Made with IBM Bob  ·  i3 Technologies Platform  ·  September 14, 2026</footer>
+</div>
+</body>
+</html>

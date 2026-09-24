@@ -1,0 +1,155 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>i3 Platform — Full Health Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.6; background: #ffffff; color: #1f2328; padding: 32px 16px; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .meta { color: #57606a; font-size: 13px; margin-bottom: 28px; }
+  h2 { font-size: 15px; font-weight: 700; margin: 28px 0 10px; padding-bottom: 5px; border-bottom: 1px solid #e5e7eb; }
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+  .summary-card { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 14px 16px; text-align: center; }
+  .summary-card .num { font-size: 28px; font-weight: 700; line-height: 1.2; }
+  .summary-card .lbl { font-size: 12px; color: #57606a; margin-top: 2px; }
+  .ok   { color: #1a7f37; }
+  .warn { color: #9a6700; }
+  .err  { color: #cf222e; }
+  .info { color: #3b82d4; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
+  th { background: #f7f8fa; text-align: left; padding: 7px 10px; border-bottom: 2px solid #e5e7eb; font-weight: 600; color: #57606a; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  td { padding: 7px 10px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-ok   { background: #dafbe1; color: #1a7f37; }
+  .badge-warn { background: #fff8c5; color: #9a6700; }
+  .badge-err  { background: #ffebe9; color: #cf222e; }
+  .badge-pend { background: #ddf4ff; color: #0550ae; }
+  .badge-exp  { background: #f7f8fa; color: #57606a; }
+  .section-note { background: #fff8c5; border: 1px solid #d4a017; border-radius: 5px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; }
+  .section-note strong { color: #9a6700; }
+  .action-list { padding-left: 18px; }
+  .action-list li { margin-bottom: 6px; }
+  code { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 3px; padding: 1px 5px; font-size: 12px; font-family: "SFMono-Regular", Consolas, monospace; }
+  footer { margin-top: 40px; padding-top: 14px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>i3 Technologies AI Platform — Full Health Report</h1>
+  <div class="meta">IBM ROKS Frankfurt  |  Cluster: <code>c113-e.eu-de.containers.cloud.ibm.com:32581</code>  |  September 14, 2026  |  Post-shutdown sweep</div>
+
+  <div class="summary-grid">
+    <div class="summary-card"><div class="num ok">12</div><div class="lbl">Nodes Ready</div></div>
+    <div class="summary-card"><div class="num ok">20</div><div class="lbl">Apps Running</div></div>
+    <div class="summary-card"><div class="num warn">4</div><div class="lbl">Issues / Actions</div></div>
+    <div class="summary-card"><div class="num ok">37</div><div class="lbl">Routes Configured</div></div>
+  </div>
+
+  
+  <h2>🏗 Infrastructure</h2>
+  <table>
+    <tr><th>Component</th><th>Status</th><th>Notes</th></tr>
+    <tr><td><strong>ROKS Cluster Nodes</strong></td><td><span class="badge badge-ok">✓ All Ready</span></td><td>12/12 nodes Ready — v1.30.14 — 3 zones</td></tr>
+    <tr><td><strong>OpenBao / Vault</strong> (i3-security)</td><td><span class="badge badge-ok">✓ Unsealed</span></td><td>3/3 pods running. Sealed: false. HA active. Raft committed.</td></tr>
+    <tr><td><strong>PostgreSQL HA</strong> (i3-data)</td><td><span class="badge badge-ok">✓ Healthy</span></td><td>3/3 primary pods (4/4 containers each). PGBouncer 1/1. Primary confirmed (pg_is_in_recovery=f).</td></tr>
+    <tr><td><strong>PG Backups — pgBackRest</strong></td><td><span class="badge badge-warn">⚠ Batch fail</span></td><td>Backups at 06:00 &amp; 12:00 UTC on Sep 14 failed (timeout connecting to port 8432). Last good backup: <strong>Sep 14 00:01 UTC</strong>. Manual diff backup triggered and completed successfully. Root cause: transient network timeout during scheduled window. Data safe.</td></tr>
+    <tr><td><strong>Kafka (i3-messaging)</strong></td><td><span class="badge badge-ok">✓ Running</span></td><td>3 brokers, 1 entity-operator, 1 Strimzi operator — all 1/1.</td></tr>
+    <tr><td><strong>SeaweedFS (i3-ott)</strong></td><td><span class="badge badge-ok">✓ Running</span></td><td>Master, 3 volumes, filer, S3-GW, COS DR sync — all healthy. 3× 500Gi PVCs bound.</td></tr>
+    <tr><td><strong>All PVCs</strong></td><td><span class="badge badge-ok">✓ All Bound</span></td><td>37 PVCs across all namespaces — all Bound. No pending.</td></tr>
+    <tr><td><strong>cert-manager Challenges</strong></td><td><span class="badge badge-pend">⏳ Pending DNS</span></td><td>2 DNS-01 challenges pending for <code>api.smartlab.*</code> and <code>smartlab-api.*</code>. Awaiting DNS CNAME propagation.</td></tr>
+  </table>
+
+  
+  <h2>🚀 Applications — HTTP Status</h2>
+  <table>
+    <tr><th>Application</th><th>URL</th><th>HTTP</th><th>Status</th></tr>
+    <tr><td><strong>i3 Evalos</strong></td><td>evalos.i3technologies.co.ke</td><td><span class="badge badge-ok">200</span></td><td>✅ Fully operational. 2 replicas running.</td></tr>
+    <tr><td><strong>Moodle (i3EduBridge)</strong></td><td>moodle.i3technologies.co.ke</td><td><span class="badge badge-ok">200</span></td><td>✅ Moodle 4.4.12. 1/1 Running. sslproxy=true. WS token active.</td></tr>
+    <tr><td><strong>AfroERP (ERPNext)</strong></td><td>afroerp.i3technologies.co.ke</td><td><span class="badge badge-ok">200</span></td><td>✅ ERPNext + MariaDB + Redis + Mfumo agent all running.</td></tr>
+    <tr><td><strong>Keycloak / SSO</strong></td><td>sso.i3technologies.co.ke</td><td><span class="badge badge-ok">200</span></td><td>✅ Operational. keycloak.* shows SSL error on local Windows DNS only (confirmed live).</td></tr>
+    <tr><td><strong>Grafana</strong></td><td>grafana.i3technologies.co.ke</td><td><span class="badge badge-ok">302→200</span></td><td>✅ Running. Redirect to /login is expected.</td></tr>
+    <tr><td><strong>JupyterHub</strong></td><td>jupyter.i3technologies.co.ke</td><td><span class="badge badge-ok">200</span></td><td>✅ 2/2 containers. Recreate strategy. ChromaDB 1/1.</td></tr>
+    <tr><td><strong>Open-WebUI (Sage)</strong></td><td>sage.i3technologies.co.ke</td><td><span class="badge badge-ok">200</span></td><td>✅ Operational.</td></tr>
+    <tr><td><strong>PMaaS</strong></td><td>pmaas.i3technologies.co.ke</td><td><span class="badge badge-ok">307→200</span></td><td>✅ Running. Redirect is standard app behaviour.</td></tr>
+    <tr><td><strong>CMS (Directus)</strong></td><td>cms.i3technologies.co.ke</td><td><span class="badge badge-ok">200</span></td><td>✅ Operational.</td></tr>
+    <tr><td><strong>n8n</strong></td><td>n8n.i3technologies.co.ke</td><td><span class="badge badge-ok">200</span></td><td>✅ Operational. VOD pipeline workflow imported.</td></tr>
+    <tr><td><strong>OpenBao (Vault UI)</strong></td><td>vault.i3technologies.co.ke</td><td><span class="badge badge-ok">200</span></td><td>✅ Unsealed. HA active.</td></tr>
+    <tr><td><strong>Nextcloud</strong></td><td>nextcloud.i3technologies.co.ke</td><td><span class="badge badge-ok">200</span></td><td>✅ Running. 50Gi PVC bound.</td></tr>
+    <tr><td><strong>LiteLLM</strong></td><td>litellm.i3technologies.co.ke</td><td><span class="badge badge-warn">SSL⚠</span></td><td>⚠ Windows local SSL trust error only. Internally confirmed 200. 2 replicas running.</td></tr>
+    <tr><td><strong>STT Service</strong></td><td>stt.i3technologies.co.ke</td><td><span class="badge badge-warn">Timeout⚠</span></td><td>⚠ External timeout (Windows DNS). Internally: <code>/docs → 200</code>, <code>/health → 200</code>. Pod 1/1 Running.</td></tr>
+    <tr><td><strong>TTS Service</strong></td><td>tts.i3technologies.co.ke</td><td><span class="badge badge-warn">Timeout⚠</span></td><td>⚠ External timeout (Windows DNS). Internally: <code>/docs → 200</code>. Pod 1/1 Running.</td></tr>
+    <tr><td><strong>SmartLab API</strong></td><td>api.smartlab.i3technologies.co.ke</td><td><span class="badge badge-warn">SSL⚠</span></td><td>⚠ Inline wildcard cert insufficient (3rd-level subdomain). LE cert pending DNS-01 CNAME. Pod 1/1 Running.</td></tr>
+    <tr><td><strong>Admissions Agent</strong></td><td>admissions.i3technologies.co.ke</td><td><span class="badge badge-exp">404</span></td><td>ℹ Agent API — no root handler by design. <code>/health → 200</code>. Expected.</td></tr>
+    <tr><td><strong>Onboarding Agent</strong></td><td>onboarding.i3technologies.co.ke</td><td><span class="badge badge-exp">404</span></td><td>ℹ Agent API — no root handler. <code>/health → 200</code>. Expected.</td></tr>
+    <tr><td><strong>Engage Web</strong></td><td>engage.i3technologies.co.ke</td><td><span class="badge badge-err">404</span></td><td>⚠ Next.js build has no UI pages — only API routes compiled. Frontend pages missing from build.</td></tr>
+    <tr><td><strong>Langfuse</strong></td><td>langfuse.i3technologies.co.ke</td><td><span class="badge badge-warn">SSL⚠</span></td><td>⚠ Windows local SSL trust error. Internal pod 1/1 Running.</td></tr>
+  </table>
+
+  
+  <h2>📦 Namespace Pod Summary</h2>
+  <table>
+    <tr><th>Namespace</th><th>Running</th><th>Status</th></tr>
+    <tr><td>i3-admissions</td><td>3/3</td><td><span class="badge badge-ok">✓ OK</span></td></tr>
+    <tr><td>i3-afroerp</td><td>5/5</td><td><span class="badge badge-ok">✓ OK</span></td></tr>
+    <tr><td>i3-ai-lab</td><td>3/3</td><td><span class="badge badge-ok">✓ OK</span></td></tr>
+    <tr><td>i3-auth</td><td>2/2</td><td><span class="badge badge-ok">✓ OK</span></td></tr>
+    <tr><td>i3-data</td><td>6/6 + completed jobs</td><td><span class="badge badge-warn">⚠ Backup jobs failing (Sep 14 06:00+ window)</span></td></tr>
+    <tr><td>i3-edbridge</td><td>1/1</td><td><span class="badge badge-ok">✓ OK</span></td></tr>
+    <tr><td>i3-engage</td><td>4/4</td><td><span class="badge badge-ok">✓ Running</span></td></tr>
+    <tr><td>i3-evalos</td><td>3/3</td><td><span class="badge badge-ok">✓ OK</span></td></tr>
+    <tr><td>i3-messaging</td><td>5/5</td><td><span class="badge badge-ok">✓ OK</span></td></tr>
+    <tr><td>i3-model-gateway</td><td>4/4</td><td><span class="badge badge-ok">✓ OK</span></td></tr>
+    <tr><td>i3-monitoring</td><td>2/2</td><td><span class="badge badge-ok">✓ OK</span></td></tr>
+    <tr><td>i3-onboarding</td><td>1/1</td><td><span class="badge badge-ok">✓ OK</span></td></tr>
+    <tr><td>i3-ott</td><td>11/11</td><td><span class="badge badge-ok">✓ OK</span></td></tr>
+    <tr><td>i3-pmaas</td><td>3/3</td><td><span class="badge badge-ok">✓ OK</span></td></tr>
+    <tr><td>i3-security</td><td>3/3</td><td><span class="badge badge-ok">✓ OK</span></td></tr>
+    <tr><td>i3-smartlab</td><td>1/1</td><td><span class="badge badge-ok">✓ OK</span></td></tr>
+    <tr><td>i3-social</td><td>2/2</td><td><span class="badge badge-ok">✓ OK</span></td></tr>
+    <tr><td>i3-voice</td><td>2/2</td><td><span class="badge badge-ok">✓ OK</span></td></tr>
+  </table>
+
+  
+  <h2>🔧 Required Actions</h2>
+  <div class="section-note"><strong>Priority 1 — DNS (cPanel at ns1.host-ww.net)</strong><br />
+  Three CNAME records must be added to unblock SmartLab SSL and the <code>smartlab-api.*</code> route:</div>
+  <table>
+    <tr><th>#</th><th>Record Name</th><th>Type</th><th>Target</th><th>Purpose</th></tr>
+    <tr><td>1</td><td><code>smartlab-api</code></td><td>CNAME</td><td><code>8eec2322-eu-de.lb.appdomain.cloud</code></td><td>Route traffic to SmartLab API (wildcard alias)</td></tr>
+    <tr><td>2</td><td><code>_acme-challenge.api.smartlab</code></td><td>CNAME</td><td><code>57dffb24-1927-4a0f-99b6-a298b8fe2fcd.auth.acme-dns.io</code></td><td>Let's Encrypt DNS-01 for <code>api.smartlab.*</code> cert</td></tr>
+    <tr><td>3</td><td><code>_acme-challenge.smartlab-api</code></td><td>CNAME</td><td><code>57dffb24-1927-4a0f-99b6-a298b8fe2fcd.auth.acme-dns.io</code></td><td>Let's Encrypt DNS-01 for <code>smartlab-api.*</code> cert</td></tr>
+  </table>
+
+  <div class="section-note"><strong>Priority 2 — PG Backup Recovery</strong><br />
+  Manual diff backup was triggered and succeeded. The scheduled backup job windows (06:00 &amp; 12:00 UTC Sep 14) had transient port-8432 timeouts. Monitor next scheduled window (18:00 UTC) and if it fails again, investigate NetworkPolicy or Patroni replication port connectivity.</div>
+
+  <div class="section-note"><strong>Priority 3 — Engage Web UI (404)</strong><br />
+  The <code>engage-web</code> Next.js build only contains API routes — no UI pages were compiled. A rebuild with the complete <code>src/app/</code> or <code>src/pages/</code> directory is required. If the frontend is intentionally API-only, the 404 is expected and no action needed.</div>
+
+  <div class="section-note"><strong>Priority 4 — SmartLab Phase 2</strong><br />
+  Studio UI (Next.js 14) deployment at <code>author.i3technologies.co.ke</code> — not yet started. Depends on SSL being resolved first.</div>
+
+  
+  <h2>🔑 Administrator Credentials</h2>
+  <table>
+    <tr><th>Application</th><th>URL</th><th>Username</th><th>Password / Token</th></tr>
+    <tr><td>Keycloak</td><td>sso.i3technologies.co.ke</td><td>admin</td><td><code>REDACTED-keycloak-admin</code></td></tr>
+    <tr><td>Moodle</td><td>moodle.i3technologies.co.ke</td><td>i3admin</td><td><code>i3-Moodle-Admin-2026!</code></td></tr>
+    <tr><td>Grafana</td><td>grafana.i3technologies.co.ke</td><td>admin</td><td><code>0rINtjXAE3yRTSouVnqF</code></td></tr>
+    <tr><td>Directus</td><td>cms.i3technologies.co.ke</td><td>admin@i3.tech</td><td><code>a0meDpzBwTx7Srks</code></td></tr>
+    <tr><td>AfroERP</td><td>afroerp.i3technologies.co.ke</td><td>Administrator</td><td><code>REDACTED-erp-admin</code></td></tr>
+    <tr><td>Nextcloud</td><td>nextcloud.i3technologies.co.ke</td><td>i3admin</td><td><code>i3-Social-Admin-2026!</code></td></tr>
+    <tr><td>LiteLLM</td><td>litellm.i3technologies.co.ke</td><td>—</td><td><code>sk-litellm-i3-f951c9377163a11275864cb92e90ad13</code></td></tr>
+    <tr><td>n8n</td><td>n8n.i3technologies.co.ke</td><td>—</td><td><code>eb1db1b7bc27004b3ce95e8a4b750a6174b336af60b67038a9516b23cd9a3b41</code></td></tr>
+    <tr><td>OpenBao</td><td>vault.i3technologies.co.ke</td><td>—</td><td>Unseal keys in cluster secret</td></tr>
+    <tr><td>Moodle WS</td><td>REST API</td><td>—</td><td><code>4a88241080ac203af3a76a00c428b7a9</code></td></tr>
+  </table>
+
+  <footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>

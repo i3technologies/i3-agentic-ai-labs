@@ -1,0 +1,195 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admissions Agent — User Guide</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.7;background:#fff;color:#1f2328}
+  .wrapper{max-width:820px;margin:0 auto;padding:32px 24px}
+  h1{font-size:22px;font-weight:700;color:#1f2328;border-bottom:2px solid #3b82d4;padding-bottom:8px;margin-bottom:6px}
+  .subtitle{color:#57606a;font-size:13px;margin-bottom:24px}
+  h2{font-size:16px;font-weight:700;color:#1f2328;margin:28px 0 10px;padding:6px 12px;background:#f7f8fa;border-left:4px solid #3b82d4}
+  h3{font-size:14px;font-weight:700;margin:18px 0 7px;color:#1f2328}
+  p{margin-bottom:10px}
+  ul,ol{padding-left:22px;margin-bottom:10px}
+  li{margin-bottom:5px}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px}
+  th{background:#f7f8fa;border:1px solid #e5e7eb;padding:7px 10px;text-align:left;font-weight:700}
+  td{border:1px solid #e5e7eb;padding:7px 10px;vertical-align:top}
+  tr:nth-child(even) td{background:#fafbfc}
+  code{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:3px;padding:1px 5px;font-size:12px;font-family:"Consolas","Courier New",monospace}
+  .step{counter-increment:steps;display:flex;gap:14px;margin-bottom:16px;align-items:flex-start}
+  .step-num{min-width:30px;height:30px;background:#3b82d4;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+  .step-body{flex:1}
+  .callout{border-left:4px solid #3b82d4;background:#f0f6ff;padding:10px 14px;margin:12px 0;border-radius:0 4px 4px 0;font-size:13px}
+  .callout-tip{border-left-color:#22c55e;background:#f0fdf4}
+  .callout-warn{border-left-color:#f59e0b;background:#fffbeb}
+  .app-header{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:14px 18px;margin-bottom:24px;display:flex;gap:18px;flex-wrap:wrap;font-size:13px}
+  .app-header div strong{color:#1f2328;display:block;margin-bottom:2px}
+  .app-header div span{color:#57606a}
+  .divider{border:none;border-top:1px solid #e5e7eb;margin:24px 0}
+  .chat-bubble{background:#f0f6ff;border:1px solid #dbeafe;border-radius:8px;padding:10px 14px;margin:10px 0;font-size:13px}
+  .chat-bubble.agent{background:#f7f8fa;border-color:#e5e7eb}
+  .label{font-size:11px;font-weight:700;text-transform:uppercase;color:#57606a;margin-bottom:3px}
+  footer{border-top:1px solid #e5e7eb;margin-top:40px;padding-top:12px;text-align:center;font-size:12px;color:#57606a}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<h1>i3 Admissions Agent — User Guide</h1>
+<p class="subtitle">AI-powered admissions assistant for prospective students and institutional staff</p>
+
+<div class="app-header">
+  <div><strong>Application</strong><span>Admissions AI Chatbot</span></div>
+  <div><strong>Audience</strong><span>Prospective Students, Admissions Staff</span></div>
+  <div><strong>Auth Required</strong><span>Yes — Keycloak login</span></div>
+  <div><strong>Version</strong><span>Platform v2.0, 2026</span></div>
+</div>
+
+<h2>1. What is the Admissions Agent?</h2>
+<p>The i3 Admissions Agent is an AI-powered chatbot that answers questions about academic programmes, admission requirements, fees, timetables, and registration processes. It uses Retrieval-Augmented Generation (RAG) to search the institution's official knowledge base in real time and provides accurate, up-to-date answers — either through instant chat responses or live streaming text.</p>
+
+<table>
+  <tr><th>Feature</th><th>Description</th></tr>
+  <tr><td>Instant Q&amp;A</td><td>Ask any admissions question and receive a direct, sourced answer</td></tr>
+  <tr><td>Real-time streaming</td><td>See the answer appear word-by-word as the AI generates it (WebSocket mode)</td></tr>
+  <tr><td>Knowledge base search</td><td>Answers are grounded in official prospectus and admissions documents</td></tr>
+  <tr><td>Multilingual support</td><td>English and Swahili supported</td></tr>
+  <tr><td>Secure &amp; private</td><td>Your session is tenant-isolated; no data shared across institutions</td></tr>
+</table>
+
+<hr class="divider" />
+
+<h2>2. Accessing the Admissions Agent</h2>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body">
+    <h3>Open the Admissions Portal</h3>
+    <p>Navigate to your institution's admissions portal URL (provided by your institution, e.g. <code>https://admissions.i3technologies.co.ke</code>).</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body">
+    <h3>Log In with Keycloak</h3>
+    <p>Click <strong>Sign In</strong>. You will be redirected to the i3 identity portal. Enter your username and password. First-time users should use the credentials sent to their email and set a new password on first login.</p>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body">
+    <h3>Enter the Chat Interface</h3>
+    <p>After login, you will see the chat window. The AI agent is ready to answer questions immediately.</p>
+  </div>
+</div>
+
+<div class="callout callout-tip"><strong>Tip:</strong> You do not need an account to browse the public admissions pages, but an account is required to use the AI chat assistant and save your conversation history.</div>
+
+<hr class="divider" />
+
+<h2>3. Starting a Conversation</h2>
+
+<p>Type your question in the message box at the bottom of the chat and press <strong>Enter</strong> or click <strong>Send</strong>.</p>
+
+<h3>Example Questions You Can Ask</h3>
+<table>
+  <tr><th>Category</th><th>Example Question</th></tr>
+  <tr><td>Programmes</td><td>"What undergraduate programmes do you offer in technology?"</td></tr>
+  <tr><td>Requirements</td><td>"What are the entry requirements for the Data Science diploma?"</td></tr>
+  <tr><td>Fees</td><td>"How much are tuition fees for the BSc Computer Science programme?"</td></tr>
+  <tr><td>Deadlines</td><td>"When is the application deadline for January intake?"</td></tr>
+  <tr><td>Registration</td><td>"How do I register once I receive an acceptance letter?"</td></tr>
+  <tr><td>Scholarships</td><td>"Are there any scholarships available for students from Kenya?"</td></tr>
+  <tr><td>Contact</td><td>"How do I reach the admissions office directly?"</td></tr>
+  <tr><td>Swahili</td><td>"Niambie kuhusu programu za IT mnazotoa."</td></tr>
+</table>
+
+<h3>Sample Conversation</h3>
+<div class="label">You</div>
+<div class="chat-bubble">What are the requirements to apply for the BSc Data Science programme?</div>
+<div class="label" style="margin-top:10px">Admissions Agent</div>
+<div class="chat-bubble agent">To apply for the BSc Data Science programme, you will need: (1) Kenya Certificate of Secondary Education (KCSE) with a minimum grade of B+ overall; (2) at least a B in Mathematics; (3) a C+ in either Physics, Chemistry, or Computer Studies. Applications are accepted during the January and September intake windows. You can submit your application online through the student portal…</div>
+
+<hr class="divider" />
+
+<h2>4. Using the Streaming Chat (Real-Time Responses)</h2>
+
+<p>If your institution has enabled the WebSocket streaming mode, you will see the agent's response appear in real time — word by word — rather than waiting for the complete answer to load. This gives a more natural conversational experience and is especially useful for longer, detailed answers.</p>
+
+<ul>
+  <li>Streaming starts automatically when you send a message.</li>
+  <li>A blinking cursor at the end of the response indicates the agent is still generating.</li>
+  <li>You can ask a follow-up question once the cursor disappears.</li>
+</ul>
+
+<div class="callout callout-warn"><strong>Note:</strong> If the streaming connection is interrupted (e.g. poor internet), the response may stop mid-sentence. Simply refresh the page and ask your question again.</div>
+
+<hr class="divider" />
+
+<h2>5. Understanding Agent Responses</h2>
+
+<h3>What the agent can answer</h3>
+<ul>
+  <li>Programme listings, descriptions, and course structures</li>
+  <li>Entry requirements and qualification criteria</li>
+  <li>Fee structures and payment methods</li>
+  <li>Application deadlines and intake calendars</li>
+  <li>Campus facilities and contact information</li>
+  <li>Scholarship and bursary information</li>
+</ul>
+
+<h3>What the agent cannot do</h3>
+<ul>
+  <li>Process or submit your application on your behalf</li>
+  <li>Access your personal academic records or previous applications</li>
+  <li>Make binding admissions decisions</li>
+  <li>Provide information not in the official admissions knowledge base</li>
+</ul>
+
+<div class="callout"><strong>When in doubt:</strong> If the agent says it cannot find information, it will suggest contacting the admissions office directly. Always verify fee amounts and deadlines with the official admissions team before making financial decisions.</div>
+
+<hr class="divider" />
+
+<h2>6. Privacy &amp; Safety</h2>
+
+<ul>
+  <li>All conversations are protected by your institution's tenant boundary — your data is never shared with other institutions on the platform.</li>
+  <li>Do <strong>not</strong> share passwords, National ID numbers, or bank details in the chat.</li>
+  <li>The agent includes a prompt-injection firewall — attempts to manipulate the AI into behaving improperly are automatically blocked and logged.</li>
+  <li>Conversation logs may be reviewed by admissions staff for quality assurance purposes.</li>
+</ul>
+
+<hr class="divider" />
+
+<h2>7. Troubleshooting</h2>
+
+<table>
+  <tr><th>Issue</th><th>Likely Cause</th><th>Solution</th></tr>
+  <tr><td>Cannot log in</td><td>Incorrect credentials or expired password</td><td>Use "Forgot Password" on the login page or contact IT support</td></tr>
+  <tr><td>Chat not loading</td><td>Network issue or service maintenance</td><td>Refresh the page; if persistent, try again in 5 minutes</td></tr>
+  <tr><td>Agent gives wrong answer</td><td>Knowledge base may not be up to date</td><td>Verify with the admissions office; report the issue using the feedback button</td></tr>
+  <tr><td>Response stops mid-sentence</td><td>WebSocket connection dropped</td><td>Refresh and re-ask your question</td></tr>
+  <tr><td>Message blocked / "unsafe content"</td><td>Message matched a security pattern</td><td>Rephrase your question plainly without system-level keywords</td></tr>
+</table>
+
+<hr class="divider" />
+
+<h2>8. Getting Further Help</h2>
+
+<p>If the Admissions Agent cannot answer your question, contact the institution's admissions office directly:</p>
+<ul>
+  <li><strong>Email:</strong> admissions@i3technologies.co.ke</li>
+  <li><strong>Phone:</strong> Available on the institution's official website</li>
+  <li><strong>In-person:</strong> Visit the Admissions Office during business hours (Monday–Friday, 08:00–17:00 EAT)</li>
+</ul>
+
+<footer>Made with IBM Bob  |  i3 Technologies — Admissions User Guide v2.0  |  © 2026</footer>
+</div>
+</body>
+</html>

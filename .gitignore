@@ -1,4 +1,4 @@
-ï»¿# === SECRETS - NEVER COMMIT ===
+# === SECRETS - NEVER COMMIT ===
 .env
 .env.*
 .env.txt
@@ -61,3 +61,23 @@ i3-platform-dns-external-configuration-requirements.html
 # PDFs and CSVs with potentially sensitive data
 i3_Solutions_Brochure_2026.pdf
 unique_users-Evalos.csv
+
+# Added by STEP-P1-01 — block subdirectory env files and secret patches
+*.env.local
+*secret-patch.json
+*-secrets-patch.json
+*-secret-patch.json
+
+# Added by IMP-01 — block migration SQL files with potential credentials and token patches
+engage-webhook-migration.sql
+engage-token-patch.json
+*-migration.sql
+*-token-patch.json
+
+# Block any OpenBao / Vault init output files wherever they appear
+**/openbao-init.json
+**/vault-init.json
+
+# Block secret overlay files used for manual kubectl patching
+*-secret-overlay.yaml
+*-secret-overlay.json

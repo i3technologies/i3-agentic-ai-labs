@@ -1,0 +1,791 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 Platform — Pilot Technical Readiness + EduBridge/Collab Fit</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:13.5px;line-height:1.65;background:#fff;color:#1f2328}
+  .page{max-width:980px;margin:0 auto;padding:36px 28px 56px}
+
+  /* Header */
+  .hdr{border-bottom:3px solid #1f2328;padding-bottom:14px;margin-bottom:24px}
+  .hdr h1{font-size:19px;font-weight:700}
+  .hdr .sub{font-size:12px;color:#57606a;margin-top:4px}
+  .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:3px}
+  .tg{background:#dcfce7;color:#15803d}
+  .ta{background:#fef3c7;color:#92400e}
+  .tr{background:#fee2e2;color:#991b1b}
+  .tb{background:#dbeafe;color:#1d4ed8}
+  .tp{background:#ede9fe;color:#5b21b6}
+  .tgr{background:#f3f4f6;color:#374151}
+
+  h2{font-size:15px;font-weight:700;margin:28px 0 12px;padding-bottom:5px;border-bottom:2px solid #e5e7eb}
+  h3{font-size:13px;font-weight:700;margin:16px 0 7px}
+  h4{font-size:12px;font-weight:700;color:#3b82d4;text-transform:uppercase;letter-spacing:.04em;margin:14px 0 6px}
+  p{font-size:12.5px;margin-bottom:8px}
+
+  /* Headroom meter */
+  .meter-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0 24px}
+  .meter{border:1px solid #e5e7eb;border-radius:5px;padding:11px 13px}
+  .m-val{font-size:20px;font-weight:700}
+  .m-val.g{color:#15803d}.m-val.a{color:#b45309}.m-val.r{color:#991b1b}.m-val.b{color:#1d4ed8}
+  .m-lbl{font-size:11.5px;color:#57606a;margin-top:2px}
+  .bar-wrap{background:#e5e7eb;border-radius:3px;height:7px;margin:5px 0 2px}
+  .bar{height:7px;border-radius:3px}
+  .bg{background:#22c55e}.ba{background:#f59e0b}.br{background:#ef4444}
+
+  /* Tables */
+  table{width:100%;border-collapse:collapse;margin:10px 0 18px;font-size:12px}
+  th{background:#f7f8fa;border:1px solid #e5e7eb;padding:6px 8px;text-align:left;font-weight:600;white-space:nowrap}
+  td{border:1px solid #e5e7eb;padding:6px 8px;vertical-align:top}
+  tr:nth-child(even) td{background:#fafbfc}
+
+  /* Status */
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:middle}
+  .dg{background:#22c55e}.da{background:#f59e0b}.dr{background:#ef4444}.db{background:#3b82f6}.dgr{background:#9ca3af}
+
+  /* Manifest blocks */
+  .manifest{margin:10px 0 18px;border:1px solid #e5e7eb;border-radius:5px;overflow:hidden}
+  .manifest-hdr{background:#1e1e1e;color:#9cdcfe;padding:6px 12px;font-size:11px;font-family:"SFMono-Regular",Consolas,monospace;border-bottom:1px solid #333}
+  .manifest pre{background:#1e1e1e;color:#d4d4d4;padding:12px 14px;font-size:11.5px;font-family:"SFMono-Regular",Consolas,monospace;overflow-x:auto;line-height:1.5;white-space:pre;margin:0}
+  .manifest pre .cm{color:#6a9955}
+  .manifest pre .kw{color:#569cd6}
+  .manifest pre .str{color:#ce9178}
+  .manifest pre .num{color:#b5cea8}
+
+  /* Info boxes */
+  .ibox{border-left:3px solid #e5e7eb;padding:10px 14px;margin:10px 0;background:#fafafa;border-radius:0 4px 4px 0;font-size:12.5px}
+  .ibox.g{border-left-color:#22c55e}.ibox.a{border-left-color:#f59e0b}.ibox.r{border-left-color:#ef4444}.ibox.b{border-left-color:#3b82f6}
+  .ibox ul{padding-left:16px}.ibox li{margin-bottom:3px}
+
+  code{font-family:"SFMono-Regular",Consolas,monospace;font-size:11px;background:#f3f4f6;padding:1px 5px;border-radius:3px}
+  hr{border:none;border-top:1px solid #e5e7eb;margin:22px 0}
+
+  /* Two col */
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0 18px}
+  .box{border:1px solid #e5e7eb;border-radius:5px;padding:12px 14px}
+  .box h3{margin-top:0}
+
+  /* Steps */
+  .step{display:flex;gap:12px;margin:10px 0;padding:10px 12px;border:1px solid #e5e7eb;border-radius:5px;background:#fafafa}
+  .step-n{min-width:26px;height:26px;border-radius:50%;background:#3b82d4;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .step-n.g{background:#22c55e}.step-n.a{background:#f59e0b}.step-n.r{background:#ef4444}.step-n.p{background:#7c5cd8}
+  .step-body .st{font-size:13px;font-weight:700;margin-bottom:3px}
+  .step-body .sm{font-size:11.5px;color:#57606a}
+  .step-body ul{padding-left:16px;margin-top:5px}.step-body li{font-size:12px;margin-bottom:2px}
+
+  .footer{margin-top:44px;padding-top:14px;border-top:1px solid #e5e7eb;text-align:center;font-size:11.5px;color:#9ca3af}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hdr">
+  <h1>i3 Platform — Pilot Technical Readiness + Moodle / Nextcloud / Zimbra Fit Review</h1>
+  <div class="sub">Based on live cluster state · IBM ROKS Frankfurt · OpenShift 4.17 · 12 × bx2.4x16 (48 vCPU / 162 GB RAM allocatable)</div>
+  <div class="tags">
+    <span class="tag tg">52/52 health checks passing</span>
+    <span class="tag tb">13.5 vCPU free · 84 GB RAM free</span>
+    <span class="tag tg">Moodle + Nextcloud + Zimbra fit easily</span>
+    <span class="tag ta">CPU-only inference · 10 pilot users max</span>
+    <span class="tag tgr">i3-moodle · i3-nextcloud · i3-zimbra — namespaces clean</span>
+  </div>
+</div>
+
+
+<h2>1. Cluster Headroom — The Arithmetic</h2>
+<p>From live <code>oc get resourcequota -A</code> and <code>oc adm top nodes</code>. All numbers are <strong>CPU requests</strong> (what the scheduler actually reserves), not limits.</p>
+
+<div class="meter-grid">
+  <div class="meter">
+    <div class="m-val g">46.9 vCPU</div>
+    <div class="m-lbl">Total allocatable (12 nodes × 3910m)</div>
+  </div>
+  <div class="meter">
+    <div class="m-val a">33.4 vCPU</div>
+    <div class="m-lbl">Already used (workloads + OpenShift system ~8 vCPU)</div>
+    <div class="bar-wrap"><div class="bar ba" style="width:71%"></div></div>
+  </div>
+  <div class="meter">
+    <div class="m-val g">~13.5 vCPU</div>
+    <div class="m-lbl">Free CPU headroom right now</div>
+    <div class="bar-wrap"><div class="bar bg" style="width:29%"></div></div>
+  </div>
+  <div class="meter">
+    <div class="m-val g">~84 GB</div>
+    <div class="m-lbl">Free RAM headroom (162 GB total − 58 GB workloads − 20 GB system)</div>
+  </div>
+</div>
+
+<h3>What the Three New Stacks Will Actually Consume (pilot-sized, 10 users)</h3>
+<table>
+  <thead><tr><th>Stack</th><th>Component</th><th>CPU Request</th><th>RAM Request</th><th>Storage (new PVCs)</th><th>Namespace</th></tr></thead>
+  <tbody>
+    <tr><td rowspan="3"><strong>Moodle / EduBridge</strong></td><td>Moodle PHP-FPM (1 replica)</td><td>500m</td><td>1 GB</td><td>10 GB (moodle-data)</td><td rowspan="3"><code>i3-moodle</code></td></tr>
+    <tr><td>MariaDB 10.11 (Moodle DB)</td><td>300m</td><td>768 MB</td><td>20 GB (mariadb-data)</td></tr>
+    <tr><td>Redis (session cache)</td><td>100m</td><td>128 MB</td><td>—</td></tr>
+    <tr><td rowspan="2"><strong>Nextcloud Hub</strong></td><td>Nextcloud PHP-FPM (1 replica)</td><td>500m</td><td>1 GB</td><td>20 GB (nextcloud-data)</td><td rowspan="2"><code>i3-nextcloud</code></td></tr>
+    <tr><td>Redis (Nextcloud cache)</td><td>100m</td><td>128 MB</td><td>—</td></tr>
+    <tr><td><strong>Zimbra (pilot — single node)</strong></td><td>Zimbra ZCS 10 (MTA+Mailbox+LDAP)</td><td>1000m</td><td>2 GB</td><td>20 GB (zimbra-data)</td><td><code>i3-zimbra</code></td></tr>
+    <tr style="background:#f7f8fa;font-weight:600"><td colspan="2">TOTAL NEW REQUESTS</td><td>2500m (2.5 vCPU)</td><td>5.1 GB</td><td>70 GB new PVCs</td><td>3 namespaces</td></tr>
+    <tr style="background:#dcfce7;font-weight:600"><td colspan="2">FREE AFTER ADDITIONS</td><td>~11 vCPU remaining</td><td>~79 GB remaining</td><td>—</td><td>—</td></tr>
+  </tbody>
+</table>
+
+<div class="ibox g">
+  <strong>Verdict:</strong> All three stacks fit on the existing cluster with a very comfortable margin. After adding all three, the cluster is still only at ~76% CPU request allocation and ~45% RAM. There is no need to add nodes, resize the cluster, or defer any currently-running application. The 10-user pilot is well within capacity.
+</div>
+
+<div class="ibox b">
+  <strong>Postgres note:</strong> Moodle and Nextcloud will share the existing <strong>Crunchy PostgreSQL HA cluster</strong> in <code>i3-data</code> (instead of separate MariaDB instances) to save storage and ops overhead. The existing cluster has 3 × 20 GB PVCs with ample headroom for two additional databases at pilot scale. Only Zimbra requires its own embedded LDAP/MariaDB (internal to the ZCS container — not a separate pod).
+</div>
+
+<hr />
+
+
+<h2>2. Moodle / EduBridge — Pilot Deployment Spec</h2>
+<p><strong>Scope for October pilot:</strong> Single Moodle instance for USIU or internal team, LTI-linked to existing Smart Labs and Percipio. No H5P authoring, no AI Tutor RAG, no BigBlueButton — those are P1. This is the LMS shell + SSO + one course structure.</p>
+
+<h4>Namespace + ResourceQuota</h4>
+<div class="manifest">
+  <div class="manifest-hdr">manifest: i3-moodle/namespace-quota.yaml</div>
+  <pre>
+<span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: Namespace
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: i3-moodle
+  <span class="kw">labels</span>:
+    <span class="kw">app.kubernetes.io/part-of</span>: i3-platform
+---
+<span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: ResourceQuota
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: moodle-quota
+  <span class="kw">namespace</span>: i3-moodle
+<span class="kw">spec</span>:
+  <span class="kw">hard</span>:
+    <span class="kw">requests.cpu</span>:    <span class="str">"1"</span>
+    <span class="kw">requests.memory</span>: <span class="str">2Gi</span>
+    <span class="kw">limits.cpu</span>:      <span class="str">"4"</span>
+    <span class="kw">limits.memory</span>:   <span class="str">8Gi</span>
+    <span class="kw">count/pods</span>:      <span class="str">"10"</span></pre>
+</div>
+
+<h4>Moodle Deployment + Service</h4>
+<div class="manifest">
+  <div class="manifest-hdr">manifest: i3-moodle/moodle-deployment.yaml</div>
+  <pre>
+<span class="kw">apiVersion</span>: apps/v1
+<span class="kw">kind</span>: Deployment
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: moodle
+  <span class="kw">namespace</span>: i3-moodle
+<span class="kw">spec</span>:
+  <span class="kw">replicas</span>: <span class="num">1</span>
+  <span class="kw">selector</span>:
+    <span class="kw">matchLabels</span>: {<span class="kw">app</span>: moodle}
+  <span class="kw">template</span>:
+    <span class="kw">metadata</span>:
+      <span class="kw">labels</span>: {<span class="kw">app</span>: moodle}
+    <span class="kw">spec</span>:
+      <span class="kw">containers</span>:
+        - <span class="kw">name</span>: moodle
+          <span class="kw">image</span>: bitnami/moodle:4.4          <span class="cm"># stable LTS; includes PHP 8.2</span>
+          <span class="kw">ports</span>:
+            - <span class="kw">containerPort</span>: <span class="num">8080</span>
+          <span class="kw">env</span>:
+            - {<span class="kw">name</span>: MOODLE_DATABASE_TYPE,    <span class="kw">value</span>: pgsql}
+            - {<span class="kw">name</span>: MOODLE_DATABASE_HOST,    <span class="kw">value</span>: i3-postgres-pgbouncer.i3-data.svc}
+            - {<span class="kw">name</span>: MOODLE_DATABASE_PORT,    <span class="kw">value</span>: <span class="str">"5432"</span>}
+            - {<span class="kw">name</span>: MOODLE_DATABASE_NAME,    <span class="kw">value</span>: moodle_db}
+            - {<span class="kw">name</span>: MOODLE_DATABASE_USER,    <span class="kw">valueFrom</span>: {<span class="kw">secretKeyRef</span>: {<span class="kw">name</span>: moodle-secrets, <span class="kw">key</span>: db-user}}}
+            - {<span class="kw">name</span>: MOODLE_DATABASE_PASSWORD, <span class="kw">valueFrom</span>: {<span class="kw">secretKeyRef</span>: {<span class="kw">name</span>: moodle-secrets, <span class="kw">key</span>: db-pass}}}
+            - {<span class="kw">name</span>: MOODLE_SITE_NAME,        <span class="kw">value</span>: <span class="str">"i3 EduBridge"</span>}
+            - {<span class="kw">name</span>: MOODLE_SKIP_INSTALL,     <span class="kw">value</span>: <span class="str">"no"</span>}
+            <span class="cm"># Keycloak OIDC — use OIDC auth plugin post-install</span>
+          <span class="kw">resources</span>:
+            <span class="kw">requests</span>: {<span class="kw">cpu</span>: 500m, <span class="kw">memory</span>: 1Gi}
+            <span class="kw">limits</span>:   {<span class="kw">cpu</span>: 2,    <span class="kw">memory</span>: 4Gi}
+          <span class="kw">volumeMounts</span>:
+            - {<span class="kw">name</span>: moodle-data, <span class="kw">mountPath</span>: /bitnami/moodle}
+          <span class="kw">readinessProbe</span>:
+            <span class="kw">httpGet</span>: {<span class="kw">path</span>: /login/index.php, <span class="kw">port</span>: <span class="num">8080</span>}
+            <span class="kw">initialDelaySeconds</span>: <span class="num">90</span>
+            <span class="kw">periodSeconds</span>: <span class="num">15</span>
+      <span class="kw">volumes</span>:
+        - <span class="kw">name</span>: moodle-data
+          <span class="kw">persistentVolumeClaim</span>: {<span class="kw">claimName</span>: moodle-data}
+---
+<span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: PersistentVolumeClaim
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: moodle-data
+  <span class="kw">namespace</span>: i3-moodle
+<span class="kw">spec</span>:
+  <span class="kw">accessModes</span>: [ReadWriteOnce]
+  <span class="kw">storageClassName</span>: ibmc-vpc-block-10iops-tier
+  <span class="kw">resources</span>:
+    <span class="kw">requests</span>: {<span class="kw">storage</span>: 10Gi}
+---
+<span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: Service
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: moodle
+  <span class="kw">namespace</span>: i3-moodle
+<span class="kw">spec</span>:
+  <span class="kw">selector</span>: {<span class="kw">app</span>: moodle}
+  <span class="kw">ports</span>:
+    - {<span class="kw">port</span>: <span class="num">80</span>, <span class="kw">targetPort</span>: <span class="num">8080</span>}</pre>
+</div>
+
+<h4>Moodle OpenShift Route</h4>
+<div class="manifest">
+  <div class="manifest-hdr">oc command — or manifest: i3-moodle/route.yaml</div>
+  <pre>
+oc create route edge moodle \
+  --service=moodle --port=80 \
+  --hostname=moodle.i3technologies.co.ke \
+  --insecure-policy=Redirect \
+  -n i3-moodle
+
+<span class="cm"># Add CNAME in cPanel:
+# moodle   CNAME   8eec2322-eu-de.lb.appdomain.cloud</span></pre>
+</div>
+
+<h4>Post-Deploy: Keycloak SSO Wiring (OIDC Plugin)</h4>
+<div class="manifest">
+  <div class="manifest-hdr">moodle admin — after first boot</div>
+  <pre>
+<span class="cm"># 1. In Moodle admin panel → Plugins → Authentication → OAuth 2 services:
+#    Add OpenID Connect provider:
+#      Name:          Keycloak i3
+#      Client ID:     moodle
+#      Client Secret: (from Keycloak client secret in i3-auth)
+#      Authorize URL: https://sso.i3technologies.co.ke/auth/realms/i3/protocol/openid-connect/auth
+#      Token URL:     https://sso.i3technologies.co.ke/auth/realms/i3/protocol/openid-connect/token
+#      Userinfo URL:  https://sso.i3technologies.co.ke/auth/realms/i3/protocol/openid-connect/userinfo
+#      Scopes:        openid profile email
+
+# 2. Register moodle client in Keycloak realm i3:
+oc exec -n i3-auth deploy/keycloak -- \
+  /opt/keycloak/bin/kcadm.sh create clients \
+  -r i3 \
+  -s clientId=moodle \
+  -s enabled=true \
+  -s publicClient=false \
+  -s 'redirectUris=["https://moodle.i3technologies.co.ke/*"]' \
+  -s 'webOrigins=["https://moodle.i3technologies.co.ke"]'</span></pre>
+</div>
+
+<div class="ibox b">
+  <strong>Moodle LTI to Smart Labs (Pilot P0):</strong> Install the <code>mod_lti</code> (built-in Moodle) tool. Configure one external tool pointing to the existing Smart Labs LaaS API endpoint. Students click "Launch Lab" inside a Moodle course activity — no separate portal. Grade passback requires LTI AGS — implement in P1 post-pilot. For October, manual grade entry is acceptable.
+</div>
+
+<hr />
+
+
+<h2>3. Nextcloud Hub — Pilot Deployment Spec</h2>
+<p><strong>Scope for October pilot:</strong> File sharing, collaborative document editing (Collabora Online or OnlyOffice), Keycloak SSO. This is the collaboration backbone for internal teams and pilot customers. The <code>student_assistant</code> AI app and agentic PDF pipeline are P1 — not for October.</p>
+
+<h4>Nextcloud Deployment</h4>
+<div class="manifest">
+  <div class="manifest-hdr">manifest: i3-nextcloud/nextcloud-deployment.yaml</div>
+  <pre>
+<span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: Namespace
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: i3-nextcloud
+---
+<span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: ResourceQuota
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: nextcloud-quota
+  <span class="kw">namespace</span>: i3-nextcloud
+<span class="kw">spec</span>:
+  <span class="kw">hard</span>:
+    <span class="kw">requests.cpu</span>:    <span class="str">"1"</span>
+    <span class="kw">requests.memory</span>: <span class="str">2Gi</span>
+    <span class="kw">limits.cpu</span>:      <span class="str">"4"</span>
+    <span class="kw">limits.memory</span>:   <span class="str">8Gi</span>
+    <span class="kw">count/pods</span>:      <span class="str">"10"</span>
+---
+<span class="kw">apiVersion</span>: apps/v1
+<span class="kw">kind</span>: Deployment
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: nextcloud
+  <span class="kw">namespace</span>: i3-nextcloud
+<span class="kw">spec</span>:
+  <span class="kw">replicas</span>: <span class="num">1</span>
+  <span class="kw">selector</span>:
+    <span class="kw">matchLabels</span>: {<span class="kw">app</span>: nextcloud}
+  <span class="kw">template</span>:
+    <span class="kw">metadata</span>:
+      <span class="kw">labels</span>: {<span class="kw">app</span>: nextcloud}
+    <span class="kw">spec</span>:
+      <span class="kw">containers</span>:
+        - <span class="kw">name</span>: nextcloud
+          <span class="kw">image</span>: nextcloud:28-apache        <span class="cm"># NC 28 Hub LTS</span>
+          <span class="kw">ports</span>:
+            - <span class="kw">containerPort</span>: <span class="num">80</span>
+          <span class="kw">env</span>:
+            - {<span class="kw">name</span>: POSTGRES_HOST,     <span class="kw">value</span>: i3-postgres-pgbouncer.i3-data.svc}
+            - {<span class="kw">name</span>: POSTGRES_DB,       <span class="kw">value</span>: nextcloud_db}
+            - {<span class="kw">name</span>: POSTGRES_USER,     <span class="kw">valueFrom</span>: {<span class="kw">secretKeyRef</span>: {<span class="kw">name</span>: nextcloud-secrets, <span class="kw">key</span>: db-user}}}
+            - {<span class="kw">name</span>: POSTGRES_PASSWORD, <span class="kw">valueFrom</span>: {<span class="kw">secretKeyRef</span>: {<span class="kw">name</span>: nextcloud-secrets, <span class="kw">key</span>: db-pass}}}
+            - {<span class="kw">name</span>: NEXTCLOUD_ADMIN_USER,     <span class="kw">value</span>: nc-admin}
+            - {<span class="kw">name</span>: NEXTCLOUD_ADMIN_PASSWORD, <span class="kw">valueFrom</span>: {<span class="kw">secretKeyRef</span>: {<span class="kw">name</span>: nextcloud-secrets, <span class="kw">key</span>: admin-pass}}}
+            - {<span class="kw">name</span>: NEXTCLOUD_TRUSTED_DOMAINS, <span class="kw">value</span>: nextcloud.i3technologies.co.ke}
+            - {<span class="kw">name</span>: REDIS_HOST,  <span class="kw">value</span>: redis-nextcloud}
+            - {<span class="kw">name</span>: REDIS_PORT,  <span class="kw">value</span>: <span class="str">"6379"</span>}
+          <span class="kw">resources</span>:
+            <span class="kw">requests</span>: {<span class="kw">cpu</span>: 500m, <span class="kw">memory</span>: 1Gi}
+            <span class="kw">limits</span>:   {<span class="kw">cpu</span>: 2,    <span class="kw">memory</span>: 4Gi}
+          <span class="kw">volumeMounts</span>:
+            - {<span class="kw">name</span>: nextcloud-data, <span class="kw">mountPath</span>: /var/www/html}
+      <span class="kw">volumes</span>:
+        - <span class="kw">name</span>: nextcloud-data
+          <span class="kw">persistentVolumeClaim</span>: {<span class="kw">claimName</span>: nextcloud-data}
+---
+<span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: PersistentVolumeClaim
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: nextcloud-data
+  <span class="kw">namespace</span>: i3-nextcloud
+<span class="kw">spec</span>:
+  <span class="kw">accessModes</span>: [ReadWriteOnce]
+  <span class="kw">storageClassName</span>: ibmc-vpc-block-10iops-tier
+  <span class="kw">resources</span>:
+    <span class="kw">requests</span>: {<span class="kw">storage</span>: 20Gi}
+---
+<span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: Service
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: nextcloud
+  <span class="kw">namespace</span>: i3-nextcloud
+<span class="kw">spec</span>:
+  <span class="kw">selector</span>: {<span class="kw">app</span>: nextcloud}
+  <span class="kw">ports</span>:
+    - {<span class="kw">port</span>: <span class="num">80</span>, <span class="kw">targetPort</span>: <span class="num">80</span>}</pre>
+</div>
+
+<h4>Redis Sidecar for Nextcloud Session Cache</h4>
+<div class="manifest">
+  <div class="manifest-hdr">manifest: i3-nextcloud/redis.yaml</div>
+  <pre>
+<span class="kw">apiVersion</span>: apps/v1
+<span class="kw">kind</span>: Deployment
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: redis-nextcloud
+  <span class="kw">namespace</span>: i3-nextcloud
+<span class="kw">spec</span>:
+  <span class="kw">replicas</span>: <span class="num">1</span>
+  <span class="kw">selector</span>:
+    <span class="kw">matchLabels</span>: {<span class="kw">app</span>: redis-nextcloud}
+  <span class="kw">template</span>:
+    <span class="kw">metadata</span>:
+      <span class="kw">labels</span>: {<span class="kw">app</span>: redis-nextcloud}
+    <span class="kw">spec</span>:
+      <span class="kw">containers</span>:
+        - <span class="kw">name</span>: redis
+          <span class="kw">image</span>: redis:7-alpine
+          <span class="kw">resources</span>:
+            <span class="kw">requests</span>: {<span class="kw">cpu</span>: 100m, <span class="kw">memory</span>: 128Mi}
+            <span class="kw">limits</span>:   {<span class="kw">cpu</span>: 200m, <span class="kw">memory</span>: 256Mi}
+---
+<span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: Service
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: redis-nextcloud
+  <span class="kw">namespace</span>: i3-nextcloud
+<span class="kw">spec</span>:
+  <span class="kw">selector</span>: {<span class="kw">app</span>: redis-nextcloud}
+  <span class="kw">ports</span>:
+    - {<span class="kw">port</span>: <span class="num">6379</span>, <span class="kw">targetPort</span>: <span class="num">6379</span>}</pre>
+</div>
+
+<h4>Nextcloud Route + Keycloak OIDC</h4>
+<div class="manifest">
+  <div class="manifest-hdr">oc + occ commands</div>
+  <pre>
+<span class="cm"># Create route</span>
+oc create route edge nextcloud \
+  --service=nextcloud --port=80 \
+  --hostname=nextcloud.i3technologies.co.ke \
+  --insecure-policy=Redirect \
+  -n i3-nextcloud
+
+<span class="cm"># After pod is Running, configure OIDC via occ inside the container:</span>
+oc exec -n i3-nextcloud deploy/nextcloud -- \
+  php occ app:install user_oidc
+
+oc exec -n i3-nextcloud deploy/nextcloud -- \
+  php occ user_oidc:provider Keycloak \
+    --clientid=nextcloud \
+    --clientsecret=&lt;from-keycloak&gt; \
+    --discoveryuri=https://sso.i3technologies.co.ke/auth/realms/i3/.well-known/openid-configuration \
+    --mapping-uid=preferred_username
+
+<span class="cm"># Disable default password login (SSO-only for pilot users):
+# oc exec ... -- php occ config:app:set user_oidc allow_multiple_user_backends --value=0</span>
+
+<span class="cm"># Register nextcloud client in Keycloak:
+# redirectUri: https://nextcloud.i3technologies.co.ke/*</span>
+
+<span class="cm"># Add CNAME:
+# nextcloud   CNAME   8eec2322-eu-de.lb.appdomain.cloud</span></pre>
+</div>
+
+<div class="ibox b">
+  <strong>OnlyOffice (optional, add after Nextcloud is stable):</strong> Deploy <code>onlyoffice/documentserver:7.5</code> as a separate pod in <code>i3-nextcloud</code>. Resources: 500m CPU / 1 GB RAM. Wire via <code>occ config:app:set onlyoffice DocumentServerUrl</code>. For the October pilot, basic Nextcloud file sharing without real-time co-editing is sufficient — add OnlyOffice in Week 3–4 of the pilot if demand is confirmed.
+</div>
+
+<hr />
+
+
+<h2>4. Zimbra ZCS — Pilot Deployment Spec</h2>
+<p><strong>Scope for October pilot:</strong> A single-node Zimbra instance providing <code>@i3technologies.co.ke</code> email for pilot participants and internal team. This is deliberately minimal — one pod, one domain, no clustering, no HA. HA Zimbra is post-pilot budget work.</p>
+
+<div class="ibox a">
+  <strong>Important technical constraint:</strong> Zimbra ZCS requires <strong>privileged container execution</strong> because it manages its own MTA (Postfix), IMAP/POP daemon, and LDAP — all of which bind to ports below 1024 and manage OS-level services internally. On OpenShift this requires a <code>SecurityContextConstraints</code> (SCC) grant. The manifest below includes the required SCC configuration. This is standard for Zimbra on OpenShift — it is not a security gap when scoped correctly to the <code>i3-zimbra</code> namespace only.
+</div>
+
+<h4>Namespace + SCC + Deployment</h4>
+<div class="manifest">
+  <div class="manifest-hdr">manifest: i3-zimbra/zimbra-deployment.yaml</div>
+  <pre>
+<span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: Namespace
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: i3-zimbra
+---
+<span class="cm"># Grant anyuid SCC to zimbra service account (required for Postfix + LDAP port binding)</span>
+<span class="cm"># Run: oc adm policy add-scc-to-user anyuid -z zimbra-sa -n i3-zimbra</span>
+<span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: ServiceAccount
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: zimbra-sa
+  <span class="kw">namespace</span>: i3-zimbra
+---
+<span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: ResourceQuota
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: zimbra-quota
+  <span class="kw">namespace</span>: i3-zimbra
+<span class="kw">spec</span>:
+  <span class="kw">hard</span>:
+    <span class="kw">requests.cpu</span>:    <span class="str">"1"</span>
+    <span class="kw">requests.memory</span>: <span class="str">2Gi</span>
+    <span class="kw">limits.cpu</span>:      <span class="str">"4"</span>
+    <span class="kw">limits.memory</span>:   <span class="str">8Gi</span>
+    <span class="kw">count/pods</span>:      <span class="str">"5"</span>
+---
+<span class="kw">apiVersion</span>: apps/v1
+<span class="kw">kind</span>: StatefulSet
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: zimbra
+  <span class="kw">namespace</span>: i3-zimbra
+<span class="kw">spec</span>:
+  <span class="kw">serviceName</span>: zimbra
+  <span class="kw">replicas</span>: <span class="num">1</span>
+  <span class="kw">selector</span>:
+    <span class="kw">matchLabels</span>: {<span class="kw">app</span>: zimbra}
+  <span class="kw">template</span>:
+    <span class="kw">metadata</span>:
+      <span class="kw">labels</span>: {<span class="kw">app</span>: zimbra}
+    <span class="kw">spec</span>:
+      <span class="kw">serviceAccountName</span>: zimbra-sa
+      <span class="kw">hostname</span>: mail
+      <span class="kw">subdomain</span>: zimbra
+      <span class="kw">containers</span>:
+        - <span class="kw">name</span>: zimbra
+          <span class="kw">image</span>: zimbra/zcs-foss:10.0.9        <span class="cm"># FOSS edition, no license cost</span>
+          <span class="kw">securityContext</span>:
+            <span class="kw">runAsUser</span>: <span class="num">0</span>                      <span class="cm"># required by ZCS init process</span>
+          <span class="kw">env</span>:
+            - {<span class="kw">name</span>: ZIMBRA_DOMAIN,    <span class="kw">value</span>: i3technologies.co.ke}
+            - {<span class="kw">name</span>: ZIMBRA_HOSTNAME,  <span class="kw">value</span>: mail.i3technologies.co.ke}
+            - {<span class="kw">name</span>: ZIMBRA_TIMEZONE,  <span class="kw">value</span>: Africa/Nairobi}
+            - {<span class="kw">name</span>: ZIMBRA_ADMIN_PASS, <span class="kw">valueFrom</span>: {<span class="kw">secretKeyRef</span>: {<span class="kw">name</span>: zimbra-secrets, <span class="kw">key</span>: admin-pass}}}
+          <span class="kw">resources</span>:
+            <span class="kw">requests</span>: {<span class="kw">cpu</span>: 1000m, <span class="kw">memory</span>: 2Gi}
+            <span class="kw">limits</span>:   {<span class="kw">cpu</span>: 4,     <span class="kw">memory</span>: 8Gi}
+          <span class="kw">ports</span>:
+            - {<span class="kw">name</span>: smtp,  <span class="kw">containerPort</span>: <span class="num">25</span>}
+            - {<span class="kw">name</span>: http,  <span class="kw">containerPort</span>: <span class="num">8080</span>}
+            - {<span class="kw">name</span>: https, <span class="kw">containerPort</span>: <span class="num">8443</span>}
+            - {<span class="kw">name</span>: imap,  <span class="kw">containerPort</span>: <span class="num">143</span>}
+            - {<span class="kw">name</span>: imaps, <span class="kw">containerPort</span>: <span class="num">993</span>}
+          <span class="kw">volumeMounts</span>:
+            - {<span class="kw">name</span>: zimbra-data, <span class="kw">mountPath</span>: /opt/zimbra/store}
+          <span class="kw">readinessProbe</span>:
+            <span class="kw">httpGet</span>: {<span class="kw">path</span>: /, <span class="kw">port</span>: <span class="num">8080</span>}
+            <span class="kw">initialDelaySeconds</span>: <span class="num">180</span>         <span class="cm"># ZCS init takes 2–3 min</span>
+            <span class="kw">periodSeconds</span>: <span class="num">20</span>
+            <span class="kw">failureThreshold</span>: <span class="num">15</span>
+  <span class="kw">volumeClaimTemplates</span>:
+    - <span class="kw">metadata</span>: {<span class="kw">name</span>: zimbra-data}
+      <span class="kw">spec</span>:
+        <span class="kw">accessModes</span>: [ReadWriteOnce]
+        <span class="kw">storageClassName</span>: ibmc-vpc-block-retain-10iops-tier   <span class="cm"># Retain policy — mail data</span>
+        <span class="kw">resources</span>:
+          <span class="kw">requests</span>: {<span class="kw">storage</span>: 20Gi}</pre>
+</div>
+
+<h4>Zimbra Routes and DNS</h4>
+<div class="manifest">
+  <div class="manifest-hdr">oc commands + DNS records</div>
+  <pre>
+<span class="cm"># Webmail UI route (HTTPS)</span>
+oc create route edge zimbra-webmail \
+  --service=zimbra --port=8080 \
+  --hostname=mail.i3technologies.co.ke \
+  --insecure-policy=Redirect \
+  -n i3-zimbra
+
+<span class="cm"># Admin console route (internal only — no public route for admin)</span>
+
+<span class="cm"># DNS records to add in cPanel:
+# mail     CNAME   8eec2322-eu-de.lb.appdomain.cloud
+# webmail  CNAME   8eec2322-eu-de.lb.appdomain.cloud
+#
+# MX record (for receiving email):
+# @        MX  10  mail.i3technologies.co.ke
+#
+# SMTP (port 25) requires LoadBalancer Service, not just an HTTPS Route:
+# Expose SMTP via a LoadBalancer Service (IBM Cloud VPC LB) — separate from OpenShift Routes</span>
+
+<span class="cm"># SMTP LoadBalancer Service (for sending/receiving actual email):</span>
+<span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: Service
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: zimbra-smtp
+  <span class="kw">namespace</span>: i3-zimbra
+  <span class="kw">annotations</span>:
+    <span class="kw">service.kubernetes.io/ibm-load-balancer-cloud-provider-ip-type</span>: public
+<span class="kw">spec</span>:
+  <span class="kw">type</span>: LoadBalancer
+  <span class="kw">selector</span>: {<span class="kw">app</span>: zimbra}
+  <span class="kw">ports</span>:
+    - {<span class="kw">name</span>: smtp,  <span class="kw">port</span>: <span class="num">25</span>,  <span class="kw">targetPort</span>: <span class="num">25</span>}
+    - {<span class="kw">name</span>: imaps, <span class="kw">port</span>: <span class="num">993</span>, <span class="kw">targetPort</span>: <span class="num">993</span>}</pre>
+</div>
+
+<div class="ibox a">
+  <strong>Zimbra SMTP note:</strong> OpenShift Routes only handle HTTP/HTTPS. SMTP (port 25) and IMAPS (port 993) need a <code>LoadBalancer</code> Service which provisions an IBM Cloud VPC Load Balancer with a dedicated public IP. This IP then gets the MX record and the <code>mail</code> A-record in DNS. This is a minor cost addition (~$10–15/month for the VPC LB). For the pilot, if you only want webmail access (no native email client / IMAP), the Route alone is sufficient — add the LB Service when users need Outlook/Thunderbird IMAP access.
+</div>
+
+<hr />
+
+
+<h2>5. Shared PostgreSQL — Create Moodle + Nextcloud Databases</h2>
+<p>Both Moodle and Nextcloud point to the existing Crunchy HA PostgreSQL cluster. Two databases need to be created before the apps start.</p>
+
+<div class="manifest">
+  <div class="manifest-hdr">oc exec — run against primary postgres pod</div>
+  <pre>
+<span class="cm"># Get the primary pod name</span>
+PGPOD=$(oc get pods -n i3-data -l postgres-operator.crunchydata.com/role=primary \
+  --no-headers -o custom-columns="NAME:.metadata.name" | head -1)
+
+<span class="cm"># Create databases and users for Moodle and Nextcloud</span>
+oc exec -n i3-data $PGPOD -- psql -U postgres -c \
+  "CREATE USER moodle_user WITH PASSWORD 'CHANGE_ME_MOODLE';
+   CREATE DATABASE moodle_db OWNER moodle_user ENCODING 'UTF8';
+   GRANT ALL PRIVILEGES ON DATABASE moodle_db TO moodle_user;"
+
+oc exec -n i3-data $PGPOD -- psql -U postgres -c \
+  "CREATE USER nextcloud_user WITH PASSWORD 'CHANGE_ME_NEXTCLOUD';
+   CREATE DATABASE nextcloud_db OWNER nextcloud_user ENCODING 'UTF8';
+   GRANT ALL PRIVILEGES ON DATABASE nextcloud_db TO nextcloud_user;"
+
+<span class="cm"># Store credentials in OpenBao (Vault) — not as plain Kubernetes secrets</span>
+<span class="cm"># Then create k8s secrets that reference the Vault values via the Vault Agent injector:</span>
+oc create secret generic moodle-secrets -n i3-moodle \
+  --from-literal=db-user=moodle_user \
+  --from-literal=db-pass=CHANGE_ME_MOODLE
+
+oc create secret generic nextcloud-secrets -n i3-nextcloud \
+  --from-literal=db-user=nextcloud_user \
+  --from-literal=db-pass=CHANGE_ME_NEXTCLOUD \
+  --from-literal=admin-pass=CHANGE_ME_NC_ADMIN
+
+oc create secret generic zimbra-secrets -n i3-zimbra \
+  --from-literal=admin-pass=CHANGE_ME_ZIMBRA</pre>
+</div>
+
+<hr />
+
+
+<h2>6. Ordered Execution Plan — All Fixes + New Stacks</h2>
+<p>Ordered by dependency. The 9 pre-existing fixes from the earlier review are incorporated. Do not start new stack deployments until Fix 1 (DNS) is confirmed working.</p>
+
+<div class="step">
+  <div class="step-n r">1</div>
+  <div class="step-body">
+    <div class="st">Add all 18 CNAME records in cPanel DNS <span class="tag tr" style="font-size:10px;vertical-align:middle">MUST BE FIRST</span></div>
+    <div class="sm">16 existing missing + 2 new ones (moodle, nextcloud, mail/webmail). All → <code>8eec2322-eu-de.lb.appdomain.cloud</code>. Time: 30 min.</div>
+    <ul>
+      <li>All 16 from before: vault, gitops, tracing, storage, zuri, dawa, nuru, mfumo, tts, stt, api, pmaas, engage, afroerp, jupyter, sage</li>
+      <li>New: <code>moodle</code>, <code>nextcloud</code>, <code>mail</code>, <code>webmail</code></li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-n r">2</div>
+  <div class="step-body">
+    <div class="st">Create voice STT + TTS routes in i3-voice</div>
+    <div class="sm"><code>oc create route edge voice-stt --service=voice-stt --port=8001 --hostname=stt.i3technologies.co.ke --insecure-policy=Redirect -n i3-voice</code> and same for tts. Time: 10 min.</div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-n r">3</div>
+  <div class="step-body">
+    <div class="st">Retire sk-i3-internal — issue per-team LiteLLM virtual keys</div>
+    <div class="sm">Create pilot-team keys via LiteLLM Admin UI with max_budget + rpm_limit. Update JupyterHub configmap to inject per-user keys. Time: 2–4 h.</div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-n" style="background:#f59e0b">4</div>
+  <div class="step-body">
+    <div class="st">Scale LiteLLM proxy to 2 replicas + add idle culler to JupyterHub</div>
+    <div class="sm"><code>oc patch deployment litellm-proxy -n i3-model-gateway --type=merge -p '{"spec":{"replicas":2}}'</code> and add jupyterhub-idle-culler service config. Time: 30 min.</div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-n" style="background:#f59e0b">5</div>
+  <div class="step-body">
+    <div class="st">Apply LiteLLM routing fix (least-busy + per-model timeouts)</div>
+    <div class="sm">Patch litellm-config ConfigMap with routing_strategy: least-busy and timeouts for qwen-heavy (90s) and vision (120s). Rollout restart. Time: 30 min.</div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-n" style="background:#7c5cd8">6</div>
+  <div class="step-body">
+    <div class="st">Create Moodle + Nextcloud databases in existing PostgreSQL HA cluster</div>
+    <div class="sm">Run the CREATE USER / CREATE DATABASE commands against the Crunchy primary pod. Create the three Kubernetes secrets. Time: 20 min.</div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-n" style="background:#7c5cd8">7</div>
+  <div class="step-body">
+    <div class="st">Deploy i3-moodle namespace, ResourceQuota, PVC, Deployment, Service, Route</div>
+    <div class="sm">Apply the manifests from Section 2. Wait for readiness probe to pass (90s initial delay — Moodle install takes ~3–5 min first boot). Time: 20 min deploy + 10 min verify.</div>
+    <ul>
+      <li>Verify: <code>https://moodle.i3technologies.co.ke/login/index.php</code> loads the Moodle login page</li>
+      <li>Register <code>moodle</code> OIDC client in Keycloak, install user_oidc plugin, configure provider</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-n" style="background:#7c5cd8">8</div>
+  <div class="step-body">
+    <div class="st">Deploy i3-nextcloud namespace, Redis, ResourceQuota, PVC, Deployment, Service, Route</div>
+    <div class="sm">Apply manifests from Section 3. Wait for Nextcloud first-run setup (~2 min). Time: 20 min deploy + 10 min verify.</div>
+    <ul>
+      <li>Verify: <code>https://nextcloud.i3technologies.co.ke</code> shows Nextcloud login</li>
+      <li>Install user_oidc app via <code>occ</code>, configure Keycloak provider, register <code>nextcloud</code> client in Keycloak</li>
+      <li>Test file upload, folder sharing, basic collaborative editing (if OnlyOffice added)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-n" style="background:#7c5cd8">9</div>
+  <div class="step-body">
+    <div class="st">Deploy i3-zimbra namespace, SCC, ResourceQuota, StatefulSet, Services, Route</div>
+    <div class="sm">Apply manifests from Section 4. ZCS init takes 2–4 min. Time: 30 min deploy + 20 min verify.</div>
+    <ul>
+      <li>Grant SCC: <code>oc adm policy add-scc-to-user anyuid -z zimbra-sa -n i3-zimbra</code></li>
+      <li>Wait for readinessProbe (initialDelaySeconds: 180)</li>
+      <li>Verify: <code>https://mail.i3technologies.co.ke</code> shows Zimbra webmail</li>
+      <li>Create pilot user mailboxes via Zimbra admin console</li>
+      <li>For IMAP/SMTP access: create the LoadBalancer Service and set MX DNS record</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-n" style="background:#3b82d4">10</div>
+  <div class="step-body">
+    <div class="st">Create Keycloak pilot user accounts + pilot-customers group</div>
+    <div class="sm">Provision all October pilot participants. Each user gets SSO access to all applications via one Keycloak login. Time: 2–4 h depending on user count.</div>
+    <ul>
+      <li>Internal team: assign to existing <code>i3-users</code> group</li>
+      <li>External pilot users: create <code>pilot-customers</code> group, assign applications</li>
+      <li>Test end-to-end SSO: Moodle, Nextcloud, EvalOS, PMaaS, Engage, Sage, JupyterHub — all via same login</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-n" style="background:#3b82d4">11</div>
+  <div class="step-body">
+    <div class="st">Seed i3-platform-root Argo CD application (GitOps safety net)</div>
+    <div class="sm">Create <code>i3-technologies/platform-gitops</code> repo, export live manifests, push, configure Argo CD root app. Time: 2–4 h. Do after all deployments are stable.</div>
+  </div>
+</div>
+
+<hr />
+
+
+<h2>7. What Each Stack Delivers for the October Pilot (10 Users)</h2>
+
+<table>
+  <thead><tr><th>Application</th><th>URL</th><th>Pilot Use Case</th><th>Limitations at CPU-only / Single-Replica</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Moodle (EduBridge P0)</strong></td><td>moodle.i3technologies.co.ke</td><td>USIU or internal team course structure, LTI link to Smart Labs, Percipio catalogue passthrough, Keycloak SSO</td><td>No AI Tutor, no H5P authoring, no auto-grading yet — P1 additions. 10 concurrent users fine on 1 replica.</td></tr>
+    <tr><td><strong>Nextcloud Hub</strong></td><td>nextcloud.i3technologies.co.ke</td><td>Shared file repository, document collaboration, pilot team knowledge base</td><td>No OnlyOffice real-time co-editing until Week 3–4 of pilot. 1 replica handles 10 users comfortably.</td></tr>
+    <tr><td><strong>Zimbra Webmail</strong></td><td>mail.i3technologies.co.ke</td><td>@i3technologies.co.ke email for pilot participants and internal teams</td><td>Single node — no HA, no clustering. Acceptable for pilot. IMAP needs LoadBalancer LB if users want Outlook access.</td></tr>
+    <tr><td><strong>EvalOS + Zuri Co-worker</strong></td><td>evalos / zuri .i3technologies.co.ke</td><td>Assessments, exam sandbox, AI co-worker for EvalOS users</td><td>CPU inference for Zuri (qwen-fast). 3–8 s response time — acceptable for chat use.</td></tr>
+    <tr><td><strong>PMaaS + Dawa Co-worker</strong></td><td>pmaas / dawa .i3technologies.co.ke</td><td>Campaign management, Dawa Kijana persona on WhatsApp</td><td>DNS must be added first. Dawa system-prompt profile config change only.</td></tr>
+    <tr><td><strong>Engage + Nuru Co-worker</strong></td><td>engage / nuru .i3technologies.co.ke</td><td>Customer engagement, segment builder, Nuru natural-language campaign interface</td><td>DNS must be added first.</td></tr>
+    <tr><td><strong>AfroERP + Mfumo Co-worker</strong></td><td>afroerp / mfumo .i3technologies.co.ke</td><td>ERP workflows, M-Pesa reconciliation testing, Mfumo AI assistant</td><td>DNS must be added first.</td></tr>
+    <tr><td><strong>Sage + JupyterHub (AI Lab)</strong></td><td>sage / jupyter .i3technologies.co.ke</td><td>No-code AI exploration (Sage), notebook-based AI development (JupyterHub)</td><td>DNS must be added. Idle culler must be set. qwen-heavy slow on CPU but usable for async.</td></tr>
+    <tr><td><strong>Voice STT + TTS</strong></td><td>stt / tts .i3technologies.co.ke</td><td>Transcription for OTT AMAs, voice-note reply pipeline for WhatsApp co-workers</td><td>Routes missing — Fix 2 above. Pods already running and healthy.</td></tr>
+    <tr><td><strong>OTT (OME + SeaweedFS + Directus + n8n)</strong></td><td>cms / n8n / storage .i3technologies.co.ke</td><td>Content management, AMA live streaming, automation workflows</td><td>cms and n8n DNS already resolve. storage CNAME missing.</td></tr>
+  </tbody>
+</table>
+
+<hr />
+
+
+<h2>8. Final Resource Budget — After All Additions (Cluster Safety Check)</h2>
+
+<table>
+  <thead><tr><th>Category</th><th>Before (CPU req)</th><th>Before (RAM req)</th><th>Added (new 3 stacks)</th><th>After Total</th><th>Cluster Max</th><th>Headroom</th></tr></thead>
+  <tbody>
+    <tr><td>All existing workloads</td><td>25,405m</td><td>57.8 GB</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+    <tr><td>OpenShift system pods</td><td>~8,000m</td><td>~20 GB</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+    <tr><td>Moodle + MariaDB + Redis</td><td>—</td><td>—</td><td>+700m / +1.9 GB</td><td>—</td><td>—</td><td>—</td></tr>
+    <tr><td>Nextcloud + Redis</td><td>—</td><td>—</td><td>+600m / +1.1 GB</td><td>—</td><td>—</td><td>—</td></tr>
+    <tr><td>Zimbra (single node)</td><td>—</td><td>—</td><td>+1,000m / +2 GB</td><td>—</td><td>—</td><td>—</td></tr>
+    <tr style="background:#f7f8fa;font-weight:600"><td>TOTAL AFTER</td><td colspan="2">33,405m / 77.8 GB (before new)</td><td>+2,300m / +5.0 GB</td><td><strong>35,705m CPU / 82.8 GB RAM</strong></td><td>46,920m / 162 GB</td><td><strong>~11.2 vCPU / ~79 GB free</strong></td></tr>
+  </tbody>
+</table>
+
+<div class="ibox g">
+  <strong>Safety margin:</strong> After all three stacks are deployed the cluster sits at <strong>76% CPU request allocation</strong> and <strong>51% RAM request allocation</strong>. This leaves ~11 vCPU and ~79 GB free — more than enough buffer for 10 pilot users, bursty JupyterHub notebook spawning, Ollama model loading, and normal OpenShift overhead. No node additions needed before October.
+</div>
+
+<div class="ibox a">
+  <strong>Watch point during pilot:</strong> Node <code>10.240.0.19</code> is at 65% RAM usage and node <code>10.240.128.17/18</code> are at 87% CPU request. The scheduler will avoid scheduling new pods to already-loaded nodes. The new pods will land on the emptier <code>default-cpu</code> pool nodes which are at 20–48% RAM — this is expected and fine.
+</div>
+
+<div class="footer">
+  <p>i3 Technologies · 6-Month Pilot Technical Readiness + Moodle / Nextcloud / Zimbra · September 2026</p>
+  <p style="margin-top:5px">Made with IBM Bob</p>
+</div>
+
+</div>
+</body>
+</html>

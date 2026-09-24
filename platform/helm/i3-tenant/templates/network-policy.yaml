@@ -1,0 +1,84 @@
+# ============================================================
+# i3-tenant / network-policy.yaml
+# Implements a default-deny-all ingress+egress baseline, then
+# opens precisely the allowlisted namespaces from values.yaml.
+# Test (b): "default-deny" rule must be present in rendered output.
+# ============================================================
+---
+# ── 1. Default-deny: block ALL ingress and egress ────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: {{ include "i3-tenant.namespace" . }}
+  labels:
+    {{ include "i3-tenant.labels" . | nindent 4 }}
+    i3.io/policy-type: default-deny
+spec:
+  podSelector: {}   # matches every pod in the namespace
+  policyTypes:
+    - Ingress
+    - Egress
+  # No ingress/egress rules → all traffic is denied.
+---
+# ── 2. Allow DNS egress (UDP+TCP 53) to kube-dns ─────────────
+#    Without this pods cannot resolve any hostname.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: {{ include "i3-tenant.namespace" . }}
+  labels:
+    {{ include "i3-tenant.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+# ── 3. Allow ingress from whitelisted platform namespaces ─────
+{{- range .Values.networkPolicy.allowIngressFromNamespaces }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ printf "allow-ingress-from-%s" . | trunc 63 | trimSuffix "-" }}
+  namespace: {{ include "i3-tenant.namespace" $ }}
+  labels:
+    {{ include "i3-tenant.labels" $ | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ . | quote }}
+{{- end }}
+---
+# ── 4. Allow egress to whitelisted platform namespaces ────────
+{{- range .Values.networkPolicy.allowEgressToNamespaces }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ printf "allow-egress-to-%s" . | trunc 63 | trimSuffix "-" }}
+  namespace: {{ include "i3-tenant.namespace" $ }}
+  labels:
+    {{ include "i3-tenant.labels" $ | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ . | quote }}
+{{- end }}

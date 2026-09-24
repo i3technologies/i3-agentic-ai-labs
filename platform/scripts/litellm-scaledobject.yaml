@@ -1,0 +1,20 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: litellm-proxy-scaler
+  namespace: i3-model-gateway
+  annotations: {}
+spec:
+  cooldownPeriod: 120
+  maxReplicaCount: 6
+  minReplicaCount: 2
+  pollingInterval: 15
+  scaleTargetRef:
+    name: litellm-proxy
+  triggers:
+    - type: prometheus
+      metadata:
+        metricName: litellm_requests_pending
+        query: "sum(rate(litellm_proxy_total_requests[1m]))\n"
+        serverAddress: "http://prometheus-operated.i3-monitoring.svc.cluster.local:9090"
+        threshold: "20"

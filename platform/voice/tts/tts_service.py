@@ -1,163 +1,154 @@
 """
-tts_service.py
-==============
-FastAPI wrapper for Coqui XTTS-v2 Text-to-Speech + Voice Cloning.
+tts_service.py  —  i3 Voice TTS Service v3
+===========================================
+FastAPI TTS backed by pyttsx3 / espeak-ng.
+Zero ML dependencies — no torch, no librosa, no numba.
 
 Endpoints:
-  GET  /v1/health          Health check
-  POST /v1/tts             Synthesise speech from text
-  POST /v1/clone           Clone a voice from a short WAV sample
-  GET  /v1/voices          List available voice IDs
+  GET  /v1/health     Health check
+  POST /v1/tts        Synthesise speech → WAV audio stream
+  GET  /v1/voices     List available voice IDs
 
 Authentication: Bearer token via VOICE_API_KEY env var.
 """
 
 import os
 import io
-import uuid
 import logging
-from pathlib import Path
-from typing import Optional
+import subprocess
+import tempfile
+from typing import Annotated, Literal, Optional
 
-from fastapi import FastAPI, HTTPException, UploadFile, File, Depends, Header
-from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
-import soundfile as sf
-import numpy as np
+from fastapi import FastAPI, HTTPException, Depends, Header, Request
+from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field, ValidationError, field_validator
 
 log = logging.getLogger("tts-service")
 logging.basicConfig(level=logging.INFO)
 
-MODELS_DIR  = Path(os.getenv("MODELS_DIR", "/models"))
-CLONES_DIR  = Path(os.getenv("CLONES_DIR", "/clones"))
-API_KEY     = os.getenv("VOICE_API_KEY", "")
+API_KEY      = os.getenv("VOICE_API_KEY", "")
 DEFAULT_LANG = os.getenv("DEFAULT_LANGUAGE", "en")
+VOICE_RATE   = int(os.getenv("VOICE_RATE", "150"))
 
-MODELS_DIR.mkdir(parents=True, exist_ok=True)
-CLONES_DIR.mkdir(parents=True, exist_ok=True)
+# Supported espeak-ng language codes
+_SUPPORTED_LANGS = frozenset({
+    "en", "en-us", "en-gb", "sw", "fr", "de", "es", "pt", "ar", "hi",
+})
 
-app = FastAPI(title="i3 Voice TTS Service", version="1.0.0")
+app = FastAPI(title="i3 Voice TTS Service", version="3.0.0")
+# CORS is enforced at the Kong API Gateway layer (STEP-P2-07).
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://app.i3technologies.co.ke", "https://evalos.i3technologies.co.ke"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
+    allow_credentials=True,
+)
 
-# Global TTS model (loaded once on startup)
-_tts_model = None
 
-
-def get_tts():
-    global _tts_model
-    if _tts_model is None:
-        from TTS.api import TTS
-        log.info("Loading XTTS-v2 model (first request may take 30–60s)…")
-        _tts_model = TTS(
-            model_name="tts_models/multilingual/multi-dataset/xtts_v2",
-            progress_bar=False,
-        )
-        log.info("XTTS-v2 loaded ✓")
-    return _tts_model
+# ── Structured validation-error handler (IMP-05) ──────────────────────────────
+# Log every Pydantic ValidationError with structured fields before returning 422.
+@app.exception_handler(ValidationError)
+async def _validation_exception_handler(request: Request, exc: ValidationError) -> JSONResponse:
+    log.error(
+        "tts_validation_error path=%s errors=%s",
+        request.url.path,
+        exc.errors(),
+    )
+    return JSONResponse(status_code=422, content={"detail": exc.errors()})
 
 
 def check_auth(authorization: Optional[str] = Header(default=None)):
     if not API_KEY:
-        return  # auth disabled if key not set
+        return
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Authorization required")
     if authorization.removeprefix("Bearer ").strip() != API_KEY:
         raise HTTPException(status_code=403, detail="Invalid API key")
 
 
-# ── Models ────────────────────────────────────────────────────
 class TTSRequest(BaseModel):
-    text: str
-    voice_id: Optional[str] = None   # voice ID from /v1/clone
-    language: str = DEFAULT_LANG
-    speed: float = 1.0
+    """Validated TTS synthesis request (IMP-05: Pydantic constraints enforced before handler)."""
+
+    text: Annotated[str, Field(min_length=1, max_length=5000,
+                               description="Text to synthesise (1–5000 chars)")]
+    language: Annotated[str, Field(default="en",
+                                   description="BCP-47 language code")] = "en"
+    speed: Annotated[float, Field(default=1.0, ge=0.5, le=2.0,
+                                  description="Speech rate multiplier (0.5–2.0)")] = 1.0
+
+    @field_validator("language")
+    @classmethod
+    def _validate_language(cls, v: str) -> str:
+        normalised = v.lower().strip()
+        if normalised not in _SUPPORTED_LANGS:
+            raise ValueError(
+                f"Unsupported language '{v}'. Supported: {sorted(_SUPPORTED_LANGS)}"
+            )
+        return normalised
 
 
-class CloneResponse(BaseModel):
-    voice_id: str
-    message: str
-
-
-# ── Routes ───────────────────────────────────────────────────
 @app.get("/v1/health")
 def health():
-    return {"status": "ok", "service": "voice-tts", "model": "xtts_v2"}
+    # Quick espeak sanity check
+    try:
+        subprocess.run(["espeak-ng", "--version"], capture_output=True, timeout=3)
+        engine = "espeak-ng"
+    except Exception:
+        engine = "unavailable"
+    return {"status": "ok", "service": "voice-tts", "engine": engine, "version": "3.0.0"}
 
 
 @app.post("/v1/tts", dependencies=[Depends(check_auth)])
 async def synthesise(req: TTSRequest):
-    """Synthesise speech. Returns WAV audio as streaming response."""
-    if not req.text.strip():
+    """Synthesise speech via espeak-ng. Returns WAV audio.
+
+    Input is fully validated by TTSRequest before this handler runs (IMP-05).
+    ValidationError is logged and returned as 422 by the exception handler above.
+    """
+    # req.text is guaranteed non-empty and ≤ 5 000 chars by the Pydantic model.
+    text = req.text.strip()
+    if not text:
+        # Edge case: text was all whitespace — not reachable via normal validation
+        # but guard defensively.
         raise HTTPException(status_code=400, detail="text is required")
-    if len(req.text) > 5000:
-        raise HTTPException(status_code=400, detail="text exceeds 5000 char limit")
 
-    tts = get_tts()
-
-    # Resolve speaker WAV if voice_id provided
-    speaker_wav = None
-    if req.voice_id:
-        clone_path = CLONES_DIR / f"{req.voice_id}.wav"
-        if not clone_path.exists():
-            raise HTTPException(status_code=404, detail=f"voice_id {req.voice_id!r} not found")
-        speaker_wav = str(clone_path)
+    # Map speed (0.5–2.0) to espeak words-per-minute (80–400)
+    wpm = max(80, min(400, int(VOICE_RATE * req.speed)))
 
     try:
-        # Generate waveform
-        wav = tts.tts(
-            text=req.text,
-            speaker_wav=speaker_wav,
-            language=req.language,
-            speed=req.speed,
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+            tmp_path = tmp.name
+
+        result = subprocess.run(
+            ["espeak-ng", "-w", tmp_path, "-s", str(wpm), text],
+            capture_output=True, timeout=30
         )
-        # Encode to WAV bytes in-memory
-        buf = io.BytesIO()
-        sf.write(buf, np.array(wav), samplerate=24000, format="WAV")
-        buf.seek(0)
-        return StreamingResponse(buf, media_type="audio/wav")
+        if result.returncode != 0:
+            raise RuntimeError(f"espeak-ng error: {result.stderr.decode()}")
+
+        with open(tmp_path, "rb") as f:
+            audio = f.read()
+        os.unlink(tmp_path)
+
+        log.info("TTS synthesised %d chars → %d bytes WAV", len(text), len(audio))
+        return StreamingResponse(io.BytesIO(audio), media_type="audio/wav",
+                                  headers={"Content-Length": str(len(audio))})
+    except subprocess.TimeoutExpired:
+        raise HTTPException(status_code=504, detail="TTS synthesis timed out")
     except Exception as e:
-        log.error("TTS synthesis error: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/v1/clone", response_model=CloneResponse, dependencies=[Depends(check_auth)])
-async def clone_voice(audio_file: UploadFile = File(...)):
-    """
-    Clone a voice from a short WAV sample (6–60 seconds).
-    Returns a voice_id that can be passed to /v1/tts.
-    """
-    if not audio_file.content_type or "audio" not in audio_file.content_type:
-        raise HTTPException(status_code=400, detail="audio file required (WAV/MP3/OGG)")
-
-    audio_bytes = await audio_file.read()
-    if len(audio_bytes) < 1000:
-        raise HTTPException(status_code=400, detail="Audio file too small — need at least 6 seconds")
-
-    voice_id = str(uuid.uuid4())
-    clone_path = CLONES_DIR / f"{voice_id}.wav"
-
-    try:
-        # Write uploaded audio to clone store
-        # XTTS-v2 accepts WAV directly; convert if needed
-        buf = io.BytesIO(audio_bytes)
-        audio_data, sample_rate = sf.read(buf)
-        # Resample to 22050 Hz if needed (XTTS-v2 requirement)
-        if sample_rate != 22050:
-            import librosa
-            audio_data = librosa.resample(audio_data, orig_sr=sample_rate, target_sr=22050)
-        sf.write(str(clone_path), audio_data, samplerate=22050, format="WAV")
-
-        log.info("Voice clone created: %s", voice_id)
-        return CloneResponse(
-            voice_id=voice_id,
-            message=f"Voice cloned successfully. Use voice_id={voice_id!r} in /v1/tts requests.",
-        )
-    except Exception as e:
-        log.error("Voice clone error: %s", e)
+        log.error("TTS error: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/v1/voices", dependencies=[Depends(check_auth)])
 def list_voices():
-    """List all available cloned voice IDs."""
-    voices = [p.stem for p in CLONES_DIR.glob("*.wav")]
-    return {"voices": voices, "count": len(voices)}
+    """List available espeak-ng voices."""
+    try:
+        result = subprocess.run(["espeak-ng", "--voices=en"], capture_output=True, timeout=5, text=True)
+        lines = [l.strip() for l in result.stdout.splitlines() if l.strip() and not l.startswith("Pty")]
+        voices = [l.split()[3] for l in lines if len(l.split()) >= 4][:10]
+    except Exception:
+        voices = ["en", "en-us", "en-gb"]
+    return {"voices": voices, "engine": "espeak-ng"}

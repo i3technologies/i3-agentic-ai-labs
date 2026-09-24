@@ -1,0 +1,405 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 Platform — Improvement Plan &amp; Test Report v2</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.6;color:#1f2328;background:#fff}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 24px}
+  h1{font-size:24px;font-weight:700;margin-bottom:4px}
+  h2{font-size:16px;font-weight:600;color:#3b82d4;margin:28px 0 10px;padding-bottom:4px;border-bottom:2px solid #e5e7eb}
+  h3{font-size:14px;font-weight:600;margin:14px 0 5px;color:#1f2328}
+  p{margin-bottom:10px}ul{margin:0 0 10px 20px}li{margin-bottom:3px}
+  a{color:#3b82d4;text-decoration:none}
+  .cover{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:18px 22px;margin-bottom:24px}
+  table{width:100%;border-collapse:collapse;margin:10px 0 16px;font-size:13px}
+  th{background:#f7f8fa;text-align:left;padding:8px 10px;border:1px solid #e5e7eb;font-weight:600}
+  td{padding:7px 10px;border:1px solid #e5e7eb;vertical-align:top}
+  tr:nth-child(even) td{background:#fafafa}
+  .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700;white-space:nowrap}
+  .b-pass{background:#dcfce7;color:#166534}
+  .b-fail{background:#fee2e2;color:#991b1b}
+  .b-warn{background:#fef3c7;color:#92400e}
+  .b-info{background:#dbeafe;color:#1e40af}
+  .b-purple{background:#ede9fe;color:#5b21b6}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  .stat{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:12px;text-align:center}
+  .stat .num{font-size:24px;font-weight:700;line-height:1}
+  .stat .lbl{font-size:11px;color:#57606a;margin-top:3px}
+  .note{background:#eff6ff;border-left:4px solid #3b82d4;padding:9px 13px;margin:10px 0;font-size:13px;border-radius:0 4px 4px 0}
+  .note strong{display:block;margin-bottom:2px}
+  .warn-box{background:#fffbeb;border-left:4px solid #f59e0b;padding:9px 13px;margin:10px 0;font-size:13px;border-radius:0 4px 4px 0}
+  .tag{display:inline-block;background:#e5e7eb;color:#57606a;font-size:11px;padding:1px 5px;border-radius:3px;font-family:monospace;white-space:nowrap}
+  .phase{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:14px 16px;margin:10px 0}
+  .phase h3{margin-top:0;color:#3b82d4}
+  .footer{text-align:center;font-size:12px;color:#57606a;margin-top:40px;padding-top:16px;border-top:1px solid #e5e7eb}
+  .toc ol{margin-left:18px}.toc li{margin-bottom:3px;font-size:13px}
+  .toc{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:14px 18px;margin-bottom:22px}
+  .toc h3{margin-top:0;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#57606a;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="cover">
+  <h1>i3 Platform — Improvement Plan &amp; Test Report v2</h1>
+  <p style="color:#57606a;margin-top:5px">DNS re-test · Brevo/Safaricom credentials · Full Platform Improvement Roadmap<br />
+  <strong>Date:</strong> 12 September 2026  |  <strong>Cluster:</strong> IBM ROKS 4.17 eu-de Frankfurt (Control Plane)</p>
+</div>
+
+<div class="toc">
+  <h3>Contents</h3>
+  <ol>
+    <li><a href="#dns">DNS Re-Test Results</a></li>
+    <li><a href="#creds">Credentials Applied</a></li>
+    <li><a href="#missing">Still Pending from Operator</a></li>
+    <li><a href="#fixes">Immediate Fixes (Today)</a></li>
+    <li><a href="#p0">P0 — AI Lab &amp; Platform Hardening (0–3 months)</a></li>
+    <li><a href="#p1">P1 — GPU Tier, Billing &amp; Multi-Tenancy (3–6 months)</a></li>
+    <li><a href="#p2">P2 — Nairobi Region &amp; EdTech (EduBridge) (6–12 months)</a></li>
+    <li><a href="#p3">P3 — Multi-Cloud Expansion &amp; Regional Alliance (12–24 months)</a></li>
+    <li><a href="#billing">Billing Architecture</a></li>
+    <li><a href="#edubridge">i3 EduBridge (LMS + Content Authoring)</a></li>
+    <li><a href="#pmaas">PMaaS 6.0 — Gen-Z Engagement Layer</a></li>
+    <li><a href="#multicloud">Multi-Cloud IBM Integration Plan</a></li>
+  </ol>
+</div>
+
+
+<h2 id="dns">1 — DNS Re-Test Results</h2>
+<p>Tested via Google DNS (8.8.8.8) for authoritative state. Local DNS tested separately.</p>
+
+<div class="grid2">
+  <div class="stat"><div class="num" style="color:#166534">4</div><div class="lbl">Resolving via Google DNS</div></div>
+  <div class="stat"><div class="num" style="color:#991b1b">16</div><div class="lbl">Still Missing / Propagating</div></div>
+</div>
+
+<table>
+  <tr><th>Subdomain</th><th>Google DNS (8.8.8.8)</th><th>Local DNS Cache</th><th>Status</th></tr>
+  <tr><td>evalos.i3technologies.co.ke</td><td>✓ Resolves</td><td>✓</td><td><span class="badge b-pass">OK</span></td></tr>
+  <tr><td>sso.i3technologies.co.ke</td><td>✓ Resolves</td><td>✓</td><td><span class="badge b-pass">OK</span></td></tr>
+  <tr><td>cms.i3technologies.co.ke</td><td>✓ Resolves</td><td>✓</td><td><span class="badge b-pass">OK</span></td></tr>
+  <tr><td>n8n.i3technologies.co.ke</td><td>✓ Resolves</td><td>✓</td><td><span class="badge b-pass">OK</span></td></tr>
+  <tr><td>pmaas.i3technologies.co.ke</td><td>✗ MISS</td><td>✗</td><td><span class="badge b-fail">ADD IN CPANEL</span></td></tr>
+  <tr><td>engage.i3technologies.co.ke</td><td>✗ MISS</td><td>✗</td><td><span class="badge b-fail">ADD IN CPANEL</span></td></tr>
+  <tr><td>afroerp.i3technologies.co.ke</td><td>✗ MISS</td><td>✗</td><td><span class="badge b-fail">ADD IN CPANEL</span></td></tr>
+  <tr><td>jupyter.i3technologies.co.ke</td><td>✗ MISS</td><td>✗</td><td><span class="badge b-fail">ADD IN CPANEL</span></td></tr>
+  <tr><td>sage.i3technologies.co.ke</td><td>✗ MISS</td><td>✗</td><td><span class="badge b-fail">ADD IN CPANEL</span></td></tr>
+  <tr><td>zuri.i3technologies.co.ke</td><td>✗ MISS</td><td>✗</td><td><span class="badge b-fail">ADD IN CPANEL</span></td></tr>
+  <tr><td>dawa.i3technologies.co.ke</td><td>✗ MISS</td><td>✗</td><td><span class="badge b-fail">ADD IN CPANEL</span></td></tr>
+  <tr><td>nuru.i3technologies.co.ke</td><td>✗ MISS</td><td>✗</td><td><span class="badge b-fail">ADD IN CPANEL</span></td></tr>
+  <tr><td>mfumo.i3technologies.co.ke</td><td>✗ MISS</td><td>✗</td><td><span class="badge b-fail">ADD IN CPANEL</span></td></tr>
+  <tr><td>tracing.i3technologies.co.ke</td><td>✗ MISS</td><td>✗</td><td><span class="badge b-fail">ADD IN CPANEL</span></td></tr>
+  <tr><td>vault / gitops / storage</td><td>✗ MISS</td><td>✗</td><td><span class="badge b-fail">ADD IN CPANEL</span></td></tr>
+  <tr><td>tts / stt / api</td><td>✗ MISS</td><td>✗</td><td><span class="badge b-fail">ADD IN CPANEL</span></td></tr>
+</table>
+
+<div class="note"><strong>All missing CNAMEs must point to:</strong> <span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud.</span><br />
+Go to <strong>cPanel → Domains → Zone Editor → Manage i3technologies.co.ke → Add Record → Type: CNAME</strong>. After saving, propagation takes 5–30 minutes. Re-run <span class="tag">Resolve-DnsName pmaas.i3technologies.co.ke -Server 8.8.8.8</span> to confirm.</div>
+
+
+<h2 id="creds">2 — Credentials Applied This Session</h2>
+<table>
+  <tr><th>Credential</th><th>Applied To</th><th>Secret Key</th><th>Status</th></tr>
+  <tr><td>Brevo SMTP Server: smtp-relay.brevo.com:587</td><td>engage-secrets, pmaas-secrets</td><td><span class="tag">BREVO_SMTP_SERVER</span>, <span class="tag">BREVO_SMTP_PORT</span></td><td><span class="badge b-pass">APPLIED ✓</span></td></tr>
+  <tr><td>Brevo Login: b8994d001@smtp-brevo.com</td><td>engage-secrets, pmaas-secrets</td><td><span class="tag">BREVO_SMTP_LOGIN</span></td><td><span class="badge b-pass">APPLIED ✓</span></td></tr>
+  <tr><td>Brevo API Key (xkeysib-3aba…)</td><td>engage-secrets, pmaas-secrets</td><td><span class="tag">BREVO_API_KEY</span></td><td><span class="badge b-pass">APPLIED ✓</span></td></tr>
+  <tr><td>Brevo MCP Key (eyJhc…)</td><td>engage-secrets</td><td><span class="tag">BREVO_MCP_KEY</span></td><td><span class="badge b-pass">APPLIED ✓</span></td></tr>
+  <tr><td>engage-web rollout restart</td><td>i3-engage</td><td>—</td><td><span class="badge b-pass">ROLLED OUT ✓</span></td></tr>
+  <tr><td>pmaas-web rollout restart</td><td>i3-pmaas</td><td>—</td><td><span class="badge b-pass">ROLLED OUT ✓</span></td></tr>
+</table>
+
+
+<h2 id="missing">3 — Still Pending from Operator</h2>
+<table>
+  <tr><th>Credential</th><th>Secret / Location</th><th>Priority</th></tr>
+  <tr><td>M-Pesa Shortcode (Paybill number)</td><td><span class="tag">MPESA_SHORTCODE</span> in pmaas-secrets, afroerp-secrets</td><td><span class="badge b-fail">CRITICAL</span></td></tr>
+  <tr><td>M-Pesa Passkey (from Daraja portal)</td><td><span class="tag">MPESA_PASSKEY</span> in pmaas-secrets, afroerp-secrets</td><td><span class="badge b-fail">CRITICAL</span></td></tr>
+  <tr><td>WhatsApp System User Token (Meta)</td><td><span class="tag">WHATSAPP_TOKEN</span> in engage-secrets</td><td><span class="badge b-fail">CRITICAL</span></td></tr>
+  <tr><td>WhatsApp Phone Number ID</td><td><span class="tag">WHATSAPP_PHONE_NUMBER_ID</span> in engage-secrets</td><td><span class="badge b-fail">CRITICAL</span></td></tr>
+  <tr><td>Africa's Talking API Key + Username</td><td><span class="tag">AT_API_KEY</span>, <span class="tag">AT_USERNAME</span> in engage-secrets</td><td><span class="badge b-fail">CRITICAL</span></td></tr>
+  <tr><td>KRA eTIMS CU Serial + PIN + Credentials</td><td><span class="tag">ETIMS_CU_SERIAL</span> etc. in afroerp-secrets</td><td><span class="badge b-fail">CRITICAL</span></td></tr>
+  <tr><td>AfroERP: Create Frappe site + install ERPNext</td><td>Run bench new-site inside erpnext pod</td><td><span class="badge b-warn">HIGH</span></td></tr>
+  <tr><td>16 missing DNS CNAME records in cPanel</td><td>cPanel Zone Editor</td><td><span class="badge b-fail">CRITICAL</span></td></tr>
+  <tr><td>ChromaDB upgrade 0.5.0 → 1.5.9</td><td>oc set image statefulset/chromadb -n i3-ai-lab</td><td><span class="badge b-warn">HIGH</span></td></tr>
+</table>
+
+
+<h2 id="fixes">4 — Immediate Fixes (Do Today)</h2>
+
+<h3>4.1 Complete the 16 missing CNAMEs in cPanel</h3>
+<p>Log in → Domains → Zone Editor → Manage i3technologies.co.ke. Add each row below as <strong>CNAME</strong> pointing to <span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</span>:</p>
+<table>
+  <tr><th>Name (subdomain)</th><th>Product</th></tr>
+  <tr><td>pmaas</td><td>PMaaS</td></tr><tr><td>engage</td><td>Engage</td></tr>
+  <tr><td>afroerp</td><td>AfroERP</td></tr><tr><td>jupyter</td><td>JupyterHub AI Lab</td></tr>
+  <tr><td>sage</td><td>Sage Open WebUI</td></tr><tr><td>zuri</td><td>Zuri Co-worker</td></tr>
+  <tr><td>dawa</td><td>Dawa Co-worker</td></tr><tr><td>nuru</td><td>Nuru Co-worker</td></tr>
+  <tr><td>mfumo</td><td>Mfumo Co-worker</td></tr><tr><td>tracing</td><td>Langfuse</td></tr>
+  <tr><td>vault</td><td>OpenBao</td></tr><tr><td>gitops</td><td>ArgoCD</td></tr>
+  <tr><td>storage</td><td>SeaweedFS S3</td></tr><tr><td>tts</td><td>Voice TTS</td></tr>
+  <tr><td>stt</td><td>Voice STT</td></tr><tr><td>api</td><td>API Gateway</td></tr>
+</table>
+
+<h3>4.2 Upgrade ChromaDB to 1.5.9 (one command)</h3>
+<p><span class="tag">oc set image statefulset/chromadb chromadb=chromadb/chroma:1.5.9 -n i3-ai-lab</span><br />
+Then re-enable vector DB in co-worker ConfigMaps: <span class="tag">VECTOR_DB: "chroma"</span></p>
+
+<h3>4.3 Create AfroERP Frappe Site</h3>
+<p><span class="tag">oc exec -n i3-afroerp deployment/erpnext -- bench new-site afroerp.i3technologies.co.ke --mariadb-root-password [pass] --admin-password [pass]</span><br />
+Then: <span class="tag">bench --site afroerp.i3technologies.co.ke install-app erpnext</span></p>
+
+
+<h2 id="p0">5 — P0: Platform Hardening (Months 0–3)</h2>
+<p>Sourced from <em>i3_AI_Lab_P0_Technical_Build_Spec.md</em> — immediate must-dos to make the current platform production-grade.</p>
+
+<div class="phase">
+  <h3>B2 — Metering, Quotas &amp; Billing (Weeks 1–4)</h3>
+  <p>LiteLLM natively writes spend to Postgres. Implement the billing schema and nightly ETL:</p>
+  <ul>
+    <li>Create <span class="tag">billing</span> schema in PostgreSQL: customers → projects → api_keys → monthly_usage tables</li>
+    <li>Issue per-project LiteLLM keys (retire master key <span class="tag">sk-i3-internal</span> for client use)</li>
+    <li>Set per-key <span class="tag">max_budget</span>, RPM limits, soft alerts at 50%/80%/95%</li>
+    <li>Nightly ETL job (n8n workflow): aggregate spend_logs → monthly_usage → CSV/PDF invoice per customer</li>
+    <li>Grafana dashboard: month-to-date spend vs budget per customer</li>
+  </ul>
+  <p><strong>Estimate:</strong> 1–2 engineers × 2–3 weeks</p>
+</div>
+
+<div class="phase">
+  <h3>B4-MVP — Multi-Tenancy, RBAC &amp; Audit Logging (Weeks 3–6)</h3>
+  <ul>
+    <li>OpenShift namespace per enterprise customer: <span class="tag">cust-&lt;slug&gt;</span></li>
+    <li>Three roles per namespace: admin / developer / viewer — mapped from Keycloak groups</li>
+    <li>Append-only object-store audit bucket (WORM, 7-year retention) for all API + platform events</li>
+    <li>Retire master key for interactive use — keep as break-glass service account only</li>
+    <li>JupyterHub: kubespawner places user pods in customer namespace from SSO group claims</li>
+  </ul>
+  <p><strong>Estimate:</strong> 1–2 engineers × 2–3 weeks</p>
+</div>
+
+<div class="phase">
+  <h3>B5-MVP — Model Governance Pack (Weeks 4–8)</h3>
+  <ul>
+    <li>Evaluation harness: task suites (summarization, Q&amp;A, code, Swahili/Sheng) — 50–100 gold items per model alias</li>
+    <li>PII pre-filter (Presidio-style): detect Kenya-format IDs, phone numbers, emails before logging</li>
+    <li>Model cards: one page per alias published to customer portal</li>
+    <li>CI release gate: model/quant change must pass harness before production promotion</li>
+  </ul>
+  <p><strong>Estimate:</strong> 1 ML engineer × 3 weeks</p>
+</div>
+
+<div class="phase">
+  <h3>ChromaDB + Vector RAG Fix (Week 1 — This Week)</h3>
+  <ul>
+    <li>Upgrade ChromaDB server from 0.5.0 → 1.5.9 to match Open WebUI bundled client</li>
+    <li>Re-enable <span class="tag">VECTOR_DB: chroma</span> in all 5 co-worker ConfigMaps</li>
+    <li>Test document upload → RAG response in each co-worker</li>
+  </ul>
+</div>
+
+
+<h2 id="p1">6 — P1: GPU Tier &amp; Advanced Features (Months 3–6)</h2>
+
+<div class="phase">
+  <h3>B1 — GPU Inference Tier (Months 3–5)</h3>
+  <p>Reduces first-token latency for qwen-heavy, coder, vision from 30–120s (CPU) to &lt;3s (GPU warm).</p>
+  <ul>
+    <li>Provision GPU nodes: 1× NVIDIA L4 24GB (GPU-1: qwen-heavy + coder), 1× GPU-2: vision/LLaVA</li>
+    <li>Deploy <span class="tag">ollama-gpu</span> StatefulSet with node affinity + GPU resource limits</li>
+    <li>Update LiteLLM config: heavy/coder/vision aliases → ollama-gpu; granite-nano/embed/qwen-fast → ollama-cpu</li>
+    <li>KEDA ScaledObject on LiteLLM queue depth / GPU util ≥ 75% for 5 min</li>
+    <li>Fallback: if ollama-gpu health fails → route to CPU pool with latency-warning header logged</li>
+    <li>Grafana dashboard: GPU Inference Latency &amp; Throughput</li>
+  </ul>
+  <p><strong>Estimate:</strong> 2 engineers × 3–4 weeks (+ hardware procurement lead time)</p>
+</div>
+
+<div class="phase">
+  <h3>Engage — SMS / WhatsApp / Email Full Activation (Month 3)</h3>
+  <ul>
+    <li>Apply M-Pesa Shortcode + Passkey → pmaas-secrets, afroerp-secrets</li>
+    <li>Apply WhatsApp System User Token + Phone Number ID → engage-secrets</li>
+    <li>Apply Africa's Talking API Key + Username → engage-secrets</li>
+    <li>Brevo domain verification: add DKIM TXT records in cPanel</li>
+    <li>Add SPF record update: <span class="tag">include:spf.brevo.com</span> to i3technologies.co.ke SPF</li>
+    <li>End-to-end test: send a campaign SMS, WhatsApp, and email</li>
+  </ul>
+</div>
+
+<div class="phase">
+  <h3>Voice Stack Full Activation (Month 3–4)</h3>
+  <ul>
+    <li>Verify STT service binding: <span class="tag">oc exec -n i3-voice deployment/voice-stt -- python3 -c "import urllib.request; print(urllib.request.urlopen('http://localhost:8001/').status)"</span></li>
+    <li>Configure production VOICE_API_KEY in voice secrets</li>
+    <li>Connect TTS + STT to co-workers (Open WebUI voice input/output settings)</li>
+    <li>Test: PMaaS AI Caller Engine, EvalOS AI Interview voice mode</li>
+    <li>Add Swahili voice model support (faster-whisper Swahili fine-tune)</li>
+  </ul>
+</div>
+
+
+<h2 id="billing">7 — Billing Architecture</h2>
+<p>The billing system uses LiteLLM's native spend_logs + a thin custom billing schema in the existing PostgreSQL HA cluster.</p>
+<table>
+  <tr><th>Layer</th><th>Component</th><th>Function</th></tr>
+  <tr><td>Token Metering</td><td>LiteLLM spend_logs (built-in)</td><td>Every API call logged: key, model, tokens_in, tokens_out, latency, cost</td></tr>
+  <tr><td>Key Management</td><td>LiteLLM Admin API</td><td>Per-project keys with max_budget (KES), RPM limits, expiry</td></tr>
+  <tr><td>Billing Schema</td><td>PostgreSQL (i3-data)</td><td>customers → projects → api_keys → monthly_usage</td></tr>
+  <tr><td>Compute Metering</td><td>JupyterHub culler events + kube resource metrics</td><td>CPU-hours and GPU-hours per user/namespace</td></tr>
+  <tr><td>ETL</td><td>n8n nightly workflow</td><td>Aggregates spend_logs + kube metrics → monthly_usage → invoice export</td></tr>
+  <tr><td>Invoice Output</td><td>PDF + CSV per customer</td><td>Line items: LLM tokens (per model alias), notebook compute hours, GPU hours, Sage workspace usage</td></tr>
+  <tr><td>Dashboard</td><td>Grafana (per-customer panel)</td><td>Month-to-date spend vs budget, model breakdown, alert thresholds</td></tr>
+  <tr><td>Budget Enforcement</td><td>LiteLLM budget cap</td><td>Requests rejected with 429 + friendly JSON when budget exceeded</td></tr>
+  <tr><td>Soft Alerts</td><td>LiteLLM webhooks → n8n → email/WhatsApp</td><td>Alert at 50%, 80%, 95% of budget consumed</td></tr>
+  <tr><td>Pricing Engine v1</td><td>Config table in PostgreSQL</td><td>KES per 1M tokens per alias (cost-plus margin); reviewed quarterly</td></tr>
+</table>
+
+<h3>Indicative KES Pricing (v1)</h3>
+<table>
+  <tr><th>Model Alias</th><th>Use Case</th><th>Suggested Price</th></tr>
+  <tr><td>granite-nano</td><td>Classification, routing</td><td>KES 50 / 1M tokens</td></tr>
+  <tr><td>embed</td><td>RAG embeddings</td><td>KES 20 / 1M tokens</td></tr>
+  <tr><td>qwen-fast</td><td>Study Coach, chat, campaigns</td><td>KES 150 / 1M tokens</td></tr>
+  <tr><td>coder</td><td>Code review, Lab grading</td><td>KES 150 / 1M tokens</td></tr>
+  <tr><td>qwen-heavy (GPU)</td><td>AI Interview, ERP finance, PMaaS briefs</td><td>KES 400 / 1M tokens</td></tr>
+  <tr><td>vision</td><td>Document OCR, image analysis</td><td>KES 400 / 1M tokens</td></tr>
+  <tr><td>Notebook CPU compute</td><td>JupyterHub Standard profile</td><td>KES 80 / CPU-hour</td></tr>
+  <tr><td>Notebook GPU compute</td><td>JupyterHub GPU profile</td><td>KES 600 / GPU-hour</td></tr>
+</table>
+
+
+<h2 id="edubridge">8 — i3 EduBridge: LMS + Content Authoring (Months 6–18)</h2>
+<p>Wraps the existing i3 AI Lab, Smart Labs, and Percipio catalogue into a single licensable EdTech platform for African universities.</p>
+
+<table>
+  <tr><th>Layer</th><th>Component</th><th>Build Approach</th><th>Phase</th></tr>
+  <tr><td>LMS Core</td><td>Moodle (white-labeled, multi-tenant)</td><td>Self-hosted on ROKS; i3 Connector Plugin (LTI 1.3)</td><td>P0 — Month 1</td></tr>
+  <tr><td>Authoring Studio</td><td>H5P + Adapt Framework + i3 Author Copilot</td><td>H5P open-source + AI generation via qwen-heavy/coder</td><td>P1 — Month 4</td></tr>
+  <tr><td>Lab Fabric</td><td>i3 Smart Labs (existing)</td><td>Lab-as-a-Service API + LTI AGS auto-grading</td><td>P0 — Month 2</td></tr>
+  <tr><td>AI Layer</td><td>i3 AI Lab (existing LiteLLM + RAG)</td><td>Course-scoped AI Tutor via ChromaDB per-course collection</td><td>P1 — Month 5</td></tr>
+  <tr><td>OTT / Video</td><td>BigBlueButton (live) + PeerTube (VOD)</td><td>Open-source, native Moodle LTI integration</td><td>P2 — Month 8</td></tr>
+  <tr><td>Credentialing</td><td>Learning Locker (xAPI LRS) + Open Badges 3.0</td><td>Open-source; auto-triggered from LRS completion events</td><td>P2 — Month 10</td></tr>
+  <tr><td>Talent Platform</td><td>REST API exposing competency + badge profiles</td><td>Custom thin API over Learning Locker + Keycloak</td><td>P3 — Month 14</td></tr>
+</table>
+
+<h3>EduBridge Pricing Tiers</h3>
+<table>
+  <tr><th>Tier</th><th>Includes</th><th>Price</th></tr>
+  <tr><td>Foundation</td><td>Moodle + i3 theme + Percipio catalogue + standard Smart Labs (no GPU)</td><td>USD 60–80 / student / year</td></tr>
+  <tr><td>Practical+</td><td>Foundation + full Smart Labs (GPU AI/ML labs) + AI Tutor + OTT live/VOD</td><td>USD 150 / student / year</td></tr>
+  <tr><td>Institution-Wide</td><td>Practical+ × multi-faculty + i3 Author + dedicated AM + custom labs</td><td>Custom / volume</td></tr>
+  <tr><td>Regional Alliance</td><td>Shared infrastructure + cross-institution content exchange + IBM branding</td><td>Consortium pricing</td></tr>
+</table>
+
+
+<h2 id="pmaas">9 — PMaaS 6.0: Gen-Z Engagement Layer</h2>
+<p>Re-platforms PMaaS onto the existing i3-ai Platform, adding a Gen-Z engagement layer for Kenya's 2027 elections (sourced from <em>PMaaS-6.0-GenZ-i3AI-Platform-Technical-Solution.md</em>).</p>
+
+<table>
+  <tr><th>PMaaS 5.0 Recommendation</th><th>i3-ai Platform Equivalent</th><th>Status</th></tr>
+  <tr><td>Multi-tenant Kubernetes platform</td><td>IBM ROKS — namespace-per-product isolation</td><td><span class="badge b-pass">LIVE</span></td></tr>
+  <tr><td>AI Model Gateway with policy enforcement</td><td>LiteLLM Proxy (i3-model-gateway)</td><td><span class="badge b-pass">LIVE</span></td></tr>
+  <tr><td>RAG-grounded campaign assistants</td><td>ChromaDB + nomic-embed-text (pmaas-manifesto collection)</td><td><span class="badge b-pass">LIVE</span></td></tr>
+  <tr><td>Human-in-the-loop AI Co-worker</td><td>Dawa (Open WebUI, i3-pmaas namespace)</td><td><span class="badge b-pass">LIVE</span></td></tr>
+  <tr><td>Workflow engine + audit trail</td><td>n8n + Kafka event bus (i3-messaging)</td><td><span class="badge b-pass">LIVE</span></td></tr>
+  <tr><td>Verified Media Vault (C2PA)</td><td>SeaweedFS + C2PA manifest layer to add at object-store boundary</td><td><span class="badge b-warn">EXTEND</span></td></tr>
+  <tr><td>Multilingual STT (Swahili, Kikuyu)</td><td>faster-whisper large-v3 (i3-voice)</td><td><span class="badge b-pass">LIVE</span></td></tr>
+  <tr><td>GIS / ward dossier (PostGIS)</td><td>PostgreSQL HA — PostGIS extension to be enabled</td><td><span class="badge b-warn">EXTEND</span></td></tr>
+</table>
+
+<h3>New Gen-Z Features (Build in P1)</h3>
+<ul>
+  <li><strong>Short-form AI video brief generator</strong> — qwen-heavy generates 60-second TikTok/Reels script from ward dossier data, campaign manager approves, voice-cloned narration via XTTS-v2</li>
+  <li><strong>WhatsApp AI Caller Engine</strong> — AI-powered outbound calls in Swahili/Sheng using TTS + Twilio/Africa's Talking voice</li>
+  <li><strong>Real-time crowd sentiment dashboard</strong> — Kafka stream of SMS/WhatsApp replies → Langfuse sentiment tagging → Grafana war-room dashboard</li>
+  <li><strong>EvalOS-style gamification for voter engagement</strong> — civic education quizzes, leaderboards by ward, digital badges for civic participation</li>
+  <li><strong>Verified Media Vault</strong> — C2PA provenance manifest on all campaign media; QR code verification for rally attendees</li>
+</ul>
+
+
+<h2 id="multicloud">10 — Multi-Cloud IBM Integration Plan</h2>
+<p>Frankfurt ROKS remains the <strong>Control Plane</strong>. Two additional IBM Cloud environments for capacity and data residency.</p>
+
+<table>
+  <tr><th>Environment</th><th>Role</th><th>Workloads</th><th>Timeline</th></tr>
+  <tr>
+    <td><strong>Frankfurt (current)</strong><br />IBM ROKS 4.17</td>
+    <td>Control Plane &amp; Primary</td>
+    <td>All current products, LiteLLM gateway, Keycloak SSO, GitOps, billing-of-record, EU customers</td>
+    <td>Now</td>
+  </tr>
+  <tr>
+    <td><strong>Nairobi Region</strong><br />IBM ROKS (SA) or OKD on colo DC (iColo/Node Africa)</td>
+    <td>Data Residency &amp; Low Latency for East Africa</td>
+    <td>Kenya/EA customer data, inference (CPU + GPU), student data for EduBridge, PMaaS ward data — <em>no customer prompts/docs leave Kenya</em></td>
+    <td>P2 (Months 6–12)</td>
+  </tr>
+  <tr>
+    <td><strong>3rd Environment</strong><br />IBM Cloud (US or UK) or watsonx.ai SaaS</td>
+    <td>Burst Compute &amp; DR</td>
+    <td>GPU burst capacity when Nairobi/Frankfurt queues full; DR replica of config (not data); watsonx.ai Granite models for enterprise clients needing IBM-branded inference with SLA</td>
+    <td>P3 (Months 12–24)</td>
+  </tr>
+</table>
+
+<h3>GitOps Multi-Region Pattern</h3>
+<ul>
+  <li>Single git repo: <span class="tag">i3technologies/i3-agentic-ai-labs</span> (already in use)</li>
+  <li>Per-region Kustomize overlays: <span class="tag">overlays/frankfurt/</span>, <span class="tag">overlays/nairobi/</span>, <span class="tag">overlays/burst/</span></li>
+  <li>ArgoCD App-of-Apps in Frankfurt watches all three overlays</li>
+  <li>Model artifacts: nightly sync of Ollama model blobs from Frankfurt → Nairobi registry (models are not customer data — residency applies to prompts/docs/logs only)</li>
+  <li>Secrets: OpenBao (Frankfurt primary) with Nairobi replica — same unseal ceremony, region-specific keys for data-at-rest</li>
+  <li>Failover: manual runbook v1 (RTO 4h). Automated DNS failover in P3.</li>
+</ul>
+
+
+<h2 id="p2">11 — P2: Nairobi Region + EduBridge (Months 6–12)</h2>
+<div class="phase">
+  <h3>B3 — Nairobi Region Deployment</h3>
+  <ul>
+    <li>Provision IBM ROKS cluster (SA region if available) or OKD on iColo/Node Africa hardware</li>
+    <li>Deploy same Helm/Kustomize stack with nairobi overlay (same GitOps repo)</li>
+    <li>Per-tenant PVCs + object buckets with residency tags (Kenya DPA 2019 compliance)</li>
+    <li>Data plane: all EA customer prompts, uploads, embeddings, audit logs stay Nairobi-only</li>
+    <li>Billing: Nairobi writes to regional replica; Frankfurt billing-of-record until Nairobi GA</li>
+    <li>Latency target: EA user round-trip to Nairobi p95 ≥ 60% better than Frankfurt</li>
+    <li>DR drill: simulated Nairobi outage → Frankfurt standby within RTO 4h</li>
+  </ul>
+  <p><strong>Estimate:</strong> 2 engineers × 4–6 weeks + hardware procurement</p>
+</div>
+
+
+<h2 id="p3">12 — P3: Regional Alliance &amp; 3rd Cloud (Months 12–24)</h2>
+<div class="phase">
+  <h3>East Africa University Technology Alliance</h3>
+  <ul>
+    <li>2nd and 3rd universities onboarded on shared multi-tenant EduBridge infrastructure</li>
+    <li>Consortium pricing model; cross-institution content exchange via H5P/xAPI standards</li>
+    <li>IBM Digital Badge co-branding across all member institutions</li>
+    <li>Shared AI Lab GPU capacity for EA student thesis and research workloads</li>
+  </ul>
+</div>
+<div class="phase">
+  <h3>3rd IBM Cloud Environment (Burst + DR)</h3>
+  <ul>
+    <li>IBM Cloud US or UK: GPU burst capacity for peak inference loads</li>
+    <li>watsonx.ai integration: IBM-branded Granite models for enterprise clients needing formal IBM SLA</li>
+    <li>LiteLLM routing: add watsonx aliases alongside Ollama aliases in existing gateway config</li>
+    <li>Automated DNS failover (Global Load Balancer) replacing manual runbook</li>
+  </ul>
+</div>
+
+<div class="note" style="border-color:#166534;background:#f0fdf4"><strong>90-Day Delivery Summary</strong><br />
+Weeks 1–2: DNS complete + ChromaDB fix + Brevo/AT/WhatsApp credentials applied + AfroERP site created<br />
+Weeks 3–5: B2 billing schema + per-project LiteLLM keys live in staging<br />
+Weeks 6–8: B4 namespace/RBAC pilot with first enterprise tenant; master-key retirement notice<br />
+Weeks 9–12: B5 governance pack + model cards; 2 paying pilot tenants on metered keys; GPU node procurement started
+</div>
+
+<div class="footer">Made with IBM Bob  |  i3 Technologies Platform Improvement Plan — September 2026</div>
+</div>
+</body>
+</html>

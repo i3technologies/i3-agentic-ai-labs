@@ -1,0 +1,7 @@
+# platform/agentops/requirements.txt
+# Runtime dependencies for the AgentOps weekly review pack generator.
+# Pin versions to match the rest of the platform's Python 3.11 environment.
+
+asyncpg==0.29.0
+boto3==1.34.131
+pydantic==2.7.1

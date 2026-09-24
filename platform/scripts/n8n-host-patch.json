@@ -1,0 +1,26 @@
+[
+  {
+    "op": "replace",
+    "path": "/spec/template/spec/containers/0/env/0",
+    "value": {
+      "name": "N8N_HOST",
+      "value": "n8n.i3technologies.co.ke"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/spec/template/spec/containers/0/env/-",
+    "value": {
+      "name": "N8N_EDITOR_BASE_URL",
+      "value": "https://n8n.i3technologies.co.ke"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/spec/template/spec/containers/0/env/-",
+    "value": {
+      "name": "WEBHOOK_URL",
+      "value": "https://n8n.i3technologies.co.ke"
+    }
+  }
+]

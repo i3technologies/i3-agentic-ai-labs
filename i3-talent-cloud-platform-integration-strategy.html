@@ -1,0 +1,408 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>i3 Talent Cloud — Platform Integration Strategy</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.6;background:#fff;color:#1f2328;padding:32px 16px}
+.wrap{max-width:780px;margin:0 auto}
+h1{font-size:22px;font-weight:700;margin-bottom:4px}
+h2{font-size:16px;font-weight:700;margin:32px 0 10px;padding-bottom:6px;border-bottom:2px solid #e5e7eb}
+h3{font-size:13px;font-weight:700;margin:18px 0 6px;color:#4f46e5;text-transform:uppercase;letter-spacing:.05em}
+.meta{color:#57606a;font-size:13px;margin-bottom:28px}
+p{margin-bottom:10px;font-size:14px}
+ul{padding-left:18px;margin-bottom:10px}
+ul li{margin-bottom:4px;font-size:13px}
+code{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:3px;padding:1px 5px;font-size:12px;font-family:"SFMono-Regular",Consolas,monospace}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0 18px}
+th{background:#f7f8fa;text-align:left;padding:8px 10px;border-bottom:2px solid #e5e7eb;font-weight:600;color:#57606a;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+td{padding:8px 10px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.exists{background:#dafbe1;color:#1a7f37}
+.new{background:#ddf4ff;color:#0550ae}
+.extend{background:#fff8c5;color:#9a6700}
+.phase1{background:#ede9fe;color:#5b21b6}
+.phase2{background:#dbeafe;color:#1d4ed8}
+.phase3{background:#dcfce7;color:#15803d}
+.callout{border-left:4px solid #4f46e5;background:#f5f3ff;padding:12px 16px;border-radius:0 6px 6px 0;margin:14px 0;font-size:13px}
+.callout.warn{border-color:#f59e0b;background:#fffbeb}
+.callout.green{border-color:#10b981;background:#f0fdf4}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:14px 0}
+.flow-box{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:10px 8px;text-align:center;font-size:11px;font-weight:600}
+.flow-box.accent{background:#ede9fe;border-color:#c4b5fd;color:#5b21b6}
+.flow-box.green{background:#dcfce7;border-color:#86efac;color:#166534}
+.arrow{display:flex;align-items:center;justify-content:center;font-size:16px;color:#94a3b8}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:14px 0}
+.card{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px}
+.card h4{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#57606a;margin-bottom:8px}
+.card ul{margin:0}
+hr{border:none;border-top:1px solid #e5e7eb;margin:28px 0}
+footer{margin-top:40px;padding-top:14px;border-top:1px solid #e5e7eb;text-align:center;font-size:12px;color:#57606a}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>i3 Talent Cloud — Platform Integration Strategy</h1>
+<div class="meta">
+  Based on: <em>i3 Talent Cloud Strategy &amp; Technical Specification (September 2026)</em>  · 
+  Target platform: IBM ROKS Frankfurt — OpenShift 4.17  ·  Reviewed by IBM Bob
+</div>
+
+<div class="callout green">
+  <strong>Core finding:</strong> i3 Talent Cloud is not a greenfield build. Every infrastructure component it requires — Keycloak, LiteLLM, PostgreSQL, ChromaDB, SeaweedFS, Kafka, Langfuse, n8n, Directus — is already running in production on the i3 Master AI Platform. This is a <strong>productisation exercise on existing infrastructure</strong>, not a new platform build. Estimated new engineering is one new namespace family (<code>i3-talent</code>) and three new Next.js/FastAPI applications.
+</div>
+
+
+<h2>1. Document Summary — What i3 Talent Cloud Defines</h2>
+<p>The specification defines a <strong>Talent-as-a-Service (TaaS)</strong> business built on three linked offerings:</p>
+
+<table>
+  <tr><th>Offering</th><th>What it is</th><th>Revenue model</th></tr>
+  <tr>
+    <td><strong>i3 Talent Cloud</strong></td>
+    <td>Bench of vetted, EvalOS-assessed consultants available to clients on flexible engagements</td>
+    <td>Monthly subscription bench access · day-rates</td>
+  </tr>
+  <tr>
+    <td><strong>FDE Programme</strong></td>
+    <td>i3 Academy graduates embedded at client sites as Forward Deployed Engineers (min. Senior Practitioner score on EvalOS)</td>
+    <td>FDE day-rate · retainer</td>
+  </tr>
+  <tr>
+    <td><strong>i3 Recruit</strong></td>
+    <td>Head-hunting &amp; placement agency for AI talent — draws on the same Talent Graph and EvalOS pipeline</td>
+    <td>Placement fee (% of salary) · retained search · EvalOS-as-a-Service licences</td>
+  </tr>
+</table>
+
+<p>The technical centrepiece is the <strong>Talent Graph</strong> — a typed-relationship store (nodes: Candidate, Certification, Skill, Assessment Event, Project Engagement, Client, Team; edges: holds-certification, scored-on, deployed-to, rated-by, mentored-by) — and a <strong>Talent Digital Passport</strong> per person (identity, certifications, risk tier, EvalOS scores, NDAs, expiry dates).</p>
+
+
+<h2>2. Platform Service Reuse Map</h2>
+<p>Every service Talent Cloud needs is already running. The table below maps specification requirements to live platform services:</p>
+
+<table>
+  <tr><th>Talent Cloud Requirement</th><th>i3 Platform Service</th><th>Namespace</th><th>Status</th></tr>
+  <tr><td>Identity / SSO / OIDC</td><td>Keycloak RHSSO</td><td><code>i3-auth</code></td><td><span class="badge exists">✓ Live</span></td></tr>
+  <tr><td>AI inference (LLM scoring, ranking, CV analysis)</td><td>LiteLLM Proxy + Ollama</td><td><code>i3-model-gateway</code></td><td><span class="badge exists">✓ Live</span></td></tr>
+  <tr><td>Assessment engine + sandbox + Zuri AI evaluator</td><td>EvalOS + evalos-sandbox</td><td><code>i3-evalos</code></td><td><span class="badge exists">✓ Live</span></td></tr>
+  <tr><td>Relational database (Talent Graph, Passport store)</td><td>PostgreSQL 16.8 HA (PGO)</td><td><code>i3-data</code></td><td><span class="badge exists">✓ Live</span></td></tr>
+  <tr><td>Vector / semantic search (skills matching, CV RAG)</td><td>ChromaDB</td><td><code>i3-admissions</code> / <code>i3-ai-lab</code></td><td><span class="badge exists">✓ Live</span></td></tr>
+  <tr><td>Document / file storage (CVs, certificates, reports)</td><td>SeaweedFS S3-compatible</td><td><code>i3-ott</code></td><td><span class="badge exists">✓ Live</span></td></tr>
+  <tr><td>Workflow automation (onboarding, placement, scoring pipelines)</td><td>n8n</td><td><code>i3-ott</code></td><td><span class="badge exists">✓ Live</span></td></tr>
+  <tr><td>CMS (job descriptions, client briefs, public talent portal content)</td><td>Directus</td><td><code>i3-ott</code></td><td><span class="badge exists">✓ Live</span></td></tr>
+  <tr><td>LLM observability (Zuri AI evaluation traces)</td><td>Langfuse</td><td><code>i3-ott</code></td><td><span class="badge exists">✓ Live</span></td></tr>
+  <tr><td>Event streaming (assessment events, score updates)</td><td>Kafka (Strimzi)</td><td><code>i3-messaging</code></td><td><span class="badge exists">✓ Live</span></td></tr>
+  <tr><td>Email / SMS campaigns (candidate comms, client alerts)</td><td>Engage (Brevo + Africa's Talking)</td><td><code>i3-engage</code></td><td><span class="badge exists">✓ Live</span></td></tr>
+  <tr><td>Secrets management</td><td>OpenBao (Vault)</td><td><code>i3-security</code></td><td><span class="badge exists">✓ Live</span></td></tr>
+  <tr><td>Monitoring &amp; dashboards</td><td>Grafana + Prometheus</td><td><code>i3-monitoring</code></td><td><span class="badge exists">✓ Live</span></td></tr>
+  <tr><td>Talent Cloud web portal (new)</td><td>Next.js app — to build</td><td><code>i3-talent</code></td><td><span class="badge new">⬡ New</span></td></tr>
+  <tr><td>Talent API / Talent Graph API (new)</td><td>FastAPI — to build</td><td><code>i3-talent</code></td><td><span class="badge new">⬡ New</span></td></tr>
+  <tr><td>EvalOS team evaluation layer (new)</td><td>Extend evalos-web + Zuri AI</td><td><code>i3-evalos</code></td><td><span class="badge extend">↑ Extend</span></td></tr>
+  <tr><td>ChromaDB for talent-specific RAG (new collection)</td><td>New ChromaDB collection in existing pod</td><td><code>i3-admissions</code></td><td><span class="badge extend">↑ Extend</span></td></tr>
+</table>
+
+
+<h2>3. Proposed Integration Architecture</h2>
+
+<h3>New namespace: <code>i3-talent</code></h3>
+<p>Deploy Talent Cloud as a single new namespace following the exact same pattern as <code>i3-engage</code>, <code>i3-pmaas</code>, and <code>i3-smartlab</code>:</p>
+
+<div class="two-col">
+  <div class="card">
+    <h4>Workloads in i3-talent</h4>
+    <ul>
+      <li><code>talent-web</code> — Next.js 14 portal (candidates, clients, recruiters, FDE dashboard)</li>
+      <li><code>talent-api</code> — FastAPI — Talent Graph CRUD, Passport API, bench matching</li>
+      <li><code>talent-agent</code> — AI coworker (bench matcher, JD analyser, score interpreter)</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>New DNS / Routes needed</h4>
+    <ul>
+      <li><code>talent.i3technologies.co.ke</code> — candidate &amp; client portal</li>
+      <li><code>recruit.i3technologies.co.ke</code> — i3 Recruit public-facing job board</li>
+      <li><code>api.talent.i3technologies.co.ke</code> — Talent Graph API</li>
+    </ul>
+  </div>
+</div>
+
+<h3>Data flow: Talent Graph on PostgreSQL</h3>
+<p>The Talent Graph lives in a new <code>talent_db</code> database on the existing Crunchy PostgreSQL cluster (PGBouncer endpoint: <code>i3-postgres-pgbouncer.i3-data.svc:5432</code>). No new database server is needed. Schema:</p>
+
+<table>
+  <tr><th>Table</th><th>Purpose</th><th>Key relationships</th></tr>
+  <tr><td><code>candidates</code></td><td>Core person record + Talent Digital Passport fields</td><td>Links to Keycloak <code>sub</code> (UUID)</td></tr>
+  <tr><td><code>certifications</code></td><td>IBM / Red Hat / Anthropic certifications with valid-from / valid-to</td><td>FK → candidates</td></tr>
+  <tr><td><code>skills</code></td><td>Skill ontology master list (IBM watsonx, OpenShift, Agentic AI, etc.)</td><td>Standalone lookup</td></tr>
+  <tr><td><code>skill_scores</code></td><td>Candidate × Skill score with decay window and source assessment ID</td><td>FK → candidates, skills, assessment_events</td></tr>
+  <tr><td><code>assessment_events</code></td><td>EvalOS assessment run records (score, band, timestamp, Zuri AI trace ID)</td><td>FK → candidates; references EvalOS session ID</td></tr>
+  <tr><td><code>engagements</code></td><td>FDE / consultant deployments at clients</td><td>FK → candidates, clients</td></tr>
+  <tr><td><code>client_feedback</code></td><td>Post-engagement scorecard from client</td><td>FK → engagements</td></tr>
+  <tr><td><code>team_compositions</code></td><td>Proposed / active teams for a client brief</td><td>M2M → candidates</td></tr>
+  <tr><td><code>job_briefs</code></td><td>Recruitment mandates and FDE requests</td><td>FK → clients</td></tr>
+</table>
+
+<h3>Integration points with existing services</h3>
+
+<table>
+  <tr><th>Integration</th><th>How</th><th>What it unlocks</th></tr>
+  <tr>
+    <td><strong>Keycloak SSO</strong></td>
+    <td>New OIDC client <code>i3talent</code> in the <code>i3</code> realm. Roles: <code>talent-candidate</code>, <code>talent-recruiter</code>, <code>talent-admin</code>, <code>talent-client</code></td>
+    <td>Single login for candidates, clients, i3 recruiters — same SSO used by Evalos, Sage, Engage</td>
+  </tr>
+  <tr>
+    <td><strong>EvalOS</strong></td>
+    <td>Talent API calls EvalOS REST API to trigger assessments and read results. EvalOS writes scores back to <code>assessment_events</code> table via webhook / n8n workflow</td>
+    <td>Fully automated: candidate completes EvalOS assessment → score flows into Talent Graph → passport updates → bench-match re-runs</td>
+  </tr>
+  <tr>
+    <td><strong>LiteLLM (AI scoring &amp; matching)</strong></td>
+    <td>Talent agent calls <code>litellm-proxy.i3-model-gateway:4000/v1</code> with <code>qwen-fast</code> or <code>claude</code> model for CV analysis, JD-to-skills extraction, bench matching, and Talent Digital Passport narrative generation</td>
+    <td>AI-powered shortlisting; automatic skill extraction from uploaded CVs; plain-language client-facing passport summaries</td>
+  </tr>
+  <tr>
+    <td><strong>ChromaDB (RAG)</strong></td>
+    <td>New collection <code>talent-passports</code> in existing ChromaDB pod. Embed candidate skills + experience text. Talent API queries semantically: "find candidates with OpenShift + Agentic AI + client-facing delivery"</td>
+    <td>Semantic bench matching beyond keyword filters — finds capability overlap even when skill names differ</td>
+  </tr>
+  <tr>
+    <td><strong>SeaweedFS (S3)</strong></td>
+    <td>New buckets: <code>talent-cvs</code>, <code>talent-certs</code>, <code>talent-reports</code>. Talent API uploads via <code>seaweedfs-s3.i3-ott:8333</code></td>
+    <td>Persistent CV, certificate, and assessment report storage — all replicated to IBM COS via existing DR sync</td>
+  </tr>
+  <tr>
+    <td><strong>n8n (workflow automation)</strong></td>
+    <td>New workflows: (1) Assessment-completed → update Talent Graph; (2) New job brief → trigger bench-match → notify recruiter; (3) FDE deployment approved → onboard to client SSO; (4) Score decay → trigger re-assessment email</td>
+    <td>Zero-touch pipeline from assessment to placement; automated score maintenance; client brief fulfilment SLA tracking</td>
+  </tr>
+  <tr>
+    <td><strong>Engage (email/SMS)</strong></td>
+    <td>Talent API calls <code>/api/campaigns/send</code> on Engage or pushes to Kafka topic <code>talent.notifications</code> → Engage consumers pick up</td>
+    <td>AI-personalised candidate outreach; client shortlist delivery emails; FDE deployment confirmations; score expiry reminders</td>
+  </tr>
+  <tr>
+    <td><strong>Directus CMS</strong></td>
+    <td>Job briefs, skills taxonomy descriptions, FDE programme content, and public talent portal pages managed in Directus (<code>cms.i3technologies.co.ke</code>)</td>
+    <td>Non-technical staff can update job descriptions and skills ontology without code changes</td>
+  </tr>
+  <tr>
+    <td><strong>Langfuse (observability)</strong></td>
+    <td>All Talent Agent and Zuri AI calls tagged with <code>talent-cloud</code> project in Langfuse. Trace IDs stored in <code>assessment_events.langfuse_trace_id</code></td>
+    <td>Full audit trail of every AI evaluation decision — required for governance and human-review compliance</td>
+  </tr>
+  <tr>
+    <td><strong>Kafka</strong></td>
+    <td>New topics: <code>talent.assessments</code>, <code>talent.score-updates</code>, <code>talent.placements</code>. EvalOS and n8n produce; Talent API and Engage consume</td>
+    <td>Decoupled, durable event stream — score updates don't block the assessment UI; placement events trigger downstream onboarding</td>
+  </tr>
+  <tr>
+    <td><strong>Grafana</strong></td>
+    <td>New dashboard "Talent Cloud Operations" — bench utilisation %, time-to-shortlist, assessment pass rates, FDE deployment pipeline, score decay alerts</td>
+    <td>Operational visibility on KPIs defined in Section 11 of the specification</td>
+  </tr>
+  <tr>
+    <td><strong>Moodle (EduBridge)</strong></td>
+    <td>Link i3 Academy course completions to <code>certifications</code> table via existing Moodle Web Service token. Course completion event → n8n → Talent Graph update</td>
+    <td>Bootcamp completions automatically reflected in Talent Passport — closes the Academy → Talent Cloud pipeline loop</td>
+  </tr>
+</table>
+
+
+<h2>4. What Actually Needs to Be Built (New Work Only)</h2>
+
+<div class="callout">
+  <strong>The document says:</strong> "Reuse i3's own platform investment — Keycloak, LiteLLM, Langfuse, Crunchy PostgreSQL and Argo CD are already operating in production — Talent Cloud is a productisation exercise on top of them, not a new infrastructure build." This is exactly correct. The build list is short.
+</div>
+
+<table>
+  <tr><th>#</th><th>Component</th><th>Type</th><th>Phase</th><th>Effort</th></tr>
+  <tr>
+    <td>1</td>
+    <td><strong>talent_db PostgreSQL schema</strong> — candidates, certifications, skills, skill_scores, assessment_events, engagements, client_feedback, team_compositions, job_briefs, clients</td>
+    <td>SQL migration</td>
+    <td><span class="badge phase1">Phase 1</span></td>
+    <td>1 day</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td><strong>Talent API</strong> (FastAPI) — CRUD for Talent Graph, Passport read/write, bench-match endpoint, CV upload to SeaweedFS, EvalOS score ingestion webhook</td>
+    <td>New FastAPI service</td>
+    <td><span class="badge phase1">Phase 1</span></td>
+    <td>5–7 days</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td><strong>Keycloak client <code>i3talent</code></strong> + 4 realm roles</td>
+    <td>Keycloak config (kcadm)</td>
+    <td><span class="badge phase1">Phase 1</span></td>
+    <td>1 hour</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td><strong>SeaweedFS buckets</strong>: <code>talent-cvs</code>, <code>talent-certs</code>, <code>talent-reports</code></td>
+    <td>S3 bucket create</td>
+    <td><span class="badge phase1">Phase 1</span></td>
+    <td>30 min</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td><strong>ChromaDB collection</strong> <code>talent-passports</code> + embedding pipeline (CV text → vectors via Ollama <code>nomic-embed-text</code>)</td>
+    <td>New ChromaDB collection + Talent API endpoint</td>
+    <td><span class="badge phase1">Phase 1</span></td>
+    <td>1–2 days</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td><strong>n8n workflows</strong> (4): assessment-complete → Talent Graph; job brief → bench-match notify; score decay → re-assessment email; FDE approved → onboard</td>
+    <td>n8n workflow JSON</td>
+    <td><span class="badge phase1">Phase 1</span></td>
+    <td>2–3 days</td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td><strong>Moodle → Talent Graph bridge</strong> — n8n workflow listens on Moodle course completion webhook → writes certification record</td>
+    <td>n8n + Moodle WS</td>
+    <td><span class="badge phase1">Phase 1</span></td>
+    <td>1 day</td>
+  </tr>
+  <tr>
+    <td>8</td>
+    <td><strong>talent-web portal</strong> (Next.js 14) — candidate profile &amp; passport view; recruiter bench search; client shortlist view; FDE pipeline dashboard</td>
+    <td>New Next.js app</td>
+    <td><span class="badge phase2">Phase 2</span></td>
+    <td>10–14 days</td>
+  </tr>
+  <tr>
+    <td>9</td>
+    <td><strong>EvalOS team evaluation extension</strong> — team sprint simulation mode; team scoring aggregate; group result dashboard</td>
+    <td>Extend evalos-web</td>
+    <td><span class="badge phase2">Phase 2</span></td>
+    <td>5–7 days</td>
+  </tr>
+  <tr>
+    <td>10</td>
+    <td><strong>i3 Recruit public portal</strong> — job board, candidate application, EvalOS-gated screening, client brief intake form</td>
+    <td>New page in talent-web or separate app</td>
+    <td><span class="badge phase3">Phase 3</span></td>
+    <td>5–7 days</td>
+  </tr>
+  <tr>
+    <td>11</td>
+    <td><strong>Grafana dashboard</strong> — bench utilisation, time-to-shortlist, score decay alerts, FDE deployment pipeline</td>
+    <td>Grafana JSON dashboard</td>
+    <td><span class="badge phase2">Phase 2</span></td>
+    <td>1 day</td>
+  </tr>
+</table>
+
+
+<h2>5. Recommended Integration Phases</h2>
+
+<table>
+  <tr><th>Phase</th><th>Milestone</th><th>Deliverable</th><th>Timeline</th></tr>
+  <tr>
+    <td><span class="badge phase1">Phase 1 — Foundation</span></td>
+    <td>Talent Graph live, EvalOS feeding scores automatically</td>
+    <td>talent_db schema · Talent API · Keycloak client · n8n workflows · Moodle bridge · SeaweedFS buckets · ChromaDB collection</td>
+    <td>Weeks 1–3</td>
+  </tr>
+  <tr>
+    <td><span class="badge phase2">Phase 2 — Portal &amp; Operations</span></td>
+    <td>Internal recruiter portal live; team evaluation in EvalOS; Grafana dashboard</td>
+    <td>talent-web (Next.js) · EvalOS team sprint mode · Grafana Talent dashboard</td>
+    <td>Weeks 4–8</td>
+  </tr>
+  <tr>
+    <td><span class="badge phase3">Phase 3 — Commercial Launch</span></td>
+    <td>Public-facing client portal and job board live; i3 Recruit externally accessible</td>
+    <td>i3 Recruit portal · client self-service shortlist view · EvalOS-as-a-Service licensing endpoint</td>
+    <td>Weeks 9–16</td>
+  </tr>
+</table>
+
+
+<h2>6. Key Integration Suggestions &amp; Observations</h2>
+
+<h3>Suggestion 1 — Start with EvalOS-as-a-Service (fastest revenue path)</h3>
+<div class="callout green">
+  The document itself recommends this: "Productise EvalOS first — package the existing assessment and Zuri AI capability as a standalone, sellable service within 60–90 days." EvalOS is already live at <code>evalos.i3technologies.co.ke</code>. The only addition needed is a client-facing Keycloak realm or tenant, an API token for external assessment invites, and a results webhook. <strong>This can be done in under a week on existing infrastructure — zero new namespaces.</strong>
+</div>
+
+<h3>Suggestion 2 — Use PostgreSQL JSONB for the Talent Graph, not a graph database</h3>
+<div class="callout">
+  The document implies a graph database for the Talent Graph. However, given the existing Crunchy PostgreSQL HA cluster, JSONB + recursive CTEs handles the required node/edge queries at this scale (hundreds of candidates, not millions). Adding a new graph database (Neo4j, etc.) introduces unnecessary operational overhead. Use PostgreSQL with a well-indexed adjacency table: <code>talent_edges(from_id UUID, to_id UUID, edge_type TEXT, metadata JSONB, valid_from TIMESTAMPTZ, valid_to TIMESTAMPTZ)</code>. Revisit only if the graph exceeds 50k nodes.
+</div>
+
+<h3>Suggestion 3 — Kafka topics for score decay are critical to implement correctly</h3>
+<div class="callout">
+  The score decay model (skills depreciate if not refreshed) is one of the document's strongest differentiators. Implement it as a scheduled n8n workflow that daily queries <code>skill_scores WHERE last_refreshed &lt; NOW() - decay_window</code> and emits <code>talent.score-updates</code> Kafka events. Kafka already runs in <code>i3-messaging</code> — this is zero-infrastructure-cost. Do <strong>not</strong> implement decay as a nightly cron job that mutates the database directly; the event log is the audit trail the governance section requires.
+</div>
+
+<h3>Suggestion 4 — Langfuse trace IDs on every AI evaluation decision are non-negotiable</h3>
+<div class="callout warn">
+  Section 10 (Governance) states "no placement or deployment should be confirmed by AI recommendation alone — human approval stays in the loop." This requires a full audit trail of every LLM call made during evaluation. Every Talent Agent and Zuri AI invocation must pass <code>X-LF-Session-Id</code> headers to Langfuse and store the returned trace ID in the <code>assessment_events</code> table. Without this, governance compliance cannot be demonstrated to enterprise clients. Langfuse is already running in <code>i3-ott</code> — this is a configuration change, not infrastructure work.
+</div>
+
+<h3>Suggestion 5 — Use Engage for all candidate/client communications (already built)</h3>
+<div class="callout green">
+  Engage was just deployed with AI-personalised email, SMS (Africa's Talking), and a contact lists model. The Talent Cloud candidate communications described in the document — shortlist delivery emails, score expiry reminders, FDE onboarding confirmations, client feedback requests — map directly to Engage campaigns and contacts. Add candidates to an Engage contact list tagged <code>talent-cloud</code> and trigger campaigns via the <code>/api/campaigns/send</code> endpoint. <strong>No new messaging infrastructure needed.</strong>
+</div>
+
+<h3>Suggestion 6 — The Talent Digital Passport should be a verifiable OpenBadge</h3>
+<p>The document defines the Talent Digital Passport as a machine-readable object. Consider extending it to an <strong>Open Badges 3.0</strong> verifiable credential signed by i3's own key (stored in OpenBao). This makes the passport portable and externally verifiable — a candidate can share their passport URL with any employer and have it cryptographically verified against i3's public key. This directly supports the "defensible technical moat" the document claims.</p>
+
+<h3>Suggestion 7 — DNS records to add at cPanel</h3>
+<p>Three new CNAME records will be needed (all pointing to <code>8eec2322-eu-de.lb.appdomain.cloud</code>):</p>
+<ul>
+  <li><code>talent</code> → i3technologies.co.ke</li>
+  <li><code>recruit</code> → i3technologies.co.ke</li>
+  <li><code>api.talent</code> → i3technologies.co.ke (requires a new LE cert via acme-dns, same pattern as SmartLab)</li>
+</ul>
+
+
+<h2>7. Gaps in the Specification (Items to Address Before Build)</h2>
+
+<table>
+  <tr><th>Gap</th><th>Recommendation</th></tr>
+  <tr>
+    <td>No data model for the Talent Graph is specified</td>
+    <td>Define the PostgreSQL schema before any code is written — all three offerings (bench, FDE, recruit) must write to the same schema or they become silos</td>
+  </tr>
+  <tr>
+    <td>Multi-tenancy model not defined — single Keycloak realm or per-client tenant?</td>
+    <td>Use a single <code>i3</code> realm with role-based scoping for MVP. Per-client tenants (separate realms) only needed if clients require data isolation at the identity layer — deferred to Phase 3</td>
+  </tr>
+  <tr>
+    <td>EvalOS API contract not specified — does it expose REST endpoints for external score ingestion?</td>
+    <td>Add a <code>/api/results/webhook</code> endpoint to evalos-web that accepts a signed POST from the Talent API and writes to <code>assessment_events</code>. n8n handles the fan-out</td>
+  </tr>
+  <tr>
+    <td>Score decay window values not defined per skill track</td>
+    <td>Define decay windows in a Directus CMS content type so non-technical staff can adjust them without code changes (e.g. IBM watsonx cert: 12-month decay; soft skills: 24-month; live coding: 6-month)</td>
+  </tr>
+  <tr>
+    <td>No mention of GDPR / Kenya Data Protection Act 2019 compliance for CV and personal data storage</td>
+    <td>All PII stored in SeaweedFS and PostgreSQL. Implement a <code>right-to-erasure</code> endpoint in the Talent API that hard-deletes candidate records on request. OpenBao already handles secrets — extend to store data encryption keys per candidate for field-level encryption of sensitive passport fields</td>
+  </tr>
+  <tr>
+    <td>Client portal access model unclear — do clients get SSO accounts or token-based access?</td>
+    <td>Issue clients a Keycloak account with role <code>talent-client</code> for the shortlist review portal. Use short-lived signed URLs (from Talent API) for one-time shortlist sharing that doesn't require account creation</td>
+  </tr>
+</table>
+
+<hr />
+
+<h2>Summary</h2>
+<p><strong>The i3 Talent Cloud specification is well-aligned with the existing platform and technically sound.</strong> The main integration recommendation is: <em>build thin on top of what exists</em>. The Talent Graph API and portal are the only genuinely new applications. Everything else — identity, AI inference, assessment, notifications, workflows, storage, observability — is already running in production and needs only configuration and connection.</p>
+
+<p>The fastest path to commercial value is to productise EvalOS as a standalone assessment service (already live, needs only a client-facing access model) within 60 days, then build the Talent Graph and portal over the following 8 weeks — exactly the sequence the document's own Board Recommendations propose.</p>
+
+<footer>Made with IBM Bob  ·  i3 Technologies Limited  ·  September 2026</footer>
+</div>
+</body>
+</html>

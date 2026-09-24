@@ -71,10 +71,8 @@ spec:
             - secretRef:
                 name: langfuse-secrets
           env:
-            - name: DATABASE_URL
-              value: "postgresql://langfuse:LangfuseDB2026i3@i3-postgres-pgbouncer.i3-data.svc:5432/langfuse_db?pgbouncer=true&connection_limit=5"
-            - name: DIRECT_URL
-              value: "postgresql://langfuse:LangfuseDB2026i3@i3-postgres-primary.i3-data.svc:5432/langfuse_db"
+            # SCRUBBED (STEP-P1-01): DATABASE_URL and DIRECT_URL injected from langfuse-secrets Secret
+            # oc get secret langfuse-secrets -n i3-model-gateway -o jsonpath='{.data.DATABASE_URL}' | base64 -d
             - name: LANGFUSE_AUTO_POSTGRES_MIGRATION_DISABLED
               value: "true"
             - name: LANGFUSE_AUTO_CLICKHOUSE_MIGRATION_DISABLED

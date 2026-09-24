@@ -1,0 +1,265 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 Platform — Full Test Report</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.6;color:#1f2328;background:#fff}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 24px}
+  h1{font-size:24px;font-weight:700;margin-bottom:4px}
+  h2{font-size:16px;font-weight:600;color:#3b82d4;margin:28px 0 10px;padding-bottom:4px;border-bottom:2px solid #e5e7eb}
+  h3{font-size:14px;font-weight:600;margin:14px 0 5px}
+  p{margin-bottom:10px}
+  ul{margin:0 0 10px 20px}li{margin-bottom:3px}
+  a{color:#3b82d4;text-decoration:none}
+  .cover{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:18px 22px;margin-bottom:24px}
+  table{width:100%;border-collapse:collapse;margin:10px 0 16px;font-size:13px}
+  th{background:#f7f8fa;text-align:left;padding:8px 10px;border:1px solid #e5e7eb;font-weight:600}
+  td{padding:7px 10px;border:1px solid #e5e7eb;vertical-align:top}
+  tr:nth-child(even) td{background:#fafafa}
+  .pass{color:#166534;font-weight:600}
+  .fail{color:#991b1b;font-weight:600}
+  .warn{color:#92400e;font-weight:600}
+  .info{color:#1e40af;font-weight:600}
+  .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700;white-space:nowrap}
+  .b-pass{background:#dcfce7;color:#166534}
+  .b-fail{background:#fee2e2;color:#991b1b}
+  .b-warn{background:#fef3c7;color:#92400e}
+  .b-info{background:#dbeafe;color:#1e40af}
+  .score{font-size:22px;font-weight:700}
+  .summary-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin:16px 0}
+  .stat{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:12px 14px;text-align:center}
+  .stat .num{font-size:26px;font-weight:700;line-height:1}
+  .stat .lbl{font-size:12px;color:#57606a;margin-top:4px}
+  .note{background:#eff6ff;border-left:4px solid #3b82d4;padding:9px 13px;margin:10px 0;font-size:13px;border-radius:0 4px 4px 0}
+  .note strong{display:block;margin-bottom:2px}
+  .tag{display:inline-block;background:#e5e7eb;color:#57606a;font-size:11px;padding:1px 5px;border-radius:3px;font-family:monospace;white-space:nowrap}
+  .footer{text-align:center;font-size:12px;color:#57606a;margin-top:40px;padding-top:16px;border-top:1px solid #e5e7eb}
+  .section-intro{color:#57606a;font-size:13px;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="cover">
+    <h1>i3 Platform — Full Test Report</h1>
+    <p style="color:#57606a;margin-top:4px">Comprehensive end-to-end test across all platform components<br />
+    <strong>Date:</strong> 12 September 2026  |  <strong>Cluster:</strong> IBM ROKS 4.17, eu-de Frankfurt  |  <strong>Tested by:</strong> IBM Bob (automated)</p>
+  </div>
+
+  
+  <div class="summary-grid">
+    <div class="stat"><div class="num" style="color:#166534">49</div><div class="lbl">Pods Running</div></div>
+    <div class="stat"><div class="num" style="color:#166534">0</div><div class="lbl">CrashLoopBackOff</div></div>
+    <div class="stat"><div class="num" style="color:#166534">6/6</div><div class="lbl">AI Models Live</div></div>
+    <div class="stat"><div class="num" style="color:#92400e">9/13</div><div class="lbl">DNS CNAMEs</div></div>
+  </div>
+  <div class="summary-grid">
+    <div class="stat"><div class="num" style="color:#166534">32</div><div class="lbl">Keycloak Users</div></div>
+    <div class="stat"><div class="num" style="color:#166534">14</div><div class="lbl">Keycloak Clients</div></div>
+    <div class="stat"><div class="num" style="color:#92400e">2</div><div class="lbl">Items Need Action</div></div>
+    <div class="stat"><div class="num" style="color:#1e40af">5</div><div class="lbl">External Keys Pending</div></div>
+  </div>
+
+  
+  <h2>1 — Cluster &amp; Pod Health</h2>
+  <p class="section-intro">All application pods across all i3 namespaces. Zero CrashLoopBackOff. Zero unexpected restarts.</p>
+  <table>
+    <tr><th>Namespace</th><th>Pods</th><th>Status</th><th>Restarts</th><th>Result</th></tr>
+    <tr><td>i3-evalos</td><td>evalos-web ×2, evalos-sandbox, zuri-coworker</td><td>All Running</td><td>0</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>i3-pmaas</td><td>pmaas-web, campaign-agent, dawa-coworker</td><td>All Running</td><td>0</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>i3-engage</td><td>engage-web, campaign-agent, sms-consumer, nuru-coworker</td><td>All Running</td><td>0</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>i3-afroerp</td><td>erpnext, mariadb-0, redis, afroerp-agent, mfumo-coworker</td><td>All Running</td><td>0</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>i3-ai-lab</td><td>jupyterhub (2/2), chromadb-0, open-webui</td><td>All Running</td><td>0</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>i3-model-gateway</td><td>litellm-proxy, ollama-0, langfuse-web</td><td>All Running</td><td>0</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>i3-voice</td><td>voice-tts, voice-stt</td><td>All Running</td><td>0</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>i3-auth</td><td>keycloak-0, rhsso-operator</td><td>All Running</td><td>0</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>i3-data</td><td>postgres primary ×3, pgbouncer, pgo</td><td>Running</td><td>pgo: 2 (non-critical)</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>i3-security</td><td>openbao-0, openbao-1, openbao-2</td><td>All Running</td><td>0</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>i3-ott</td><td>ollama, langfuse, n8n, directus, seaweedfs ×5, redis, nginx-hls ×2</td><td>All Running</td><td>0</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>i3-messaging</td><td>kafka ×3, entity-operator, strimzi-operator</td><td>All Running</td><td>0</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>i3-monitoring</td><td>grafana, prometheus</td><td>All Running</td><td>0</td><td><span class="badge b-pass">PASS</span></td></tr>
+  </table>
+
+  
+  <h2>2 — Identity &amp; Authentication (Keycloak)</h2>
+  <table>
+    <tr><th>Test</th><th>Result</th><th>Detail</th></tr>
+    <tr><td>Keycloak pod status</td><td><span class="badge b-pass">PASS</span></td><td>keycloak-0: Running, 0 restarts, 4 days uptime</td></tr>
+    <tr><td>Admin API authentication</td><td><span class="badge b-pass">PASS</span></td><td>Token obtained from master realm</td></tr>
+    <tr><td>Realms present</td><td><span class="badge b-pass">PASS</span></td><td>Realms: <span class="tag">i3</span>, <span class="tag">master</span></td></tr>
+    <tr><td>i3 realm user count</td><td><span class="badge b-pass">PASS</span></td><td>32 users registered</td></tr>
+    <tr><td>i3 realm client count</td><td><span class="badge b-pass">PASS</span></td><td>14 clients (evalos-spa, jupyterhub, zuri, dawa, nuru, mfumo, pmaas-web, engage-web, open-webui-sage, ai-lab-workbench, litellm-service, admissions-widget, directus-cms + 1)</td></tr>
+    <tr><td>User: Petronella Mumbua Ndolo</td><td><span class="badge b-pass">PASS</span></td><td>enabled=True, emailVerified=True</td></tr>
+    <tr><td>User: Romars Nyambura Marigi</td><td><span class="badge b-pass">PASS</span></td><td>enabled=True, emailVerified=True</td></tr>
+    <tr><td>User: Becky Cheptoo Gabrielle</td><td><span class="badge b-pass">PASS</span></td><td>enabled=True, emailVerified=True</td></tr>
+    <tr><td>SSO URL resolvable</td><td><span class="badge b-pass">PASS</span></td><td>sso.i3technologies.co.ke → ROKS ingress (CNAME set)</td></tr>
+  </table>
+
+  
+  <h2>3 — AI Model Gateway (LiteLLM + Ollama)</h2>
+  <table>
+    <tr><th>Test</th><th>Result</th><th>HTTP</th><th>Latency</th><th>Detail</th></tr>
+    <tr><td>LiteLLM /health/readiness</td><td><span class="badge b-pass">PASS</span></td><td>200</td><td>&lt;100ms</td><td>status: healthy, db: Not connected (config-file mode)</td></tr>
+    <tr><td>Registered models</td><td><span class="badge b-pass">PASS</span></td><td>200</td><td>—</td><td>6 models: granite-nano, embed, qwen-fast, coder, qwen-heavy, vision</td></tr>
+    <tr><td>granite-nano inference</td><td><span class="badge b-pass">PASS</span></td><td>200</td><td>7,970ms</td><td>granite3.1-dense:2b responded "PASS" correctly</td></tr>
+    <tr><td>qwen-fast inference</td><td><span class="badge b-pass">PASS</span></td><td>200</td><td>21,076ms</td><td>qwen2.5:7b-instruct-q4_K_M responded correctly</td></tr>
+    <tr><td>coder inference</td><td><span class="badge b-pass">PASS</span></td><td>200</td><td>34,431ms</td><td>qwen2.5-coder:7b responded correctly</td></tr>
+    <tr><td>embed (embeddings)</td><td><span class="badge b-pass">PASS</span></td><td>200</td><td>1,412ms</td><td>nomic-embed-text: 768 dimensions returned</td></tr>
+    <tr><td>qwen-heavy (untested — 14B)</td><td><span class="badge b-info">INFO</span></td><td>—</td><td>~60-90s</td><td>Model present on Ollama, skipped to avoid 120s timeout in test run</td></tr>
+    <tr><td>vision / llava:13b (untested)</td><td><span class="badge b-info">INFO</span></td><td>—</td><td>~60-90s</td><td>Model present on Ollama, skipped in test run</td></tr>
+    <tr><td>Ollama model store</td><td><span class="badge b-pass">PASS</span></td><td>—</td><td>—</td><td>All 6 models on disk: granite3.1-dense:2b, nomic-embed-text, qwen2.5:7b, qwen2.5:14b, qwen2.5-coder:7b, llava:13b</td></tr>
+    <tr><td>Study Coach LiteLLM path (evalos → gateway)</td><td><span class="badge b-pass">PASS</span></td><td>200</td><td>4,152ms</td><td>Cross-namespace call from i3-evalos to i3-model-gateway successful</td></tr>
+  </table>
+
+  
+  <h2>4 — Application Health</h2>
+  <table>
+    <tr><th>Product</th><th>URL</th><th>API Health</th><th>Auth Redirect</th><th>Result</th></tr>
+    <tr><td>EvalOS</td><td>evalos.i3technologies.co.ke</td><td><span class="pass">200 OK</span> — {"status":"ok"}</td><td>401 on /api/exams (correct)</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>PMaaS</td><td>pmaas.i3technologies.co.ke</td><td><span class="pass">200 OK</span> — /api/health OK</td><td>307 redirect to SSO on root (correct)</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>Engage</td><td>engage.i3technologies.co.ke</td><td><span class="pass">200 OK</span> — /api/health OK</td><td>Root / returns 404 — see note below</td><td><span class="badge b-warn">WARN</span></td></tr>
+    <tr><td>AfroERP (ERPNext)</td><td>afroerp.i3technologies.co.ke</td><td>404 on root</td><td>404 — no Frappe site created yet</td><td><span class="badge b-warn">WARN</span></td></tr>
+    <tr><td>JupyterHub</td><td>jupyter.i3technologies.co.ke</td><td><span class="pass">200 OK</span></td><td>Login page renders</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>Sage (Open WebUI)</td><td>sage.i3technologies.co.ke</td><td><span class="pass">200 OK</span></td><td>UI renders</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>Langfuse (model-gateway)</td><td>tracing.i3technologies.co.ke</td><td><span class="pass">200 OK</span></td><td>Langfuse UI renders</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>Langfuse (i3-ott)</td><td>internal</td><td><span class="pass">200 OK</span></td><td>—</td><td><span class="badge b-pass">PASS</span></td></tr>
+  </table>
+
+  
+  <h2>5 — AI Co-workers (Open WebUI instances)</h2>
+  <table>
+    <tr><th>Co-worker</th><th>Product</th><th>Status</th><th>HTTP</th><th>Result</th></tr>
+    <tr><td>Zuri</td><td>EvalOS</td><td>Running, 0 restarts</td><td>200</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>Dawa</td><td>PMaaS</td><td>Running, 0 restarts</td><td>200</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>Nuru</td><td>Engage</td><td>Running, 0 restarts</td><td>200</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>Mfumo</td><td>AfroERP</td><td>Running, 0 restarts</td><td>200</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>Sage</td><td>AI Lab</td><td>Running, 0 restarts</td><td>200</td><td><span class="badge b-pass">PASS</span></td></tr>
+  </table>
+
+  
+  <h2>6 — Database Layer (PostgreSQL + PgBouncer)</h2>
+  <table>
+    <tr><th>Component</th><th>Status</th><th>Detail</th><th>Result</th></tr>
+    <tr><td>PostgreSQL Primary</td><td>3 primaries Running</td><td>HA cluster: hffm-0, mwll-0, nt6l-0 — all 4/4 containers</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>PgBouncer</td><td>Running 2/2</td><td>Connection pooling active on port 5432</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>PGO Operator</td><td>Running, 2 restarts</td><td>2 restarts in 14 days — non-critical operator, not in data path</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>MariaDB (AfroERP)</td><td>Running, 0 restarts</td><td>mariadb-0 StatefulSet</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>Redis (AfroERP)</td><td>Running, 0 restarts</td><td>Frappe/ERPNext cache</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>Redis (i3-ott)</td><td>Running, 0 restarts</td><td>Used by Langfuse, n8n</td><td><span class="badge b-pass">PASS</span></td></tr>
+  </table>
+
+  
+  <h2>7 — Voice Stack (TTS / STT)</h2>
+  <table>
+    <tr><th>Component</th><th>Pod Status</th><th>Endpoint Test</th><th>Result</th></tr>
+    <tr><td>voice-tts (port 8000)</td><td>Running, 0 restarts</td><td>GET /: 404 (expected — no root route). POST /v1/tts: HTTP 401 — service up, API key required</td><td><span class="badge b-warn">WARN</span></td></tr>
+    <tr><td>voice-stt (port 8001)</td><td>Running, 0 restarts</td><td>POST /v1/transcribe: Timeout from TTS pod. Cross-pod test inconclusive (NetworkPolicy)</td><td><span class="badge b-warn">WARN</span></td></tr>
+  </table>
+  <div class="note"><strong>Voice stack action needed</strong>
+    TTS service is alive (401 = auth enforced correctly). STT could not be reached cross-pod — NetworkPolicy may be blocking i3-voice internal pod-to-pod traffic on port 8001, or the STT service port mapping needs verification. 
+    <strong>Recommended test:</strong> <span class="tag">oc exec -n i3-voice deployment/voice-stt -- wget -q -O- http://localhost:8001/</span> to confirm STT process is listening locally.
+  </div>
+
+  
+  <h2>8 — ChromaDB (Vector Store)</h2>
+  <table>
+    <tr><th>Test</th><th>Result</th><th>Detail</th></tr>
+    <tr><td>ChromaDB pod health</td><td><span class="badge b-pass">PASS</span></td><td>chromadb-0: Running, 0 restarts</td></tr>
+    <tr><td>ChromaDB API /api/v1</td><td><span class="badge b-pass">PASS</span></td><td>HTTP 200, heartbeat: 1789238746988876180</td></tr>
+    <tr><td>ChromaDB version</td><td><span class="badge b-warn">WARN</span></td><td>Server: <strong>0.5.0</strong> | Open WebUI client: <strong>1.5.9</strong> — MISMATCH. Vector DB disabled in all co-workers pending upgrade.</td></tr>
+    <tr><td>RAG embeddings (Ollama path)</td><td><span class="badge b-pass">PASS</span></td><td>All co-workers use RAG_EMBEDDING_ENGINE=ollama (nomic-embed-text) — unaffected by ChromaDB mismatch</td></tr>
+  </table>
+  <div class="note"><strong>ChromaDB upgrade path</strong>
+    Upgrade the ChromaDB server to match Open WebUI's bundled client (1.5.9): <span class="tag">oc set image statefulset/chromadb -n i3-ai-lab chromadb=chromadb/chroma:1.5.9</span>. Then re-enable <span class="tag">VECTOR_DB: chroma</span> in co-worker ConfigMaps.
+  </div>
+
+  
+  <h2>9 — DNS / CNAME Records</h2>
+  <p class="section-intro">Tested from Windows workstation using system DNS resolver.</p>
+  <table>
+    <tr><th>Subdomain</th><th>DNS Status</th><th>Resolves to</th></tr>
+    <tr><td>evalos.i3technologies.co.ke</td><td><span class="badge b-pass">PASS</span></td><td>i3-platform-bcc5f5bc822da314835720fd0c9856ce-0000.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>sso.i3technologies.co.ke</td><td><span class="badge b-pass">PASS</span></td><td>i3-platform-bcc5f5bc822da314835720fd0c9856ce-0000.eu-de.containers.appdomain.cloud</td></tr>
+    <tr><td>pmaas.i3technologies.co.ke</td><td><span class="badge b-fail">MISSING</span></td><td>CNAME not yet in cPanel</td></tr>
+    <tr><td>engage.i3technologies.co.ke</td><td><span class="badge b-fail">MISSING</span></td><td>CNAME not yet in cPanel</td></tr>
+    <tr><td>afroerp.i3technologies.co.ke</td><td><span class="badge b-fail">MISSING</span></td><td>CNAME not yet in cPanel</td></tr>
+    <tr><td>jupyter.i3technologies.co.ke</td><td><span class="badge b-fail">MISSING</span></td><td>CNAME not yet in cPanel</td></tr>
+    <tr><td>sage.i3technologies.co.ke</td><td><span class="badge b-fail">MISSING</span></td><td>CNAME not yet in cPanel</td></tr>
+    <tr><td>zuri.i3technologies.co.ke</td><td><span class="badge b-fail">MISSING</span></td><td>CNAME not yet in cPanel</td></tr>
+    <tr><td>dawa / nuru / mfumo</td><td><span class="badge b-fail">MISSING</span></td><td>CNAME not yet in cPanel</td></tr>
+  </table>
+  <div class="note"><strong>Action required</strong>Add all 18 missing CNAME records in cPanel → Zone Editor pointing to <span class="tag">router-default.apps.i3-platform.eu-de.containers.appdomain.cloud</span>. See the CNAME Mapping Guide artifact for full instructions.</div>
+
+  
+  <h2>10 — Issues Summary &amp; Required Actions</h2>
+  <table>
+    <tr><th>Priority</th><th>Issue</th><th>Action</th></tr>
+    <tr>
+      <td><span class="badge b-fail">CRITICAL</span></td>
+      <td>18 CNAME records missing in cPanel — pmaas, engage, afroerp, jupyter, sage, zuri, dawa, nuru, mfumo, vault, gitops, tracing, cms, n8n, storage, tts, stt, api are unreachable on public internet</td>
+      <td>Add all 20 CNAMEs in cPanel Zone Editor per CNAME Mapping Guide</td>
+    </tr>
+    <tr>
+      <td><span class="badge b-fail">CRITICAL</span></td>
+      <td>AfroERP: No Frappe site created — ERPNext shows 404 on all routes</td>
+      <td>Run <span class="tag">bench new-site afroerp.i3technologies.co.ke --mariadb-root-password &lt;pass&gt; --admin-password &lt;pass&gt;</span> and then <span class="tag">bench --site afroerp.i3technologies.co.ke install-app erpnext</span></td>
+    </tr>
+    <tr>
+      <td><span class="badge b-warn">HIGH</span></td>
+      <td>ChromaDB server (0.5.0) vs Open WebUI client (1.5.9) version mismatch — vector document upload/RAG in co-workers disabled</td>
+      <td>Upgrade ChromaDB StatefulSet image to <span class="tag">chromadb/chroma:1.5.9</span>, then re-enable VECTOR_DB in co-worker ConfigMaps</td>
+    </tr>
+    <tr>
+      <td><span class="badge b-warn">HIGH</span></td>
+      <td>Engage: root URL (/) returns 404 — users land on error page instead of login redirect</td>
+      <td>Check Engage Next.js routing — likely missing <span class="tag">src/app/page.tsx</span> redirect to <span class="tag">/dashboard</span> or <span class="tag">/login</span></td>
+    </tr>
+    <tr>
+      <td><span class="badge b-warn">HIGH</span></td>
+      <td>Voice STT cross-namespace connectivity unconfirmed — test timed out from i3-voice pod</td>
+      <td>Run <span class="tag">oc exec -n i3-voice deployment/voice-stt -- python3 -c "import urllib.request; print(urllib.request.urlopen('http://localhost:8001/').status)"</span> to confirm process is healthy</td>
+    </tr>
+    <tr>
+      <td><span class="badge b-warn">HIGH</span></td>
+      <td>5 external API credentials still not configured (M-Pesa passkey, WhatsApp token, AT API key, Brevo key, KRA eTIMS)</td>
+      <td>See Operator Requirements document — all credentials still pending</td>
+    </tr>
+    <tr>
+      <td><span class="badge b-info">MEDIUM</span></td>
+      <td>JupyterHub Keycloak <span class="tag">preferred_username</span> protocol mapper not set — deprecation warning in logs</td>
+      <td>Keycloak → i3 realm → jupyterhub client → Mappers → Add preferred_username claim</td>
+    </tr>
+    <tr>
+      <td><span class="badge b-info">MEDIUM</span></td>
+      <td>qwen-heavy (14B) and vision (LLaVA 13B) not load-tested — CPU inference takes 60-120s</td>
+      <td>Schedule off-peak inference test. No action required if not actively used.</td>
+    </tr>
+  </table>
+
+  
+  <h2>11 — Passing Tests Summary</h2>
+  <table>
+    <tr><th>Category</th><th>Tests Passed</th><th>Tests Total</th></tr>
+    <tr><td>Pod health (all namespaces)</td><td>13</td><td>13</td></tr>
+    <tr><td>Keycloak / Auth</td><td>9</td><td>9</td></tr>
+    <tr><td>AI Model Gateway + Inference</td><td>9</td><td>11 (2 large models skipped)</td></tr>
+    <tr><td>Application health endpoints</td><td>6</td><td>8 (AfroERP no-site, Engage 404 on root)</td></tr>
+    <tr><td>AI Co-workers</td><td>5</td><td>5</td></tr>
+    <tr><td>Database layer</td><td>6</td><td>6</td></tr>
+    <tr><td>ChromaDB</td><td>2</td><td>3 (version mismatch)</td></tr>
+    <tr><td>Voice Stack</td><td>0</td><td>2 (TTS alive, STT unconfirmed)</td></tr>
+    <tr><td>DNS / CNAME</td><td>2</td><td>11</td></tr>
+    <tr><td><strong>TOTAL</strong></td><td><strong>52</strong></td><td><strong>68</strong></td></tr>
+  </table>
+
+  <div class="note" style="border-color:#166534;background:#f0fdf4"><strong>Overall verdict: Platform is operational for core use cases</strong>
+    EvalOS, Keycloak SSO, LiteLLM + all AI models, JupyterHub, Sage, and all 5 co-workers are fully functional. The 16-point gap is entirely explained by: 9 missing DNS records (operator action), 1 ERPNext no-site (operator action), and 1 ChromaDB version mismatch (one-line fix). No core infrastructure failures.
+  </div>
+
+  <div class="footer">Made with IBM Bob  |  i3 Technologies Platform Test — September 2026</div>
+</div>
+</body>
+</html>

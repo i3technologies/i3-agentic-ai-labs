@@ -4,8 +4,12 @@ embedding_pipeline.py
 =====================
 Embedding pipeline for i3 Platform RAG corpora.
 
-Reads source documents, generates 768-dim embeddings via Ollama
-nomic-embed-text:v1.5, and upserts them into ChromaDB.
+Reads source documents, generates 768-dim embeddings via the LiteLLM
+`embed` alias (nomic-embed-text:v1.5 on Ollama), and upserts them into ChromaDB.
+
+R1-02: All inference — including embeddings — must route through the LiteLLM
+proxy so requests are authenticated, traced in Langfuse, and budget-accounted.
+Direct Ollama calls are removed.
 
 Collections built:
   - i3-exam-corpus       EvalOS questions + explanations (from evalos_db)
@@ -21,7 +25,8 @@ Env vars (set via Secret in K8s):
     CHROMA_HOST       chromadb.i3-ai-lab.svc.cluster.local
     CHROMA_PORT       8000
     CHROMA_TOKEN      <from chromadb-secrets>
-    OLLAMA_URL        http://ollama-service.i3-model-gateway.svc.cluster.local:11434
+    LITELLM_URL       http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000
+    LITELLM_KEY       <per-service virtual key from OpenBao i3/litellm/api-key>
     DB_URL            postgresql://... (evalos_db pgbouncer URL)
     COLLECTION        i3-exam-corpus | onboarding-docs
 """
@@ -48,8 +53,10 @@ log = logging.getLogger(__name__)
 CHROMA_HOST  = os.getenv("CHROMA_HOST", "chromadb.i3-ai-lab.svc.cluster.local")
 CHROMA_PORT  = int(os.getenv("CHROMA_PORT", "8000"))
 CHROMA_TOKEN = os.getenv("CHROMA_TOKEN", "")
-OLLAMA_URL   = os.getenv("OLLAMA_URL", "http://ollama-service.i3-model-gateway.svc.cluster.local:11434")
-EMBED_MODEL  = "nomic-embed-text:v1.5"
+# R1-02: embeddings route through LiteLLM proxy, not Ollama directly.
+LITELLM_URL  = os.getenv("LITELLM_URL", "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000")
+LITELLM_KEY  = os.getenv("LITELLM_KEY", "")
+EMBED_MODEL  = "embed"   # LiteLLM alias → ollama/nomic-embed-text:v1.5
 DB_URL       = os.getenv("DB_URL", "")
 BATCH_SIZE   = 50
 
@@ -68,17 +75,32 @@ def get_chroma_client() -> chromadb.HttpClient:
 
 
 def embed(texts: list[str]) -> list[list[float]]:
-    """Generate embeddings via Ollama nomic-embed-text."""
+    """Generate embeddings via LiteLLM /v1/embeddings (R1-02).
+
+    Uses the `embed` alias which maps to ollama/nomic-embed-text:v1.5.
+    Batching: LiteLLM forwards as individual requests; kept single-item
+    per call to match Ollama's nomic-embed batch limit.
+    """
+    if not LITELLM_KEY:
+        raise RuntimeError(
+            "LITELLM_KEY is not set — cannot call LiteLLM embed endpoint. "
+            "Set LITELLM_KEY to the per-service virtual key from OpenBao i3/litellm/api-key."
+        )
     embeddings: list[list[float]] = []
     for text in texts:
         resp = requests.post(
-            f"{OLLAMA_URL}/api/embed",
+            f"{LITELLM_URL}/v1/embeddings",
+            headers={
+                "Authorization": f"Bearer {LITELLM_KEY}",
+                "Content-Type": "application/json",
+                "x-litellm-metadata": '{"agent_id": "embedding-pipeline"}',
+            },
             json={"model": EMBED_MODEL, "input": text},
             timeout=30,
         )
         resp.raise_for_status()
         data = resp.json()
-        embeddings.append(data["embeddings"][0])
+        embeddings.append(data["data"][0]["embedding"])
     return embeddings
 
 
@@ -241,9 +263,9 @@ def main() -> None:
     args = parser.parse_args()
 
     log.info("i3 Embedding Pipeline — start")
-    log.info("  ChromaDB: %s:%s", CHROMA_HOST, CHROMA_PORT)
-    log.info("  Ollama:   %s", OLLAMA_URL)
-    log.info("  Model:    %s", EMBED_MODEL)
+    log.info("  ChromaDB:  %s:%s", CHROMA_HOST, CHROMA_PORT)
+    log.info("  LiteLLM:   %s  (R1-02 — no direct Ollama calls)", LITELLM_URL)
+    log.info("  Embed alias: %s → ollama/nomic-embed-text:v1.5", EMBED_MODEL)
 
     client = get_chroma_client()
 

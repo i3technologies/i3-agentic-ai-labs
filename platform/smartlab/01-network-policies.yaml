@@ -1,0 +1,177 @@
+# ============================================================
+# i3 SmartLab — NetworkPolicies
+# ============================================================
+
+# 1. Default deny all in i3-smartlab
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: i3-smartlab
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+# 2. Allow ingress from OpenShift router (HTTPS traffic)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-router-ingress
+  namespace: i3-smartlab
+spec:
+  podSelector: {}
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              network.openshift.io/policy-group: ingress
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values: ["openshift-ingress"]
+  policyTypes:
+    - Ingress
+---
+# 3. Allow internal traffic within i3-smartlab
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-intra-namespace
+  namespace: i3-smartlab
+spec:
+  podSelector: {}
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values: ["i3-smartlab"]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values: ["i3-smartlab"]
+  policyTypes:
+    - Ingress
+    - Egress
+---
+# 4. Allow egress to platform services
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-platform-egress
+  namespace: i3-smartlab
+spec:
+  podSelector: {}
+  egress:
+    # LiteLLM gateway (AI models)
+    - to:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values: ["i3-model-gateway"]
+      ports:
+        - protocol: TCP
+          port: 4000
+    # Voice STT / TTS
+    - to:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values: ["i3-voice"]
+      ports:
+        - protocol: TCP
+          port: 8001
+        - protocol: TCP
+          port: 8000
+    # PostgreSQL via Crunchy HA
+    - to:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values: ["i3-data"]
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 5433
+    # SeaweedFS S3 + Filer + OTT (Directus, n8n, OME)
+    - to:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values: ["i3-ott"]
+      ports:
+        - protocol: TCP
+          port: 8333
+        - protocol: TCP
+          port: 8888
+        - protocol: TCP
+          port: 8055
+        - protocol: TCP
+          port: 5678
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 1935
+    # Moodle (i3EduBridge)
+    - to:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values: ["i3-edbridge"]
+      ports:
+        - protocol: TCP
+          port: 80
+    # Keycloak SSO
+    - to:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values: ["i3-auth"]
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8443
+    # OpenBao / Vault
+    - to:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values: ["i3-security"]
+      ports:
+        - protocol: TCP
+          port: 8200
+    # DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # External HTTPS (Keycloak JWKS, etc.)
+    - ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 80
+  policyTypes:
+    - Egress
+---
+# 5. Expand i3-data allow-db-clients to include i3-smartlab
+# (patch applied via kubectl patch in deployment script)

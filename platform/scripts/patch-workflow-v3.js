@@ -100,7 +100,9 @@ const connections = {
 };
 
 // ── Run ───────────────────────────────────────────────────────────────────────
-api('POST','/rest/login',{email:'snjagi@i3technologies.co.ke',password:'REDACTED-n8n-admin'},null,(s,h)=>{
+// STEP-P1-01: credential removed — set N8N_ADMIN_PASS env var (vault kv get -field=password i3/n8n/admin)
+const _n8nPass = process.env.N8N_ADMIN_PASS || (() => { console.error('ERROR: N8N_ADMIN_PASS not set'); process.exit(1); })();
+api('POST','/rest/login',{email:'snjagi@i3technologies.co.ke',password:_n8nPass},null,(s,h)=>{
   if(s!==200){ process.stderr.write('LOGIN FAILED '+s+'\n'); process.exit(1); }
   const ck = (h['set-cookie']||[]).map(c=>c.split(';')[0]).join('; ');
   process.stdout.write('Logged in\n');

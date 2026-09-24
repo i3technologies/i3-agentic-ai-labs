@@ -1,0 +1,1 @@
+[{"op":"replace","path":"/spec/strategy/dockerStrategy/from","value":{"kind":"DockerImage","name":"image-registry.openshift-image-registry.svc:5000/openshift/python:3.11-slim"}}]

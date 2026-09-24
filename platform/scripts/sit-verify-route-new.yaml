@@ -1,0 +1,15 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: sit-verify
+  namespace: i3-sit
+spec:
+  host: verify.sit.i3technologies.co.ke
+  to:
+    kind: Service
+    name: sit-api
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

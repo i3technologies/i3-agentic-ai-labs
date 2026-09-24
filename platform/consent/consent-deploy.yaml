@@ -1,0 +1,153 @@
+# ============================================================
+# Consent Service — Kubernetes manifests
+# Namespace: i3-consent
+# STEP-P2-02 / P2-GATE-01
+# Apply: kubectl apply -f platform/consent/consent-deploy.yaml
+# ============================================================
+
+# ── Namespace ────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-consent
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "2-services"
+    i3.io/managed-by: argocd
+
+---
+# ── ServiceAccount ───────────────────────────────────────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: consent-sa
+  namespace: i3-consent
+
+---
+# ── Deployment ───────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consent-service
+  namespace: i3-consent
+  labels:
+    app: consent-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: consent-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: consent-service
+    spec:
+      serviceAccountName: consent-sa
+      containers:
+        - name: consent-service
+          image: image-registry.openshift-image-registry.svc:5000/i3-consent/consent-service:latest
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - secretRef:
+                name: consent-secrets
+          env:
+            - name: PORT
+              value: "8000"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+
+---
+# ── Service ──────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: consent-service
+  namespace: i3-consent
+spec:
+  selector:
+    app: consent-service
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+
+---
+# ── NetworkPolicy: allow Engage, FORD, SIT, pmaas ────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-consumers
+  namespace: i3-consent
+spec:
+  podSelector:
+    matchLabels:
+      app: consent-service
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - i3-engage
+                  - i3-ford
+                  - i3-sit
+                  - i3-pmaas
+                  - i3-admissions
+      ports:
+        - port: 8000
+          protocol: TCP
+  policyTypes:
+    - Ingress
+
+---
+# ── OpenShift Route (internal only — no public exposure) ─────
+# Consent service is cluster-internal; no external route created.
+# Callers use: http://consent-service.i3-consent.svc.cluster.local:8000
+
+---
+# ── BuildConfig ──────────────────────────────────────────────
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: consent-service
+  namespace: i3-consent
+spec:
+  source:
+    type: Binary
+  strategy:
+    type: Docker
+  output:
+    to:
+      kind: ImageStreamTag
+      name: consent-service:latest
+
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: consent-service
+  namespace: i3-consent

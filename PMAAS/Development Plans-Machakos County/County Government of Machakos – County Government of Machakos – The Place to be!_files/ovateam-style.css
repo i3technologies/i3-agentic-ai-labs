@@ -1,0 +1,570 @@
+.archive_team.ova-team-slider-2 {
+  padding: 0;
+}
+.archive_team.ova-team-slider-2 .content .items .content_info {
+  box-shadow: none;
+}
+.archive_team.ova-team-slider-2 .content .items {
+  padding: 0;
+  margin: 0;
+}
+.archive_team.ova-team-slider-2 .content .items .content_info {
+  padding: 0;
+  text-align: left;
+}
+.archive_team.ova-team-slider-2 .content .items .content_info .ova-media .avata {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.archive_team.ova-team-slider-2 .owl-dots {
+  padding-top: 17px;
+}
+
+.ova-team-slider, .ova-team-slider-2 {
+  display: block;
+  width: 100%;
+}
+.ova-team-slider .owl-stage-outer, .ova-team-slider-2 .owl-stage-outer {
+  padding: 35px 0px;
+}
+.ova-team-slider .owl-carousel .owl-stage-outer, .ova-team-slider-2 .owl-carousel .owl-stage-outer {
+  padding: 30px 30px 40px 30px;
+  margin-bottom: -5px;
+  margin-right: -20px;
+  margin-left: -20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  width: calc(100% + 40px);
+}
+@media (max-width: 1290px) {
+  .ova-team-slider .owl-carousel .owl-stage-outer, .ova-team-slider-2 .owl-carousel .owl-stage-outer {
+    margin-right: 0px;
+    margin-left: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    width: 100%;
+  }
+}
+.ova-team-slider .content, .ova-team-slider-2 .content {
+  margin: 0px !important;
+}
+.ova-team-slider .content .owl-item.active .items .content_info, .ova-team-slider-2 .content .owl-item.active .items .content_info {
+  box-shadow: 0px 10px 40px -14px rgba(6, 22, 58, 0.1);
+}
+.ova-team-slider .content .items .content_info, .ova-team-slider-2 .content .items .content_info {
+  text-align: center;
+  padding: 30px 10px 46px 10px;
+}
+.ova-team-slider .content .items .ova-media, .ova-team-slider-2 .content .items .ova-media {
+  text-align: center;
+  padding-bottom: 0px;
+}
+.ova-team-slider .content .items .ova-media .avata, .ova-team-slider-2 .content .items .ova-media .avata {
+  display: inline-block;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.ova-team-slider .content .items .ova-info .name, .ova-team-slider-2 .content .items .ova-info .name {
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  color: #202b5d;
+}
+.ova-team-slider .content .items .ova-info .job, .ova-team-slider-2 .content .items .ova-info .job {
+  margin: 0;
+  font-size: 17px;
+  line-height: 24px;
+  color: #62718d;
+  margin-top: 3px;
+}
+.ova-team-slider .owl-dots, .ova-team-slider-2 .owl-dots {
+  text-align: center;
+}
+.ova-team-slider .owl-dots .owl-dot, .ova-team-slider-2 .owl-dots .owl-dot {
+  outline: none;
+}
+.ova-team-slider .owl-dots .owl-dot span, .ova-team-slider-2 .owl-dots .owl-dot span {
+  width: 6px;
+  height: 6px;
+  margin: 5px;
+  background: #d1d1d6;
+  display: block;
+  -webkit-backface-visibility: visible;
+  transition: opacity 0.2s ease;
+  border-radius: 30px;
+}
+.ova-team-slider .owl-dots .owl-dot.active span, .ova-team-slider-2 .owl-dots .owl-dot.active span {
+  width: 12px;
+  border-radius: 5px;
+  opacity: 1;
+}
+
+.ova-form-mail p {
+  margin: 0px;
+}
+.ova-form-mail .con {
+  display: flex;
+  flex-wrap: wrap;
+}
+.ova-form-mail .con label {
+  font-size: 17px;
+  line-height: 24px;
+  letter-spacing: 0.2px;
+  color: #62718d;
+  margin-bottom: 9px;
+}
+.ova-form-mail .con label span {
+  color: #ff709d;
+}
+.ova-form-mail .con .input {
+  display: inline-block;
+  width: 50%;
+  margin-bottom: 20px;
+}
+@media (max-width: 767px) {
+  .ova-form-mail .con .input {
+    width: 100%;
+  }
+}
+.ova-form-mail .con .input .error {
+  display: none;
+  font-size: 16px;
+  line-height: 1.2;
+  color: #ff4444;
+  margin-bottom: 12px;
+}
+.ova-form-mail .con .input.name {
+  padding-right: 10px;
+}
+@media (max-width: 767px) {
+  .ova-form-mail .con .input.name {
+    padding-right: 0px;
+  }
+}
+.ova-form-mail .con .input.email {
+  padding-left: 10px;
+}
+@media (max-width: 767px) {
+  .ova-form-mail .con .input.email {
+    padding-left: 0px;
+  }
+}
+.ova-form-mail .con .input.subject {
+  width: 100%;
+}
+.ova-form-mail .con .input input {
+  height: 45px;
+  width: 100%;
+  font-size: 17px;
+  line-height: 45px;
+  color: #333;
+  border: 1px solid #e5e5e5;
+  padding: 0px 20px 0px 20px;
+}
+.ova-form-mail .con .input input::placeholder {
+  color: #62718d;
+}
+.ova-form-mail .con .comment {
+  width: 100%;
+}
+.ova-form-mail .con .comment textarea {
+  width: 100%;
+  height: 145px;
+  border: 1px solid #e5e5e5;
+  padding: 14px 20px 20px 20px;
+  font-size: 17px;
+  line-height: 24px;
+  color: #333;
+}
+.ova-form-mail .con .comment textarea::placeholder {
+  color: #62718d;
+}
+.ova-form-mail .con .comment textarea:focus {
+  outline: none;
+}
+.ova-form-mail input[type=submit] {
+  color: #ffffff;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 700;
+  height: 50px;
+  padding: 0 30px 0 30px;
+  border: 1px solid;
+  transition: 0.2s;
+  cursor: pointer;
+  margin-top: 8px;
+}
+.ova-form-mail input[type=submit]:hover {
+  background-color: #06163A;
+  border-color: #06163A;
+}
+
+.ova-info-content {
+  padding: 25px 25px 30px 25px;
+}
+.ova-info-content p {
+  margin: 0;
+}
+.ova-info-content .name {
+  font-size: 22px;
+  line-height: 1.2;
+  color: #202b5d;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+.ova-info-content .job {
+  font-size: 17px;
+  line-height: 24px;
+  color: #0067da;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.ova-info-content .job:after {
+  content: "";
+  width: 40px;
+  height: 1px;
+  background: #e5e5e9;
+  display: block;
+  margin-top: 13px;
+}
+.ova-info-content .ova-email, .ova-info-content .ova-phone {
+  display: flex;
+  align-items: center;
+  align-items: flex-start;
+}
+.ova-info-content .ova-email i, .ova-info-content .ova-phone i {
+  margin-right: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.ova-info-content .ova-email a, .ova-info-content .ova-phone a {
+  font-size: 16px;
+  line-height: 1.2;
+  color: #62718d;
+  word-break: break-all;
+}
+.ova-info-content .ova-email {
+  margin-bottom: 10px;
+}
+.ova-info-content .ova-phone {
+  margin-bottom: 26px;
+}
+.ova-info-content .ova-phone i {
+  transform: rotateY(180deg);
+}
+
+.ova_team_single {
+  padding: 0 10px;
+  width: 100%;
+}
+@media (max-width: 991px) {
+  .ova_team_single {
+    padding: 0 20px;
+  }
+}
+.ova_team_single .ova_info {
+  display: flex;
+  flex-wrap: wrap;
+  box-shadow: 10px 0 40px rgba(6, 22, 58, 0.1);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 71px;
+}
+.ova_team_single .ova_info .icon_bg {
+  position: absolute;
+  bottom: -50px;
+  right: -50px;
+}
+.ova_team_single .ova_info .icon_bg i {
+  display: inline-block;
+  line-height: 1;
+}
+.ova_team_single .ova_info .icon_bg i:before {
+  margin: 0;
+  font-size: 250px;
+  color: rgba(38, 55, 135, 0.05);
+}
+.ova_team_single .ova_info .image-team {
+  flex: 0 0 420px;
+}
+@media (max-width: 1024px) {
+  .ova_team_single .ova_info .image-team {
+    flex: 0 0 100%;
+  }
+}
+.ova_team_single .ova_info .content_info {
+  padding: 45px 55px 60px 60px;
+  flex: 0 0 calc(100% - 420px);
+  display: flex;
+  flex-wrap: wrap;
+}
+@media (max-width: 1024px) {
+  .ova_team_single .ova_info .content_info {
+    flex: 0 0 100%;
+    padding: 45px 20px;
+  }
+}
+.ova_team_single .ova_info .ova-info-content {
+  padding: 0 20px 0 0;
+  flex: 0 0 50%;
+}
+@media (max-width: 767px) {
+  .ova_team_single .ova_info .ova-info-content {
+    padding: 0;
+    flex: 0 0 100%;
+  }
+}
+.ova_team_single .ova_info .ova-excerpt-team {
+  flex: 0 0 50%;
+}
+@media (max-width: 767px) {
+  .ova_team_single .ova_info .ova-excerpt-team {
+    flex: 0 0 100%;
+    padding: 40px 0 0 0;
+  }
+}
+.ova_team_single .ova_info .ova-info-content p {
+  margin: 0;
+}
+.ova_team_single .ova_info .ova-info-content .name {
+  font-size: 24px;
+  line-height: 1.2;
+  color: #202b5d;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+.ova_team_single .ova_info .ova-info-content .job {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #0067da;
+}
+.ova_team_single .ova_info .ova-info-content .job:after {
+  content: "";
+  width: 40px;
+  height: 1px;
+  background: #e5e5e9;
+  display: block;
+  margin-top: 13px;
+}
+.ova_team_single .ova_info .ova-info-content .ova-email, .ova_team_single .ova_info .ova-info-content .ova-phone, .ova_team_single .ova_info .ova-info-content .ova-expertise, .ova_team_single .ova_info .ova-info-content .ova-experience {
+  display: flex;
+  align-items: center;
+}
+.ova_team_single .ova_info .ova-info-content .ova-email p, .ova_team_single .ova_info .ova-info-content .ova-phone p, .ova_team_single .ova_info .ova-info-content .ova-expertise p, .ova_team_single .ova_info .ova-info-content .ova-experience p {
+  margin: 0 0 0 0;
+}
+.ova_team_single .ova_info .ova-info-content .ova-email span, .ova_team_single .ova_info .ova-info-content .ova-email label, .ova_team_single .ova_info .ova-info-content .ova-email a, .ova_team_single .ova_info .ova-info-content .ova-phone span, .ova_team_single .ova_info .ova-info-content .ova-phone label, .ova_team_single .ova_info .ova-info-content .ova-phone a, .ova_team_single .ova_info .ova-info-content .ova-expertise span, .ova_team_single .ova_info .ova-info-content .ova-expertise label, .ova_team_single .ova_info .ova-info-content .ova-expertise a, .ova_team_single .ova_info .ova-info-content .ova-experience span, .ova_team_single .ova_info .ova-info-content .ova-experience label, .ova_team_single .ova_info .ova-info-content .ova-experience a {
+  font-size: 17px;
+  line-height: 1.2;
+  color: #62718d;
+  font-weight: 400;
+}
+.ova_team_single .ova_info .ova-info-content .ova-email label, .ova_team_single .ova_info .ova-info-content .ova-phone label, .ova_team_single .ova_info .ova-info-content .ova-expertise label, .ova_team_single .ova_info .ova-info-content .ova-experience label {
+  font-size: 17px;
+  padding-right: 10px;
+  line-height: 1.2;
+  color: #202b5d;
+  margin-bottom: 0;
+  font-weight: 600;
+}
+.ova_team_single .ova_info .ova-info-content .ova-expertise, .ova_team_single .ova_info .ova-info-content .ova-experience, .ova_team_single .ova_info .ova-info-content .ova-email {
+  margin-bottom: 19px;
+}
+.ova_team_single .ova_info .ova-info-content .ova-phone {
+  margin-bottom: 46px;
+}
+.ova_team_single .ova_info .ova-info-content .ova-social ul {
+  display: flex;
+  flex-wrap: wrap;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+.ova_team_single .ova_info .ova-info-content .ova-social ul li:not(:last-child) {
+  margin-right: 5px;
+}
+.ova_team_single .ova_info .ova-info-content .ova-social ul a {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 35px;
+  height: 35px;
+  background: #b0b8c6;
+  border-radius: 50%;
+}
+.ova_team_single .ova_info .ova-info-content .ova-social ul a:not(:last-child) {
+  margin-right: 0;
+}
+.ova_team_single .ova_info .ova-info-content .ova-social ul a i {
+  position: relative;
+  display: block;
+  font-size: 15px;
+  color: #fff;
+}
+.ova_team_single .ova_info .ova-info-content .ova-social ul a:hover {
+  background: #06163A;
+  color: #fff;
+}
+.ova_team_single .ova_info .ova-excerpt-team p {
+  margin: 0;
+}
+.ova_team_single .ova_info .ova-excerpt-team .excerpt-1 {
+  margin-bottom: 27px;
+}
+.ova_team_single .ova_info .ova-excerpt-team .excerpt-1 p {
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 300;
+  color: #202b5d;
+}
+.ova_team_single .ova_info .ova-excerpt-team .excerpt-2 {
+  margin-bottom: 18px;
+}
+.ova_team_single .ova_info .ova-excerpt-team .excerpt-2 p {
+  font-size: 17px;
+  line-height: 26px;
+  font-weight: 400;
+  color: #62718d;
+}
+.archive .archive_team,
+.tax-cat_team .archive_team,
+.post-type-archive-team .archive_team {
+  margin-bottom: 50px;
+}
+@media (max-width: 991px) {
+  .archive .archive_team,
+.tax-cat_team .archive_team,
+.post-type-archive-team .archive_team {
+    padding: 0 20px;
+  }
+}
+
+.archive_team {
+  width: 100%;
+  padding: 0 15px;
+}
+.archive_team .blog_pagination {
+  margin-top: 10px;
+}
+.archive_team .content {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -15px;
+}
+.archive_team .content .items {
+  padding: 0 15px;
+  margin-bottom: 60px;
+}
+.archive_team .content .items .content_info {
+  box-shadow: 0px 10px 40px 0px rgba(6, 22, 58, 0.1);
+  height: 100%;
+}
+.archive_team .content .items .content_info .ova-media img {
+  width: 100%;
+}
+@media (max-width: 991px) {
+  .archive_team .content .items .content_info {
+    margin: 0 auto;
+    max-width: 100%;
+  }
+  .archive_team .content .items .content_info .ova-media img {
+    width: 100%;
+  }
+}
+.archive_team .content .items .content_info:hover .ova-info-content .ova-social {
+  opacity: 1;
+  visibility: visible;
+}
+.archive_team .content .items .content_info .ova-info-content {
+  padding: 25px 25px 34px 25px;
+  position: relative;
+  background: #fff;
+}
+.archive_team .content .items .content_info .ova-info-content .ova-phone {
+  margin: 0;
+}
+.archive_team .content .items .content_info .ova-info-content .ova-social {
+  position: absolute;
+  top: -47px;
+  left: 50%;
+  transform: translate(-50%, 0);
+  opacity: 0;
+  transition: 0.4s;
+  visibility: hidden;
+}
+.archive_team .content .items .content_info .ova-info-content .ova-social ul {
+  list-style-type: none;
+  padding: 0;
+  margin: -30px 0 0 0;
+  display: inline-flex;
+}
+.archive_team .content .items .content_info .ova-info-content .ova-social ul li {
+  display: block;
+}
+.archive_team .content .items .content_info .ova-info-content .ova-social ul li:first-child a {
+  border-radius: 50% 0 0 50%;
+  padding-left: 16px;
+}
+.archive_team .content .items .content_info .ova-info-content .ova-social ul li:last-child a {
+  border-radius: 0 50% 50% 0;
+  padding-right: 16px;
+}
+.archive_team .content .items .content_info .ova-info-content .ova-social ul li a {
+  padding: 5px 11px;
+  display: block;
+  background: #fff;
+}
+.archive_team .content .items .content_info .ova-info-content .ova-social ul li a i {
+  font-size: 16px;
+  color: #62718d;
+}
+.archive_team .content .items .content_info .ova-info-content .ova-social ul li.one-social a {
+  border-radius: 50%;
+}
+.archive_team.two_column .content .items {
+  width: 50%;
+}
+@media (max-width: 767px) {
+  .archive_team.two_column .content .items {
+    width: 100%;
+  }
+}
+.archive_team.three_column .content .items {
+  width: 33.33%;
+}
+@media (max-width: 991px) {
+  .archive_team.three_column .content .items {
+    width: 50%;
+  }
+}
+@media (max-width: 767px) {
+  .archive_team.three_column .content .items {
+    width: 100%;
+  }
+}
+.archive_team.four_column .content .items {
+  width: 25%;
+}
+@media (max-width: 1024px) {
+  .archive_team.four_column .content .items {
+    width: 33.33%;
+  }
+}
+@media (max-width: 991px) {
+  .archive_team.four_column .content .items {
+    width: 50%;
+  }
+}
+@media (max-width: 767px) {
+  .archive_team.four_column .content .items {
+    width: 100%;
+  }
+}

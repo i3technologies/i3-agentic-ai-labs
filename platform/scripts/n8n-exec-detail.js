@@ -1,5 +1,7 @@
 const http = require('http');
-const lb = JSON.stringify({email:'snjagi@i3technologies.co.ke',password:'REDACTED-n8n-admin'});
+// STEP-P1-01: Hardcoded credential removed. Use env var N8N_ADMIN_PASS (from OpenBao i3/n8n/admin).
+const N8N_PASS = process.env.N8N_ADMIN_PASS || (() => { console.error('ERROR: N8N_ADMIN_PASS not set. export N8N_ADMIN_PASS=$(vault kv get -field=password i3/n8n/admin)'); process.exit(1); })();
+const lb = JSON.stringify({email:'snjagi@i3technologies.co.ke',password:N8N_PASS});
 const lr = http.request({hostname:'localhost',port:5678,path:'/rest/login',method:'POST',
   headers:{'Content-Type':'application/json','Content-Length':Buffer.byteLength(lb)}
 },res=>{

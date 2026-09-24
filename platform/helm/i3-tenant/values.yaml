@@ -1,0 +1,110 @@
+# ============================================================
+# i3-tenant Helm chart — default values
+# Override per tenant via: helm install ... -f tenant-<slug>.yaml
+# ============================================================
+
+# -- Required: short DNS-safe identifier for the tenant (e.g. "acme", "ford-asili")
+#    Namespace created: cust-<slug>
+tenant:
+  slug: ""           # REQUIRED — must be DNS label-safe (lowercase, alphanumeric, hyphens)
+  displayName: ""    # Human-readable name used in Keycloak group
+  # HC-4: every tenant must have a unique UUID
+  id: ""             # REQUIRED — UUID v4
+
+# -- Tier controls resource quotas and feature availability
+#    Allowed values: sandbox | standard | dedicated
+tier: sandbox
+
+# -- Keycloak integration
+keycloak:
+  realm: i3
+  # Client within the realm that carries the tenant-scoped roles
+  clientId: i3-platform
+  # Roles provisioned on the client for this tenant group
+  roles:
+    - tenant-admin
+    - tenant-member
+    - tenant-viewer
+
+# -- LiteLLM virtual key — delivered via ExternalSecret from Vault
+litellm:
+  # Budget caps per tier (USD equivalent tokens)
+  budgets:
+    sandbox:
+      max_budget: 1.0
+      budget_duration: "1d"
+      tpm_limit: 10000
+      rpm_limit: 60
+    standard:
+      max_budget: 10.0
+      budget_duration: "1d"
+      tpm_limit: 100000
+      rpm_limit: 600
+    dedicated:
+      max_budget: 100.0
+      budget_duration: "1d"
+      tpm_limit: 1000000
+      rpm_limit: 6000
+  # Vault / ExternalSecret configuration
+  externalSecret:
+    refreshInterval: 1h
+    # SecretStore referencing the Vault instance in i3-security
+    secretStoreName: i3-vault-store
+    secretStoreKind: ClusterSecretStore
+    # Vault KV v2 path — chart writes the key; path must NOT contain master key
+    # Path pattern: i3/tenants/<slug>/litellm-key
+    vaultPathPrefix: "i3/tenants"
+
+# -- ResourceQuota values per tier
+quotas:
+  sandbox:
+    requests.cpu: "1"
+    requests.memory: "2Gi"
+    limits.cpu: "2"
+    limits.memory: "4Gi"
+    count/pods: "10"
+    persistentvolumeclaims: "2"
+  standard:
+    requests.cpu: "4"
+    requests.memory: "8Gi"
+    limits.cpu: "8"
+    limits.memory: "16Gi"
+    count/pods: "30"
+    persistentvolumeclaims: "5"
+  dedicated:
+    requests.cpu: "16"
+    requests.memory: "32Gi"
+    limits.cpu: "32"
+    limits.memory: "64Gi"
+    count/pods: "100"
+    persistentvolumeclaims: "20"
+
+# -- NetworkPolicy: allowlist of namespaces that may send traffic INTO the tenant NS.
+#    The chart always adds a default-deny-all ingress+egress rule first.
+#    Add platform control-plane namespaces that legitimately need access.
+networkPolicy:
+  # Allow ingress from these namespaces (matched by kubernetes.io/metadata.name label)
+  allowIngressFromNamespaces:
+    - i3-model-gateway   # LiteLLM proxy
+    - i3-monitoring      # Prometheus scraper
+    - i3-gitops          # Argo CD / Tekton
+  # Allow egress to these namespaces
+  allowEgressToNamespaces:
+    - i3-model-gateway
+    - i3-data
+    - i3-messaging
+
+# -- Prometheus scrape configuration
+prometheus:
+  # Label added to the namespace so Prometheus ServiceMonitor namespaceSelector picks it up
+  scrapeLabel: "true"
+  # Additional labels propagated to all resources in this tenant namespace
+  additionalLabels:
+    prometheus.io/scrape: "true"
+
+# -- OpenShift-specific settings
+openshift:
+  # Whether to annotate the namespace with openshift.io/display-name
+  displayNameAnnotation: true
+  # node-selector expression applied to the namespace (empty = no pinning)
+  nodeSelector: ""

@@ -1,0 +1,308 @@
+# ============================================================
+# Hyperledger Fabric Network — FORD-Asili (HLF Operator on OpenShift)
+# Namespace: i3-ford
+# HC-2: Fabric staging must be live by November 2026
+# HC-8: voteChoicesCollection PDC enforces ballot-secrecy separation
+# HC-5: Endorsement policy requires ≥1 FordPeerMSP peer
+# ============================================================
+
+# ── Fabric CA ─────────────────────────────────────────────────────────────────
+apiVersion: hlf.kungfusoftware.es/v1alpha1
+kind: FabricCA
+metadata:
+  name: ford-ca
+  namespace: i3-ford
+spec:
+  image: hyperledger/fabric-ca
+  version: "1.5.9"
+  storage:
+    size: 2Gi
+    storageClass: ibmc-vpc-block-retain-10iops-tier
+  service:
+    type: ClusterIP
+  ca:
+    name: ford-ca
+    csr:
+      cn: ford-ca
+      hosts:
+        - ford-ca.i3-ford.svc.cluster.local
+        - localhost
+      names:
+        - C: KE
+          ST: Nairobi
+          L: Nairobi
+          O: FORD-Asili
+          OU: i3Technologies
+
+---
+# ── Peer Node Pool (3 peers for fault tolerance) ─────────────────────────────
+apiVersion: hlf.kungfusoftware.es/v1alpha1
+kind: FabricPeer
+metadata:
+  name: hlf-peer-0
+  namespace: i3-ford
+  labels:
+    app: hlf-peer
+spec:
+  image: hyperledger/fabric-peer
+  version: "2.5.9"
+  mspID: FordPeerMSP
+  secret:
+    enrollment:
+      component:
+        cahost: ford-ca.i3-ford.svc.cluster.local
+        caport: 7054
+        caname: ford-ca
+        catls:
+          cacert: ${FORD_CA_TLS_CERT}
+        enrollid: peer0
+        enrollsecret: ${FORD_PEER0_SECRET}
+      tls:
+        cahost: ford-ca.i3-ford.svc.cluster.local
+        caport: 7054
+        caname: ford-ca
+        catls:
+          cacert: ${FORD_CA_TLS_CERT}
+        enrollid: peer0tls
+        enrollsecret: ${FORD_PEER0_TLS_SECRET}
+  stateDb: leveldb
+  storage:
+    peer:
+      size: 10Gi
+      storageClass: ibmc-vpc-block-retain-10iops-tier
+    chaincode:
+      size: 2Gi
+      storageClass: ibmc-vpc-block-retain-10iops-tier
+  service:
+    type: ClusterIP
+  grpcProxy:
+    enabled: false
+
+---
+apiVersion: hlf.kungfusoftware.es/v1alpha1
+kind: FabricPeer
+metadata:
+  name: hlf-peer-1
+  namespace: i3-ford
+  labels:
+    app: hlf-peer
+spec:
+  image: hyperledger/fabric-peer
+  version: "2.5.9"
+  mspID: FordPeerMSP
+  secret:
+    enrollment:
+      component:
+        cahost: ford-ca.i3-ford.svc.cluster.local
+        caport: 7054
+        caname: ford-ca
+        catls:
+          cacert: ${FORD_CA_TLS_CERT}
+        enrollid: peer1
+        enrollsecret: ${FORD_PEER1_SECRET}
+      tls:
+        cahost: ford-ca.i3-ford.svc.cluster.local
+        caport: 7054
+        caname: ford-ca
+        catls:
+          cacert: ${FORD_CA_TLS_CERT}
+        enrollid: peer1tls
+        enrollsecret: ${FORD_PEER1_TLS_SECRET}
+  stateDb: leveldb
+  storage:
+    peer:
+      size: 10Gi
+      storageClass: ibmc-vpc-block-retain-10iops-tier
+    chaincode:
+      size: 2Gi
+      storageClass: ibmc-vpc-block-retain-10iops-tier
+  service:
+    type: ClusterIP
+
+---
+apiVersion: hlf.kungfusoftware.es/v1alpha1
+kind: FabricPeer
+metadata:
+  name: hlf-peer-2
+  namespace: i3-ford
+  labels:
+    app: hlf-peer
+spec:
+  image: hyperledger/fabric-peer
+  version: "2.5.9"
+  mspID: FordPeerMSP
+  secret:
+    enrollment:
+      component:
+        cahost: ford-ca.i3-ford.svc.cluster.local
+        caport: 7054
+        caname: ford-ca
+        catls:
+          cacert: ${FORD_CA_TLS_CERT}
+        enrollid: peer2
+        enrollsecret: ${FORD_PEER2_SECRET}
+      tls:
+        cahost: ford-ca.i3-ford.svc.cluster.local
+        caport: 7054
+        caname: ford-ca
+        catls:
+          cacert: ${FORD_CA_TLS_CERT}
+        enrollid: peer2tls
+        enrollsecret: ${FORD_PEER2_TLS_SECRET}
+  stateDb: leveldb
+  storage:
+    peer:
+      size: 10Gi
+      storageClass: ibmc-vpc-block-retain-10iops-tier
+    chaincode:
+      size: 2Gi
+      storageClass: ibmc-vpc-block-retain-10iops-tier
+  service:
+    type: ClusterIP
+
+---
+# ── Orderer (single-node Raft for staging; promote to 3-node in production) ───
+apiVersion: hlf.kungfusoftware.es/v1alpha1
+kind: FabricOrderingService
+metadata:
+  name: ford-orderer
+  namespace: i3-ford
+spec:
+  image: hyperledger/fabric-orderer
+  version: "2.5.9"
+  storage:
+    size: 5Gi
+    storageClass: ibmc-vpc-block-retain-10iops-tier
+  service:
+    type: ClusterIP
+  enrollment:
+    component:
+      cahost: ford-ca.i3-ford.svc.cluster.local
+      caport: 7054
+      caname: ford-ca
+      catls:
+        cacert: ${FORD_CA_TLS_CERT}
+      enrollid: orderer
+      enrollsecret: ${FORD_ORDERER_SECRET}
+    tls:
+      cahost: ford-ca.i3-ford.svc.cluster.local
+      caport: 7054
+      caname: ford-ca
+      catls:
+        cacert: ${FORD_CA_TLS_CERT}
+      enrollid: orderertls
+      enrollsecret: ${FORD_ORDERER_TLS_SECRET}
+  nodes:
+    - id: orderer0
+      host: ford-orderer.i3-ford.svc.cluster.local
+      port: 7050
+
+---
+# ── Channel: ford-channel ─────────────────────────────────────────────────────
+apiVersion: hlf.kungfusoftware.es/v1alpha1
+kind: FabricMainChannel
+metadata:
+  name: ford-channel
+  namespace: i3-ford
+spec:
+  name: ford-channel
+  adminOrdererOrganizations:
+    - mspID: FordOrdererMSP
+  adminPeerOrganizations:
+    - mspID: FordPeerMSP
+  channelConfig:
+    application:
+      capabilities:
+        - V2_0
+      policies:
+        Endorsement:
+          type: Signature
+          rule: "OR('FordPeerMSP.peer')"
+    orderer:
+      capabilities:
+        - V2_0
+    capabilities:
+      - V3_0
+  peerOrganizations:
+    - mspID: FordPeerMSP
+      caName: ford-ca
+      caNamespace: i3-ford
+  ordererOrganizations:
+    - mspID: FordOrdererMSP
+      ordererEndpoints:
+        - ford-orderer.i3-ford.svc.cluster.local:7050
+  orderers:
+    - name: ford-orderer
+      namespace: i3-ford
+
+---
+# ── Chaincode: membership-registry (deployed via Fabric Operator) ─────────────
+# Build: docker build -t de.icr.io/i3-platform/membership-registry:latest
+#        platform/ford/fabric/chaincode/membership_registry/
+# Push:  docker push de.icr.io/i3-platform/membership-registry:latest
+apiVersion: hlf.kungfusoftware.es/v1alpha1
+kind: FabricChaincodeInstall
+metadata:
+  name: membership-registry-install
+  namespace: i3-ford
+spec:
+  image: de.icr.io/i3-platform/membership-registry:latest
+  peers:
+    - name: hlf-peer-0
+      namespace: i3-ford
+    - name: hlf-peer-1
+      namespace: i3-ford
+    - name: hlf-peer-2
+      namespace: i3-ford
+
+---
+apiVersion: hlf.kungfusoftware.es/v1alpha1
+kind: FabricChaincodeApprove
+metadata:
+  name: membership-registry-approve
+  namespace: i3-ford
+spec:
+  chaincode:
+    name: membership-registry
+    version: "1.0"
+    sequence: 1
+    endorsementPlugin: escc
+    validationPlugin: vscc
+    policy: "OR('FordPeerMSP.peer')"
+    collections: |
+      [
+        {
+          "name": "voteChoicesCollection",
+          "policy": "OR('FordPeerMSP.peer')",
+          "requiredPeerCount": 1,
+          "maxPeerCount": 1,
+          "blockToLive": 0,
+          "memberOnlyRead": true,
+          "memberOnlyWrite": true
+        }
+      ]
+  channel: ford-channel
+  mspID: FordPeerMSP
+  peer:
+    name: hlf-peer-0
+    namespace: i3-ford
+
+---
+apiVersion: hlf.kungfusoftware.es/v1alpha1
+kind: FabricChaincodeCommit
+metadata:
+  name: membership-registry-commit
+  namespace: i3-ford
+spec:
+  chaincode:
+    name: membership-registry
+    version: "1.0"
+    sequence: 1
+    endorsementPlugin: escc
+    validationPlugin: vscc
+    policy: "OR('FordPeerMSP.peer')"
+  channel: ford-channel
+  mspID: FordPeerMSP
+  peer:
+    name: hlf-peer-0
+    namespace: i3-ford

@@ -1,0 +1,244 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PMaaS — User Guide</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.7;background:#fff;color:#1f2328}
+  .wrapper{max-width:820px;margin:0 auto;padding:32px 24px}
+  h1{font-size:22px;font-weight:700;color:#1f2328;border-bottom:2px solid #3b82d4;padding-bottom:8px;margin-bottom:6px}
+  .subtitle{color:#57606a;font-size:13px;margin-bottom:24px}
+  h2{font-size:16px;font-weight:700;color:#1f2328;margin:28px 0 10px;padding:6px 12px;background:#f7f8fa;border-left:4px solid #3b82d4}
+  h3{font-size:14px;font-weight:700;margin:16px 0 7px;color:#1f2328}
+  p{margin-bottom:10px}
+  ul,ol{padding-left:22px;margin-bottom:10px}
+  li{margin-bottom:5px}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px}
+  th{background:#f7f8fa;border:1px solid #e5e7eb;padding:7px 10px;text-align:left;font-weight:700}
+  td{border:1px solid #e5e7eb;padding:7px 10px;vertical-align:top}
+  tr:nth-child(even) td{background:#fafbfc}
+  code{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:3px;padding:1px 5px;font-size:12px;font-family:"Consolas","Courier New",monospace}
+  .step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start}
+  .step-num{min-width:30px;height:30px;background:#3b82d4;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+  .step-body{flex:1}
+  .callout{border-left:4px solid #3b82d4;background:#f0f6ff;padding:10px 14px;margin:12px 0;border-radius:0 4px 4px 0;font-size:13px}
+  .callout-tip{border-left-color:#22c55e;background:#f0fdf4}
+  .callout-warn{border-left-color:#f59e0b;background:#fffbeb}
+  .app-header{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:14px 18px;margin-bottom:24px;display:flex;gap:18px;flex-wrap:wrap;font-size:13px}
+  .app-header div strong{color:#1f2328;display:block;margin-bottom:2px}
+  .app-header div span{color:#57606a}
+  .divider{border:none;border-top:1px solid #e5e7eb;margin:24px 0}
+  .feature-pill{display:inline-block;background:#dbeafe;color:#1d4ed8;border-radius:10px;padding:3px 10px;font-size:12px;font-weight:700;margin:2px 2px}
+  footer{border-top:1px solid #e5e7eb;margin-top:40px;padding-top:12px;text-align:center;font-size:12px;color:#57606a}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<h1>PMaaS — Political Marketing as a Service User Guide</h1>
+<p class="subtitle">AI-powered campaign strategy platform for Kenyan political campaigns — ward analysis, manifesto Q&amp;A, and content generation</p>
+
+<div class="app-header">
+  <div><strong>Application</strong><span>PMaaS</span></div>
+  <div><strong>Audience</strong><span>Campaign Managers, Political Strategists, Communication Officers</span></div>
+  <div><strong>Access URL</strong><span>https://pmaas.i3technologies.co.ke</span></div>
+  <div><strong>Auth Required</strong><span>Yes — i3 SSO (Keycloak)</span></div>
+</div>
+
+<h2>1. What is PMaaS?</h2>
+<p>PMaaS (Political Marketing as a Service) is an AI-powered platform designed for Kenyan political campaigns, particularly ward-level and county-level campaigns. It provides daily strategy briefings, voter analysis by ward, manifesto question answering, and automated generation of campaign content for WhatsApp, social media, and voice messages.</p>
+
+<div style="margin:14px 0">
+  <span class="feature-pill">Daily Briefings</span>
+  <span class="feature-pill">Ward Analysis</span>
+  <span class="feature-pill">Manifesto Q&amp;A</span>
+  <span class="feature-pill">WhatsApp Content</span>
+  <span class="feature-pill">Social Media Posts</span>
+  <span class="feature-pill">Voice Scripts</span>
+</div>
+
+<div class="callout callout-warn"><strong>Important:</strong> PMaaS is a <strong>Supervised Draft / L1 AI system</strong>. All AI-generated content is a <em>draft proposal</em>. A human campaign manager must review and approve every piece of content before it is used publicly. The AI assists — it does not decide.</div>
+
+<hr class="divider" />
+
+<h2>2. Logging In</h2>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body">
+    <h3>Navigate to PMaaS</h3>
+    <p>Go to <code>https://pmaas.i3technologies.co.ke</code>.</p>
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body">
+    <h3>Sign In with Your i3 Account</h3>
+    <p>Click <strong>Sign In</strong>. Enter your campaign account email and password. Use "Forgot Password" if needed.</p>
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body">
+    <h3>View the Campaign Dashboard</h3>
+    <p>Your dashboard shows today's campaign briefing summary, recent content drafts, and your ward coverage map.</p>
+  </div>
+</div>
+
+<hr class="divider" />
+
+<h2>3. Daily Campaign Briefing</h2>
+
+<p>Each morning, PMaaS generates a personalised daily briefing for your campaign — a summary of strategic priorities, voter sentiment insights, and recommended focus areas for the day.</p>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><h3>Access the Briefing</h3><p>From the dashboard, click <strong>Today's Briefing</strong>. Or navigate to <strong>Briefing</strong> in the top menu.</p></div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><h3>Review the Briefing Content</h3><p>The briefing includes:
+    </p><ul>
+      <li>Priority wards to focus on today</li>
+      <li>Key manifesto talking points most relevant to today's context</li>
+      <li>Recommended outreach channels (WhatsApp / voice / SMS)</li>
+      <li>Suggested content themes based on recent engagement data</li>
+    </ul>
+  <p></p></div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><h3>Ask Follow-Up Questions</h3><p>Use the <strong>Ask</strong> field at the bottom of the briefing to ask clarifying questions. Example: "Which ward has the lowest youth voter registration in Machakos East?" The AI will answer from the manifesto and voter database.</p></div>
+</div>
+
+<hr class="divider" />
+
+<h2>4. Manifesto Q&amp;A</h2>
+
+<p>Ask the AI questions about your candidate's manifesto, policy positions, or any registered commitment — and get instant, accurate, sourced answers.</p>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><h3>Open Ask Manifesto</h3><p>Click <strong>Ask</strong> in the navigation bar.</p></div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><h3>Type Your Question</h3><p>Ask in plain English or Swahili. Examples:
+    </p><ul>
+      <li>"What does the manifesto say about water access in rural wards?"</li>
+      <li>"What is our position on county bursary funds?"</li>
+      <li>"Je, msimamo wa mgombea ni nini kuhusu elimu ya awali?"</li>
+    </ul>
+  <p></p></div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><h3>Review the Answer</h3><p>The AI provides a precise answer with references to the relevant manifesto section. Use this to prepare spokespersons for media or public engagements.</p></div>
+</div>
+
+<div class="callout callout-tip"><strong>Tip:</strong> If you cannot find an answer, it may mean that topic is not covered in the uploaded manifesto. Contact your administrator to ensure the latest manifesto version has been uploaded to the system.</div>
+
+<hr class="divider" />
+
+<h2>5. Ward-Level Voter Analysis</h2>
+
+<p>The Ward Analysis tool provides AI-generated insights on voter demographics, key issues, and strategic recommendations at the ward level.</p>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><h3>Open Ward Analysis</h3><p>Click <strong>Analyze</strong> in the navigation.</p></div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><h3>Select Ward(s)</h3><p>Type the ward name or select from the map. You can analyse a single ward or compare multiple wards.</p></div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><h3>Specify Your Analysis Focus</h3><p>Choose focus areas: youth voters, women voters, employment concerns, infrastructure priorities, etc. Or leave blank for a general analysis.</p></div>
+</div>
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body"><h3>Run Analysis</h3><p>Click <strong>Analyse Ward</strong>. The AI uses the Qwen Heavy model to generate a detailed strategic analysis. This may take up to 30 seconds.</p></div>
+</div>
+<div class="step">
+  <div class="step-num">5</div>
+  <div class="step-body"><h3>Review &amp; Export</h3><p>The analysis includes voter segment breakdown, top issues, strategic talking points, and recommended outreach channels. Click <strong>Export PDF</strong> to download for your campaign team.</p></div>
+</div>
+
+<hr class="divider" />
+
+<h2>6. Generating Campaign Content</h2>
+
+<p>PMaaS can generate ready-to-use campaign content in multiple formats. All generated content is a <strong>draft — it must be reviewed and approved by a human before publishing or sending.</strong></p>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><h3>Open Content Generator</h3><p>Click <strong>Content</strong> in the navigation.</p></div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><h3>Specify Content Parameters</h3><p>Fill in:
+    </p><ul>
+      <li><strong>Content Type</strong> — WhatsApp message, social media post, voice script, SMS</li>
+      <li><strong>Target Audience</strong> — youth, business owners, women's groups, farmers, etc.</li>
+      <li><strong>Ward / Region</strong> — localise the message</li>
+      <li><strong>Theme</strong> — specific manifesto topic to address (e.g. bursaries, roads, water)</li>
+      <li><strong>Tone</strong> — inspirational, informational, urgent, conversational</li>
+    </ul>
+  <p></p></div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><h3>Generate Draft</h3><p>Click <strong>Generate</strong>. The AI produces 2–3 draft variations of the content.</p></div>
+</div>
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body"><h3>Review and Edit</h3><p>Read each draft carefully. Edit as needed for factual accuracy, tone, and local context. The AI draft is a starting point — your team's knowledge of the ward context is essential.</p></div>
+</div>
+<div class="step">
+  <div class="step-num">5</div>
+  <div class="step-body"><h3>Approve &amp; Use</h3><p>Once satisfied, click <strong>Approve</strong> to mark the content as campaign-ready. Approved content can be exported or sent directly via the Engage platform integration (if enabled).</p></div>
+</div>
+
+<h3>Content Types Reference</h3>
+<table>
+  <tr><th>Format</th><th>Length</th><th>Best For</th></tr>
+  <tr><td>WhatsApp Message</td><td>150–250 words</td><td>Grassroots mobilisation, meeting announcements</td></tr>
+  <tr><td>Social Media Post</td><td>50–100 words + hashtags</td><td>Twitter/X, Facebook, Instagram</td></tr>
+  <tr><td>Voice Script</td><td>30–60 seconds of speech</td><td>Robocall / voice broadcast campaigns</td></tr>
+  <tr><td>SMS</td><td>160 characters (1 SMS)</td><td>Urgent reminders, rally invites</td></tr>
+</table>
+
+<hr class="divider" />
+
+<h2>7. Consent &amp; Voter Privacy</h2>
+
+<ul>
+  <li>PMaaS only sends messages to voters who have given consent for the relevant channel (WhatsApp, voice, SMS).</li>
+  <li>Voter identifiers (phone numbers, National IDs) are stored using HMAC-SHA256 anonymisation — they cannot be read in plain text in the system.</li>
+  <li>Never attempt to input raw National ID numbers into the platform.</li>
+  <li>All AI-assisted actions are logged in the Agent Registry for compliance and audit purposes.</li>
+</ul>
+
+<div class="callout callout-warn"><strong>Compliance:</strong> Kenyan data protection law (Data Protection Act, 2019) requires valid consent for all political messaging. Ensure your campaign's consent management records are up to date before any outreach.</div>
+
+<hr class="divider" />
+
+<h2>8. Troubleshooting</h2>
+
+<table>
+  <tr><th>Issue</th><th>Cause</th><th>Solution</th></tr>
+  <tr><td>Briefing not generated today</td><td>Scheduler may have missed or service restart</td><td>Refresh page; click "Regenerate Briefing" button; contact admin if unavailable</td></tr>
+  <tr><td>Manifesto Q&amp;A gives "no information found"</td><td>Topic not in uploaded manifesto</td><td>Contact admin to upload updated manifesto document to the knowledge base</td></tr>
+  <tr><td>Ward analysis takes over 60 seconds</td><td>Heavy AI model processing large ward dataset</td><td>Wait up to 90 seconds; if no response, refresh and retry once</td></tr>
+  <tr><td>Generated content seems off-topic</td><td>Insufficient context provided</td><td>Be more specific with your target audience, ward, and theme inputs</td></tr>
+  <tr><td>Cannot approve content</td><td>Insufficient role permissions</td><td>Contact your administrator — only Campaign Managers can approve content</td></tr>
+  <tr><td>Cannot log in</td><td>Expired session or password</td><td>Use "Forgot Password" on the SSO login page</td></tr>
+</table>
+
+<footer>Made with IBM Bob  |  i3 Technologies — PMaaS User Guide v2.0  |  © 2026</footer>
+</div>
+</body>
+</html>

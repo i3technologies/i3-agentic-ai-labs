@@ -1,0 +1,278 @@
+# ============================================================
+# i3-tenant chart CI tests
+# Runner: helm unittest (https://github.com/helm-unittest/helm-unittest)
+# Execute: helm unittest platform/helm/i3-tenant
+#
+# Tests:
+#  (a) No master-key reference anywhere in rendered output
+#  (b) default-deny NetworkPolicy is present
+#  (c) Keycloak group is created correctly
+#  (d) LiteLLM key wired via ExternalSecret (not master key)
+# ============================================================
+suite: "IMP-08 i3-tenant chart"
+
+templates:
+  - namespace.yaml
+  - keycloak.yaml
+  - quota.yaml
+  - network-policy.yaml
+  - external-secret.yaml
+  - prometheus.yaml
+
+# Default values shared across test cases
+values:
+  - ../tenants/machakos.yaml
+
+tests:
+
+  # ──────────────────────────────────────────────────────────
+  # TEST (a): No master-key reference in any rendered manifest
+  # HC-6 alignment: the chart must never embed a LiteLLM master
+  # key or reference LITELLM_MASTER_KEY in any template output.
+  # ──────────────────────────────────────────────────────────
+  - it: "(a) Namespace renders and contains NO master-key reference"
+    template: namespace.yaml
+    asserts:
+      - isKind:
+          of: Namespace
+      - matchSnapshot: {}
+      # The namespace name must follow cust-<slug> pattern
+      - equal:
+          path: metadata.name
+          value: cust-machakos
+      # HC-4: tenant_id label must be present
+      - isNotEmpty:
+          path: metadata.labels["i3.io/tenant-id"]
+      # master key must NOT appear in namespace output
+      - notMatchRegex:
+          path: metadata
+          pattern: "(?i)(master.key|LITELLM_MASTER_KEY)"
+
+  - it: "(a) ExternalSecret contains NO master-key reference"
+    template: external-secret.yaml
+    asserts:
+      # Confirm ExternalSecret kind is present
+      - containsDocument:
+          kind: ExternalSecret
+          apiVersion: external-secrets.io/v1beta1
+      # The Vault path must NOT reference master key
+      - notMatchRegex:
+          path: spec.data[0].remoteRef.key
+          pattern: "(?i)master"
+      # Secret key must be LITELLM_VIRTUAL_KEY, not LITELLM_MASTER_KEY
+      - equal:
+          path: spec.data[0].secretKey
+          value: LITELLM_VIRTUAL_KEY
+
+  # ──────────────────────────────────────────────────────────
+  # TEST (b): default-deny NetworkPolicy is present and correct
+  # ──────────────────────────────────────────────────────────
+  - it: "(b) default-deny-all NetworkPolicy exists and blocks all traffic"
+    template: network-policy.yaml
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: NetworkPolicy
+      - equal:
+          path: metadata.name
+          value: default-deny-all
+      - equal:
+          path: metadata.namespace
+          value: cust-machakos
+      # podSelector must be empty (matches all pods)
+      - isEmpty:
+          path: spec.podSelector
+      # policyTypes must include both Ingress and Egress
+      - contains:
+          path: spec.policyTypes
+          content: Ingress
+      - contains:
+          path: spec.policyTypes
+          content: Egress
+      # No ingress or egress rules — pure deny
+      - notExists:
+          path: spec.ingress
+      - notExists:
+          path: spec.egress
+      # HC-4: tenant_id label must be present
+      - equal:
+          path: metadata.labels["i3.io/tenant-id"]
+          value: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      # Confirm the policy-type label is set
+      - equal:
+          path: metadata.labels["i3.io/policy-type"]
+          value: default-deny
+
+  - it: "(b) DNS-egress allow policy exists"
+    template: network-policy.yaml
+    documentIndex: 1
+    asserts:
+      - isKind:
+          of: NetworkPolicy
+      - equal:
+          path: metadata.name
+          value: allow-dns-egress
+      - contains:
+          path: spec.policyTypes
+          content: Egress
+
+  # ──────────────────────────────────────────────────────────
+  # TEST (c): Keycloak group is created with correct structure
+  # ──────────────────────────────────────────────────────────
+  - it: "(c) KeycloakRealmImport creates group with correct path"
+    template: keycloak.yaml
+    asserts:
+      - isKind:
+          of: KeycloakRealmImport
+      - equal:
+          path: metadata.namespace
+          value: i3-auth
+      # Group name follows tenant-<slug> convention
+      - equal:
+          path: spec.realm.groups[0].name
+          value: "tenant-machakos"
+      # Group path follows /tenants/<slug>
+      - equal:
+          path: spec.realm.groups[0].path
+          value: "/tenants/machakos"
+      # tenant_id attribute is set on the group (HC-4)
+      - equal:
+          path: spec.realm.groups[0].attributes.tenant_id[0]
+          value: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      # tier attribute is present
+      - equal:
+          path: spec.realm.groups[0].attributes.tier[0]
+          value: "standard"
+      # Client roles are bound: machakos-tenant-admin must be present
+      - contains:
+          path: spec.realm.groups[0].clientRoles["i3-platform"]
+          content: "machakos-tenant-admin"
+      - contains:
+          path: spec.realm.groups[0].clientRoles["i3-platform"]
+          content: "machakos-tenant-member"
+      - contains:
+          path: spec.realm.groups[0].clientRoles["i3-platform"]
+          content: "machakos-tenant-viewer"
+
+  # ──────────────────────────────────────────────────────────
+  # TEST (d): LiteLLM virtual key wired via ExternalSecret
+  # ──────────────────────────────────────────────────────────
+  - it: "(d) ExternalSecret wires LiteLLM key from correct Vault path"
+    template: external-secret.yaml
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: ExternalSecret
+      - equal:
+          path: metadata.namespace
+          value: cust-machakos
+      # ClusterSecretStore reference
+      - equal:
+          path: spec.secretStoreRef.name
+          value: i3-vault-store
+      - equal:
+          path: spec.secretStoreRef.kind
+          value: ClusterSecretStore
+      # Vault path must be i3/tenants/machakos/litellm-key
+      - equal:
+          path: spec.data[0].remoteRef.key
+          value: "i3/tenants/machakos/litellm-key"
+      - equal:
+          path: spec.data[0].remoteRef.property
+          value: value
+      # The materialized Secret key must be LITELLM_VIRTUAL_KEY
+      - equal:
+          path: spec.data[0].secretKey
+          value: LITELLM_VIRTUAL_KEY
+      # Target secret name matches namespace pattern
+      - equal:
+          path: spec.target.name
+          value: cust-machakos-litellm-key
+
+  - it: "(d) LiteLLM budget ConfigMap carries standard-tier limits"
+    template: external-secret.yaml
+    documentIndex: 1
+    asserts:
+      - isKind:
+          of: ConfigMap
+      - equal:
+          path: metadata.namespace
+          value: cust-machakos
+      - equal:
+          path: data.tier
+          value: standard
+      - equal:
+          path: data.max_budget
+          value: "10.0"
+      - equal:
+          path: data.tpm_limit
+          value: "100000"
+
+  # ──────────────────────────────────────────────────────────
+  # Additional: ResourceQuota uses standard-tier values
+  # ──────────────────────────────────────────────────────────
+  - it: "Quota uses standard-tier sizing"
+    template: quota.yaml
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: ResourceQuota
+      - equal:
+          path: metadata.namespace
+          value: cust-machakos
+      - equal:
+          path: spec.hard["requests.cpu"]
+          value: "4"
+      - equal:
+          path: spec.hard["limits.memory"]
+          value: "16Gi"
+
+  # ──────────────────────────────────────────────────────────
+  # Additional: sandbox tier produces smaller quota
+  # ──────────────────────────────────────────────────────────
+  - it: "sandbox tier quota is smaller than standard"
+    template: quota.yaml
+    set:
+      tier: sandbox
+      tenant.slug: acme-test
+      tenant.id: "bbbbbbbb-cccc-dddd-eeee-ffffffffffff"
+      tenant.displayName: "ACME Test"
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: ResourceQuota
+      - equal:
+          path: spec.hard["limits.cpu"]
+          value: "2"
+      - equal:
+          path: spec.hard["count/pods"]
+          value: "10"
+
+  # ──────────────────────────────────────────────────────────
+  # Additional: HC-4 tenant_id on namespace
+  # ──────────────────────────────────────────────────────────
+  - it: "HC-4: tenant_id label is present on Namespace"
+    template: namespace.yaml
+    asserts:
+      - equal:
+          path: metadata.labels["i3.io/tenant-id"]
+          value: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      - equal:
+          path: metadata.labels["i3.io/tier"]
+          value: standard
+
+  # ──────────────────────────────────────────────────────────
+  # Additional: Prometheus PodMonitor is in i3-monitoring NS
+  # ──────────────────────────────────────────────────────────
+  - it: "PodMonitor is deployed into i3-monitoring namespace"
+    template: prometheus.yaml
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: PodMonitor
+      - equal:
+          path: metadata.namespace
+          value: i3-monitoring
+      - equal:
+          path: spec.namespaceSelector.matchNames[0]
+          value: cust-machakos

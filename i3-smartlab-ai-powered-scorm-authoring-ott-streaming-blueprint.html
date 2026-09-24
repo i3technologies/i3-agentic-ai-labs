@@ -1,0 +1,512 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 SmartLab — AI Authoring &amp; OTT Blueprint</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.6; background: #fff; color: #1f2328; }
+  .page { max-width: 760px; margin: 0 auto; padding: 32px 20px 56px; }
+
+  /* Header */
+  .hero { background: #1e2761; border-radius: 8px; padding: 28px 28px 24px; color: #fff; margin-bottom: 28px; }
+  .hero h1 { font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
+  .hero .sub { font-size: 13px; color: #a5b4fc; margin-top: 4px; }
+  .hero .tags { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); border-radius: 20px; padding: 3px 12px; font-size: 11px; color: #e0e7ff; font-weight: 600; }
+
+  h2 { font-size: 15px; font-weight: 700; color: #1f2328; margin: 30px 0 10px; padding-bottom: 6px; border-bottom: 2px solid #1e2761; }
+  h3 { font-size: 13px; font-weight: 700; color: #1e2761; margin: 18px 0 6px; }
+  p { font-size: 13px; color: #374151; margin-bottom: 8px; }
+
+  /* Callout */
+  .callout { background: #eff6ff; border-left: 4px solid #3b82d4; border-radius: 0 6px 6px 0; padding: 12px 16px; margin: 16px 0; font-size: 13px; color: #1e40af; }
+  .callout strong { font-weight: 700; }
+  .callout-green { background: #f0fdf4; border-color: #16a34a; color: #14532d; }
+  .callout-amber { background: #fffbeb; border-color: #d97706; color: #78350f; }
+
+  /* Grid cards */
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+  .card { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 16px; }
+  .card .icon { font-size: 20px; margin-bottom: 6px; }
+  .card h4 { font-size: 13px; font-weight: 700; color: #1f2328; margin-bottom: 4px; }
+  .card p { font-size: 12px; color: #57606a; margin: 0; }
+
+  /* Pipeline */
+  .pipeline { display: flex; align-items: stretch; gap: 0; margin: 14px 0; overflow-x: auto; }
+  .pipe-step { flex: 1; min-width: 90px; background: #f7f8fa; border: 1px solid #e5e7eb; border-right: none; padding: 10px 8px; text-align: center; font-size: 11px; }
+  .pipe-step:first-child { border-radius: 6px 0 0 6px; }
+  .pipe-step:last-child { border-right: 1px solid #e5e7eb; border-radius: 0 6px 6px 0; }
+  .pipe-step .num { display: inline-block; width: 20px; height: 20px; background: #1e2761; color: #fff; border-radius: 50%; font-size: 10px; font-weight: 700; line-height: 20px; margin-bottom: 4px; }
+  .pipe-step .lbl { font-weight: 600; color: #1f2328; display: block; font-size: 11px; }
+  .pipe-step .sub { color: #57606a; font-size: 10px; display: block; margin-top: 2px; }
+  .pipe-step.ai { background: #eef2ff; border-color: #c7d2fe; }
+  .pipe-step.ai .num { background: #4f46e5; }
+
+  /* Module table */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0; }
+  th { background: #1e2761; color: #fff; text-align: left; padding: 8px 10px; font-weight: 600; font-size: 11px; }
+  td { padding: 7px 10px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+  .badge { display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: 10px; font-weight: 700; letter-spacing: .03em; white-space: nowrap; }
+  .b-new { background: #dbeafe; color: #1e40af; }
+  .b-exists { background: #d1fae5; color: #065f46; }
+  .b-extend { background: #fef3c7; color: #92400e; }
+  .code { font-family: "Courier New", monospace; font-size: 11px; background: #f3f4f6; padding: 1px 5px; border-radius: 3px; }
+
+  /* Architecture diagram */
+  .arch { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 16px 0; }
+  .arch-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+  .arch-box { flex: 1; background: #fff; border: 1px solid #cbd5e1; border-radius: 5px; padding: 8px 10px; font-size: 11px; text-align: center; }
+  .arch-box.ai-box { background: #eef2ff; border-color: #a5b4fc; }
+  .arch-box.ott-box { background: #fef3c7; border-color: #fcd34d; }
+  .arch-box.store-box { background: #d1fae5; border-color: #6ee7b7; }
+  .arch-box.auth-box { background: #ffe4e6; border-color: #fca5a5; }
+  .arch-box strong { display: block; font-size: 11px; color: #1f2328; }
+  .arch-box span { font-size: 10px; color: #57606a; }
+  .arch-arrow { color: #94a3b8; font-size: 18px; flex: 0 0 20px; text-align: center; }
+  .arch-label { font-size: 10px; font-weight: 700; color: #57606a; letter-spacing: .06em; text-transform: uppercase; width: 90px; flex-shrink: 0; }
+
+  /* Flow */
+  .flow { counter-reset: flow; margin: 12px 0; }
+  .flow-item { display: flex; gap: 12px; margin-bottom: 10px; align-items: flex-start; }
+  .flow-item::before { counter-increment: flow; content: counter(flow); display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; min-width: 24px; background: #1e2761; color: #fff; border-radius: 50%; font-size: 11px; font-weight: 700; margin-top: 1px; }
+  .flow-item .flow-content { font-size: 13px; color: #374151; }
+  .flow-item .flow-content strong { color: #1e2761; }
+
+  /* Namespace pill */
+  .ns { background: #1e2761; color: #e0e7ff; border-radius: 4px; padding: 2px 8px; font-size: 10px; font-weight: 700; font-family: monospace; white-space: nowrap; }
+
+  /* Timeline */
+  .timeline { margin: 12px 0; }
+  .tl-item { display: flex; gap: 16px; margin-bottom: 12px; }
+  .tl-dot { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+  .tl-dot .dot { width: 12px; height: 12px; border-radius: 50%; background: #1e2761; flex-shrink: 0; margin-top: 4px; }
+  .tl-dot .line { width: 2px; flex: 1; background: #e5e7eb; margin-top: 4px; }
+  .tl-content { padding-bottom: 4px; }
+  .tl-content .phase { font-size: 11px; font-weight: 700; color: #57606a; text-transform: uppercase; letter-spacing: .06em; }
+  .tl-content .title { font-size: 13px; font-weight: 700; color: #1f2328; margin: 2px 0; }
+  .tl-content .detail { font-size: 12px; color: #57606a; }
+
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  
+  <div class="hero">
+    <h1>i3 SmartLab Authoring Platform</h1>
+    <div class="sub">AI-Powered SCORM Authoring · Digital Books · Live Streaming · VOD — Natively on i3 Platform</div>
+    <div class="tags">
+      <span class="tag">SCORM 1.2 / 2004</span>
+      <span class="tag">xAPI / Tin Can</span>
+      <span class="tag">Multimodal AI</span>
+      <span class="tag">OTT Live &amp; VOD</span>
+      <span class="tag">Digital Books (EPUB3)</span>
+      <span class="tag">i3EduBridge Ready</span>
+      <span class="tag">IBM ROKS Frankfurt</span>
+    </div>
+  </div>
+
+  
+  <h2>Vision</h2>
+  <p>
+    <strong>i3 SmartLab</strong> is an AI-native content authoring platform where educators and instructional designers create SCORM-compliant courses, interactive digital books, and live/on-demand video lessons — all powered by the multimodal AI models already running in <span class="code">i3-model-gateway</span>. Once authored, content flows automatically to <strong>i3EduBridge</strong> (Moodle LMS) for learner delivery and to <strong>OvenMediaEngine</strong> for live streaming or VOD playback — with zero manual re-encoding.
+  </p>
+
+  <div class="callout">
+    <strong>Everything built on what already exists.</strong> No new external SaaS. No new cloud vendors. Every component reuses live i3 platform services: LiteLLM (AI), SeaweedFS (storage), OvenMediaEngine (streaming), Moodle (LMS), Directus (content API), n8n (automation), Keycloak (auth), and the existing i3-data PostgreSQL cluster.
+  </div>
+
+  
+  <h2>What Authors Can Create</h2>
+  <div class="card-grid">
+    <div class="card">
+      <div class="icon">📚</div>
+      <h4>Digital Books (EPUB3)</h4>
+      <p>AI-drafted chapters, adaptive quizzes, embedded audio narration (TTS), read-aloud, image generation — exported as EPUB3 with offline reading support.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🎓</div>
+      <h4>SCORM Courses</h4>
+      <p>Slides + video + assessments packaged as SCORM 1.2 or 2004 ZIP. Imported directly into i3EduBridge. xAPI events tracked to Langfuse for learning analytics.</p>
+    </div>
+    <div class="card">
+      <div class="icon">📡</div>
+      <h4>Live Classes (OTT)</h4>
+      <p>Instructor streams via RTMP/WebRTC → OvenMediaEngine → LL-HLS delivery to learners at 240p–1080p ABR. Chat overlay powered by Engage websocket.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🎬</div>
+      <h4>VOD Lessons</h4>
+      <p>Recorded or uploaded video → transcoded by OME → stored in SeaweedFS → served via Nginx HLS CDN. AI-generated chapters, transcripts, subtitles auto-attached.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🤖</div>
+      <h4>AI Lesson Assistant</h4>
+      <p>Authors describe a topic; the AI drafts the full lesson: slides outline, narration script, quiz questions, knowledge-check interactions — in one prompt.</p>
+    </div>
+    <div class="card">
+      <div class="icon">📊</div>
+      <h4>Learning Analytics</h4>
+      <p>xAPI statements from SCORM → LRS (Langfuse). Completion rates, quiz scores, video watch-depth, and AI tutor sessions all in one Grafana dashboard.</p>
+    </div>
+  </div>
+
+  
+  <h2>System Architecture</h2>
+  <div class="arch">
+    <div class="arch-row">
+      <div class="arch-label">Authoring UI</div>
+      <div class="arch-box"><strong>SmartLab Studio</strong><span>author.i3technologies.co.ke</span></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box ai-box"><strong>AI Authoring API</strong><span>i3-smartlab namespace</span></div>
+    </div>
+    <div class="arch-row">
+      <div class="arch-label">AI Engine</div>
+      <div class="arch-box ai-box"><strong>LiteLLM Gateway</strong><span>vision · qwen-fast · coder</span></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box ai-box"><strong>Voice STT/TTS</strong><span>stt + tts.i3technologies.co.ke</span></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box ai-box"><strong>ChromaDB</strong><span>Semantic content search</span></div>
+    </div>
+    <div class="arch-row">
+      <div class="arch-label">Content Store</div>
+      <div class="arch-box store-box"><strong>SeaweedFS S3</strong><span>video, audio, images, SCORM ZIPs</span></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box store-box"><strong>Directus CMS</strong><span>Metadata, course catalogue</span></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box store-box"><strong>PostgreSQL HA</strong><span>Course state, xAPI LRS</span></div>
+    </div>
+    <div class="arch-row">
+      <div class="arch-label">Delivery</div>
+      <div class="arch-box ott-box"><strong>i3EduBridge (Moodle)</strong><span>SCORM + EPUB delivery</span></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box ott-box"><strong>OvenMediaEngine</strong><span>Live + VOD HLS streaming</span></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box ott-box"><strong>Nginx HLS CDN</strong><span>cdn.i3technologies.co.ke</span></div>
+    </div>
+    <div class="arch-row">
+      <div class="arch-label">Auth &amp; Track</div>
+      <div class="arch-box auth-box"><strong>Keycloak</strong><span>SSO — all surfaces</span></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box auth-box"><strong>Langfuse</strong><span>AI traces + xAPI LRS</span></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box auth-box"><strong>Grafana</strong><span>Learning analytics dashboard</span></div>
+    </div>
+  </div>
+
+  
+  <h2>AI Authoring Pipeline — How It Works</h2>
+  <p>An author opens SmartLab Studio and chooses one of three content types. The AI pipeline then runs:</p>
+
+  <h3>Mode A — SCORM Course from Prompt</h3>
+  <div class="pipeline">
+    <div class="pipe-step ai"><span class="num">1</span><span class="lbl">Topic Prompt</span><span class="sub">Author types intent</span></div>
+    <div class="pipe-step ai"><span class="num">2</span><span class="lbl">Outline Gen</span><span class="sub">qwen-fast drafts structure</span></div>
+    <div class="pipe-step ai"><span class="num">3</span><span class="lbl">Slide Content</span><span class="sub">vision model adds imagery</span></div>
+    <div class="pipe-step ai"><span class="num">4</span><span class="lbl">Narration</span><span class="sub">TTS generates audio</span></div>
+    <div class="pipe-step ai"><span class="num">5</span><span class="lbl">Quizzes</span><span class="sub">qwen-fast writes MCQs</span></div>
+    <div class="pipe-step"><span class="num">6</span><span class="lbl">SCORM Pack</span><span class="sub">SCORM 2004 ZIP</span></div>
+    <div class="pipe-step"><span class="num">7</span><span class="lbl">Publish</span><span class="sub">→ Moodle via SCORM API</span></div>
+  </div>
+
+  <h3>Mode B — Digital Book from Document / Upload</h3>
+  <div class="pipeline">
+    <div class="pipe-step"><span class="num">1</span><span class="lbl">Upload</span><span class="sub">DOCX / PDF / Markdown</span></div>
+    <div class="pipe-step ai"><span class="num">2</span><span class="lbl">Parse + Chunk</span><span class="sub">STT if audio; embed model</span></div>
+    <div class="pipe-step ai"><span class="num">3</span><span class="lbl">Enrich</span><span class="sub">qwen-heavy rewrites / summarises</span></div>
+    <div class="pipe-step ai"><span class="num">4</span><span class="lbl">Illustrate</span><span class="sub">vision model per chapter</span></div>
+    <div class="pipe-step ai"><span class="num">5</span><span class="lbl">Read-Aloud</span><span class="sub">TTS per section</span></div>
+    <div class="pipe-step"><span class="num">6</span><span class="lbl">EPUB3 Build</span><span class="sub">Accessible EPUB3</span></div>
+    <div class="pipe-step"><span class="num">7</span><span class="lbl">Deliver</span><span class="sub">Moodle + direct download</span></div>
+  </div>
+
+  <h3>Mode C — Video Lesson to OTT/VOD</h3>
+  <div class="pipeline">
+    <div class="pipe-step"><span class="num">1</span><span class="lbl">Record / Upload</span><span class="sub">MP4 / live RTMP</span></div>
+    <div class="pipe-step ai"><span class="num">2</span><span class="lbl">Transcribe</span><span class="sub">STT → full transcript</span></div>
+    <div class="pipe-step ai"><span class="num">3</span><span class="lbl">Chapter AI</span><span class="sub">qwen-fast detects chapters</span></div>
+    <div class="pipe-step ai"><span class="num">4</span><span class="lbl">Subtitles</span><span class="sub">VTT/SRT auto-generated</span></div>
+    <div class="pipe-step"><span class="num">5</span><span class="lbl">Transcode</span><span class="sub">OME ABR 240p→1080p</span></div>
+    <div class="pipe-step"><span class="num">6</span><span class="lbl">Store</span><span class="sub">SeaweedFS S3</span></div>
+    <div class="pipe-step"><span class="num">7</span><span class="lbl">Stream</span><span class="sub">LL-HLS via CDN + Moodle embed</span></div>
+  </div>
+
+  
+  <h2>Live Class Streaming Flow</h2>
+  <div class="callout callout-amber">
+    <strong>OvenMediaEngine is already live</strong> at <span style="font-family:monospace;font-size:12px">149.81.34.82</span> with RTMP (1935), SRT (9999/udp), WebRTC (3333/3334), and LL-HLS (8080). The ABR ladder is configured: 1080p/4Mbps · 720p/2Mbps · 480p/800kbps · 240p/300kbps. SmartLab Live simply wraps this with an instructor UI and Keycloak auth.
+  </div>
+  <div class="flow">
+    <div class="flow-item"><div class="flow-content"><strong>Instructor authenticates</strong> via Keycloak SSO → receives a short-lived RTMP stream key from the SmartLab API (stored in Vault, scoped to the course).</div></div>
+    <div class="flow-item"><div class="flow-content"><strong>Instructor streams</strong> from OBS / browser (WebRTC) → RTMP ingest at <span class="code">rtmp://live.i3technologies.co.ke:1935/live/{stream-key}</span> → OME transcodes to 4-rung ABR ladder in real-time.</div></div>
+    <div class="flow-item"><div class="flow-content"><strong>Learners watch</strong> at <span class="code">https://cdn.i3technologies.co.ke/hls/live/{stream-key}_720p/index.m3u8</span> embedded inside i3EduBridge (Moodle activity) or directly in the SmartLab player.</div></div>
+    <div class="flow-item"><div class="flow-content"><strong>AI Tutor sidebar</strong> (powered by <span class="code">qwen-fast</span>) answers learner questions during the live session in real-time — with full context of the course syllabus loaded from ChromaDB.</div></div>
+    <div class="flow-item"><div class="flow-content"><strong>n8n automation</strong> detects stream end → triggers STT transcription → AI chapter detection → VOD package → auto-publishes to Moodle course as a recording.</div></div>
+    <div class="flow-item"><div class="flow-content"><strong>xAPI events</strong> (watched, paused, completed, quiz-answered) fire to Langfuse LRS → aggregated in Grafana learning analytics dashboard.</div></div>
+  </div>
+
+  
+  <h2>New Platform Components — Deployment Plan</h2>
+  <table>
+    <tr><th>Service</th><th>Namespace</th><th>Technology</th><th>Role</th><th>Status</th></tr>
+    <tr>
+      <td><strong>SmartLab Studio</strong></td>
+      <td><span class="code">i3-smartlab</span></td>
+      <td>Next.js 14 + Tiptap editor</td>
+      <td>Authoring UI — course builder, book editor, video uploader</td>
+      <td><span class="badge b-new">NEW</span></td>
+    </tr>
+    <tr>
+      <td><strong>Authoring API</strong></td>
+      <td><span class="code">i3-smartlab</span></td>
+      <td>FastAPI (Python 3.11)</td>
+      <td>Orchestrates AI pipelines, SCORM packaging, EPUB build, n8n triggers</td>
+      <td><span class="badge b-new">NEW</span></td>
+    </tr>
+    <tr>
+      <td><strong>SCORM Packager</strong></td>
+      <td><span class="code">i3-smartlab</span></td>
+      <td>Python + <code>scorm-again</code> + <code>zipfile</code></td>
+      <td>Assembles SCORM 1.2 / 2004 manifest + imsmanifest.xml + content ZIP</td>
+      <td><span class="badge b-new">NEW</span></td>
+    </tr>
+    <tr>
+      <td><strong>EPUB Builder</strong></td>
+      <td><span class="code">i3-smartlab</span></td>
+      <td>Python + <code>ebooklib</code></td>
+      <td>Compiles AI-enriched chapters + TTS audio + images into EPUB3</td>
+      <td><span class="badge b-new">NEW</span></td>
+    </tr>
+    <tr>
+      <td><strong>Media Processor</strong></td>
+      <td><span class="code">i3-smartlab</span></td>
+      <td>FFmpeg sidecar + Python</td>
+      <td>Thumbnails, HLS segment prep, subtitle burn-in, audio extraction for STT</td>
+      <td><span class="badge b-new">NEW</span></td>
+    </tr>
+    <tr>
+      <td><strong>LiteLLM Gateway</strong></td>
+      <td><span class="code">i3-model-gateway</span></td>
+      <td>LiteLLM (running)</td>
+      <td>vision (image understand), qwen-fast (text), TTS/STT, embed (semantic)</td>
+      <td><span class="badge b-exists">EXISTS</span></td>
+    </tr>
+    <tr>
+      <td><strong>OvenMediaEngine</strong></td>
+      <td><span class="code">i3-ott</span></td>
+      <td>OME (running)</td>
+      <td>RTMP/SRT/WebRTC ingest → LL-HLS/HLS/WebRTC delivery. 4-rung ABR live.</td>
+      <td><span class="badge b-exists">EXISTS</span></td>
+    </tr>
+    <tr>
+      <td><strong>SeaweedFS S3</strong></td>
+      <td><span class="code">i3-ott</span></td>
+      <td>SeaweedFS (running)</td>
+      <td>Object storage for video, audio, images, SCORM ZIPs, EPUB files</td>
+      <td><span class="badge b-exists">EXISTS</span></td>
+    </tr>
+    <tr>
+      <td><strong>Directus CMS</strong></td>
+      <td><span class="code">i3-ott</span></td>
+      <td>Directus (running)</td>
+      <td>Course catalogue, metadata, author profiles, publication status</td>
+      <td><span class="badge b-extend">EXTEND</span></td>
+    </tr>
+    <tr>
+      <td><strong>n8n Automation</strong></td>
+      <td><span class="code">i3-ott</span></td>
+      <td>n8n (running)</td>
+      <td>Post-stream VOD pipeline, SCORM publish to Moodle, notification workflows</td>
+      <td><span class="badge b-extend">EXTEND</span></td>
+    </tr>
+    <tr>
+      <td><strong>i3EduBridge LMS</strong></td>
+      <td><span class="code">i3-edbridge</span></td>
+      <td>Moodle 4.4 (running)</td>
+      <td>SCORM delivery, learner progress tracking, VOD embed, book download</td>
+      <td><span class="badge b-extend">EXTEND</span></td>
+    </tr>
+    <tr>
+      <td><strong>Langfuse</strong></td>
+      <td><span class="code">i3-model-gateway</span></td>
+      <td>Langfuse (running)</td>
+      <td>xAPI LRS — stores all learning events. AI trace analytics per learner.</td>
+      <td><span class="badge b-extend">EXTEND</span></td>
+    </tr>
+    <tr>
+      <td><strong>Voice STT / TTS</strong></td>
+      <td><span class="code">i3-voice</span></td>
+      <td>Whisper + Piper (running)</td>
+      <td>Transcription of uploaded lectures; narration generation for book chapters</td>
+      <td><span class="badge b-exists">EXISTS</span></td>
+    </tr>
+    <tr>
+      <td><strong>Nginx HLS CDN</strong></td>
+      <td><span class="code">i3-ott</span></td>
+      <td>Nginx (running)</td>
+      <td>Serves HLS .m3u8 + segments for VOD from SeaweedFS. cdn.i3technologies.co.ke</td>
+      <td><span class="badge b-exists">EXISTS</span></td>
+    </tr>
+  </table>
+
+  
+  <h2>SCORM Compliance — Technical Detail</h2>
+  <div class="card-grid">
+    <div class="card">
+      <h4>SCORM 1.2</h4>
+      <p><strong>imsmanifest.xml</strong> with organizations + resources. <strong>API shim</strong> in JS (LMSInitialize, LMSSetValue, LMSCommit, LMSFinish). <strong>CMI data model</strong>: cmi.core.lesson_status, cmi.core.score.raw, cmi.suspend_data.</p>
+    </div>
+    <div class="card">
+      <h4>SCORM 2004 (4th Ed)</h4>
+      <p><strong>imscp_v1p1</strong> manifest. <strong>SCORM 2004 API</strong>: Initialize, SetValue, Commit, Terminate. <strong>Sequencing &amp; Navigation</strong>: AI can set prerequisite rules between SCOs based on quiz pass rates.</p>
+    </div>
+    <div class="card">
+      <h4>xAPI / Tin Can</h4>
+      <p>Every learner interaction emits an xAPI statement: <em>Actor.verb.object</em>. Stored in Langfuse as the LRS. Enables cross-platform tracking: video watch depth, AI tutor queries, quiz retries.</p>
+    </div>
+    <div class="card">
+      <h4>Moodle SCORM Activity</h4>
+      <p>SCORM ZIP uploaded to i3EduBridge via Moodle's <strong>mod_scorm</strong>. Grading, completion criteria, and prerequisites managed inside Moodle. No plugin required for standard SCORM delivery.</p>
+    </div>
+  </div>
+
+  
+  <h2>AI Models — Roles in SmartLab</h2>
+  <table>
+    <tr><th>Model</th><th>SmartLab Role</th><th>Typical Authoring Task</th></tr>
+    <tr><td><span class="code">qwen-fast</span></td><td>Primary content drafter</td><td>Course outlines, lesson text, quiz questions, chapter summaries, SCORM objectives</td></tr>
+    <tr><td><span class="code">qwen-heavy</span></td><td>Deep content enrichment</td><td>Book chapter rewriting, complex assessment design, learning outcome alignment (Bloom's taxonomy)</td></tr>
+    <tr><td><span class="code">vision</span></td><td>Multimodal understanding</td><td>Analyse uploaded diagrams/slides/photos → describe/caption → embed in course. Generate image prompts for illustrations.</td></tr>
+    <tr><td><span class="code">coder</span></td><td>Interactive exercises</td><td>Generate coding challenges, auto-grade student code submissions, write SCORM JS API shim customisations</td></tr>
+    <tr><td><span class="code">embed</span></td><td>Semantic search</td><td>Index course library in ChromaDB. Authors search "similar content on photosynthesis" → instant reuse suggestions.</td></tr>
+    <tr><td><span class="code">STT (Whisper)</span></td><td>Audio/video ingestion</td><td>Transcribe uploaded lecture recordings → chapters → subtitles → searchable transcript</td></tr>
+    <tr><td><span class="code">TTS (Piper)</span></td><td>Narration generation</td><td>Convert slide text / book chapters → MP3 narration tracks. Multi-voice: instructor voice + student prompts.</td></tr>
+    <tr><td><span class="code">granite-nano</span></td><td>Real-time AI tutor</td><td>Answers learner questions during live stream or VOD playback. Low-latency (&lt;800ms) response.</td></tr>
+  </table>
+
+  
+  <h2>Content-to-Delivery Matrix</h2>
+  <table>
+    <tr><th>Content Type</th><th>Authored In</th><th>AI-Assisted</th><th>Delivered Via</th><th>Tracked In</th></tr>
+    <tr><td>SCORM Course</td><td>SmartLab Studio</td><td>Full AI draft</td><td>i3EduBridge (Moodle)</td><td>Moodle gradebook + xAPI LRS</td></tr>
+    <tr><td>Digital Book (EPUB3)</td><td>SmartLab Studio</td><td>Write, illustrate, narrate</td><td>Moodle + direct download</td><td>xAPI (read progress)</td></tr>
+    <tr><td>Live Class</td><td>OBS / Browser</td><td>AI Tutor sidebar</td><td>OME LL-HLS → CDN → Moodle</td><td>xAPI watch events</td></tr>
+    <tr><td>VOD Lesson</td><td>Upload to SmartLab</td><td>Transcript + chapters + subtitles</td><td>SeaweedFS → Nginx CDN → Moodle</td><td>xAPI watch depth</td></tr>
+    <tr><td>Interactive Quiz</td><td>SmartLab Studio</td><td>AI-generated MCQ / open-ended</td><td>SCORM SCO or Moodle quiz</td><td>cmi.core.score + xAPI</td></tr>
+    <tr><td>Coding Exercise</td><td>SmartLab Studio</td><td>coder model</td><td>EvalOS sandbox (iframe)</td><td>EvalOS + xAPI</td></tr>
+  </table>
+
+  
+  <h2>Smart Author Workflow — Step by Step</h2>
+  <div class="flow">
+    <div class="flow-item"><div class="flow-content"><strong>Login:</strong> Author signs in to <span class="code">author.i3technologies.co.ke</span> via Keycloak SSO. Role-based access: Admin, Author, Reviewer, Publisher.</div></div>
+    <div class="flow-item"><div class="flow-content"><strong>New Course:</strong> Click "Create with AI" → enter topic, learning level (beginner/intermediate/advanced), duration (e.g. 2 hours), target language. Select output: SCORM, EPUB, or Video.</div></div>
+    <div class="flow-item"><div class="flow-content"><strong>AI Drafts:</strong> qwen-fast generates course outline with modules, lessons, and learning objectives aligned to Bloom's taxonomy. Author reviews and edits each section in a rich-text editor (Tiptap).</div></div>
+    <div class="flow-item"><div class="flow-content"><strong>Enrich Multimodally:</strong> Upload existing slides / PDFs / images → vision model auto-captions and embeds them. TTS generates narration for each slide automatically. STT transcribes any audio reference material.</div></div>
+    <div class="flow-item"><div class="flow-content"><strong>Build Assessments:</strong> Click "Generate Quiz" on any lesson → qwen-fast produces 5–10 MCQs with distractors, hints, and explanations. Author edits, shuffles, or adds custom questions. Branching logic defined per SCORM 2004 sequencing rules.</div></div>
+    <div class="flow-item"><div class="flow-content"><strong>Preview:</strong> One-click SCORM preview launches an in-browser SCORM player (SCORM.js runtime) with full CMI tracking to confirm course logic works before publish.</div></div>
+    <div class="flow-item"><div class="flow-content"><strong>Publish to LMS:</strong> SmartLab API packages the SCORM ZIP → uploads to i3EduBridge via Moodle web service API → creates/updates Moodle course activity automatically. No manual file transfer.</div></div>
+    <div class="flow-item"><div class="flow-content"><strong>Publish to OTT:</strong> If course contains video → SmartLab API pushes to SeaweedFS S3 → triggers n8n workflow → OME creates VOD stream → Nginx HLS CDN serves it → Moodle activity updated with stream URL.</div></div>
+    <div class="flow-item"><div class="flow-content"><strong>Go Live:</strong> For live classes, author clicks "Start Live Session" → SmartLab generates RTMP key from Vault → provides OBS stream URL → Moodle learners see the live player embedded in their course page.</div></div>
+    <div class="flow-item"><div class="flow-content"><strong>Analytics:</strong> Post-session, author opens the Grafana learning dashboard → sees completion rates, quiz scores, video watch depth, AI tutor session count, drop-off points — all from xAPI events in Langfuse.</div></div>
+  </div>
+
+  
+  <h2>New DNS Routes Required</h2>
+  <table>
+    <tr><th>Subdomain</th><th>Service</th><th>Namespace</th><th>Notes</th></tr>
+    <tr><td><span class="code">author.i3technologies.co.ke</span></td><td>SmartLab Studio (Next.js)</td><td>i3-smartlab</td><td>Primary authoring UI. CNAME → IBM LB.</td></tr>
+    <tr><td><span class="code">api.smartlab.i3technologies.co.ke</span></td><td>Authoring FastAPI</td><td>i3-smartlab</td><td>Internal + Moodle webhook endpoint.</td></tr>
+    <tr><td><span class="code">live.i3technologies.co.ke</span></td><td>OvenMediaEngine</td><td>i3-ott</td><td>OME virtual host already configured as <span class="code">live.i3.tech</span> — add public alias.</td></tr>
+    <tr><td><span class="code">vod.i3technologies.co.ke</span></td><td>Nginx HLS (VOD)</td><td>i3-ott</td><td>OME VHost already references <span class="code">vod.i3.tech</span> — add public alias.</td></tr>
+  </table>
+  <p style="font-size:12px;color:#57606a">All four CNAMEs point to the existing IBM LB: <span class="code">8eec2322-eu-de.lb.appdomain.cloud</span>. No new infrastructure needed.</p>
+
+  
+  <h2>Deployment Phases</h2>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot"><div class="dot"></div><div class="line"></div></div>
+      <div class="tl-content">
+        <div class="phase">Phase 1 — 2 weeks</div>
+        <div class="title">Core Authoring Backend</div>
+        <div class="detail">Deploy <span class="ns">i3-smartlab</span> namespace · FastAPI authoring API · LiteLLM integration (qwen-fast, embed, STT, TTS) · SeaweedFS S3 bucket for content · Directus collections for course metadata · SCORM 1.2 packager working end-to-end · Moodle REST API publish connector.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"><div class="dot"></div><div class="line"></div></div>
+      <div class="tl-content">
+        <div class="phase">Phase 2 — 2 weeks</div>
+        <div class="title">SmartLab Studio UI</div>
+        <div class="detail">Next.js 14 authoring UI · Rich text editor (Tiptap) with AI panel · Slide builder · Video upload + preview · SCORM in-browser preview player · Keycloak OIDC login · Publish to Moodle in one click · Basic author dashboard.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"><div class="dot"></div><div class="line"></div></div>
+      <div class="tl-content">
+        <div class="phase">Phase 3 — 2 weeks</div>
+        <div class="title">Video &amp; OTT Integration</div>
+        <div class="detail">VOD pipeline via n8n: upload → SeaweedFS → OME → Nginx CDN · STT auto-transcription · AI chapter detection · VTT subtitle generation · Live stream key management via Vault · Moodle HLS player embed (mod_hvp or iframe).</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"><div class="dot"></div><div class="line"></div></div>
+      <div class="tl-content">
+        <div class="phase">Phase 4 — 1 week</div>
+        <div class="title">EPUB3 Books + xAPI Analytics</div>
+        <div class="detail">EPUB3 builder with TTS audio tracks · Read-aloud player · xAPI statement emitter for all content types · Langfuse LRS collection · Grafana learning analytics dashboard (completion, scores, watch depth, AI usage).</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"><div class="dot"></div></div>
+      <div class="tl-content">
+        <div class="phase">Phase 5 — 1 week</div>
+        <div class="title">AI Tutor Sidebar + SCORM 2004</div>
+        <div class="detail">Real-time AI tutor panel on live + VOD player (granite-nano) · SCORM 2004 sequencing &amp; navigation · Coding exercise integration with EvalOS sandbox · vision model slide analysis · Full QA &amp; pilot with internal authors.</div>
+      </div>
+    </div>
+  </div>
+
+  
+  <h2>Innovative Differentiators</h2>
+  <div class="card-grid">
+    <div class="card">
+      <h4>One Prompt → Full Course</h4>
+      <p>Type "Introduction to Soil Science for secondary school" → get a complete 12-module SCORM course with slides, narration, quizzes, and learning objectives in under 3 minutes.</p>
+    </div>
+    <div class="card">
+      <h4>Content Reuse Intelligence</h4>
+      <p>The embed model indexes every course in ChromaDB. When authoring, SmartLab surfaces semantically similar slides, quizzes, and videos from your entire content library — eliminating duplicate work.</p>
+    </div>
+    <div class="card">
+      <h4>Live → VOD — Zero Effort</h4>
+      <p>The moment an instructor ends a live class, n8n fires automatically: transcribe, chapter, subtitle, transcode, publish to Moodle as a recording. No manual steps needed.</p>
+    </div>
+    <div class="card">
+      <h4>Adaptive AI Tutor in Every Lesson</h4>
+      <p>The granite-nano model is pre-loaded with the course syllabus. Learners get instant, contextually accurate answers during both live streams and VOD — not generic ChatGPT responses.</p>
+    </div>
+    <div class="card">
+      <h4>Multimodal Book Creation</h4>
+      <p>Upload a Word document → AI rewrites it as a textbook with inserted illustrations (vision model), read-aloud audio (TTS), embedded quizzes, and accessible EPUB3 — in one pipeline run.</p>
+    </div>
+    <div class="card">
+      <h4>Bloom's Taxonomy Alignment</h4>
+      <p>The authoring API automatically tags every learning objective and quiz question to the correct Bloom's level (Remember → Create). Instructional designers get auto-QA on cognitive load distribution.</p>
+    </div>
+  </div>
+
+  
+  <h2>Infrastructure Cost Impact</h2>
+  <div class="callout callout-green">
+    <strong>No new IBM Cloud costs.</strong> SmartLab runs in a new <span class="code">i3-smartlab</span> namespace on the existing 12-node ROKS cluster which currently has ~12 vCPU and ~77 GB RAM headroom. SeaweedFS S3, OME, Nginx CDN, Moodle, Keycloak, LiteLLM, STT/TTS, Langfuse, and PostgreSQL are all already running and paid for. The only new resource is the SmartLab API (~0.5 vCPU / 1 GB) and Studio UI (~0.25 vCPU / 512 MB) — well within headroom.
+  </div>
+
+  <footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>

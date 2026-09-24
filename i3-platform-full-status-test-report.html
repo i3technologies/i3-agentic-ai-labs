@@ -1,0 +1,205 @@
+
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>i3 Platform Full Status Report</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.6;background:#fff;color:#1f2328;max-width:900px;margin:0 auto;padding:24px 20px}
+h1{font-size:20px;font-weight:700;margin-bottom:4px}
+.meta{color:#57606a;font-size:12px;margin-bottom:24px}
+h2{font-size:15px;font-weight:600;margin:24px 0 10px;padding-bottom:4px;border-bottom:1px solid #e5e7eb}
+h3{font-size:13px;font-weight:600;margin:16px 0 8px;color:#57606a}
+table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:13px}
+th{background:#f7f8fa;padding:6px 10px;text-align:left;font-weight:600;border:1px solid #e5e7eb;color:#57606a;font-size:12px;text-transform:uppercase}
+td{padding:6px 10px;border:1px solid #e5e7eb;vertical-align:top}
+tr:nth-child(even) td{background:#fafafa}
+.pass{color:#1a7f37;font-weight:600}
+.fail{color:#cf222e;font-weight:600}
+.warn{color:#9a6700;font-weight:600}
+.info{color:#0550ae;font-weight:600}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-pass{background:#dafbe1;color:#1a7f37}
+.badge-fail{background:#ffebe9;color:#cf222e}
+.badge-warn{background:#fff8c5;color:#9a6700}
+.badge-info{background:#ddf4ff;color:#0550ae}
+.badge-crit{background:#ffebe9;color:#cf222e;border:1px solid #cf222e}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.summary-card{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:16px;text-align:center}
+.summary-card .num{font-size:28px;font-weight:700;line-height:1}
+.summary-card .lbl{font-size:11px;color:#57606a;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.summary-card.green .num{color:#1a7f37}
+.summary-card.red .num{color:#cf222e}
+.summary-card.yellow .num{color:#9a6700}
+.summary-card.blue .num{color:#0550ae}
+code{font-family:"Cascadia Code","Consolas",monospace;font-size:12px;background:#f7f8fa;padding:1px 4px;border-radius:3px;border:1px solid #e5e7eb}
+.section-banner{background:#f7f8fa;border-left:3px solid #3b82d4;padding:8px 12px;margin-bottom:12px;border-radius:0 4px 4px 0}
+.fixed-tag{background:#dafbe1;color:#1a7f37;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:4px}
+.open-tag{background:#ffebe9;color:#cf222e;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:4px}
+</style>
+</head>
+<body>
+<h1>i3 Agentic AI Platform — Full Status &amp; Test Report</h1>
+<p class="meta">Generated: 2026-09-19 00:15 UTC  |  Cluster: IBM ROKS Frankfurt  |  Engineer sweep</p>
+
+<div class="summary-grid">
+  <div class="summary-card green"><div class="num">29</div><div class="lbl">Endpoints PASS</div></div>
+  <div class="summary-card green"><div class="num">12/12</div><div class="lbl">Nodes Ready</div></div>
+  <div class="summary-card green"><div class="num">43/43</div><div class="lbl">PVCs Bound</div></div>
+  <div class="summary-card red"><div class="num">1</div><div class="lbl">Open Critical</div></div>
+</div>
+
+<h2>Endpoint Health — 30 Tests</h2>
+<div class="section-banner">All endpoints tested at 2026-09-19 00:10 UTC</div>
+
+<h3>Infrastructure</h3>
+<table>
+<tr><th>ID</th><th>Service</th><th>URL</th><th>Status</th><th>HTTP</th></tr>
+<tr><td>I01</td><td>Keycloak SSO</td><td><code>keycloak.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>I02</td><td>LiteLLM Models</td><td><code>litellm.i3technologies.co.ke/v1/models</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>I03</td><td>Vault / OpenBao (unsealed)</td><td><code>vault.i3technologies.co.ke/v1/sys/seal-status</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>I04</td><td>Grafana</td><td><code>grafana.i3technologies.co.ke/api/health</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>I05</td><td>ArgoCD</td><td><code>argocd.i3technologies.co.ke</code></td><td><span class="badge badge-warn">REDIRECT</span></td><td>307 (OIDC login — expected)</td></tr>
+<tr><td>I06</td><td>Langfuse</td><td><code>langfuse.i3technologies.co.ke/api/public/health</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+</table>
+
+<h3>Core Applications</h3>
+<table>
+<tr><th>ID</th><th>Service</th><th>URL</th><th>Status</th><th>HTTP</th></tr>
+<tr><td>A01</td><td>EvalOS</td><td><code>evalos.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>A02</td><td>Moodle / EdBridge</td><td><code>moodle.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>A03</td><td>AfroERP</td><td><code>afroerp.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>A04</td><td>PMaaS</td><td><code>pmaas.i3technologies.co.ke/api/health</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>A05</td><td>Engage</td><td><code>engage.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>A06</td><td>Nextcloud Social</td><td><code>nextcloud.i3technologies.co.ke/status.php</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>A07</td><td>Directus CMS</td><td><code>cms.i3technologies.co.ke/server/health</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>A08</td><td>n8n Automation</td><td><code>n8n.i3technologies.co.ke/healthz</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>A09</td><td>JupyterHub AI Lab</td><td><code>jupyter.i3technologies.co.ke/hub/health</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>A10</td><td>Sage AI (Open WebUI)</td><td><code>sage.i3technologies.co.ke/health</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+</table>
+
+<h3>APIs</h3>
+<table>
+<tr><th>ID</th><th>Service</th><th>URL</th><th>Status</th><th>HTTP</th></tr>
+<tr><td>P01</td><td>SIT API</td><td><code>api.sit.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>P02</td><td>SIT Tutor Agent</td><td><code>tutor.sit.i3technologies.co.ke/health</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>P03</td><td>Talent Cloud API</td><td><code>api.talent.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>P04</td><td>FORD Membership API</td><td><code>ford.i3technologies.co.ke/health</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>P05</td><td>MCP Gateway (AR)</td><td><code>ar.i3technologies.co.ke/health</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>P06</td><td>SmartLab API</td><td><code>api.smartlab.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+</table>
+
+<h3>Voice Services</h3>
+<table>
+<tr><th>ID</th><th>Service</th><th>URL</th><th>Status</th><th>HTTP</th></tr>
+<tr><td>V01</td><td>Voice TTS (espeak-ng)</td><td><code>tts.i3technologies.co.ke/v1/health</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+<tr><td>V02</td><td>Voice STT</td><td><code>stt.i3technologies.co.ke/v1/health</code></td><td><span class="badge badge-pass">PASS</span></td><td>200</td></tr>
+</table>
+
+<h2>Functional API Tests</h2>
+<table>
+<tr><th>ID</th><th>Test</th><th>Result</th><th>Detail</th></tr>
+<tr><td>F01</td><td>LiteLLM inference (granite-nano)</td><td><span class="badge badge-pass">PASS</span></td><td>Reply: "Greetings! I'm here to assist you."</td></tr>
+<tr><td>F02</td><td>SIT Tutor /chat (granite-nano)</td><td><span class="badge badge-pass">PASS</span></td><td>200 OK, reply received (&gt;25s response — model latency)</td></tr>
+<tr><td>F03</td><td>Voice TTS synthesis (espeak-ng)</td><td><span class="badge badge-pass">PASS</span></td><td>audio/wav · 210,558 bytes returned</td></tr>
+<tr><td>F04</td><td>FORD member register</td><td><span class="badge badge-pass">PASS</span></td><td>201 Created, OTP sent, member_id returned</td></tr>
+<tr><td>F05</td><td>MCP Gateway read_db_schema</td><td><span class="badge badge-pass">PASS</span></td><td>200 OK, schema returned for ar_db</td></tr>
+<tr><td>F06</td><td>PMaaS /api/health (DB-connected)</td><td><span class="badge badge-pass">PASS</span></td><td>200 <code>{"status":"ok","service":"pmaas-web"}</code></td></tr>
+</table>
+
+<h2>Bugs Fixed This Session</h2>
+<table>
+<tr><th>#</th><th>Bug</th><th>Root Cause</th><th>Fix Applied</th></tr>
+<tr><td>BUG-08</td><td>PMaaS DB password "REPLACE"</td><td>Secret never populated post-deploy</td><td>ALTER ROLE pmaas PASSWORD + secret patched + rollout restart</td></tr>
+<tr><td>BUG-09</td><td>LiteLLM 504 — Ollama unreachable</td><td><code>deny-all-ingress</code> NP blocked intra-namespace traffic</td><td>Added <code>allow-intranamespace-ingress</code> NP to i3-model-gateway</td></tr>
+<tr><td>BUG-10</td><td>LiteLLM missing mistral/mistral:7b models</td><td>Models not in DB after restart; config-only seed</td><td>Added via <code>/model/new</code> API; all 8 models confirmed in DB</td></tr>
+<tr><td>BUG-11</td><td>sit-tutor-agent running sit-api image</td><td>Only one BuildConfig existed (sit-api); tutor deployed wrong image</td><td>Created sit-tutor BuildConfig + Dockerfile + proper tutor code; new image deployed</td></tr>
+<tr><td>BUG-12</td><td>Voice TTS 500 — librosa/numba incompatibility</td><td>TTS==0.22.0 imports librosa at module load; librosa 0.9.x requires numba with NumPy≤1.24 which clashed with all dependency versions</td><td>Replaced Coqui TTS entirely with espeak-ng (zero ML deps); new v3 tts_service.py</td></tr>
+<tr><td>BUG-13</td><td>pgBackRest backup Error pods (recurring)</td><td>Failed backup jobs leave Error pods indefinitely</td><td>Deleted 23 stale Error pods (second cleanup this session)</td></tr>
+<tr><td>BUG-14</td><td>SIT Tutor route timeout 504</td><td>Default HAProxy route timeout 30s &lt; model latency 45-60s</td><td>Annotated all AI routes with <code>haproxy.router.openshift.io/timeout=120s</code></td></tr>
+</table>
+
+<h2>Cluster Infrastructure Status</h2>
+<table>
+<tr><th>Component</th><th>Count</th><th>Status</th></tr>
+<tr><td>Worker/Master Nodes</td><td>12/12</td><td><span class="badge badge-pass">All Ready</span></td></tr>
+<tr><td>Persistent Volume Claims</td><td>43/43</td><td><span class="badge badge-pass">All Bound</span></td></tr>
+<tr><td>Running Pods (app namespaces)</td><td>61</td><td><span class="badge badge-pass">Healthy</span></td></tr>
+<tr><td>Namespaces monitored</td><td>19</td><td><span class="badge badge-pass">OK</span></td></tr>
+<tr><td>LiteLLM models in DB</td><td>8</td><td><span class="badge badge-pass">granite-nano · embed · qwen-fast · coder · qwen-heavy · vision · mistral · mistral:7b</span></td></tr>
+<tr><td>Ollama models loaded</td><td>6</td><td><span class="badge badge-pass">All present on disk</span></td></tr>
+</table>
+
+<h2>Open Defects</h2>
+<table>
+<tr><th>#</th><th>Defect</th><th>Priority</th><th>Status</th><th>Notes</th></tr>
+<tr>
+  <td>DEF-01</td>
+  <td>Hyperledger Fabric <code>orderer-0</code> CrashLoopBackOff</td>
+  <td><span class="badge badge-crit">CRITICAL</span></td>
+  <td>Open</td>
+  <td>Missing MSP crypto material. Requires blockchain engineer to provision org certs. FORD blockchain non-functional (REST API works).</td>
+</tr>
+<tr>
+  <td>DEF-03</td>
+  <td>Engage WhatsApp webhook <code>/webhook/whatsapp</code> route exists but Next.js handler not implemented</td>
+  <td><span class="badge badge-warn">MEDIUM</span></td>
+  <td>Open</td>
+  <td>Route <code>engage-webhook.i3technologies.co.ke/webhook/whatsapp</code> registered; Next.js API route file missing. Engage app otherwise functional.</td>
+</tr>
+<tr>
+  <td>DEF-04</td>
+  <td>MCP <code>execute_sandboxed_code</code> DNS fail — PyPI egress NP missing</td>
+  <td><span class="badge badge-warn">MEDIUM</span></td>
+  <td>Open</td>
+  <td>Sandboxed code executor cannot reach external package index. No egress NP exists for i3-ar. /tools/read_db_schema and /tools/query_curriculum_vector work fine.</td>
+</tr>
+<tr>
+  <td>DEF-05</td>
+  <td>pgBackRest backup jobs producing Error pods (recurring)</td>
+  <td><span class="badge badge-warn">MEDIUM</span></td>
+  <td>Recurring</td>
+  <td>Backup CronJob continues to fail; Error pods cleaned again today (23 pods). Root cause: backup storage config needs investigation.</td>
+</tr>
+<tr>
+  <td>DEF-06</td>
+  <td>KEDA admission controller CrashLoopBackOff (pre-existing)</td>
+  <td><span class="badge badge-info">LOW</span></td>
+  <td>Pre-existing</td>
+  <td>4000–9800 restarts. Not blocking any current workloads. No autoscaling features depend on it.</td>
+</tr>
+</table>
+
+<h2>Key Service Endpoints Reference</h2>
+<table>
+<tr><th>Service</th><th>Public URL</th></tr>
+<tr><td>Keycloak SSO</td><td><code>https://keycloak.i3technologies.co.ke</code></td></tr>
+<tr><td>EvalOS Assessment Platform</td><td><code>https://evalos.i3technologies.co.ke</code></td></tr>
+<tr><td>Moodle LMS</td><td><code>https://moodle.i3technologies.co.ke</code></td></tr>
+<tr><td>AfroERP</td><td><code>https://afroerp.i3technologies.co.ke</code></td></tr>
+<tr><td>PMaaS</td><td><code>https://pmaas.i3technologies.co.ke</code></td></tr>
+<tr><td>Engage (WhatsApp/SMS)</td><td><code>https://engage.i3technologies.co.ke</code></td></tr>
+<tr><td>Nextcloud</td><td><code>https://nextcloud.i3technologies.co.ke</code></td></tr>
+<tr><td>Directus CMS</td><td><code>https://cms.i3technologies.co.ke</code></td></tr>
+<tr><td>n8n Automation</td><td><code>https://n8n.i3technologies.co.ke</code></td></tr>
+<tr><td>Sage AI (Open WebUI)</td><td><code>https://sage.i3technologies.co.ke</code></td></tr>
+<tr><td>JupyterHub</td><td><code>https://jupyter.i3technologies.co.ke</code></td></tr>
+<tr><td>LiteLLM Gateway</td><td><code>https://litellm.i3technologies.co.ke</code></td></tr>
+<tr><td>Langfuse Observability</td><td><code>https://langfuse.i3technologies.co.ke</code></td></tr>
+<tr><td>Grafana</td><td><code>https://grafana.i3technologies.co.ke</code></td></tr>
+<tr><td>Vault / OpenBao</td><td><code>https://vault.i3technologies.co.ke</code></td></tr>
+<tr><td>ArgoCD</td><td><code>https://argocd.i3technologies.co.ke</code></td></tr>
+<tr><td>SIT API</td><td><code>https://api.sit.i3technologies.co.ke</code></td></tr>
+<tr><td>SIT Tutor Agent</td><td><code>https://tutor.sit.i3technologies.co.ke</code></td></tr>
+<tr><td>Talent Cloud API</td><td><code>https://api.talent.i3technologies.co.ke</code></td></tr>
+<tr><td>FORD Membership API</td><td><code>https://ford.i3technologies.co.ke</code></td></tr>
+<tr><td>MCP Gateway (AR)</td><td><code>https://ar.i3technologies.co.ke</code></td></tr>
+<tr><td>Voice TTS</td><td><code>https://tts.i3technologies.co.ke</code></td></tr>
+<tr><td>Voice STT</td><td><code>https://stt.i3technologies.co.ke</code></td></tr>
+<tr><td>SmartLab API</td><td><code>https://api.smartlab.i3technologies.co.ke</code></td></tr>
+</table>
+
+<hr style="margin:32px 0 16px;border:none;border-top:1px solid #e5e7eb" />
+<p style="text-align:center;font-size:12px;color:#57606a">Made with IBM Bob</p>
+</body>
+</html>

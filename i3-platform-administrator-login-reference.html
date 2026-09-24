@@ -1,0 +1,569 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>i3 Platform — Administrator Login Reference</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.6; background: #fff; color: #1f2328; }
+  .page { max-width: 760px; margin: 0 auto; padding: 32px 24px 48px; }
+
+  /* Header */
+  .doc-header { border-bottom: 2px solid #e5e7eb; padding-bottom: 18px; margin-bottom: 28px; }
+  .doc-header h1 { font-size: 22px; font-weight: 700; }
+  .doc-header .sub { color: #57606a; font-size: 13px; margin-top: 4px; }
+  .warning-banner { background: #fff8e6; border: 1px solid #f5c518; border-radius: 6px; padding: 10px 14px; margin-bottom: 24px; font-size: 13px; color: #7a5700; }
+  .warning-banner strong { color: #92400e; }
+
+  /* Section headings */
+  h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #57606a; margin: 32px 0 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
+
+  /* App card */
+  .app-card { border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+  .app-card-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: #f7f8fa; border-bottom: 1px solid #e5e7eb; }
+  .app-card-header .app-name { font-weight: 700; font-size: 15px; }
+  .app-card-header .app-url { font-size: 12px; color: #3b82d4; margin-left: auto; font-family: "Consolas","Menlo",monospace; }
+  .app-card-body { padding: 14px 16px; }
+  .cred-row { display: grid; grid-template-columns: 140px 1fr; gap: 6px 12px; margin-bottom: 3px; font-size: 13px; }
+  .cred-row .label { color: #57606a; font-weight: 600; }
+  .cred-row .val { font-family: "Consolas","Menlo",monospace; background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 4px; padding: 1px 7px; display: inline-block; word-break: break-all; }
+  .steps { margin-top: 10px; border-top: 1px solid #f0f0f0; padding-top: 10px; }
+  .steps p { font-size: 12px; color: #1f2328; font-weight: 600; margin-bottom: 4px; }
+  .steps ol { padding-left: 18px; font-size: 12px; color: #444d56; line-height: 1.7; }
+  .steps ol li b { color: #1f2328; }
+  .note { font-size: 11px; color: #57606a; margin-top: 6px; font-style: italic; }
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; vertical-align: middle; }
+  .badge-green  { background: #d1f0d8; color: #116329; }
+  .badge-blue   { background: #dbeafe; color: #1e40af; }
+  .badge-yellow { background: #fff3cd; color: #7a5700; }
+  .badge-red    { background: #fde8e8; color: #8c1616; }
+  .badge-gray   { background: #f0f0f0; color: #57606a; border: 1px solid #ddd; }
+
+  /* Token table */
+  .token-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+  .token-table th { background: #f7f8fa; border: 1px solid #e5e7eb; padding: 5px 10px; font-weight: 600; color: #57606a; text-align: left; }
+  .token-table td { border: 1px solid #e5e7eb; padding: 5px 10px; vertical-align: top; }
+  .token-table code { font-family: "Consolas","Menlo",monospace; font-size: 11px; background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 3px; padding: 1px 5px; word-break: break-all; }
+
+  /* Vault special section */
+  .vault-box { background: #fdf2f2; border: 1px solid #fca5a5; border-radius: 6px; padding: 14px 16px; margin-top: 10px; font-size: 13px; }
+  .vault-box strong { color: #991b1b; }
+
+  footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="doc-header">
+    <h1>i3 Platform — Administrator Login Reference</h1>
+    <div class="sub">IBM ROKS Frankfurt  ·  All Applications  ·  September 2026  ·  <strong>CONFIDENTIAL — AUTHORISED PERSONNEL ONLY</strong></div>
+  </div>
+
+  <div class="warning-banner">
+    ⚠ <strong>Security Notice:</strong> This document contains live production credentials. Do not share via email, Slack, or any unencrypted channel. Store offline in a secured password manager or HSM. Rotate passwords after reading if distribution is suspected.
+  </div>
+
+  
+  <h2>Identity &amp; Single Sign-On</h2>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">Keycloak / SSO <span class="badge badge-green">AUTH</span></span>
+      <span class="app-url">sso.i3technologies.co.ke  |  keycloak.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">Admin URL</span><span class="val">https://sso.i3technologies.co.ke/auth/admin/</span></div>
+      <div class="cred-row"><span class="label">Username</span><span class="val">admin</span></div>
+      <div class="cred-row"><span class="label">Password</span><span class="val">REDACTED-keycloak-admin</span></div>
+      <div class="cred-row"><span class="label">Realm</span><span class="val">i3 (platform realm)  |  master (system realm)</span></div>
+      <div class="steps">
+        <p>How to log in as Administrator:</p>
+        <ol>
+          <li>Open <b>https://sso.i3technologies.co.ke/auth/admin/</b></li>
+          <li>Select realm <b>master</b> from the dropdown (top-left)</li>
+          <li>Enter username <b>admin</b> and password above → click <b>Sign In</b></li>
+          <li>To manage platform users, switch to realm <b>i3</b> using the realm dropdown</li>
+          <li>Navigate to <b>Users</b>, <b>Clients</b>, <b>Realm Settings</b> as needed</li>
+        </ol>
+        <p class="note">All other platform apps (EvalOS, PMaaS, Engage, JupyterHub, Sage) use Keycloak OIDC — user management is centralised here. Create new users in the <b>i3</b> realm and assign them to the relevant client roles.</p>
+      </div>
+    </div>
+  </div>
+
+  
+  <h2>Learning Management</h2>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">Moodle 4.4 / i3EduBridge <span class="badge badge-blue">LMS</span></span>
+      <span class="app-url">moodle.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">Admin URL</span><span class="val">https://moodle.i3technologies.co.ke/admin/</span></div>
+      <div class="cred-row"><span class="label">Username</span><span class="val">i3admin</span></div>
+      <div class="cred-row"><span class="label">Password</span><span class="val">i3-Moodle-Admin-2026!</span></div>
+      <div class="cred-row"><span class="label">WS Token</span><span class="val">4a88241080ac203af3a76a00c428b7a9</span></div>
+      <div class="steps">
+        <p>How to log in as Administrator:</p>
+        <ol>
+          <li>Open <b>https://moodle.i3technologies.co.ke</b></li>
+          <li>Click <b>Log in</b> (top right) → enter username <b>i3admin</b> and password</li>
+          <li>For Site Administration: click the grid icon (top right) → <b>Site administration</b></li>
+          <li>Alternatively, go directly to <b>/admin/</b> after login</li>
+          <li>Web Service API calls use the token above with endpoint <b>/webservice/rest/server.php</b></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">i3 SmartLab Authoring API <span class="badge badge-blue">NEW</span></span>
+      <span class="app-url">api.smartlab.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">API Docs</span><span class="val">https://api.smartlab.i3technologies.co.ke/docs</span></div>
+      <div class="cred-row"><span class="label">Health</span><span class="val">https://api.smartlab.i3technologies.co.ke/health</span></div>
+      <div class="cred-row"><span class="label">KC Client ID</span><span class="val">i3smartlab</span></div>
+      <div class="cred-row"><span class="label">KC Client UUID</span><span class="val">f8e3dd4a-8d9e-4eaa-a2cf-099f88e20d45</span></div>
+      <div class="cred-row"><span class="label">Auth via</span><span class="val">Keycloak i3 realm (Bearer token)</span></div>
+      <div class="steps">
+        <p>How to access the API:</p>
+        <ol>
+          <li>Open <b>/docs</b> — Swagger UI with all endpoints</li>
+          <li>Obtain a token via Keycloak: POST to <b>sso.i3technologies.co.ke/auth/realms/i3/protocol/openid-connect/token</b></li>
+          <li>Use <b>Authorization: Bearer &lt;token&gt;</b> header for all API calls</li>
+          <li>DNS CNAME not yet live — test internally via cluster route until CNAME is added</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  
+  <h2>AI Gateway &amp; Observability</h2>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">LiteLLM Proxy <span class="badge badge-blue">AI GATEWAY</span></span>
+      <span class="app-url">litellm.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">UI URL</span><span class="val">https://litellm.i3technologies.co.ke/ui</span></div>
+      <div class="cred-row"><span class="label">Master Key</span><span class="val">sk-litellm-i3-f951c9377163a11275864cb92e90ad13</span></div>
+      <div class="cred-row"><span class="label">Auth Header</span><span class="val">Authorization: Bearer &lt;master-key&gt;</span></div>
+      <div class="steps">
+        <p>How to log in as Administrator:</p>
+        <ol>
+          <li>Open <b>https://litellm.i3technologies.co.ke/ui</b></li>
+          <li>Enter the master key above as the password when prompted</li>
+          <li>For API access: include <b>Authorization: Bearer sk-litellm-i3-f951c…</b> header</li>
+          <li>Create virtual keys for each app under <b>Virtual Keys</b> tab in the UI</li>
+        </ol>
+        <p class="note">If SSL error appears, use the cluster-internal URL: <code>http://litellm-proxy.i3-model-gateway.svc:4000/ui</code> via oc port-forward.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">Langfuse (LLM Observability) <span class="badge badge-blue">OBS</span></span>
+      <span class="app-url">langfuse.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">URL</span><span class="val">https://langfuse.i3technologies.co.ke</span></div>
+      <div class="cred-row"><span class="label">Auth Method</span><span class="val">Self-registration — first sign-up is admin</span></div>
+      <div class="cred-row"><span class="label">EvalOS Public Key</span><span class="val">pk-lf-i3evalos-8ed2998c3f68449b</span></div>
+      <div class="cred-row"><span class="label">EvalOS Secret Key</span><span class="val">sk-lf-i3evalos-b7905eaf49904cc5</span></div>
+      <div class="steps">
+        <p>How to log in:</p>
+        <ol>
+          <li>Open <b>https://langfuse.i3technologies.co.ke</b></li>
+          <li>If first time: click <b>Sign Up</b> → create admin account (first account = org owner)</li>
+          <li>If already set up: <b>Sign In</b> with the account registered during initial setup</li>
+          <li>To add team members: <b>Settings → Members → Invite</b></li>
+        </ol>
+        <p class="note">Contact Sebastian Njagi (snjagi@i3technologies.co.ke) for the registered admin email if first-user setup was already completed.</p>
+      </div>
+    </div>
+  </div>
+
+  
+  <h2>AI Applications &amp; Agents</h2>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">i3 Sage / Open WebUI <span class="badge badge-blue">AI CHAT</span></span>
+      <span class="app-url">sage.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">URL</span><span class="val">https://sage.i3technologies.co.ke</span></div>
+      <div class="cred-row"><span class="label">Auth Method</span><span class="val">Keycloak OIDC (i3 realm)</span></div>
+      <div class="cred-row"><span class="label">KC Client</span><span class="val">open-webui-sage</span></div>
+      <div class="steps">
+        <p>How to log in as Administrator:</p>
+        <ol>
+          <li>Open <b>https://sage.i3technologies.co.ke</b></li>
+          <li>Click <b>Sign In with Keycloak</b> → logs in via i3 realm SSO</li>
+          <li>Use a Keycloak account with <b>admin</b> role in i3 realm</li>
+          <li>In Open WebUI: top-right avatar → <b>Admin Panel</b> to manage users, models, documents</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">JupyterHub / i3 AI Lab <span class="badge badge-blue">DATA SCIENCE</span></span>
+      <span class="app-url">jupyter.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">URL</span><span class="val">https://jupyter.i3technologies.co.ke</span></div>
+      <div class="cred-row"><span class="label">Auth Method</span><span class="val">Keycloak OIDC (i3 realm)</span></div>
+      <div class="cred-row"><span class="label">Virtual Key</span><span class="val">pilot-jupyterhub (LiteLLM)</span></div>
+      <div class="steps">
+        <p>How to log in:</p>
+        <ol>
+          <li>Open <b>https://jupyter.i3technologies.co.ke</b></li>
+          <li>Click <b>Sign in with Keycloak</b> → authenticate with i3 realm account</li>
+          <li>For Hub admin panel: go to <b>/hub/admin</b> — requires <b>jupyterhub-admin</b> group in Keycloak</li>
+          <li>Add the Keycloak group <b>jupyterhub-admin</b> to a user to grant hub admin rights</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">EvalOS <span class="badge badge-blue">ASSESSMENT</span></span>
+      <span class="app-url">evalos.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">URL</span><span class="val">https://evalos.i3technologies.co.ke</span></div>
+      <div class="cred-row"><span class="label">Auth Method</span><span class="val">Keycloak OIDC (i3 realm)</span></div>
+      <div class="cred-row"><span class="label">KC Client</span><span class="val">evalos-spa</span></div>
+      <div class="steps">
+        <p>How to log in as Administrator:</p>
+        <ol>
+          <li>Open <b>https://evalos.i3technologies.co.ke</b></li>
+          <li>Authenticate via Keycloak SSO</li>
+          <li>Admin features visible to users with <b>evalos-admin</b> role in Keycloak i3 realm</li>
+          <li>Assign admin role in Keycloak: <b>i3 realm → Users → [user] → Role Mappings → evalos-admin</b></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">Coworker Agents (Zuri / Nuru / Mfumo / Dawa) <span class="badge badge-gray">AGENTS</span></span>
+      <span class="app-url">zuri.i3technologies.co.ke  |  nuru.i3technologies.co.ke  |  mfumo.i3technologies.co.ke  |  dawa.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">Auth Method</span><span class="val">Keycloak OIDC (i3 realm)</span></div>
+      <div class="cred-row"><span class="label">Management</span><span class="val">Managed via parent app (EvalOS / Engage / AfroERP / PMaaS)</span></div>
+      <div class="steps">
+        <p>How to access:</p>
+        <ol>
+          <li>Navigate to the respective URL — login via Keycloak SSO</li>
+          <li>Admin access is inherited from Keycloak role mappings in i3 realm</li>
+          <li>Redeploy agents via Argo CD or <code>oc rollout restart deployment/[name] -n [ns]</code></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  
+  <h2>CRM / ERP / PMaaS</h2>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">AfroERP (ERPNext / Frappe) <span class="badge badge-blue">ERP</span></span>
+      <span class="app-url">afroerp.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">Admin URL</span><span class="val">https://afroerp.i3technologies.co.ke/app</span></div>
+      <div class="cred-row"><span class="label">Username</span><span class="val">Administrator</span></div>
+      <div class="cred-row"><span class="label">Password</span><span class="val">REDACTED-erp-admin</span></div>
+      <div class="cred-row"><span class="label">MariaDB Root</span><span class="val">REDACTED-mariadb-root</span></div>
+      <div class="cred-row"><span class="label">MariaDB User</span><span class="val">frappe / i3-Frappe-DB-2026!</span></div>
+      <div class="steps">
+        <p>How to log in as Administrator:</p>
+        <ol>
+          <li>Open <b>https://afroerp.i3technologies.co.ke</b></li>
+          <li>Enter username <b>Administrator</b> and password above → click <b>Login</b></li>
+          <li>For Site Settings: top-right gear icon → <b>System Settings</b></li>
+          <li>For User Management: search bar → <b>User List</b></li>
+          <li>Desk home is at <b>/app</b>; setup wizard is at <b>/setup-wizard</b></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">PMaaS 5.0 <span class="badge badge-blue">PROJECT MGMT</span></span>
+      <span class="app-url">pmaas.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">URL</span><span class="val">https://pmaas.i3technologies.co.ke</span></div>
+      <div class="cred-row"><span class="label">Auth Method</span><span class="val">Keycloak OIDC (i3 realm)</span></div>
+      <div class="cred-row"><span class="label">KC Client</span><span class="val">pmaas-web</span></div>
+      <div class="steps">
+        <p>How to log in:</p>
+        <ol>
+          <li>Open <b>https://pmaas.i3technologies.co.ke</b> → redirects to login page</li>
+          <li>Click <b>Sign in with i3 SSO</b> → Keycloak authentication</li>
+          <li>Admin role: <b>pmaas-admin</b> in Keycloak i3 realm</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">i3 Engage (CRM / Marketing) <span class="badge badge-blue">CRM</span></span>
+      <span class="app-url">engage.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">URL</span><span class="val">https://engage.i3technologies.co.ke</span></div>
+      <div class="cred-row"><span class="label">Auth Method</span><span class="val">Keycloak OIDC (i3 realm)</span></div>
+      <div class="cred-row"><span class="label">KC Client</span><span class="val">engage-web</span></div>
+      <div class="steps">
+        <p>How to log in:</p>
+        <ol>
+          <li>Open <b>https://engage.i3technologies.co.ke</b></li>
+          <li>Authenticate via Keycloak SSO</li>
+          <li>Admin role: <b>engage-admin</b> in Keycloak i3 realm</li>
+        </ol>
+        <p class="note">Root returns 404 (no root handler) — navigate to <b>/dashboard</b> after login.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">Admissions Agent <span class="badge badge-gray">AGENT</span></span>
+      <span class="app-url">admissions.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">URL</span><span class="val">https://admissions.i3technologies.co.ke</span></div>
+      <div class="cred-row"><span class="label">Auth Method</span><span class="val">API key (bearer token)</span></div>
+      <div class="cred-row"><span class="label">Health</span><span class="val">https://admissions.i3technologies.co.ke/health</span></div>
+      <div class="steps">
+        <p>How to access:</p>
+        <ol>
+          <li>Root URL returns 404 — access the <b>/docs</b> endpoint for API reference</li>
+          <li>Authenticate API calls with the LiteLLM virtual key assigned to this service</li>
+          <li>Manage via Argo CD or <code>oc logs deployment/admissions-agent -n i3-admissions</code></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">Onboarding Agent <span class="badge badge-gray">AGENT</span></span>
+      <span class="app-url">onboarding.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">URL</span><span class="val">https://onboarding.i3technologies.co.ke</span></div>
+      <div class="cred-row"><span class="label">Health</span><span class="val">https://onboarding.i3technologies.co.ke/health</span></div>
+      <div class="cred-row"><span class="label">Auth Method</span><span class="val">API key (bearer token)</span></div>
+      <div class="steps">
+        <p>How to access:</p>
+        <ol>
+          <li>Service is headless — <b>/health</b> returns 200 and logs confirm operation</li>
+          <li>Admin via namespace: <code>oc logs deployment/onboarding-agent -n i3-onboarding</code></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  
+  <h2>Content, Storage &amp; Automation</h2>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">Directus CMS <span class="badge badge-blue">CMS</span></span>
+      <span class="app-url">cms.i3technologies.co.ke  |  directus.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">Admin URL</span><span class="val">https://cms.i3technologies.co.ke/admin/</span></div>
+      <div class="cred-row"><span class="label">Email</span><span class="val">admin@i3.tech</span></div>
+      <div class="cred-row"><span class="label">Password</span><span class="val">a0meDpzBwTx7Srks</span></div>
+      <div class="steps">
+        <p>How to log in as Administrator:</p>
+        <ol>
+          <li>Open <b>https://cms.i3technologies.co.ke/admin/</b></li>
+          <li>Enter email <b>admin@i3.tech</b> and password above → click <b>Sign In</b></li>
+          <li>Access <b>Settings</b> (gear icon, bottom-left) for system configuration</li>
+          <li>Manage content collections, flows (automation), users and roles here</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">n8n Automation <span class="badge badge-blue">AUTOMATION</span></span>
+      <span class="app-url">n8n.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">URL</span><span class="val">https://n8n.i3technologies.co.ke</span></div>
+      <div class="cred-row"><span class="label">Owner Email</span><span class="val">snjagi@i3technologies.co.ke</span></div>
+      <div class="cred-row"><span class="label">Password</span><span class="val">Set during initial setup (contact Sebastian Njagi)</span></div>
+      <div class="cred-row"><span class="label">API Key</span><span class="val">eb1db1b7bc27004b3ce95e8a4b750a6174b336af60b67038a9516b23cd9a3b41</span></div>
+      <div class="cred-row"><span class="label">API Header</span><span class="val">X-N8N-API-KEY: &lt;api-key&gt;</span></div>
+      <div class="steps">
+        <p>How to log in as Administrator:</p>
+        <ol>
+          <li>Open <b>https://n8n.i3technologies.co.ke</b></li>
+          <li>Sign in with owner email — password was set during initial setup</li>
+          <li>If password is lost: use the API key above to access all workflows via REST API at <b>/api/v1/workflows</b></li>
+          <li>To reset password: contact Sebastian Njagi or use DB-level reset</li>
+          <li>VOD Pipeline workflow ID: <b>cDnWgJkI6RZ90pfy</b> (SmartLab)</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  
+  <h2>Monitoring &amp; Infrastructure</h2>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">Grafana <span class="badge badge-blue">MONITORING</span></span>
+      <span class="app-url">grafana.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">Admin URL</span><span class="val">https://grafana.i3technologies.co.ke</span></div>
+      <div class="cred-row"><span class="label">Username</span><span class="val">admin</span></div>
+      <div class="cred-row"><span class="label">Password</span><span class="val">0rINtjXAE3yRTSouVnqF</span></div>
+      <div class="steps">
+        <p>How to log in as Administrator:</p>
+        <ol>
+          <li>Open <b>https://grafana.i3technologies.co.ke</b></li>
+          <li>Enter username <b>admin</b> and password above</li>
+          <li>You may be prompted to change the password on first login — note the new password</li>
+          <li>Add dashboards: <b>+ → Import</b> or <b>Dashboards → New Dashboard</b></li>
+          <li>Manage data sources: <b>Connections → Data sources</b></li>
+        </ol>
+        <p class="note">Prometheus scrapes all platform metrics. Data source is pre-configured pointing to <code>prometheus.i3-monitoring.svc:9090</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">OpenBao / Vault (Secrets Management) <span class="badge badge-red">CRITICAL</span></span>
+      <span class="app-url">vault.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">UI URL</span><span class="val">https://vault.i3technologies.co.ke</span></div>
+      <div class="cred-row"><span class="label">Auth Method</span><span class="val">Root token (offline)  |  Keycloak OIDC</span></div>
+      <div class="cred-row"><span class="label">Unseal Scheme</span><span class="val">Shamir 2-of-3 key shares</span></div>
+      <div class="cred-row"><span class="label">Keyholders</span><span class="val">Sebastian Njagi · Philip Mukiti · Joseph Maina</span></div>
+      <div class="cred-row"><span class="label">Status</span><span class="val">Sealed=false · Initialized=true · 3-node HA raft</span></div>
+      <div class="vault-box">
+        <strong>⚠ Unseal keys and root token are stored OFFLINE only.</strong> They were distributed to the 3 keyholders above during <code>bao operator init</code>. They are NOT stored in any Kubernetes secret or git repository. To unseal after a restart, run:<br /><br />
+        <code>.\platform\scripts\unseal-openbao.ps1</code> (requires env vars <code>OPENBAO_UNSEAL_KEY_1</code>, <code>_KEY_2</code>, <code>_KEY_3</code>)
+      </div>
+      <div class="steps">
+        <p>How to log in as Administrator:</p>
+        <ol>
+          <li>Open <b>https://vault.i3technologies.co.ke</b></li>
+          <li>Select auth method <b>Token</b> → enter root token (held offline by keyholders)</li>
+          <li>For day-to-day access: use the <b>Keycloak OIDC</b> method with an i3 realm admin account</li>
+          <li>For API access: set header <b>X-Vault-Token: &lt;root-token&gt;</b></li>
+          <li>Secrets engine is at path <b>secret/</b> (KV v2)</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  
+  <h2>Collaboration</h2>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">i3 Social (Nextcloud 28) <span class="badge badge-blue">COLLAB</span></span>
+      <span class="app-url">nextcloud.i3technologies.co.ke</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">Admin URL</span><span class="val">https://nextcloud.i3technologies.co.ke/settings/admin</span></div>
+      <div class="cred-row"><span class="label">Username</span><span class="val">i3admin</span></div>
+      <div class="cred-row"><span class="label">Password</span><span class="val">i3-Social-Admin-2026!</span></div>
+      <div class="steps">
+        <p>How to log in as Administrator:</p>
+        <ol>
+          <li>Open <b>https://nextcloud.i3technologies.co.ke</b></li>
+          <li>Enter username <b>i3admin</b> and password above</li>
+          <li>Admin panel: top-right avatar → <b>Administration settings</b></li>
+          <li>User management: <b>Administration settings → Users</b></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  
+  <h2>Platform Operations</h2>
+
+  <div class="app-card">
+    <div class="app-card-header">
+      <span class="app-name">IBM ROKS / OpenShift Console <span class="badge badge-red">CLUSTER</span></span>
+      <span class="app-url">c113-e.eu-de.containers.cloud.ibm.com:32581</span>
+    </div>
+    <div class="app-card-body">
+      <div class="cred-row"><span class="label">OC Login</span><span class="val">oc login --token=&lt;token&gt; --server=https://c113-e.eu-de.containers.cloud.ibm.com:32581</span></div>
+      <div class="cred-row"><span class="label">Auth Method</span><span class="val">IBM Cloud IAM (IBMid)</span></div>
+      <div class="cred-row"><span class="label">Current User</span><span class="val">KubeCert#IBMid-693001MZ5X</span></div>
+      <div class="cred-row"><span class="label">Region</span><span class="val">eu-de (Frankfurt)</span></div>
+      <div class="steps">
+        <p>How to log in:</p>
+        <ol>
+          <li>Go to <b>cloud.ibm.com</b> → sign in with IBMid</li>
+          <li>Navigate to <b>OpenShift → Clusters → i3-platform → OpenShift web console</b></li>
+          <li>From console top-right: click username → <b>Copy login command</b> → paste in terminal</li>
+          <li>For CLI: <code>ibmcloud login --sso</code> then <code>ibmcloud oc cluster config --cluster &lt;id&gt;</code></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  
+  <h2>Integration &amp; Service-to-Service Tokens</h2>
+  <table class="token-table">
+    <tr><th>Service</th><th>Token / Key</th><th>Used By</th></tr>
+    <tr><td>LiteLLM Master Key</td><td><code>sk-litellm-i3-f951c9377163a11275864cb92e90ad13</code></td><td>All apps calling AI models</td></tr>
+    <tr><td>n8n API Key</td><td><code>eb1db1b7bc27004b3ce95e8a4b750a6174b336af60b67038a9516b23cd9a3b41</code></td><td>SmartLab VOD pipeline, automation</td></tr>
+    <tr><td>Moodle WS Token</td><td><code>4a88241080ac203af3a76a00c428b7a9</code></td><td>SmartLab → Moodle course publish</td></tr>
+    <tr><td>Langfuse Public Key</td><td><code>pk-lf-i3evalos-8ed2998c3f68449b</code></td><td>EvalOS, LiteLLM tracing</td></tr>
+    <tr><td>Langfuse Secret Key</td><td><code>sk-lf-i3evalos-b7905eaf49904cc5</code></td><td>EvalOS, LiteLLM tracing</td></tr>
+    <tr><td>Keycloak Client — i3smartlab</td><td><code>uMec35yyi1PdpcQdx2vrUrOC5bI4LAxs</code></td><td>SmartLab API auth</td></tr>
+    <tr><td>SeaweedFS S3 Key (SmartLab)</td><td>Key: <code>i3smartlab</code>  |  Secret: <code>i3-SeaweedFS-SmartLab-2026!</code></td><td>SmartLab storage buckets</td></tr>
+    <tr><td>Directus Admin Token (i3-ott)</td><td><code>REPLACE_WITH_DIRECTUS_STATIC_TOKEN</code></td><td>n8n → Directus API calls</td></tr>
+  </table>
+
+  <h2>Default Network Access (All Apps)</h2>
+  <table class="token-table">
+    <tr><th>App</th><th>Public URL</th><th>Internal URL (cluster)</th></tr>
+    <tr><td>Keycloak SSO</td><td>sso.i3technologies.co.ke</td><td>keycloak.i3-auth.svc:8080</td></tr>
+    <tr><td>Moodle</td><td>moodle.i3technologies.co.ke</td><td>edbridge.i3-edbridge.svc:80</td></tr>
+    <tr><td>LiteLLM</td><td>litellm.i3technologies.co.ke</td><td>litellm-proxy.i3-model-gateway.svc:4000</td></tr>
+    <tr><td>Directus CMS</td><td>cms.i3technologies.co.ke</td><td>directus.i3-ott.svc:8055</td></tr>
+    <tr><td>n8n</td><td>n8n.i3technologies.co.ke</td><td>n8n.i3-ott.svc:5678</td></tr>
+    <tr><td>SeaweedFS S3</td><td>(internal only)</td><td>seaweedfs-s3.i3-ott.svc:8333</td></tr>
+    <tr><td>PostgreSQL HA</td><td>(internal only)</td><td>i3-postgres-ha.i3-data.svc:5432</td></tr>
+    <tr><td>OpenBao Vault</td><td>vault.i3technologies.co.ke</td><td>openbao-active.i3-security.svc:8200</td></tr>
+    <tr><td>SmartLab API</td><td>api.smartlab.i3technologies.co.ke*</td><td>smartlab-api.i3-smartlab.svc:8080</td></tr>
+    <tr><td>Voice STT</td><td>stt.i3technologies.co.ke</td><td>voice-stt.i3-voice.svc:8001</td></tr>
+    <tr><td>Voice TTS</td><td>tts.i3technologies.co.ke</td><td>voice-tts.i3-voice.svc:8000</td></tr>
+  </table>
+  <p style="font-size:11px;color:#57606a;margin-top:6px">* DNS CNAME not yet added for api.smartlab — pending manual DNS panel update.</p>
+
+  <footer>Made with IBM Bob  ·  i3 Technologies Platform  ·  CONFIDENTIAL — September 2026</footer>
+</div>
+</body>
+</html>

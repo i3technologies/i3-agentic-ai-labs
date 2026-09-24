@@ -1,0 +1,252 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Onboarding Agent — User Guide</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.7;background:#fff;color:#1f2328}
+  .wrapper{max-width:820px;margin:0 auto;padding:32px 24px}
+  h1{font-size:22px;font-weight:700;color:#1f2328;border-bottom:2px solid #3b82d4;padding-bottom:8px;margin-bottom:6px}
+  .subtitle{color:#57606a;font-size:13px;margin-bottom:24px}
+  h2{font-size:16px;font-weight:700;color:#1f2328;margin:28px 0 10px;padding:6px 12px;background:#f7f8fa;border-left:4px solid #3b82d4}
+  h3{font-size:14px;font-weight:700;margin:16px 0 7px;color:#1f2328}
+  p{margin-bottom:10px}
+  ul,ol{padding-left:22px;margin-bottom:10px}
+  li{margin-bottom:5px}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px}
+  th{background:#f7f8fa;border:1px solid #e5e7eb;padding:7px 10px;text-align:left;font-weight:700}
+  td{border:1px solid #e5e7eb;padding:7px 10px;vertical-align:top}
+  tr:nth-child(even) td{background:#fafbfc}
+  code{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:3px;padding:1px 5px;font-size:12px;font-family:"Consolas","Courier New",monospace}
+  .step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start}
+  .step-num{min-width:30px;height:30px;background:#3b82d4;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+  .step-body{flex:1}
+  .callout{border-left:4px solid #3b82d4;background:#f0f6ff;padding:10px 14px;margin:12px 0;border-radius:0 4px 4px 0;font-size:13px}
+  .callout-tip{border-left-color:#22c55e;background:#f0fdf4}
+  .callout-warn{border-left-color:#f59e0b;background:#fffbeb}
+  .app-header{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:14px 18px;margin-bottom:24px;display:flex;gap:18px;flex-wrap:wrap;font-size:13px}
+  .app-header div strong{color:#1f2328;display:block;margin-bottom:2px}
+  .app-header div span{color:#57606a}
+  .divider{border:none;border-top:1px solid #e5e7eb;margin:24px 0}
+  .role-card{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:5px;padding:10px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start}
+  .role-card .role-name{font-weight:700;color:#3b82d4;min-width:160px;font-size:13px}
+  .role-card .role-desc{font-size:13px;color:#1f2328}
+  footer{border-top:1px solid #e5e7eb;margin-top:40px;padding-top:12px;text-align:center;font-size:12px;color:#57606a}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<h1>i3 Onboarding Agent — User Guide</h1>
+<p class="subtitle">AI-powered personalised learning plan generator for new i3 platform users — with Gantt charts and CRM sync</p>
+
+<div class="app-header">
+  <div><strong>Application</strong><span>i3 Onboarding Agent</span></div>
+  <div><strong>Audience</strong><span>New Platform Users, HR Teams, Team Leads</span></div>
+  <div><strong>Auth Required</strong><span>Yes — i3 SSO (Keycloak)</span></div>
+  <div><strong>Plan TTL</strong><span>2 hours (saved to CRM for permanent record)</span></div>
+</div>
+
+<h2>1. What is the Onboarding Agent?</h2>
+<p>The i3 Onboarding Agent is an AI system that automatically generates personalised learning and onboarding plans for new platform users. Based on your role, the agent runs parallel AI scans across skill domains, synthesises the results using the Granite Heavy language model, and produces a structured plan with timeline — including a Markdown document and a visual Gantt chart.</p>
+
+<table>
+  <tr><th>Feature</th><th>Description</th></tr>
+  <tr><td>Auto Plan Generation</td><td>AI generates a role-specific onboarding plan in 30–60 seconds</td></tr>
+  <tr><td>Role-Tailored Content</td><td>Plans differ by role: student, engineer, data scientist, security, backend</td></tr>
+  <tr><td>Gantt Chart View</td><td>Visual timeline of your learning milestones</td></tr>
+  <tr><td>Markdown Export</td><td>Download your plan as a formatted Markdown document</td></tr>
+  <tr><td>CRM Sync</td><td>Two-step sync of your plan to the CRM for tracking (approval required)</td></tr>
+  <tr><td>Plan History</td><td>View status of previously generated plans and their sync state</td></tr>
+</table>
+
+<hr class="divider" />
+
+<h2>2. Logging In</h2>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body">
+    <h3>Access the Onboarding Portal</h3>
+    <p>Your administrator or HR team will share the onboarding portal URL (hosted at <code>i3-onboarding</code> namespace). Navigate to it in your browser.</p>
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body">
+    <h3>Sign In</h3>
+    <p>Click <strong>Sign In</strong>. Authenticate with your i3 SSO credentials (email + password). First-time users must set a password using the link emailed to them.</p>
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body">
+    <h3>Confirm Your Role</h3>
+    <p>On first login, you will be asked to confirm your role. This determines the content of your onboarding plan.</p>
+  </div>
+</div>
+
+<hr class="divider" />
+
+<h2>3. Generating Your Onboarding Plan</h2>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body">
+    <h3>Click "Generate My Onboarding Plan"</h3>
+    <p>From the home screen, click the large <strong>Generate My Onboarding Plan</strong> button. The system will automatically detect your role from your SSO profile.</p>
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body">
+    <h3>Wait for AI Processing</h3>
+    <p>The agent runs three stages in parallel:
+      </p><ol>
+        <li>Skill domain scans (ChromaDB knowledge base search per skill area)</li>
+        <li>Verification pass (cross-check and quality check)</li>
+        <li>Plan synthesis (Granite Heavy LLM generates your structured plan)</li>
+      </ol>
+    This typically takes <strong>30–60 seconds</strong>. A progress indicator shows each stage completing.
+    <p></p>
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body">
+    <h3>Review Your Plan</h3>
+    <p>Your personalised onboarding plan appears. It includes:
+      </p><ul>
+        <li>Week-by-week learning milestones</li>
+        <li>Key skills and tools to learn for your role</li>
+        <li>Platform modules to explore</li>
+        <li>Resources and documentation links</li>
+        <li>Estimated completion timeline</li>
+      </ul>
+    <p></p>
+  </div>
+</div>
+
+<h3>Role-Based Plan Content</h3>
+
+<div class="role-card">
+  <div class="role-name">Bootcamp Student</div>
+  <div class="role-desc">Platform fundamentals, EvalOS exams, AI Lab basics, Admissions system walkthrough</div>
+</div>
+<div class="role-card">
+  <div class="role-name">Platform Engineer</div>
+  <div class="role-desc">Infrastructure setup, Kubernetes/OpenShift, CI/CD pipelines, namespace management, monitoring</div>
+</div>
+<div class="role-card">
+  <div class="role-name">AI / ML Engineer</div>
+  <div class="role-desc">AI Lab setup, model gateway APIs, ChromaDB collections, RAG pipeline construction, RAGAS evaluation</div>
+</div>
+<div class="role-card">
+  <div class="role-name">Backend Engineer</div>
+  <div class="role-desc">FastAPI/Next.js patterns, asyncpg pooling, Kafka producers/consumers, Keycloak integration, MCP gateway</div>
+</div>
+<div class="role-card">
+  <div class="role-name">Security Engineer</div>
+  <div class="role-desc">Hard constraints (HC-1→HC-8), OpenBao secrets, Lobster Trap firewall, RLS policies, audit patterns</div>
+</div>
+
+<hr class="divider" />
+
+<h2>4. Viewing Your Plan</h2>
+
+<h3>JSON View</h3>
+<p>The structured JSON data of your plan — useful for integrations or programmatic access.</p>
+
+<h3>Markdown View</h3>
+<p>A formatted, readable Markdown document suitable for sharing with your team lead or printing. Access via the <strong>Markdown</strong> tab in your plan view.</p>
+
+<h3>Gantt Chart View</h3>
+<p>A visual timeline of your onboarding milestones. Access via the <strong>Gantt</strong> tab. Shows each milestone as a bar on a timeline — weeks 1 through N, colour-coded by category (learning, practice, assessment).</p>
+
+<div class="callout callout-tip"><strong>Tip:</strong> Share the Gantt chart with your manager during your first week check-in. It provides an immediate visual of your progress trajectory and the milestones to hit in the first 30 days.</div>
+
+<hr class="divider" />
+
+<h2>5. Downloading Your Plan</h2>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body"><p>Open your plan and click the <strong>Markdown</strong> tab.</p></div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body"><p>Click <strong>Download (.md)</strong> to save the Markdown file to your computer.</p></div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body"><p>Open the file in any Markdown viewer (VS Code, Obsidian, Typora) or share it directly via email or messaging.</p></div>
+</div>
+
+<div class="callout callout-warn"><strong>Plan expiry:</strong> Plans in the system cache expire after <strong>2 hours</strong>. Download your Markdown file or sync to CRM before then if you want a permanent record.</div>
+
+<hr class="divider" />
+
+<h2>6. CRM Sync (Two-Step Process)</h2>
+
+<p>To permanently record your onboarding plan in the CRM for progress tracking by your team lead or HR, use the two-step CRM sync:</p>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body">
+    <h3>Initiate Sync</h3>
+    <p>From your plan view, click <strong>Sync to CRM</strong>. This is the <em>Prepare</em> step — it stages your plan and shows you a preview of what will be written to the CRM.</p>
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body">
+    <h3>Review the Staged Data</h3>
+    <p>Review the staged record. Confirm the plan details, your name, role, and milestones are correct.</p>
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body">
+    <h3>Confirm Sync</h3>
+    <p>Click <strong>Confirm Sync</strong>. The plan is permanently written to the CRM. Your team lead will be able to view and track your progress against it.</p>
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">4</div>
+  <div class="step-body">
+    <h3>Cancel if Needed</h3>
+    <p>If you spotted an error in the preview, click <strong>Cancel</strong> to discard the staged sync without writing to CRM. You can regenerate your plan and try again.</p>
+  </div>
+</div>
+
+<hr class="divider" />
+
+<h2>7. Checking Onboarding Status</h2>
+
+<p>Go to the <strong>Status</strong> page to see:</p>
+<ul>
+  <li>Your most recent plan generation status (Ready / Processing / Expired)</li>
+  <li>CRM sync history (Pending / Synced / Cancelled)</li>
+  <li>Platform connectivity status (ChromaDB availability check)</li>
+</ul>
+
+<hr class="divider" />
+
+<h2>8. Troubleshooting</h2>
+
+<table>
+  <tr><th>Issue</th><th>Cause</th><th>Solution</th></tr>
+  <tr><td>Plan generation takes over 2 minutes</td><td>AI service load or ChromaDB slow</td><td>Refresh and check Status page; try regenerating after 5 minutes</td></tr>
+  <tr><td>Plan content seems generic</td><td>Role not correctly set in SSO profile</td><td>Contact admin to verify your role assignment in Keycloak</td></tr>
+  <tr><td>Plan expired before downloading</td><td>2-hour cache TTL elapsed</td><td>Click "Regenerate Plan" — a fresh plan is generated instantly</td></tr>
+  <tr><td>CRM sync fails</td><td>CRM service unavailable or auth issue</td><td>Cancel staged sync; contact admin; download Markdown as backup</td></tr>
+  <tr><td>Cannot log in</td><td>Credentials not yet set up</td><td>Check your welcome email for activation link; contact HR/IT if not received</td></tr>
+  <tr><td>Gantt chart not loading</td><td>Browser JavaScript issue</td><td>Try a different browser (Chrome, Firefox); disable ad-blockers</td></tr>
+</table>
+
+<footer>Made with IBM Bob  |  i3 Technologies — Onboarding Agent User Guide v2.0  |  © 2026</footer>
+</div>
+</body>
+</html>

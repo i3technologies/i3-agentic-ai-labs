@@ -1,0 +1,396 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>i3 Platform — Principal Architect Findings Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.65;
+    color: #1f2328;
+    background: #ffffff;
+    padding: 32px 16px 48px;
+  }
+  .page { max-width: 780px; margin: 0 auto; }
+
+  /* Header */
+  .header { border-bottom: 2px solid #1f2328; padding-bottom: 20px; margin-bottom: 32px; }
+  .header .label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #57606a; margin-bottom: 6px; }
+  .header h1 { font-size: 24px; font-weight: 700; line-height: 1.25; color: #1f2328; }
+  .header .sub { font-size: 13px; color: #57606a; margin-top: 8px; }
+  .meta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; }
+  .meta-item { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 4px; padding: 10px 14px; }
+  .meta-item .mk { font-size: 11px; color: #57606a; text-transform: uppercase; letter-spacing: .06em; }
+  .meta-item .mv { font-size: 13px; font-weight: 600; color: #1f2328; margin-top: 2px; }
+
+  /* Executive Summary */
+  .exec-summary { background: #f7f8fa; border-left: 4px solid #3b82d4; border-radius: 0 4px 4px 0; padding: 16px 20px; margin-bottom: 32px; }
+  .exec-summary p { color: #1f2328; font-size: 13.5px; }
+
+  /* Sections */
+  h2 { font-size: 17px; font-weight: 700; color: #1f2328; margin: 36px 0 16px; padding-bottom: 6px; border-bottom: 1px solid #e5e7eb; }
+  h3 { font-size: 14px; font-weight: 700; color: #1f2328; margin: 22px 0 10px; }
+  h4 { font-size: 13px; font-weight: 600; color: #3b82d4; margin: 16px 0 8px; }
+  p { margin-bottom: 10px; color: #1f2328; }
+  ul, ol { padding-left: 20px; margin-bottom: 12px; }
+  li { margin-bottom: 5px; font-size: 13.5px; }
+
+  /* Badges */
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 3px; text-transform: uppercase; letter-spacing: .04em; vertical-align: middle; margin-left: 6px; }
+  .badge-red    { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+  .badge-amber  { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+  .badge-green  { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+  .badge-blue   { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .badge-purple { background: #faf5ff; color: #7c3aed; border: 1px solid #ddd6fe; }
+
+  /* Finding cards */
+  .finding-card { border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 14px; overflow: hidden; }
+  .finding-card .fc-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: #f7f8fa; border-bottom: 1px solid #e5e7eb; }
+  .finding-card .fc-id { font-size: 11px; font-weight: 700; color: #57606a; font-family: monospace; }
+  .finding-card .fc-title { font-size: 13.5px; font-weight: 600; color: #1f2328; flex: 1; margin: 0 12px; }
+  .finding-card .fc-body { padding: 12px 16px; font-size: 13px; }
+  .finding-card .fc-body p { margin-bottom: 6px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px; }
+  th { background: #f7f8fa; text-align: left; padding: 8px 12px; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #57606a; border: 1px solid #e5e7eb; }
+  td { padding: 8px 12px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+
+  /* Scorecard */
+  .scorecard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 24px; }
+  .sc-item { border: 1px solid #e5e7eb; border-radius: 5px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+  .sc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .sc-dot-green  { background: #16a34a; }
+  .sc-dot-amber  { background: #d97706; }
+  .sc-dot-red    { background: #dc2626; }
+  .sc-dot-grey   { background: #9ca3af; }
+  .sc-label { font-size: 13px; color: #1f2328; }
+  .sc-status { font-size: 11px; color: #57606a; margin-top: 1px; }
+
+  /* Code */
+  code { font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; background: #f3f4f6; padding: 1px 5px; border-radius: 3px; color: #1f2328; }
+
+  /* Divider */
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 28px 0; }
+
+  /* Recommendation strip */
+  .rec-strip { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 5px; padding: 12px 16px; margin-bottom: 12px; }
+  .rec-strip .rt { font-size: 12px; font-weight: 600; color: #1d4ed8; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+  .rec-strip p { color: #1f2328; font-size: 13px; margin: 0; }
+
+  /* Phase ribbon */
+  .phase-ribbon { display: flex; gap: 0; margin-bottom: 24px; border-radius: 5px; overflow: hidden; border: 1px solid #e5e7eb; }
+  .pr-item { flex: 1; padding: 12px 10px; text-align: center; background: #f7f8fa; border-right: 1px solid #e5e7eb; }
+  .pr-item:last-child { border-right: none; }
+  .pr-item.active { background: #1f2328; }
+  .pr-item .pr-label { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+  .pr-item .pr-label.light { color: #9ca3af; }
+  .pr-item .pr-label.dark  { color: #57606a; }
+  .pr-item .pr-status { font-size: 12px; font-weight: 600; margin-top: 3px; }
+  .pr-item .pr-status.light { color: #e5e7eb; }
+  .pr-item .pr-status.dark  { color: #1f2328; }
+
+  .footer { text-align: center; font-size: 12px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 40px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  
+  <div class="header">
+    <div class="label">Confidential — Internal Architecture Review</div>
+    <h1>i3 Platform — Principal Architect Findings Report</h1>
+    <div class="sub">Full-stack review of the i3 Agentic AI Platform codebase, IBM Bob Technical Implementation Guide, and i3-Platform-Modernisation 1.0 blueprint library.</div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="mk">Prepared For</div><div class="mv">Philip Mukiti, CEO</div></div>
+      <div class="meta-item"><div class="mk">Review Date</div><div class="mv">July 2025</div></div>
+      <div class="meta-item"><div class="mk">Scope</div><div class="mv">Full Platform + 9 Blueprints</div></div>
+      <div class="meta-item"><div class="mk">Branch Reviewed</div><div class="mv">main · ba28dac</div></div>
+      <div class="meta-item"><div class="mk">Modified Files</div><div class="mv">306 uncommitted changes</div></div>
+      <div class="meta-item"><div class="mk">Platform Stack</div><div class="mv">IBM ROKS 4.15 · Frankfurt</div></div>
+    </div>
+  </div>
+
+  
+  <div class="exec-summary">
+    <p><strong>Summary:</strong> The i3 platform demonstrates sophisticated architectural intent: a governed, multi-tenant, event-driven agentic AI platform with 17 namespaces, a polyglot runtime (Python/TypeScript/Go), and a well-documented hard-constraint framework (HC-1 through HC-8). The IBM Bob integration guide provides an unusually rigorous AI-assisted engineering protocol. However, three systemic risks require immediate attention before the next customer commitments: (1) <strong>306 uncommitted changes sit on main</strong> creating a release integrity gap; (2) several commercial capability claims exceed current infrastructure reality; and (3) critical Phase 1 security and tenancy remediation work is still in-flight. The modernisation roadmap is sound and should be executed in strict phase order.</p>
+  </div>
+
+  
+  <h2>1. Platform Topology &amp; Infrastructure Assessment</h2>
+  <p>The platform runs on IBM ROKS 4.15 in Frankfurt (eu-de). The namespace topology is well-structured with five tiers providing logical separation between platform services.</p>
+
+  <h3>1.1 Namespace Topology</h3>
+  <table>
+    <tr><th>Tier</th><th>Namespaces</th><th>Purpose</th><th>Status</th></tr>
+    <tr><td>T0 — Data</td><td><code>i3-data</code>, <code>i3-messaging</code></td><td>PostgreSQL, Kafka, Redis</td><td><span class="badge badge-green">Stable</span></td></tr>
+    <tr><td>T1 — Security</td><td><code>i3-security</code>, <code>i3-auth</code></td><td>Keycloak, OpenBao, TLS</td><td><span class="badge badge-amber">Hardening In-flight</span></td></tr>
+    <tr><td>T2 — Platform</td><td><code>i3-gitops</code>, <code>i3-gateway</code>, <code>i3-consent</code></td><td>ArgoCD, Tekton, Kong, Consent Service</td><td><span class="badge badge-amber">Partial</span></td></tr>
+    <tr><td>T3 — AI</td><td><code>i3-model-gateway</code>, <code>i3-ai-lab</code>, <code>i3-agent-mesh</code></td><td>LiteLLM, Ollama, JupyterHub, Agent Registry</td><td><span class="badge badge-amber">Evolving</span></td></tr>
+    <tr><td>T4 — Products</td><td><code>i3-evalos</code>, <code>i3-ott</code>, <code>i3-admissions</code>, <code>i3-engage</code></td><td>Product applications</td><td><span class="badge badge-amber">Active Dev</span></td></tr>
+    <tr><td>T5 — Ops</td><td><code>i3-monitoring</code></td><td>Prometheus, Grafana, Loki</td><td><span class="badge badge-green">Deployed</span></td></tr>
+  </table>
+  <p><strong>Finding:</strong> The 17-namespace topology is well-tiered and HC-1 (no solution-01 through solution-08 touches) is correctly preserved. However, the <code>i3-consent</code> and <code>i3-agent-mesh</code> namespaces contain services still under active scaffolding — they should not be referenced in production service-discovery until the Phase 2 domain-decoupling tasks are complete.</p>
+
+  <h3>1.2 Compute &amp; Model Gateway</h3>
+  <p>The LiteLLM configuration shows a 3-tier model hierarchy (nano/fast/heavy) with correct fallback chains and Redis semantic caching (similarity threshold 0.95, TTL 3600s). KEDA autoscaling is configured across 5+ services. <strong>Critical gap:</strong> all inference runs on CPU-only Ollama workers. The GPU workstream (B1) — NVIDIA L4/A10 nodes — is designed but not yet provisioned. Any customer-facing claim about GPU-accelerated inference is currently inaccurate.</p>
+
+  
+  <h2>2. IBM Bob Technical Implementation Guide — Assessment</h2>
+
+  <h3>2.1 Document Quality</h3>
+  <p>The <code>i3-IBM-Bob-Technical-Implementation-Guide.md</code> is an exceptionally well-structured 1,080-line engineering contract. It consolidates four source documents into a single authoritative reference covering hard constraints, engineering principles, the 4-phase Explore→Plan→Implement→Verify cycle, a risk-tier model (Tiers 0–4), a Master System Prompt, and a 10-point Definition of Done. This is best-in-class for AI-assisted engineering governance.</p>
+
+  <h3>2.2 What Works Well</h3>
+  <ul>
+    <li><strong>Hard constraint enforcement:</strong> HC-1 through HC-8 are correctly reflected in <code>.bob/rules/01-hard-constraints.md</code> and enforced on every Bob session.</li>
+    <li><strong>Risk-tier model:</strong> The 5-tier agent autonomy model (Read → Low-risk → Medium → High-risk → Destructive) with explicit approval gates aligns with HC-3 and HC-5 requirements.</li>
+    <li><strong>Capability Claim Matrix:</strong> The document introduces a structured test for when claims may be made (GPU acceleration, regional residency, per-tenant metering), protecting against premature commercialisation. This should be shared with the sales team.</li>
+    <li><strong>Phase gates:</strong> The EXPLORE-GATE.md → PLN deliverables → IMP checklists → VER red-team structure prevents architectural drift.</li>
+    <li><strong>Master System Prompt:</strong> The 20 mandatory Bob behaviours are well-scoped and machine-enforceable.</li>
+  </ul>
+
+  <h3>2.3 Gaps Identified</h3>
+  <div class="finding-card">
+    <div class="fc-header"><span class="fc-id">BOB-G1</span><span class="fc-title">Explore Gate not yet closed</span><span class="badge badge-amber">Medium</span></div>
+    <div class="fc-body"><p>The guide prescribes producing <code>EXPLORE-GATE.md</code> as the Phase 1 exit artefact (architecture map, dependency graph, top-20 Plan tasks). This file does not exist in the repository. Without it, PLN-01 through PLN-06 artefacts lack a grounded baseline, and ADR decisions may be made on incomplete dependency knowledge.</p></div>
+  </div>
+  <div class="finding-card">
+    <div class="fc-header"><span class="fc-id">BOB-G2</span><span class="fc-title">306 uncommitted changes on main</span><span class="badge badge-red">Critical</span></div>
+    <div class="fc-body"><p>The git status shows 306 modified files with no staging discipline. The Bob guide mandates atomic commits, evidence-based completion, and independent verification. Operating with a 306-file dirty working tree means no step can be independently verified, no rollback boundary exists, and the production readiness scorecard cannot be completed. A git hygiene task must be completed before any new implementation work.</p></div>
+  </div>
+  <div class="finding-card">
+    <div class="fc-header"><span class="fc-id">BOB-G3</span><span class="fc-title">Independent Verifier mode not activated</span><span class="badge badge-amber">Medium</span></div>
+    <div class="fc-body"><p>The guide specifies an <code>i3-independent-verifier</code> Bob mode for VER-01 through VER-08 verification phases. This mode is not yet defined in <code>.bob/</code>. The verify phase red-teams (tenancy isolation, approval-gate bypass) cannot be run without it.</p></div>
+  </div>
+
+  
+  <h2>3. Codebase Security &amp; Compliance Findings</h2>
+
+  <h3>3.1 Hard Constraint Compliance Matrix</h3>
+  <table>
+    <tr><th>Constraint</th><th>Requirement</th><th>Current State</th><th>Status</th></tr>
+    <tr><td>HC-1</td><td>Never touch solution-01–08</td><td>No violations found in reviewed files</td><td><span class="badge badge-green">Pass</span></td></tr>
+    <tr><td>HC-2</td><td>Fabric chaincode staged by Nov 2026</td><td>FORD chaincode not yet scaffolded; USSD bridge absent</td><td><span class="badge badge-red">At Risk</span></td></tr>
+    <tr><td>HC-3</td><td>No agent above L1 autonomy</td><td>All reviewed agents declare L0/L1; agent-manifest validator in MCP server</td><td><span class="badge badge-green">Pass</span></td></tr>
+    <tr><td>HC-4</td><td>tenant_id UUID NOT NULL everywhere</td><td>Not consistently applied — EvalOS and Engage DB schemas need audit</td><td><span class="badge badge-amber">Partial</span></td></tr>
+    <tr><td>HC-5</td><td>Agents propose, policy disposes</td><td>MCP gateway pattern in place; campaign_agent.py uses decision log</td><td><span class="badge badge-green">Pass</span></td></tr>
+    <tr><td>HC-6</td><td>HMAC-SHA256 for NIDs/phone numbers</td><td>Lobster Trap and MCP server enforce; HMAC pattern referenced but needs verification across all consumers</td><td><span class="badge badge-amber">Partial</span></td></tr>
+    <tr><td>HC-7</td><td>DEV_BYPASS_AUTH=true forbidden</td><td>MCP server actively scans for this; not found in reviewed files</td><td><span class="badge badge-green">Pass</span></td></tr>
+    <tr><td>HC-8</td><td>Ballot secrecy: identity + choice separated</td><td>Chaincode not yet written; ballotPrivate collection not yet defined</td><td><span class="badge badge-red">Not Started</span></td></tr>
+  </table>
+
+  <h3>3.2 Security Findings</h3>
+
+  <div class="finding-card">
+    <div class="fc-header"><span class="fc-id">SEC-01</span><span class="fc-title">Prompt Injection Firewall — Consistent but Needs Parity Check</span><span class="badge badge-amber">Medium</span></div>
+    <div class="fc-body"><p>The 12-pattern Lobster Trap firewall is implemented in both <code>lobster-trap.ts</code> (TypeScript) and inline Python across <code>admissions_agent.py</code>, <code>campaign_agent.py</code>, and <code>pmaas</code>. The MCP server's <code>test_prompt_injection</code> tool validates this. A formal parity check via the <code>sync-lobster-trap</code> skill has not been evidenced. Run this skill to confirm no regex drift exists between TS and Python runtimes before next production deployment.</p></div>
+  </div>
+
+  <div class="finding-card">
+    <div class="fc-header"><span class="fc-id">SEC-02</span><span class="fc-title">TLS Certificate Files Committed to Repository</span><span class="badge badge-red">Critical</span></div>
+    <div class="fc-body"><p>The git status snapshot shows <code>ca.crt</code>, <code>tls.crt</code>, and <code>tls.key</code> as untracked files in the workspace root. TLS private keys must never reside in the application repository. These must be removed, rotated, and stored exclusively in OpenBao. Verify <code>.gitignore</code> patterns cover <code>*.key</code> and <code>*.crt</code>.</p></div>
+  </div>
+
+  <div class="finding-card">
+    <div class="fc-header"><span class="fc-id">SEC-03</span><span class="fc-title">EvalOS DB Pool — Missing Global Reuse Guard vs. Engage</span><span class="badge badge-amber">Low</span></div>
+    <div class="fc-body"><p><code>evalos/web/src/lib/db.ts</code> has a <code>global</code> reuse pattern for hot reload, but <code>engage/web/src/lib/db.ts</code> does not. While this is a dev-convenience concern rather than a production issue, inconsistency increases cognitive load. Standardise the pattern across all Next.js services.</p></div>
+  </div>
+
+  <div class="finding-card">
+    <div class="fc-header"><span class="fc-id">SEC-04</span><span class="fc-title">n8n Webhook in EvalOS Submit — No HMAC Validation</span><span class="badge badge-amber">Medium</span></div>
+    <div class="fc-body"><p>The EvalOS exam submit route fires an n8n webhook for exam pass/fail notifications. Unlike the engage webhooks (which should use <code>X-Hub-Signature-256</code> HMAC timing-safe validation per the platform standard), the n8n call in the submit route does not show outbound HMAC signing. This means a misconfigured n8n endpoint could receive unauthenticated exam result data.</p></div>
+  </div>
+
+  
+  <h2>4. Architecture Findings</h2>
+
+  <h3>4.1 Onboarding Agent</h3>
+  <div class="finding-card">
+    <div class="fc-header"><span class="fc-id">ARC-01</span><span class="fc-title">Planner hardcodes IBM Cloud credits expiry</span><span class="badge badge-amber">Medium</span></div>
+    <div class="fc-body"><p>The file <code>onboarding-agent/src/orchestrator/planner.ts</code> hardcodes <code>IBM Cloud credits: $14,047.27 expiring October 2026</code> in the static platform architecture context. This is a time-sensitive financial constant embedded in code. It should be externalised to a configuration value or removed before credits expire, as an outdated value post-October 2026 will produce incorrect agent guidance.</p></div>
+  </div>
+
+  <div class="finding-card">
+    <div class="fc-header"><span class="fc-id">ARC-02</span><span class="fc-title">Base-scan subagent uses localhost LiteLLM URL</span><span class="badge badge-amber">Medium</span></div>
+    <div class="fc-body"><p><code>base-scan.ts</code> points its OpenAI-compatible client to <code>http://localhost:4000/v1</code>. This works only in local development and will silently fail in cluster where the correct address is <code>http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1</code>. The URL should be driven by the <code>LITELLM_URL</code> environment variable consistently across all agents.</p></div>
+  </div>
+
+  <h3>4.2 EvalOS Platform</h3>
+  <div class="finding-card">
+    <div class="fc-header"><span class="fc-id">ARC-03</span><span class="fc-title">Grading service called synchronously over HTTP in submit route</span><span class="badge badge-amber">Medium</span></div>
+    <div class="fc-body"><p>The exam submission endpoint calls <code>http://grading-service.i3-evalos.svc.cluster.local:8000/grade</code> as a blocking synchronous HTTP call within the submit request lifecycle. Under high concurrency (e.g., exam session end), this creates a cascading latency dependency. Phase 3 (P3-T2) specifies async queue pattern for AI inference. This grading call should be similarly queued — especially given the AI-based assessment model in the generate-questions route.</p></div>
+  </div>
+
+  <div class="finding-card">
+    <div class="fc-header"><span class="fc-id">ARC-04</span><span class="fc-title">AI question generation exposes draft-state risk</span><span class="badge badge-blue">Observation</span></div>
+    <div class="fc-body"><p>The admin generate-questions route correctly saves questions as <code>is_active: false</code> (draft, pending human review) — this is the right pattern. However, there is no workflow enforcement ensuring draft questions are reviewed before going live. A lightweight review-queue UI or approval record in the decision log would close this governance gap.</p></div>
+  </div>
+
+  <h3>4.3 Model Gateway</h3>
+  <div class="finding-card">
+    <div class="fc-header"><span class="fc-id">ARC-05</span><span class="fc-title">No per-tenant LiteLLM budget enforcement visible</span><span class="badge badge-red">High</span></div>
+    <div class="fc-body"><p>The <code>litellm-config-oss.yaml</code> configures model routing, fallback chains, and semantic caching but does not show per-project or per-tenant API key budget limits. The i3 platform documentation cites "per-key budget guardrails" as a current innovation (Workstream B2), but this is not reflected in the deployed ConfigMap. Without metering enforcement, a single runaway tenant or agent can exhaust the shared Ollama pool, affecting all other tenants.</p></div>
+  </div>
+
+  
+  <h2>5. Modernisation 1.0 Blueprint Library — Findings</h2>
+
+  <h3>5.1 Blueprint Inventory Assessment</h3>
+  <table>
+    <tr><th>Document</th><th>Status</th><th>Principal Finding</th></tr>
+    <tr><td>i3_Agentic_AI_Platform_Senior_Technical_Implementation_Guide</td><td><span class="badge badge-green">Good</span></td><td>Sound 6-layer architecture; gap analysis table is accurate</td></tr>
+    <tr><td>i3_E3_Enterprise_Agentic_Cloud_Technical_Specification</td><td><span class="badge badge-green">Good</span></td><td>5-plane architecture aligns well with codebase topology; Oct 2026 launch milestone needs validation</td></tr>
+    <tr><td>i3_AI_Lab_SmartLabs_Agentic_Master_Technical_Implementation_Guide</td><td><span class="badge badge-red">Needs Action</span></td><td>4 critical commercial-integrity risks identified; claims exceed infrastructure reality</td></tr>
+    <tr><td>i3_SmartLabs_AI_Platform_Technical_Implementation_Guide</td><td><span class="badge badge-red">Needs Action</span></td><td>5 must-fix items before customer commitments; concurrency claims are incorrect</td></tr>
+    <tr><td>i3_Sovereign_Agentic_Platforms_Technical_Specifications</td><td><span class="badge badge-blue">Reference</span></td><td>Excellent long-range architecture reference; 12 binding principles well-aligned to platform</td></tr>
+    <tr><td>EvalOS-i3SmartLabs-Technical-Implementation-Blueprint</td><td><span class="badge badge-amber">In-flight</span></td><td>LaaS extension design is sound; new i3-labs namespace correctly scoped</td></tr>
+    <tr><td>LMS_OTT_AgenticAI_Content_Authoring_Technical_Specification</td><td><span class="badge badge-blue">Reference</span></td><td>Content authoring wave plan is realistic; 3,994-title catalog scope is well-defined</td></tr>
+    <tr><td>project_aurora_technical_specifications_implementation_guide</td><td><span class="badge badge-amber">In-flight</span></td><td>Solid LMS/LXP modernisation plan; RLS tenancy approach is correct</td></tr>
+    <tr><td>i3-OTT-Architecture-Blueprint</td><td><span class="badge badge-red">Needs Action</span></td><td>MinIO Community Edition archived April 2026 — must migrate to SeaweedFS</td></tr>
+  </table>
+
+  <h3>5.2 Commercial Integrity Risks (Require CEO Decision)</h3>
+
+  <div class="finding-card">
+    <div class="fc-header"><span class="fc-id">COM-01</span><span class="fc-title">Data Residency Claim vs. Infrastructure Reality</span><span class="badge badge-red">Critical</span></div>
+    <div class="fc-body"><p>Multiple blueprints reference "Kenya Region" data residency. Current infrastructure is <strong>IBM ROKS Frankfurt (eu-de)</strong>. The Nairobi sovereign deployment (Workstream B3, 4–6 weeks) has not been initiated. Until B3 is deployed and data-residency controls are verified, no sales or marketing collateral should reference Kenya Region residency. The Capability Claim Matrix in the Bob guide provides the correct gate for making this claim.</p></div>
+  </div>
+
+  <div class="finding-card">
+    <div class="fc-header"><span class="fc-id">COM-02</span><span class="fc-title">2,500 Concurrent Students Claim</span><span class="badge badge-red">Critical</span></div>
+    <div class="fc-body"><p>The SmartLabs blueprint identifies that 2,500 concurrent sessions requires approximately 65 worker nodes. At the current USD 3,000/month budget, the realistic concurrent-session ceiling is <strong>70–145 students</strong>. This claim must be corrected in all customer-facing materials immediately. The budget-to-capacity mapping should be published internally so sales, pre-sales, and marketing are aligned.</p></div>
+  </div>
+
+  <div class="finding-card">
+    <div class="fc-header"><span class="fc-id">COM-03</span><span class="fc-title">GPU Acceleration Marketed Ahead of Build</span><span class="badge badge-amber">High</span></div>
+    <div class="fc-body"><p>GPU inference (NVIDIA L4/A10) is referenced as a platform capability in materials. All current inference runs on CPU-only Ollama workers. GPU capability should only be claimed after Workstream B1 (2–4 weeks) delivers and passes the Capability Claim Matrix gate.</p></div>
+  </div>
+
+  <div class="finding-card">
+    <div class="fc-header"><span class="fc-id">COM-04</span><span class="fc-title">Five Fragmented Revenue Models for Same Product</span><span class="badge badge-amber">High</span></div>
+    <div class="fc-body"><p>The AI Lab SmartLabs guide identifies five separate revenue model figures for the same product (USD 530k vs KES 154.95M vs KES 4.2B). These must be reconciled into a single authoritative pricing model before the next customer proposal. Misaligned revenue models expose the company to contractual and reputational risk.</p></div>
+  </div>
+
+  
+  <h2>6. Modernisation Roadmap — Phase Status</h2>
+
+  <div class="phase-ribbon">
+    <div class="pr-item active">
+      <div class="pr-label light">Phase 1</div>
+      <div class="pr-status light">Foundation</div>
+      <div class="pr-label light" style="font-size:11px;margin-top:4px">In Progress</div>
+    </div>
+    <div class="pr-item">
+      <div class="pr-label dark">Phase 2</div>
+      <div class="pr-status dark">Domain Decoupling</div>
+      <div class="pr-label dark" style="font-size:11px;margin-top:4px">Not Started</div>
+    </div>
+    <div class="pr-item">
+      <div class="pr-label dark">Phase 3</div>
+      <div class="pr-status dark">Runtime Optimisation</div>
+      <div class="pr-label dark" style="font-size:11px;margin-top:4px">Not Started</div>
+    </div>
+    <div class="pr-item">
+      <div class="pr-label dark">Fabric</div>
+      <div class="pr-status dark">IEBC Deadline</div>
+      <div class="pr-label dark" style="font-size:11px;margin-top:4px">16 Mar 2027</div>
+    </div>
+  </div>
+
+  <h3>Phase 1 — Foundation (Status: In Progress)</h3>
+  <table>
+    <tr><th>Task</th><th>Description</th><th>Status</th></tr>
+    <tr><td>P1-T1</td><td>Credential rotation, secret hygiene, gitleaks gate</td><td><span class="badge badge-amber">Partial</span></td></tr>
+    <tr><td>P1-T2</td><td>Security hardening (TLS, HMAC, Bearer auth, rate limiting)</td><td><span class="badge badge-amber">Partial</span></td></tr>
+    <tr><td>P1-T3</td><td>Fix sync blocking, resource leaks (asyncpg, Redis, WebSocket)</td><td><span class="badge badge-amber">Partial</span></td></tr>
+    <tr><td>P1-T4</td><td>Input validation, Pydantic/Zod, SQL injection fixes</td><td><span class="badge badge-green">Good Progress</span></td></tr>
+    <tr><td>P1-T5</td><td>Observability foundation (Prometheus, OTel, Langfuse)</td><td><span class="badge badge-amber">Partial</span></td></tr>
+    <tr><td>P1-T6</td><td>Automated test harness (Tekton test stage, RAGAS, Locust)</td><td><span class="badge badge-amber">Partial</span></td></tr>
+  </table>
+
+  <h3>Critical Path Items</h3>
+  <table>
+    <tr><th>Item</th><th>Deadline</th><th>Risk</th></tr>
+    <tr><td>FORD Hyperledger Fabric chaincode scaffolding (HC-2/HC-8)</td><td>November 2026 (staging)</td><td><span class="badge badge-red">High — Not Started</span></td></tr>
+    <tr><td>USSD bridge implementation for IEBC</td><td>November 2026</td><td><span class="badge badge-red">High — Not Started</span></td></tr>
+    <tr><td>Nairobi sovereign deployment (Workstream B3)</td><td>Before Kenya residency claims</td><td><span class="badge badge-red">High — Not Started</span></td></tr>
+    <tr><td>Per-tenant metering enforcement (Workstream B2)</td><td>Before multi-tenant GA</td><td><span class="badge badge-amber">Medium</span></td></tr>
+    <tr><td>Multi-tenancy RLS across all services (HC-4)</td><td>Before Phase 2 GA</td><td><span class="badge badge-amber">Medium</span></td></tr>
+    <tr><td>MinIO → SeaweedFS migration (OTT)</td><td>Immediate (MinIO archived Apr 2026)</td><td><span class="badge badge-red">High — Unpatched Storage</span></td></tr>
+  </table>
+
+  
+  <h2>7. Production Readiness Scorecard</h2>
+  <div class="scorecard-grid">
+    <div class="sc-item"><div class="sc-dot sc-dot-green"></div><div><div class="sc-label">Identity (Keycloak SSO)</div><div class="sc-status">Deployed, OIDC integrated across services</div></div></div>
+    <div class="sc-item"><div class="sc-dot sc-dot-amber"></div><div><div class="sc-label">Multi-Tenancy (HC-4)</div><div class="sc-status">Partial — tenant_id missing in some schemas</div></div></div>
+    <div class="sc-item"><div class="sc-dot sc-dot-amber"></div><div><div class="sc-label">Database (Crunchy PG)</div><div class="sc-status">SSL configured; RLS policies incomplete</div></div></div>
+    <div class="sc-item"><div class="sc-dot sc-dot-amber"></div><div><div class="sc-label">API Security</div><div class="sc-status">Auth present; rate limiting not confirmed platform-wide</div></div></div>
+    <div class="sc-item"><div class="sc-dot sc-dot-green"></div><div><div class="sc-label">Event Backbone (Kafka)</div><div class="sc-status">Kafka KRaft deployed; CloudEvent envelope used</div></div></div>
+    <div class="sc-item"><div class="sc-dot sc-dot-amber"></div><div><div class="sc-label">Secrets (OpenBao)</div><div class="sc-status">In use; TLS keys found in workspace — see SEC-02</div></div></div>
+    <div class="sc-item"><div class="sc-dot sc-dot-green"></div><div><div class="sc-label">AI Quality (Lobster Trap)</div><div class="sc-status">12-pattern firewall deployed across all agents</div></div></div>
+    <div class="sc-item"><div class="sc-dot sc-dot-green"></div><div><div class="sc-label">Agents (Autonomy Ceiling)</div><div class="sc-status">HC-3 enforced; all agents at L0/L1</div></div></div>
+    <div class="sc-item"><div class="sc-dot sc-dot-green"></div><div><div class="sc-label">MCP Gateway</div><div class="sc-status">MCP server deployed with 4 guard tools</div></div></div>
+    <div class="sc-item"><div class="sc-dot sc-dot-amber"></div><div><div class="sc-label">Performance</div><div class="sc-status">KEDA autoscaling active; no load test results evidenced</div></div></div>
+    <div class="sc-item"><div class="sc-dot sc-dot-amber"></div><div><div class="sc-label">Observability</div><div class="sc-status">Prometheus + Langfuse present; OTel traces not confirmed</div></div></div>
+    <div class="sc-item"><div class="sc-dot sc-dot-red"></div><div><div class="sc-label">Blockchain (HC-2/HC-8)</div><div class="sc-status">Fabric not yet scaffolded — IEBC deadline at risk</div></div></div>
+    <div class="sc-item"><div class="sc-dot sc-dot-green"></div><div><div class="sc-label">CI/CD (Tekton/ArgoCD)</div><div class="sc-status">4-gate pipeline deployed; gitleaks stage present</div></div></div>
+    <div class="sc-item"><div class="sc-dot sc-dot-red"></div><div><div class="sc-label">Git Hygiene</div><div class="sc-status">306 uncommitted files — release integrity at risk</div></div></div>
+  </div>
+
+  
+  <h2>8. Prioritised Recommendations</h2>
+
+  <h3>Priority 1 — Immediate (This Week)</h3>
+  <div class="rec-strip"><div class="rt">Action Required</div><p><strong>R1:</strong> Commit or stage all 306 modified files in atomic, labelled commits against their respective Phase 1 tasks. Close each commit with a sensor-check evidence record as prescribed by the Bob guide. This is a blocker for all subsequent work.</p></div>
+  <div class="rec-strip"><div class="rt">Action Required</div><p><strong>R2:</strong> Remove <code>ca.crt</code>, <code>tls.crt</code>, and <code>tls.key</code> from the workspace root. Rotate the certificates. Store exclusively in OpenBao. Add <code>*.crt</code> and <code>*.key</code> to <code>.gitignore</code> and run a gitleaks scan to confirm no historical exposure.</p></div>
+  <div class="rec-strip"><div class="rt">Action Required</div><p><strong>R3:</strong> Correct all customer-facing materials that claim 2,500 concurrent student capacity, Kenya Region residency, or GPU-accelerated inference. These claims are not currently supportable by the infrastructure. Use the Capability Claim Matrix from the Bob guide to gate future claims.</p></div>
+
+  <h3>Priority 2 — Short-Term (30 Days)</h3>
+  <div class="rec-strip"><div class="rt">Recommended</div><p><strong>R4:</strong> Produce the <code>EXPLORE-GATE.md</code> artefact as prescribed by the Bob guide Phase 1 exit gate. This includes the architecture map, dependency graph, security/tenant findings, and the top-20 Plan tasks. All subsequent planning work should reference this document.</p></div>
+  <div class="rec-strip"><div class="rt">Recommended</div><p><strong>R5:</strong> Activate the <code>sync-lobster-trap</code> Bob skill to formally verify TypeScript and Python Lobster Trap pattern parity before the next production deployment. Record the output as evidence in the task log.</p></div>
+  <div class="rec-strip"><div class="rt">Recommended</div><p><strong>R6:</strong> Audit all SQL DDL files to confirm <code>tenant_id UUID NOT NULL</code> and corresponding RLS policies are present. Use the Bob MCP server's Row-Level Security validator. Prioritise EvalOS and Engage schemas first.</p></div>
+  <div class="rec-strip"><div class="rt">Recommended</div><p><strong>R7:</strong> Migrate OTT storage from MinIO to SeaweedFS. MinIO Community Edition was archived April 25, 2026 — it receives no security patches. This is an unacceptable risk for production media storage.</p></div>
+
+  <h3>Priority 3 — Medium-Term (60–90 Days)</h3>
+  <div class="rec-strip"><div class="rt">Recommended</div><p><strong>R8:</strong> Begin Hyperledger Fabric chaincode scaffolding for the FORD IEBC system immediately. Activate the <code>chaincode-scaffold</code> Bob skill. The November 2026 staging deadline requires code-complete chaincode with <code>go test ./...</code> passing by Q3 2026. With 16 months to the statutory deadline (16 March 2027), there is no slack to absorb if this work begins late.</p></div>
+  <div class="rec-strip"><div class="rt">Recommended</div><p><strong>R9:</strong> Implement per-tenant LiteLLM budget enforcement (Workstream B2). Add per-project API keys with spend limits to the LiteLLM ConfigMap before multi-tenant GA. Without this, shared infrastructure costs cannot be attributed, and a single tenant can saturate the model gateway.</p></div>
+  <div class="rec-strip"><div class="rt">Recommended</div><p><strong>R10:</strong> Externalise the hardcoded IBM Cloud credit value and expiry from <code>planner.ts</code> into a configuration source. Schedule a review task for Q4 2025 to update or remove this value before the October 2026 credit expiry creates incorrect agent guidance.</p></div>
+
+  <h3>Priority 4 — Strategic (90+ Days)</h3>
+  <div class="rec-strip"><div class="rt">Strategic</div><p><strong>R11:</strong> Initiate the Nairobi sovereign deployment (Workstream B3) planning now. This involves a 4–6 week delivery and must be complete before any Kenya Region residency claims can be made. Coordinate with the IBM Cloud team for ROKS node availability in Nairobi.</p></div>
+  <div class="rec-strip"><div class="rt">Strategic</div><p><strong>R12:</strong> Reconcile the five revenue model variants across the AI Lab SmartLabs blueprints into one authoritative pricing document. Involve the commercial team. Publish internally to align sales, pre-sales, and marketing before the next pilot cycle.</p></div>
+
+  
+  <h2>9. What the Platform Does Well</h2>
+  <p>As a Principal Architect, it is equally important to recognise what is working well and should be preserved:</p>
+  <ul>
+    <li><strong>Agent governance framework:</strong> The HC-1 through HC-8 constraint set, enforced at the Bob workspace level, is more rigorous than most enterprise AI platforms of this scale. The autonomy ceiling at L0/L1 is correctly designed.</li>
+    <li><strong>Lobster Trap firewall:</strong> A 12-pattern, dual-runtime (Python + TypeScript) prompt injection firewall is a strong security posture. The MCP server validation tool closes the loop.</li>
+    <li><strong>Event-driven architecture:</strong> Kafka KRaft with Pydantic-validated CloudEvent envelopes across four consumer types is well-implemented. The DLQ pattern in the Engage consumer is particularly good.</li>
+    <li><strong>Database connection discipline:</strong> All services use <code>asyncpg</code> pools (Python) and SSL-pinned connection pools (TypeScript). The pool architecture is consistent and correct.</li>
+    <li><strong>Semantic caching:</strong> LiteLLM Redis semantic cache with 0.95 similarity threshold and 1-hour TTL reduces repeat inference cost significantly.</li>
+    <li><strong>KEDA autoscaling:</strong> Autoscaling across five+ services with appropriate triggers (HTTP concurrency, Kafka lag, CPU) shows production-grade operational thinking.</li>
+    <li><strong>Bob engineering contract:</strong> The IBM Bob implementation guide is best-in-class for AI-assisted software engineering governance. The Capability Claim Matrix, risk-tier model, and 4-phase cycle are enterprise-grade artefacts.</li>
+    <li><strong>Consent-gate pattern:</strong> The default-deny consent check in <code>campaign_agent.py</code> with DPA 2019 §25 compliance is a strong data-ethics implementation.</li>
+  </ul>
+
+  <hr />
+
+  
+  <h2>10. Conclusion</h2>
+  <p>The i3 Agentic AI Platform has a strong architectural foundation. The engineering principles, agent governance model, and IBM Bob workspace configuration represent a mature approach to controlled AI-assisted platform engineering. The 3-phase modernisation roadmap is well-sequenced and the hard constraints provide a reliable safety net.</p>
+  <p>The principal risks are not architectural — they are operational hygiene (the 306-file uncommitted state, TLS keys in the workspace), commercial alignment (capability claims exceeding infrastructure reality), and two critical statutory deadline items (Hyperledger Fabric for IEBC, OTT storage migration). These are all fixable with disciplined execution of the existing roadmap.</p>
+  <p><strong>The platform is not yet production-ready for multi-tenant GA or external customer commitments on residency and GPU capability. It is, however, well-positioned to reach that state within the Phase 1–2 timeline if the 12 recommendations above are executed in priority order.</strong></p>
+
+  <div class="footer">
+    Principal Architect Review — i3 Technologies — July 2025  |  Made with IBM Bob
+  </div>
+
+</div>
+</body>
+</html>

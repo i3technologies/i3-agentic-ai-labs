@@ -8,6 +8,8 @@
 import OpenAI from 'openai';
 import { z }  from 'zod';
 import { SubagentScanResult, SubagentInput, SubagentFinding } from './types';
+import { emitDecision } from '../decisionLog';
+import { tracer } from '../../tracing';   // OTel — STEP-P1-14
 
 const client = new OpenAI({
   baseURL: process.env.LITELLM_URL    ?? 'http://localhost:4000/v1',
@@ -53,6 +55,10 @@ export abstract class BaseScan {
   async run(input: SubagentInput): Promise<SubagentScanResult> {
     const t0 = Date.now();
 
+    return tracer.startActiveSpan(`subagent.${this.subagentName}`, async (span) => {
+      span.setAttribute('ai.model', SCAN_MODEL);
+      span.setAttribute('ai.role', input.role);
+
     const completion = await client.chat.completions.create({
       model:       SCAN_MODEL,
       temperature: 0.2,
@@ -61,6 +67,22 @@ export abstract class BaseScan {
         { role: 'system', content: this.systemPrompt },
         { role: 'user',   content: this.buildUserPrompt(input) },
       ],
+    });
+
+      span.setAttribute('ai.input_tokens',  completion.usage?.prompt_tokens  ?? 0);
+      span.setAttribute('ai.output_tokens', completion.usage?.completion_tokens ?? 0);
+      span.end();
+
+    // Emit decision log entry after LLM completion (fire-and-forget)
+    emitDecision({
+      agentId:      'onboarding-planner-v1',
+      sessionId:    input.sessionId,
+      model:        SCAN_MODEL,
+      inputTokens:  completion.usage?.prompt_tokens,
+      outputTokens: completion.usage?.completion_tokens,
+      toolsInvoked: ['litellm.chat', 'chroma.search'],
+      outcome:      'success',
+      correlationId: input.sessionId,
     });
 
     const raw = completion.choices[0]?.message?.content ?? '{"findings":[]}';
@@ -93,5 +115,6 @@ export abstract class BaseScan {
       contextUsed:  [input.ragContext.slice(0, 500)],
       durationMs:   Date.now() - t0,
     };
+    }); // end startActiveSpan
   }
 }

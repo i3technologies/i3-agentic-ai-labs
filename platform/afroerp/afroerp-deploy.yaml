@@ -55,8 +55,11 @@ stringData:
   ADMIN_PASSWORD: "REPLACE_WITH_ERPNEXT_ADMIN_PW"
   SECRET_KEY: "REPLACE_WITH_RANDOM_50_CHAR"
   # LiteLLM for AI agents
+  # AUTH-01: per-service virtual key (not master key).
+  # Issue: POST litellm /key/generate {"metadata": {"service": "afroerp-agent"}, "max_budget": 40, "budget_duration": "1d"}
+  # OpenBao path: i3/litellm/virtual-keys/afroerp-agent
   LITELLM_URL: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1"
-  LITELLM_KEY: "REPLACE_WITH_LITELLM_MASTER_KEY"
+  LITELLM_KEY: "REPLACE_FROM_VAULT"
   # M-Pesa Daraja
   MPESA_CONSUMER_KEY: "REPLACE"
   MPESA_CONSUMER_SECRET: "REPLACE"
@@ -452,7 +455,10 @@ metadata:
   namespace: i3-afroerp
 type: Opaque
 stringData:
-  OPENAI_API_KEY: "REPLACE_WITH_LITELLM_MASTER_KEY"
+  # AUTH-01: per-service virtual key (not master key).
+  # Issue: POST litellm /key/generate {"metadata": {"service": "mfumo-coworker"}, "max_budget": 40, "budget_duration": "1d"}
+  # OpenBao path: i3/litellm/virtual-keys/mfumo-coworker
+  OPENAI_API_KEY: "REPLACE_FROM_VAULT"
   OAUTH_CLIENT_ID: "open-webui-mfumo"
   OAUTH_CLIENT_SECRET: "REPLACE_WITH_KEYCLOAK_CLIENT_SECRET"
   WEBUI_SECRET_KEY: "REPLACE_WITH_RANDOM_32_CHAR"

@@ -1,0 +1,552 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>EvalOS Phase 2 — Go/No-Go Memo</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1f2328;
+    background: #ffffff;
+    padding: 32px 16px 48px;
+  }
+  .page { max-width: 760px; margin: 0 auto; }
+
+  /* Header */
+  .memo-header {
+    border-bottom: 2px solid #1f2328;
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  .memo-header h1 { font-size: 20px; font-weight: 700; }
+  .memo-header .meta-grid {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 4px 12px;
+    margin-top: 12px;
+    font-size: 13px;
+  }
+  .meta-grid .label { color: #57606a; font-weight: 600; }
+
+  /* Verdict banner */
+  .verdict {
+    padding: 14px 20px;
+    border-radius: 4px;
+    margin: 20px 0;
+    font-weight: 700;
+    font-size: 18px;
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+  .verdict.nogo { background: #fef2f2; border: 2px solid #dc2626; color: #dc2626; }
+  .verdict.go   { background: #f0fdf4; border: 2px solid #16a34a; color: #16a34a; }
+
+  /* Section */
+  h2 {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #57606a;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 18px;
+    margin-top: 24px;
+    margin-bottom: 12px;
+  }
+  h3 { font-size: 14px; font-weight: 600; margin: 14px 0 6px; }
+
+  /* Gate table */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 6px; }
+  th {
+    text-align: left;
+    padding: 7px 10px;
+    background: #f7f8fa;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+    color: #57606a;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  td { padding: 7px 10px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .status-pass  { color: #16a34a; font-weight: 700; }
+  .status-fail  { color: #dc2626; font-weight: 700; }
+  .status-warn  { color: #d97706; font-weight: 700; }
+  .status-na    { color: #57606a; }
+
+  /* Finding blocks */
+  .finding {
+    border-left: 3px solid #dc2626;
+    background: #fef2f2;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .finding.warn {
+    border-left-color: #d97706;
+    background: #fffbeb;
+  }
+  .finding .finding-id { font-weight: 700; font-size: 12px; color: #dc2626; margin-bottom: 4px; }
+  .finding.warn .finding-id { color: #d97706; }
+  .finding p { margin-top: 4px; }
+
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12px;
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 3px;
+    padding: 1px 5px;
+  }
+  pre {
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-size: 12px;
+    overflow-x: auto;
+    margin: 8px 0;
+  }
+
+  /* Action items */
+  .action-list { margin: 0; padding-left: 0; list-style: none; }
+  .action-list li {
+    padding: 7px 0;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 13px;
+    display: flex;
+    gap: 10px;
+  }
+  .action-list li:last-child { border-bottom: none; }
+  .action-num {
+    background: #1f2328;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 10px;
+    min-width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .blocker { background: #dc2626; }
+  .nonblocker { background: #d97706; }
+
+  /* Signature area */
+  .sig-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .sig-box {
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 12px;
+    font-size: 12px;
+  }
+  .sig-box .role { color: #57606a; margin-bottom: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .sig-box .name { font-weight: 600; }
+  .sig-box .decision-nogo { color: #dc2626; font-weight: 700; font-size: 13px; }
+
+  .footnote { font-size: 11px; color: #57606a; margin-top: 8px; }
+  .footer {
+    border-top: 1px solid #e5e7eb;
+    margin-top: 40px;
+    padding-top: 12px;
+    text-align: center;
+    font-size: 11px;
+    color: #57606a;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  
+  <div class="memo-header">
+    <h1>EvalOS Phase 2 — Launch Readiness Review</h1>
+    <div class="meta-grid">
+      <span class="label">Document</span><span>VER-07 / EvalOS P2 Go/No-Go Memo</span>
+      <span class="label">Review Date</span><span>2026-10-01 (date of assessment)</span>
+      <span class="label">Milestone</span><span>P2-GATE-04 (tenant_id RLS) · U-06 (evalos-submissions consumer) · U-09 (Lobster Trap / Zuri)</span>
+      <span class="label">Reviewer</span><span>Bob — i3 Platform Engineering Agent (L0)</span>
+      <span class="label">Addressee</span><span>CEO · Platform Engineering Lead · AI Safety Lead</span>
+    </div>
+  </div>
+
+  
+  <div class="verdict nogo">🚫   NO-GO  —  3 BLOCKING FINDINGS</div>
+
+  <p style="font-size:13px;color:#57606a">
+    The EvalOS Phase 2 milestone cannot be promoted to production. Three blocking gaps were
+    identified during code-level evidence review. No cluster credentials were accessed; all
+    findings are based on committed source code and migration files. Each blocker has a
+    clear resolution path and estimated effort.
+  </p>
+
+  
+  <h2>Gate Sensor Results</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Gate</th>
+        <th>Sensor / Evidence</th>
+        <th>Expected</th>
+        <th>Actual</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>P2-GATE-04</strong></td>
+        <td><code>SELECT relrowsecurity FROM pg_class WHERE relname='quiz_attempts';</code></td>
+        <td><code>t</code></td>
+        <td>Migration <code>005_add_tenant_id.sql</code> enables RLS on 8 tables. File committed and correct.</td>
+        <td class="status-warn">⚠️ PARTIAL</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>Tables covered: questions, exams, quiz_attempts, attempt_answers, user_weaknesses, sandbox_results, ai_interview_evaluations, ai_interview_questions</td>
+        <td>All EvalOS tables</td>
+        <td>3 tables in <code>schema.sql</code> lack <code>tenant_id</code> column: <code>code_submissions</code>, <code>ai_interviews</code>, <code>question_sets</code>, <code>enrolment_queue</code></td>
+        <td class="status-fail">❌ FAIL</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>App-layer RLS context: <code>SET LOCAL app.tenant_id</code> in API handlers</td>
+        <td>Present before every query</td>
+        <td>Verified in start, submit, answer, anticheat-batch, certificate, admin routes. Present in all checked handlers.</td>
+        <td class="status-pass">✅ PASS</td>
+      </tr>
+      <tr>
+        <td><strong>U-06</strong></td>
+        <td><code>evalos-submissions</code> Kafka consumer implementation</td>
+        <td>Consumer reads topic, triggers grading pipeline</td>
+        <td><code>run_evalos_submissions_consumer()</code> exists in <code>platform/engage/consumers/platform_event_consumers.py</code> — correct CloudEvent parsing, HC-4, manual commit, calls grading-service.</td>
+        <td class="status-warn">⚠️ PARTIAL</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>Kafka producer in <code>evalos-web</code> <code>submit/route.ts</code></td>
+        <td>submit route publishes CloudEvent to <code>evalos-submissions</code></td>
+        <td><strong>No Kafka produce call exists.</strong> Submit route calls grading-service directly via HTTP and triggers n8n webhook only. Topic <code>evalos-submissions</code> has no producer in EvalOS Web code.</td>
+        <td class="status-fail">❌ FAIL</td>
+      </tr>
+      <tr>
+        <td><strong>U-09</strong></td>
+        <td>Lobster Trap on Zuri (EvalOS AI study coach) — ADR-006 AC-1/AC-2</td>
+        <td><code>guard_input()</code> called on <code>user_message</code>, <code>question</code>, <code>context</code></td>
+        <td>Zuri is deployed as Open WebUI (no custom application code). ADR-006 status = <strong>Proposed</strong> — no implementation committed. No <code>guard_input</code> or equivalent found in any EvalOS TS/Python source. Sandbox daemon has Lobster Trap on code submissions only (different surface).</td>
+        <td class="status-fail">❌ FAIL</td>
+      </tr>
+      <tr>
+        <td><strong>Agent Registry</strong></td>
+        <td>P2-GATE-02: registry returns 6 manifests</td>
+        <td>6 YAML manifests in <code>platform/agent-registry/manifests/</code></td>
+        <td>Only 1 manifest found: <code>admissions-agent-v1.yaml</code>. Zuri, Campaign Agent, PMaaS Agent, Onboarding Agent, FORD Election Agent manifests absent. ADR-002 status = <strong>Proposed</strong>.</td>
+        <td class="status-fail">❌ FAIL</td>
+      </tr>
+      <tr>
+        <td><strong>HC-3</strong></td>
+        <td>Zuri autonomy ceiling (max L1)</td>
+        <td>Manifest declares <code>autonomy_level: L1</code></td>
+        <td>No manifest exists. Cannot assert HC-3 compliance for Zuri.</td>
+        <td class="status-fail">❌ FAIL</td>
+      </tr>
+      <tr>
+        <td><strong>HC-7</strong></td>
+        <td><code>DEV_BYPASS_AUTH=true</code> absent from non-gitignored files</td>
+        <td>0 matches</td>
+        <td>0 matches confirmed — no bypass present in EvalOS sources.</td>
+        <td class="status-pass">✅ PASS</td>
+      </tr>
+      <tr>
+        <td><strong>Credentials</strong></td>
+        <td>Vault placeholders in <code>zuri-deploy.yaml</code> and <code>evalos-deploy.yaml</code></td>
+        <td>All <code>REPLACE_FROM_VAULT</code> resolved at deploy time via OpenBao agent injection</td>
+        <td><code>OPENAI_API_KEY: "REPLACE_FROM_VAULT"</code> in zuri-deploy.yaml (line 22). <code>NEXTAUTH_SECRET: "REPLACE_FROM_VAULT"</code> in evalos-deploy.yaml (line 267). OpenBao annotations present (<code>openbao.org/agent-inject: "true"</code>) — depends on secret rotation being current.</td>
+        <td class="status-warn">⚠️ VERIFY</td>
+      </tr>
+      <tr>
+        <td><strong>Dashboards</strong></td>
+        <td>Kafka consumer lag metric for <code>evalos-submissions</code> wired to real data</td>
+        <td>Grafana query <code>kafka_consumer_group_lag{topic="evalos-submissions"}</code> returns non-zero consumer group data</td>
+        <td>PromQL query defined in <code>platform/docs/platform-documentation.md</code>; Grafana is deployed. However, because the topic <em>producer</em> does not exist in evalos-web, the consumer group <code>evalos-submissions-grading</code> will show zero lag — a false positive on operational dashboards masking the actual gap.</td>
+        <td class="status-warn">⚠️ MISLEADING</td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h2>Blocking Findings</h2>
+
+  <div class="finding">
+    <div class="finding-id">BLOCKER-1 · U-09 / ADR-006 · Lobster Trap NOT implemented on Zuri</div>
+    <p>
+      Zuri is an Open WebUI deployment. ADR-006 (status: <em>Proposed</em>) mandates
+      <code>guard_input()</code> on <code>user_message</code>, <code>question</code>, and
+      <code>context</code> fields before LLM prompt assembly. No custom middleware, no filter
+      function, no equivalent pattern found anywhere in <code>platform/evalos/</code> or
+      <code>platform/evalos/web/src/</code>. Zuri currently routes every user chat message
+      directly to LiteLLM with no injection screening. HC-3 is violated.
+    </p>
+    <p style="margin-top:8px"><strong>Resolution:</strong> Open WebUI supports <code>WEBUI_CHAT_FILTER_URL</code> — deploy a FastAPI
+      sidecar implementing the 12-pattern <code>guard_input()</code> function from ADR-006 §Implementation,
+      and wire it as the OpenWebUI chat filter. Alternatively, place an Envoy Lua filter at
+      the ingress. ADR-006 must move to <em>Accepted</em> status with evidence of implementation.
+      Estimated effort: 1 sprint (2 days implement + 1 day test).
+    </p>
+  </div>
+
+  <div class="finding">
+    <div class="finding-id">BLOCKER-2 · U-06 · evalos-submissions Kafka producer missing in EvalOS Web</div>
+    <p>
+      The consumer (<code>run_evalos_submissions_consumer()</code> in
+      <code>platform/engage/consumers/platform_event_consumers.py</code>) is implemented and
+      correct — it parses CloudEvent envelopes, enforces HC-4 tenant_id, and triggers the
+      grading pipeline. <strong>However, no Kafka producer exists in the EvalOS Web submit route.</strong>
+      <code>platform/evalos/web/src/app/api/exam/[examId]/submit/route.ts</code> calls the
+      grading-service directly via HTTP. The topic <code>evalos-submissions</code> (6 partitions,
+      30-day retention) is provisioned but will never receive messages. The consumer group
+      <code>evalos-submissions-grading</code> will show zero lag — a silent no-op.
+    </p>
+    <p style="margin-top:8px"><strong>Resolution:</strong> Add a Kafka produce call after SAGA Step 4 in
+      <code>submit/route.ts</code> using <code>kafkajs</code> (already in the monorepo lock file).
+      Emit a <code>i3.evalos.submission.received</code> CloudEvent with the 9-field envelope
+      (tenantid, subject_id_hash, attempt_id, exam_id). This also decouples the synchronous
+      HTTP grading call so that slow grading does not block the HTTP response.
+      Estimated effort: 0.5 days.
+    </p>
+  </div>
+
+  <div class="finding">
+    <div class="finding-id">BLOCKER-3 · P2-GATE-02 / HC-3 · Agent Registry has only 1/6 manifests seeded</div>
+    <p>
+      <code>platform/agent-registry/manifests/</code> contains only
+      <code>admissions-agent-v1.yaml</code>. The ADR-002 decision (status: <em>Proposed</em>)
+      requires 6 manifests: Admissions Agent, Campaign Agent, Onboarding Agent, EvalOS Zuri,
+      PMaaS Agent, FORD Election Agent. Without these manifests:
+      (a) the MCP gateway cannot validate Zuri's <code>allowed_tools</code> list;
+      (b) HC-3 compliance is unauditable for 5 of 6 agents;
+      (c) P2-GATE-02 sensor will fail at exit gate review.
+    </p>
+    <p style="margin-top:8px"><strong>Resolution:</strong> Author 5 manifest YAML files following the schema in
+      <code>admissions-agent-v1.yaml</code>. Zuri manifest must declare
+      <code>autonomy_level: L1</code> and reference the Lobster Trap sidecar once BLOCKER-1 is
+      resolved. No manifest may declare <code>autonomy_level: L2</code> or <code>L3</code>
+      without verified evaluation evidence per HC-3. Estimated effort: 1 day.
+    </p>
+  </div>
+
+  
+  <h2>Non-Blocking Warnings</h2>
+
+  <div class="finding warn">
+    <div class="finding-id">WARN-1 · HC-4 / DDL gap · 4 EvalOS tables missing tenant_id in schema.sql</div>
+    <p>
+      Migration <code>005_add_tenant_id.sql</code> covers 8 tables correctly. However,
+      the canonical <code>platform/evalos/schema.sql</code> defines 4 additional tables
+      — <code>code_submissions</code>, <code>ai_interviews</code>, <code>question_sets</code>,
+      <code>enrolment_queue</code> — that have no <code>tenant_id</code> column and no
+      RLS policy. These tables are not blocked for Phase 2 if they hold no per-student
+      sensitive data at launch, but must be migrated before any multi-tenant student data
+      is written to them. Recommend treating as blocking for P3-GATE.
+    </p>
+  </div>
+
+  <div class="finding warn">
+    <div class="finding-id">WARN-2 · admin/generate-questions · LLM input from admin user not Lobster Trap guarded</div>
+    <p>
+      <code>platform/evalos/web/src/app/api/admin/generate-questions/route.ts</code> passes
+      <code>topic</code> and <code>domain</code> fields — admin-supplied strings — directly into
+      the LLM prompt without firewall screening. Admin users are authenticated and role-gated
+      (<code>isAdmin: true</code>), reducing the attack surface, but insider threat and
+      account compromise are not mitigated. Add <code>lobsterTrap(topic)</code> and
+      <code>lobsterTrap(domain)</code> guards before <code>buildGenerationPrompt()</code>.
+    </p>
+  </div>
+
+  <div class="finding warn">
+    <div class="finding-id">WARN-3 · interview/evaluate · studentAnswer not firewall-guarded</div>
+    <p>
+      <code>platform/evalos/web/src/app/api/interview/evaluate/route.ts</code> interpolates
+      <code>studentAnswer</code> directly into <code>buildTextEvalPrompt()</code> with no
+      Lobster Trap check. A student can craft an answer that attempts to override the evaluator's
+      scoring rubric. Firewall guard must be added as part of the U-09 resolution.
+    </p>
+  </div>
+
+  <div class="finding warn">
+    <div class="finding-id">WARN-4 · Vault placeholders · REPLACE_FROM_VAULT in deployed secrets</div>
+    <p>
+      <code>zuri-deploy.yaml</code> and <code>evalos-deploy.yaml</code> carry literal
+      <code>REPLACE_FROM_VAULT</code> and <code>REPLACE_WITH_*</code> strings.
+      The OpenBao agent-inject annotation is present, so the sidecar should overwrite these
+      at pod startup — but this has not been verified at runtime. The P2-GATE-11 sensor
+      (<code>grep "REPLACE_FROM_VAULT" platform/admissions/admissions-deploy.yaml → 0 matches</code>)
+      is not yet run against EvalOS deploy manifests. Recommend adding EvalOS to the
+      REPLACE_FROM_VAULT grep sweep before production deployment.
+    </p>
+  </div>
+
+  
+  <h2>What Is Confirmed Passing</h2>
+  <table>
+    <thead>
+      <tr><th>Item</th><th>Evidence</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>HC-4 RLS: 8 core tables</td>
+        <td><code>005_add_tenant_id.sql</code> — ADD COLUMN IF NOT EXISTS, backfill, NOT NULL constraint, ENABLE ROW LEVEL SECURITY, and per-table POLICY for all 8 tables. Idempotent (IF NOT EXISTS throughout).</td>
+      </tr>
+      <tr>
+        <td>HC-4 app-layer: API handlers</td>
+        <td><code>SET LOCAL app.tenant_id = $1</code> present in <em>all</em> 11 checked route handlers. tenant_id extracted from Keycloak JWT claim via <code>auth.ts</code> callback.</td>
+      </tr>
+      <tr>
+        <td>HC-7: No DEV_BYPASS_AUTH</td>
+        <td>Grep across platform/evalos confirms zero occurrences.</td>
+      </tr>
+      <tr>
+        <td>Sandbox Lobster Trap</td>
+        <td><code>sandbox_daemon.py</code> has a 14-pattern Lobster Trap on code submissions (<code>lobster_trap()</code> called before sandbox execution). Covers code injection surface.</td>
+      </tr>
+      <tr>
+        <td>evalos-submissions consumer</td>
+        <td><code>run_evalos_submissions_consumer()</code> in <code>platform_event_consumers.py</code>: correct 9-field CloudEvent parse, HC-4 tenantid, HC-6 subject_id_hash forwarded, manual Kafka offset commit, grading-service HTTP trigger. Consumer code quality: PASS.</td>
+      </tr>
+      <tr>
+        <td>Kafka topic provisioned</td>
+        <td><code>platform/operators/kafka/kafka-kraft.yaml</code> confirms <code>evalos-submissions</code> topic (6 partitions, 30-day retention).</td>
+      </tr>
+      <tr>
+        <td>Keycloak OIDC auth</td>
+        <td>Zuri deploy uses <code>ENABLE_OAUTH_SIGNUP: "true"</code> pointing to <code>auth.i3technologies.co.ke/realms/i3-evalos</code>. No direct signup (<code>ENABLE_SIGNUP: "false"</code>).</td>
+      </tr>
+      <tr>
+        <td>Network isolation</td>
+        <td>Zuri NetworkPolicy restricts egress to <code>i3-model-gateway:4000</code> and <code>i3-ott:3000</code> (Langfuse) only. No unrestricted internet egress.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h2>Required Actions Before Go</h2>
+  <ul class="action-list">
+    <li>
+      <span class="action-num blocker">1</span>
+      <div>
+        <strong>[BLOCKER] Implement Lobster Trap sidecar or filter for Zuri (U-09).</strong>
+        Deploy FastAPI sidecar implementing ADR-006 12-pattern <code>guard_input()</code>;
+        wire via <code>WEBUI_CHAT_FILTER_URL</code>. Update <code>zuri-deploy.yaml</code>.
+        Move ADR-006 to <em>Accepted</em>. Run <code>sync-lobster-trap</code> skill to verify parity.
+        Owner: Platform Engineering. ETA: ≤ 2 days.
+      </div>
+    </li>
+    <li>
+      <span class="action-num blocker">2</span>
+      <div>
+        <strong>[BLOCKER] Add Kafka producer to evalos-web submit route (U-06).</strong>
+        After SAGA Step 4 in <code>submit/route.ts</code>, produce a
+        <code>i3.evalos.submission.received</code> CloudEvent (9-field envelope, tenantid,
+        subject_id_hash, attempt_id, exam_id) to topic <code>evalos-submissions</code>.
+        Owner: EvalOS Web. ETA: ≤ 0.5 days.
+      </div>
+    </li>
+    <li>
+      <span class="action-num blocker">3</span>
+      <div>
+        <strong>[BLOCKER] Seed 5 missing agent registry manifests (P2-GATE-02).</strong>
+        Create YAML files for Campaign Agent, Onboarding Agent, EvalOS Zuri, PMaaS Agent,
+        FORD Election Agent in <code>platform/agent-registry/manifests/</code>.
+        All must declare <code>autonomy_level: L0</code> or <code>L1</code>.
+        Zuri manifest requires BLOCKER-1 resolved first (to populate <code>prompt_firewall</code> section).
+        Owner: AI Safety Lead. ETA: ≤ 1 day.
+      </div>
+    </li>
+    <li>
+      <span class="action-num nonblocker">4</span>
+      <div>
+        <strong>[WARN] Author migration 006 for missing tenant_id tables</strong>
+        (<code>code_submissions</code>, <code>ai_interviews</code>, <code>question_sets</code>,
+        <code>enrolment_queue</code>). Must be resolved before P3-GATE.
+        Owner: EvalOS DB. ETA: ≤ 0.5 days.
+      </div>
+    </li>
+    <li>
+      <span class="action-num nonblocker">5</span>
+      <div>
+        <strong>[WARN] Add Lobster Trap guards to <code>interview/evaluate</code>
+        and <code>admin/generate-questions</code> routes</strong>
+        (studentAnswer, topic, domain fields). Can be done as part of BLOCKER-1 work
+        using the TypeScript <code>lobsterTrap()</code> function pattern.
+        Owner: EvalOS Web. ETA: ≤ 0.5 days.
+      </div>
+    </li>
+    <li>
+      <span class="action-num nonblocker">6</span>
+      <div>
+        <strong>[WARN] Extend P2-GATE-11 REPLACE_FROM_VAULT grep</strong>
+        to include <code>platform/evalos/zuri-deploy.yaml</code> and
+        <code>platform/evalos/evalos-deploy.yaml</code>. Confirm OpenBao sidecar
+        is overwriting secrets at pod startup in the <code>i3-evalos</code> namespace.
+        Owner: Platform Ops. ETA: ≤ 0.5 days.
+      </div>
+    </li>
+  </ul>
+
+  
+  <h2>Gate Promotion Requirement</h2>
+  <p style="font-size:13px">
+    EvalOS Phase 2 is <strong>blocked</strong> from production promotion until all 3 blockers
+    are resolved and re-verified. A new VER-07b evidence run must be performed after each fix,
+    producing sensor output confirming:
+  </p>
+  <pre>
+SC-U09:  Zuri chat filter returning 400 on "ignore all previous instructions" probe
+SC-U06:  kafka-consumer-group-lag{group="evalos-submissions-grading"} &gt; 0 after test submission
+SC-P2G2: GET /agents → 200, body contains 6 manifests including zuri-coworker-v1</pre>
+
+  
+  <h2>Decision Sign-Off</h2>
+  <div class="sig-grid">
+    <div class="sig-box">
+      <div class="role">CEO</div>
+      <div class="name">Decision</div>
+      <div class="decision-nogo">NO-GO</div>
+      <div style="margin-top:6px;font-size:11px;color:#57606a">Pending BLOCKER-1,2,3 closure</div>
+    </div>
+    <div class="sig-box">
+      <div class="role">Platform Engineering Lead</div>
+      <div class="name">Owner</div>
+      <div style="margin-top:6px;font-size:11px;color:#57606a">Owns BLOCKER-1 (Zuri filter), BLOCKER-2 (Kafka producer), WARN-1 (DDL)</div>
+    </div>
+    <div class="sig-box">
+      <div class="role">AI Safety Lead</div>
+      <div class="name">Owner</div>
+      <div style="margin-top:6px;font-size:11px;color:#57606a">Owns BLOCKER-3 (agent manifests), HC-3 audit trail</div>
+    </div>
+  </div>
+  <p class="footnote" style="margin-top:12px">
+    Review methodology: static code analysis of committed source only. No cluster runtime state
+    accessed. Findings are based on <code>platform/evalos/</code>, <code>platform/engage/consumers/</code>,
+    <code>platform/agent-registry/</code>, and ADR documents at the time of this assessment.
+    Runtime state (pod health, Kafka consumer lag, Prometheus metrics) must be verified separately
+    by Platform Ops before VER-07b sign-off.
+  </p>
+
+  <div class="footer">Made with IBM Bob</div>
+</div>
+</body>
+</html>

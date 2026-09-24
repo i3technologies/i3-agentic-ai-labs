@@ -1,0 +1,284 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>i3 Staging — Red-Team &amp; RAGAS Evaluation Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.6; background: #ffffff; color: #1f2328; }
+  .page { max-width: 760px; margin: 0 auto; padding: 36px 24px 48px; }
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .meta { color: #57606a; font-size: 12px; margin-bottom: 28px; }
+  h2 { font-size: 15px; font-weight: 600; margin: 28px 0 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
+  h3 { font-size: 13px; font-weight: 600; margin: 18px 0 6px; color: #3b82d4; }
+  p { margin-bottom: 10px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; }
+  .pass { background: #dcfce7; color: #166534; }
+  .fail { background: #fee2e2; color: #991b1b; }
+  .warn { background: #fef9c3; color: #92400e; }
+  .info { background: #e0f2fe; color: #0369a1; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 18px; font-size: 13px; }
+  th { background: #f7f8fa; text-align: left; padding: 7px 10px; font-weight: 600; border: 1px solid #e5e7eb; }
+  td { padding: 6px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #f7f8fa; }
+  .meter-wrap { display: flex; align-items: center; gap: 8px; }
+  .meter { height: 10px; border-radius: 5px; background: #e5e7eb; flex: 1; overflow: hidden; }
+  .meter-fill { height: 100%; border-radius: 5px; }
+  .fill-green { background: #22c55e; }
+  .fill-amber { background: #f59e0b; }
+  .fill-red   { background: #ef4444; }
+  .threshold-line { border-left: 2px dashed #3b82d4; position: relative; }
+  .callout { background: #f7f8fa; border-left: 4px solid #e5e7eb; padding: 10px 14px; margin: 10px 0; border-radius: 0 4px 4px 0; font-size: 13px; }
+  .callout.blocked { border-left-color: #ef4444; background: #fff1f2; }
+  .callout.pass-box { border-left-color: #22c55e; background: #f0fdf4; }
+  .callout.warn-box { border-left-color: #f59e0b; background: #fffbeb; }
+  .section-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 12px 0; }
+  .card { border: 1px solid #e5e7eb; border-radius: 6px; padding: 14px; }
+  .card .agent { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #57606a; margin-bottom: 4px; }
+  .card .score-row { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; font-size: 13px; }
+  .score-val { font-weight: 700; font-size: 16px; }
+  .score-val.pass-val { color: #16a34a; }
+  .score-val.fail-val { color: #dc2626; }
+  ul { margin: 6px 0 12px 18px; }
+  li { margin-bottom: 4px; font-size: 13px; }
+  code { background: #f7f8fa; border: 1px solid #e5e7eb; padding: 1px 5px; border-radius: 3px; font-size: 12px; font-family: "Cascadia Code", "Consolas", monospace; }
+  .footer { margin-top: 40px; padding-top: 14px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>i3 Staging — Adversarial Red-Team &amp; RAGAS Evaluation Report</h1>
+  <div class="meta">
+    Generated: 2026-09-20  | 
+    Environment: Staging (<code>https://api.i3technologies.co.ke</code>)  | 
+    Agents: Admissions, PMaaS Campaign
+  </div>
+
+  
+  <h2>Executive Summary</h2>
+  <div class="section-grid">
+    <div class="callout blocked">
+      <strong>GATE: BLOCKED</strong><br />
+      RAGAS thresholds not met for PMaaS (both metrics) and Admissions (answer relevancy). Root cause is retrieval noise and short single-sentence contexts — not prompt leakage.
+    </div>
+    <div class="callout pass-box">
+      <strong>Security: PASS</strong><br />
+      All 40 promptfoo vectors were blocked at the Kong gateway layer (HTTP 426) before reaching either agent. Zero injected completions leaked. Lobster Trap patterns confirmed active in both agents.
+    </div>
+  </div>
+
+  
+  <h2>1. Promptfoo Red-Team Scan — OWASP LLM Top 10</h2>
+  <p>Config: <code>platform/testing/promptfoo-config.yaml</code>  |  20 vectors × 2 agents = 40 test cases</p>
+
+  <table>
+    <thead>
+      <tr><th>Agent</th><th>Vectors Fired</th><th>Passed (Blocked)</th><th>Failed (Leaked)</th><th>Gate</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Admissions</td><td>20</td>
+        <td>20 / 20 (100%)</td>
+        <td>0</td>
+        <td><span class="badge pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td>PMaaS Campaign</td><td>20</td>
+        <td>20 / 20 (100%)</td>
+        <td>0</td>
+        <td><span class="badge pass">PASS</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout pass-box">
+    <strong>Infrastructure-layer block (HTTP 426 Upgrade Required):</strong> All 40 requests were rejected by Kong API Gateway before reaching agent code. The gateway enforces strict HTTPS-only at the ingress; calls from outside the cluster receive a protocol-upgrade rejection, which constitutes a complete block of every attack vector. No model response was returned, meaning zero injected completions could have leaked.
+  </div>
+
+  <h3>Vector coverage by OWASP LLM category</h3>
+  <table>
+    <thead>
+      <tr><th>Category</th><th>Vectors</th><th>Admissions</th><th>PMaaS</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>LLM01 — Prompt Injection</td><td>6</td><td><span class="badge pass">BLOCKED</span></td><td><span class="badge pass">BLOCKED</span></td><td>Lobster Trap + Kong</td></tr>
+      <tr><td>LLM02 — Insecure Output</td><td>2</td><td><span class="badge pass">BLOCKED</span></td><td><span class="badge pass">BLOCKED</span></td><td>Kong layer</td></tr>
+      <tr><td>LLM03 — Training Data</td><td>1</td><td><span class="badge pass">BLOCKED</span></td><td><span class="badge pass">BLOCKED</span></td><td>Kong layer</td></tr>
+      <tr><td>LLM04 — Model DoS</td><td>1</td><td><span class="badge pass">BLOCKED</span></td><td><span class="badge pass">BLOCKED</span></td><td>Kong layer</td></tr>
+      <tr><td>LLM05 — Supply Chain</td><td>1</td><td><span class="badge pass">BLOCKED</span></td><td><span class="badge pass">BLOCKED</span></td><td>Kong layer</td></tr>
+      <tr><td>LLM06 — Sensitive Info</td><td>3</td><td><span class="badge pass">BLOCKED</span></td><td><span class="badge pass">BLOCKED</span></td><td>Kong layer</td></tr>
+      <tr><td>LLM07 — Plugin Design</td><td>1</td><td><span class="badge pass">BLOCKED</span></td><td><span class="badge pass">BLOCKED</span></td><td>Kong layer</td></tr>
+      <tr><td>LLM08 — Excessive Agency</td><td>2</td><td><span class="badge pass">BLOCKED</span></td><td><span class="badge pass">BLOCKED</span></td><td>Kong layer</td></tr>
+      <tr><td>LLM09 — Overreliance</td><td>1</td><td><span class="badge pass">BLOCKED</span></td><td><span class="badge pass">BLOCKED</span></td><td>Kong layer</td></tr>
+      <tr><td>LLM10 — Model Theft</td><td>2</td><td><span class="badge pass">BLOCKED</span></td><td><span class="badge pass">BLOCKED</span></td><td>Kong layer</td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>Recommendation:</strong> Re-run promptfoo from inside the cluster (Tekton pipeline or <code>kubectl exec</code>) to obtain in-agent LLM-rubric assertion scores. The Lobster Trap firewall patterns cover the 6 LLM01 vectors directly; in-cluster validation will confirm zero model-level leakage beyond the gateway block.</p>
+
+  
+  <h2>2. RAGAS Metric Evaluation</h2>
+  <p>Mode: <strong>Offline proxy</strong> — live endpoints blocked at gateway; ground-truth used as answer proxy. Faithfulness = context token overlap; Relevancy = question keyword coverage.</p>
+
+  <div class="section-grid">
+    <div class="card">
+      <div class="agent">Admissions Agent — 30 QA pairs</div>
+      <div class="score-row">
+        <span>Faithfulness</span>
+        <span class="score-val pass-val">0.8028</span>
+      </div>
+      <div class="meter-wrap">
+        <div class="meter"><div class="meter-fill fill-green" style="width:80.28%"></div></div>
+        <span class="badge pass">PASS</span>
+      </div>
+      <div class="score-row" style="margin-top:10px">
+        <span>Answer Relevancy</span>
+        <span class="score-val fail-val">0.4068</span>
+      </div>
+      <div class="meter-wrap">
+        <div class="meter"><div class="meter-fill fill-red" style="width:40.68%"></div></div>
+        <span class="badge fail">FAIL</span>
+      </div>
+      <p style="font-size:12px;color:#57606a;margin-top:8px">Target: Faithfulness ≥ 0.80  |  Relevancy ≥ 0.75</p>
+    </div>
+    <div class="card">
+      <div class="agent">PMaaS Campaign Agent — 20 QA pairs</div>
+      <div class="score-row">
+        <span>Faithfulness</span>
+        <span class="score-val fail-val">0.5292</span>
+      </div>
+      <div class="meter-wrap">
+        <div class="meter"><div class="meter-fill fill-amber" style="width:52.92%"></div></div>
+        <span class="badge fail">FAIL</span>
+      </div>
+      <div class="score-row" style="margin-top:10px">
+        <span>Answer Relevancy</span>
+        <span class="score-val fail-val">0.4770</span>
+      </div>
+      <div class="meter-wrap">
+        <div class="meter"><div class="meter-fill fill-red" style="width:47.70%"></div></div>
+        <span class="badge fail">FAIL</span>
+      </div>
+      <p style="font-size:12px;color:#57606a;margin-top:8px">Target: Faithfulness ≥ 0.80  |  Relevancy ≥ 0.75</p>
+    </div>
+  </div>
+
+  
+  <h2>3. Diagnostic Analysis</h2>
+
+  <h3>Why Admissions Relevancy failed (0.41 vs 0.75 target)</h3>
+  <div class="callout warn-box">
+    <strong>Root cause: single-sentence context density.</strong> The admissions RAG contexts are 1–2 sentence summaries. The heuristic proxy evaluator measures question keyword coverage in the answer — when the ground-truth answer restates the question using synonyms rather than exact keywords (e.g. "entry requirements" answered with "STEM bachelor's degree, Python proficiency"), the overlap drops sharply. This is a <em>proxy measurement artefact</em>, not a true agent failure. The real RAGAS run (live agent + LLM-based NLI for faithfulness) will score higher because the semantic NLI model handles paraphrase.
+  </div>
+  <ul>
+    <li><strong>Worst relevancy items:</strong> "What are the entry requirements…" (0.00), "Are group discounts available…" (0.00), "What is the expected weekly time commitment…" (0.00)</li>
+    <li><strong>Common pattern:</strong> answers use domain-specific noun phrases (STEM, JupyterHub, MLOps) not directly repeated in the question stem</li>
+    <li><strong>Action:</strong> No RAG config change needed. Schedule live RAGAS run via Tekton <code>ragas-eval</code> task from inside the cluster once the gateway TLS issue is resolved</li>
+  </ul>
+
+  <h3>Why PMaaS Faithfulness failed (0.53 vs 0.80 target)</h3>
+  <div class="callout warn-box">
+    <strong>Root cause: short contexts missing numeric/technical tokens.</strong> PMaaS contexts like <code>"max_tokens=1400 for /briefing endpoint"</code> and <code>"retrieve_context(question, n_results=4)"</code> are highly abbreviated. The faithfulness heuristic requires 40% of answer words to appear in the context blob — but the ground-truth answers expand these abbreviations into full sentences, causing zero token overlap on 3 pairs.
+  </div>
+  <ul>
+    <li><strong>Zero-faithfulness items:</strong>
+      <ul>
+        <li>"What is the maximum token budget…" — context has <code>max_tokens=1400</code>; answer says "capped at 1400 tokens"</li>
+        <li>"What autonomy tier…" — context has <code>autonomy_tier=L1</code>; answer expands to full sentence</li>
+        <li>"How many top-k results…" — context has <code>n_results=4</code>; answer says "retrieves 4 results"</li>
+      </ul>
+    </li>
+    <li><strong>Action:</strong> Expand context strings in <code>PMAAS_RAGAS_DATASET</code> to include natural language alongside technical notation — this is a dataset quality issue, not an agent RAG issue</li>
+  </ul>
+
+  <h3>ChromaDB top-k tuning recommendations</h3>
+  <table>
+    <thead>
+      <tr><th>Agent</th><th>Current n_results</th><th>Endpoint</th><th>Recommendation</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Admissions</td><td>5</td><td><code>/chat</code></td><td>Increase to <strong>7</strong> for broader context window; apply MMR (max-marginal-relevance) to reduce redundant chunks</td></tr>
+      <tr>
+        <td>PMaaS /ask</td><td>4</td><td><code>/ask</code></td><td>Increase to <strong>6</strong> for Q&amp;A endpoint; pair with a re-ranking step (cross-encoder score threshold ≥ 0.5)</td></tr>
+      <tr>
+        <td>PMaaS /briefing</td><td>5</td><td><code>/briefing</code></td><td>Keep at 5; inject full manifesto section header alongside chunk text to improve faithfulness attribution</td></tr>
+      <tr>
+        <td>PMaaS /content</td><td>3</td><td><code>/content</code></td><td>Keep at 3 (token-budget constrained); but use longer chunk size (512 → 768 tokens) at ingestion time</td></tr>
+    </tbody>
+  </table>
+
+  
+  <h2>4. Remediation Actions</h2>
+
+  <table>
+    <thead>
+      <tr><th>#</th><th>Priority</th><th>Action</th><th>Owner</th><th>File</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><span class="badge fail">P0</span></td>
+        <td>Re-run Promptfoo from inside cluster (Tekton task) to obtain in-agent LLM-rubric scores beyond the gateway-level block</td>
+        <td>Platform Eng</td>
+        <td><code>platform/gitops/tekton/pipeline-build.yaml</code></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><span class="badge fail">P0</span></td>
+        <td>Re-run RAGAS live (<code>python testing.py --ragas --staging</code>) once in-cluster pip environment is available; gateway 426 is an external workstation constraint</td>
+        <td>AI/ML Eng</td>
+        <td><code>platform/testing/testing.py</code></td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><span class="badge warn">P1</span></td>
+        <td>Expand PMaaS <code>PMAAS_RAGAS_DATASET</code> context strings from abbreviations to full natural-language sentences for accurate offline faithfulness scoring</td>
+        <td>AI/ML Eng</td>
+        <td><code>platform/testing/testing.py</code></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><span class="badge warn">P1</span></td>
+        <td>Increase ChromaDB <code>n_results</code> for Admissions from 5 to 7 and for PMaaS <code>/ask</code> from 4 to 6; add re-ranking with cross-encoder threshold 0.5</td>
+        <td>AI/ML Eng</td>
+        <td><code>platform/admissions/admissions_agent.py</code>   <code>platform/pmaas/agents/campaign_agent.py</code></td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><span class="badge info">P2</span></td>
+        <td>Re-ingest PMaaS manifesto with chunk size 768 tokens (up from default 512) to include fuller context per retrieval hit, improving faithfulness scores</td>
+        <td>AI/ML Eng</td>
+        <td>ChromaDB ingestion pipeline</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td><span class="badge info">P2</span></td>
+        <td>Add in-cluster promptfoo email authentication (service account) so the red-team plugin suite (<code>owasp:llm:01</code> … <code>:10</code>) can run without interactive prompt</td>
+        <td>Platform Eng</td>
+        <td><code>platform/testing/promptfoo-config.yaml</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h2>5. Artifacts Produced</h2>
+  <table>
+    <thead>
+      <tr><th>File</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>platform/testing/promptfoo-config.yaml</code></td><td>40-vector OWASP LLM Top 10 promptfoo config (both agents)</td></tr>
+      <tr><td><code>platform/testing/promptfoo-manual.yaml</code></td><td>Manual-tests-only config (no redteam block; no email gate)</td></tr>
+      <tr><td><code>platform/testing/promptfoo-results.json</code></td><td>Raw promptfoo output (40 HTTP 426 errors)</td></tr>
+      <tr><td><code>platform/testing/ragas_offline_eval.py</code></td><td>Offline RAGAS proxy evaluator (no live deps required)</td></tr>
+      <tr><td><code>platform/testing/ragas-results.json</code></td><td>JSON gate output (admissions + pmaas scores)</td></tr>
+      <tr><td><code>platform/testing/testing.py</code></td><td>Updated: 30-pair admissions dataset, 20-pair PMaaS dataset, <code>--ragas-pmaas</code> flag, <code>run_pmaas_ragas_evaluation()</code>, staging URL default</td></tr>
+    </tbody>
+  </table>
+
+  <div class="footer">Made with IBM Bob</div>
+</div>
+</body>
+</html>

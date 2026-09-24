@@ -1,0 +1,96 @@
+# ============================================================
+# i3 SmartLab — Namespace, RBAC, SCC
+# ============================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-smartlab
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    app.kubernetes.io/component: smartlab
+---
+# ServiceAccount for all SmartLab workloads
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: smartlab
+  namespace: i3-smartlab
+---
+# SCC: anyuid needed for FastAPI + Node images that run as non-root
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: smartlab-anyuid
+allowPrivilegedContainer: false
+allowHostNetwork: false
+allowHostPorts: false
+allowHostPID: false
+allowHostIPC: false
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: MustRunAs
+fsGroup:
+  type: MustRunAs
+supplementalGroups:
+  type: RunAsAny
+users:
+  - system:serviceaccount:i3-smartlab:smartlab
+groups: []
+---
+# Role — read secrets, manage deployments in own namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: smartlab-operator
+  namespace: i3-smartlab
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services", "configmaps", "secrets", "persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: smartlab-operator-binding
+  namespace: i3-smartlab
+subjects:
+  - kind: ServiceAccount
+    name: smartlab
+    namespace: i3-smartlab
+roleRef:
+  kind: Role
+  name: smartlab-operator
+  apiGroup: rbac.authorization.k8s.io
+---
+# Allow smartlab to read secrets from i3-model-gateway (LiteLLM key)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: litellm-secret-reader
+  namespace: i3-model-gateway
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["litellm-secrets"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: smartlab-litellm-reader
+  namespace: i3-model-gateway
+subjects:
+  - kind: ServiceAccount
+    name: smartlab
+    namespace: i3-smartlab
+roleRef:
+  kind: Role
+  name: litellm-secret-reader
+  apiGroup: rbac.authorization.k8s.io

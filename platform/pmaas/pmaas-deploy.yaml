@@ -46,26 +46,32 @@ stringData:
   DATABASE_URL: "postgresql://pmaas:REPLACE@i3-postgres-pgbouncer.i3-data.svc:5432/pmaas_db?pgbouncer=true&connection_limit=10"
   NEXTAUTH_SECRET: "5/5acuPp23ZT9+FEP8gnyE2q1HVbD1VLnjIo0TiCHLE="
   NEXTAUTH_URL: "https://pmaas.i3technologies.co.ke"
+  # STEP-P1-01: Literal credentials removed. Inject via OpenBao agent sidecar or
+  # Sealed Secret. OpenBao paths:
+  #   i3/keycloak/pmaas-client   → KEYCLOAK_CLIENT_SECRET
+  #   i3/litellm/api-key         → LITELLM_KEY
+  #   i3/chromadb/token          → CHROMA_TOKEN
   KEYCLOAK_ISSUER: "https://sso.i3technologies.co.ke/auth/realms/i3"
   KEYCLOAK_CLIENT_ID: "pmaas-web"
-  KEYCLOAK_CLIENT_SECRET: "xxY9tyvdkYchKLdoFl4Vl6A9STvuDXui"
   # LiteLLM gateway for AI agents
   LITELLM_URL: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1"
-  LITELLM_KEY: "sk-litellm-i3-f951c9377163a11275864cb92e90ad13"
   # ChromaDB for manifesto RAG
   CHROMA_HOST: "chromadb.i3-ai-lab.svc.cluster.local"
-  CHROMA_TOKEN: "fb4a0f0b619b6517d1b1082f5254b3c52c909221ab757f51bbc1c6a154a2c98c"
   # Voice services for AI Caller
+  # HC-7: VOICE_API_KEY removed — inject via OpenBao agent sidecar.
+  # OpenBao path: i3/voice/api-key → VOICE_API_KEY
   VOICE_TTS_URL: "http://voice-tts.i3-voice.svc.cluster.local:8000"
   VOICE_STT_URL: "http://voice-stt.i3-voice.svc.cluster.local:8001"
-  VOICE_API_KEY: "996c39cfc16b10eb1952e76036e1dcb6213f2b56ba28fe96"
   # M-Pesa Daraja API
-  MPESA_CONSUMER_KEY: "p9MtTHfq0np8OnXFvTjmF3ytgj9svH7Gexr90CgMGqrhoTpd"
-  MPESA_CONSUMER_SECRET: "BtG0mgEEhtUd408yAJDGltRTQSLAzlE3mi7q7rue1OxyH82cfIbt1d494soE1XFf"
-  MPESA_SHORTCODE: "REPLACE_WITH_SHORTCODE"
-  MPESA_PASSKEY: "REPLACE_WITH_PASSKEY"
+  # HC-7: Credentials removed — inject via OpenBao agent sidecar.
+  # OpenBao paths:
+  #   i3/mpesa/consumer-key    → MPESA_CONSUMER_KEY
+  #   i3/mpesa/consumer-secret → MPESA_CONSUMER_SECRET
+  #   i3/mpesa/shortcode       → MPESA_SHORTCODE
+  #   i3/mpesa/passkey         → MPESA_PASSKEY
   # WhatsApp Business Cloud API
-  WHATSAPP_TOKEN: "REPLACE_WITH_META_TOKEN"
+  # HC-7: Token removed — inject via OpenBao agent sidecar.
+  # OpenBao path: i3/whatsapp/token → WHATSAPP_TOKEN
   WHATSAPP_PHONE_NUMBER_ID: "REPLACE_WITH_PHONE_ID"
 
 ---
@@ -120,6 +126,20 @@ spec:
               value: "production"
             - name: PORT
               value: "3000"
+            - name: PG_CA_CERT_PATH
+              value: /etc/ssl/certs/postgres-ca.crt
+          volumeMounts:
+            - name: media
+              mountPath: /app/public/uploads
+            - name: postgres-ca
+              mountPath: /etc/ssl/certs/postgres-ca.crt
+              subPath: ca.crt
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 15
           resources:
             requests:
               cpu: "250m"
@@ -127,19 +147,13 @@ spec:
             limits:
               cpu: "1"
               memory: "1Gi"
-          volumeMounts:
-            - name: media
-              mountPath: /app/public/uploads
-          livenessProbe:
-            httpGet:
-              path: /api/health
-              port: 3000
-            initialDelaySeconds: 30
-            periodSeconds: 15
       volumes:
         - name: media
           persistentVolumeClaim:
             claimName: pmaas-media
+        - name: postgres-ca
+          secret:
+            secretName: crunchy-postgres-ca
 
 ---
 apiVersion: v1
@@ -220,6 +234,9 @@ spec:
               value: "kafka-bootstrap.i3-messaging.svc.cluster.local:9092"
             - name: KAFKA_TOPIC_VOTER_INTERACTIONS
               value: "pmaas.voter-interactions"
+            # STEP-P1-13: OTel trace exporter endpoint
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.i3-monitoring.svc.cluster.local:4317"
           resources:
             requests:
               cpu: "500m"
@@ -296,10 +313,12 @@ metadata:
   namespace: i3-pmaas
 type: Opaque
 stringData:
-  OPENAI_API_KEY: "sk-litellm-i3-f951c9377163a11275864cb92e90ad13"
+  # STEP-P1-01: Literal credentials removed. Inject via OpenBao agent sidecar or
+  # Sealed Secret. OpenBao paths:
+  #   i3/litellm/api-key            → OPENAI_API_KEY
+  #   i3/keycloak/pmaas-client      → OAUTH_CLIENT_SECRET
+  #   i3/open-webui/pmaas/jwt-secret → WEBUI_SECRET_KEY
   OAUTH_CLIENT_ID: "open-webui-dawa"
-  OAUTH_CLIENT_SECRET: "xxY9tyvdkYchKLdoFl4Vl6A9STvuDXui"
-  WEBUI_SECRET_KEY: "5/5acuPp23ZT9+FEP8gnyE2q1HVbD1VLnjIo0TiCHLE="
 
 ---
 apiVersion: v1

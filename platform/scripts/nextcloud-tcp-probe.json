@@ -1,0 +1,9 @@
+[
+  {"op":"replace","path":"/spec/template/spec/containers/0/readinessProbe","value":{
+    "tcpSocket":{"port":80},
+    "initialDelaySeconds":10,
+    "periodSeconds":10,
+    "failureThreshold":5,
+    "timeoutSeconds":5
+  }}
+]

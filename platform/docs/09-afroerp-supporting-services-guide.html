@@ -235,8 +235,8 @@
 
 <div class="cred-grid">
   <div class="cred-card"><div class="label">Admin URL</div><div class="value">https://afroerp.i3technologies.co.ke</div></div>
-  <div class="cred-card"><div class="label">Admin Password</div><div class="value">REDACTED-erp-admin</div></div>
-  <div class="cred-card"><div class="label">LiteLLM Key</div><div class="value">sk-litellm-i3-f951c9377163a11275864cb92e90ad13</div></div>
+  <div class="cred-card"><div class="label">Admin Password</div><div class="value">[REDACTED — rotate via OpenBao i3/erpnext/admin]</div></div>
+  <div class="cred-card"><div class="label">LiteLLM Key</div><div class="value">[REDACTED — rotate via OpenBao i3/model-gateway/litellm]</div></div>
   <div class="cred-card"><div class="label">KRA eTIMS API</div><div class="value">https://etims-api.kra.go.ke</div></div>
 </div>
 
@@ -269,7 +269,7 @@
 <div class="step">
   <div class="step-num">1</div>
   <div class="step-body"><strong>Open the setup wizard</strong>
-    Navigate to <code>https://afroerp.i3technologies.co.ke</code> and log in as <code>Administrator</code> with password <code>REDACTED-erp-admin</code>. The setup wizard launches automatically on a fresh install.
+    Navigate to <code>https://afroerp.i3technologies.co.ke</code> and log in as <code>Administrator</code> with password <code>[REDACTED — rotate via OpenBao i3/erpnext/admin]</code>. The setup wizard launches automatically on a fresh install.
   </div>
 </div>
 <div class="step">
@@ -435,7 +435,7 @@ oc rollout restart deployment/afroerp -n i3-afroerp</pre>
   <thead><tr><th>Item</th><th>Value</th></tr></thead>
   <tbody>
     <tr><td>URL</td><td><code>https://mfumo.i3technologies.co.ke</code></td></tr>
-    <tr><td>LiteLLM Key</td><td><code>sk-litellm-i3-f951c9377163a11275864cb92e90ad13</code></td></tr>
+    <tr><td>LiteLLM Key</td><td><code>[REDACTED — rotate via OpenBao i3/model-gateway/litellm]</code></td></tr>
     <tr><td>Integration</td><td>ERPNext Frappe AI / LiteLLM proxy</td></tr>
   </tbody>
 </table>
@@ -951,7 +951,7 @@ oc exec -it deployment/directus -n i3-ott -- printenv | grep -E 'DIRECTUS|DB_|KE
 </table>
 
 <div class="cred-grid">
-  <div class="cred-card"><div class="label">DB Password</div><div class="value">REDACTED-n8n-db</div></div>
+  <div class="cred-card"><div class="label">DB Password</div><div class="value">[REDACTED — rotate via OpenBao i3/n8n/db]</div></div>
   <div class="cred-card"><div class="label">Encryption Key</div><div class="value">8CgTV0QNltXMpqBkUjLAKz17GrwZx5e6</div></div>
 </div>
 
@@ -1118,7 +1118,7 @@ oc get pvc -n i3-ott</pre>
 <table>
   <thead><tr><th>Service</th><th>URL</th><th>Namespace</th><th>Admin Login</th></tr></thead>
   <tbody>
-    <tr><td>AfroERP (ERPNext)</td><td><code>https://afroerp.i3technologies.co.ke</code></td><td><code>i3-afroerp</code></td><td>Administrator / REDACTED-erp-admin</td></tr>
+    <tr><td>AfroERP (ERPNext)</td><td><code>https://afroerp.i3technologies.co.ke</code></td><td><code>i3-afroerp</code></td><td>Administrator / [REDACTED — rotate via OpenBao i3/erpnext/admin]</td></tr>
     <tr><td>Mfumo AI</td><td><code>https://mfumo.i3technologies.co.ke</code></td><td><code>i3-afroerp</code></td><td>LiteLLM key in secret</td></tr>
     <tr><td>Nextcloud</td><td><code>https://nextcloud.i3technologies.co.ke</code></td><td><code>i3-social</code></td><td>i3admin / i3-Social-Admin-2026!</td></tr>
     <tr><td>Directus CMS</td><td><code>https://cms.i3technologies.co.ke</code></td><td><code>i3-ott</code></td><td>admin@i3.tech / a0meDpzBwTx7Srks</td></tr>

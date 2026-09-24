@@ -1,0 +1,1 @@
+[{"op": "replace", "path": "/spec/path", "value": "/api/v1/credentials/verify"}]

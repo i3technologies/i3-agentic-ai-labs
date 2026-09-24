@@ -1,0 +1,76 @@
+# ============================================================
+# FORD-Asili HMAC Re-hash Kubernetes Job (P5 / HC-6 rotation)
+# Triggered manually or via OpenBao rotation hook after
+# MEMBER_HMAC_SECRET is rotated in the i3-security namespace.
+#
+# Usage:
+#   kubectl apply -f platform/ford/rehash-job.yaml -n i3-ford
+#
+# For production: use a CronJob with suspend=true and un-suspend
+# via the rotation hook rather than applying the Job directly.
+# ============================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ford-hmac-rehash
+  namespace: i3-ford
+  labels:
+    app.kubernetes.io/name: ford-hmac-rehash
+    app.kubernetes.io/part-of: i3-platform
+    app.kubernetes.io/component: key-rotation
+  annotations:
+    i3.io/hc: "HC-6"
+    i3.io/trigger: "MEMBER_HMAC_SECRET rotation"
+spec:
+  # Re-run at most once automatically; operator must re-apply for a repeat.
+  backoffLimit: 2
+  activeDeadlineSeconds: 3600   # 1-hour hard limit to prevent stuck jobs
+  ttlSecondsAfterFinished: 86400 # Auto-clean after 24 hours
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ford-hmac-rehash
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: ford-api-sa  # reuse existing SA; no extra permissions needed
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: rehash
+          image: i3-ford/ford-api:latest   # same image as the ford-api service
+          command: ["python", "rehash_worker.py"]
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          env:
+            # NEW secret (post-rotation) — injected by OpenBao agent sidecar
+            - name: MEMBER_HMAC_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ford-secrets
+                  key: MEMBER_HMAC_SECRET
+            # OLD secret — must be populated manually before running the job.
+            # Store it in a separate Secret created during the rotation procedure.
+            - name: OLD_MEMBER_HMAC_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ford-rehash-secrets
+                  key: OLD_MEMBER_HMAC_SECRET
+            - name: FORD_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ford-secrets
+                  key: FORD_DB_URL
+            # Set DRY_RUN=true for a verification pass before writing
+            - name: DRY_RUN
+              value: "false"
+            - name: BATCH_SIZE
+              value: "200"

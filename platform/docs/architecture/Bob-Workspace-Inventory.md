@@ -578,7 +578,7 @@ All 70 references to `solution-01..08` are protective constraints:
 | Location | Issue | Severity |
 |---|---|---|
 | `onboarding-agent/src/security/keycloak-auth.ts:51–53` | **`DEV_BYPASS_AUTH=true` active code path** — JWT validation skipped when env var is set | ⚫ **HC-7 VIOLATION — Critical** |
-| `pmaas_setup.sql` (workspace root) | Plaintext DB password `REDACTED-pmaas-db` in SQL file | ⚫ Critical |
+| `pmaas_setup.sql` (workspace root) | Plaintext DB password `[REDACTED � rotate via OpenBao i3/pmaas/db-url]` in SQL file | ⚫ Critical |
 | `platform/pmaas/pmaas-deploy.yaml:63` | `VOICE_API_KEY` hardcoded literal value in deployment manifest | 🔴 High |
 | `platform/docs/03-databases-storage-guide.html:129` | `PGPASSWORD` literal in public-facing HTML guide | 🔴 High |
 | Workspace root: `tls.key`, `ca.crt`, `tls.crt` | TLS private key as untracked files in workspace root | ⚫ Critical |

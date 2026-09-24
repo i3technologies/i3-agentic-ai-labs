@@ -1,0 +1,100 @@
+# ============================================================
+# IMP-10 — KEDA ScaledObjects for GPU Pool  [GAP]
+# ============================================================
+# ⚠ [GAP] GPU ACCELERATION NOT YET BENCHMARKED
+#   These ScaledObjects are INACTIVE (paused: true) until
+#   bench_gpu.py prints PASS.  Set paused: false after PASS.
+#
+# Strategy
+# ─────────
+#   MachineAutoscaler (cluster-autoscaler integration):
+#     Scale GPU MachineSet from 0 → 3 nodes on GPU pod pending.
+#   KEDA ScaledObject for ollama-gpu StatefulSet:
+#     Scale 0 → 3 replicas on LiteLLM GPU-model request rate.
+#     Scale to 0 during off-hours to avoid idle GPU billing.
+#
+# Note: ollama-gpu is a StatefulSet with RWO PVC per replica.
+# Horizontal scale-out works here because each replica loads
+# weights independently onto its own GPU.  Unlike CPU Ollama
+# (fixed at replicas:1 — KEDA-01), GPU VRAM is not the
+# bottleneck for multiple replicas on separate nodes.
+# ============================================================
+
+---
+# ── MachineAutoscaler: 0 → 3 GPU nodes on pending pods ─────
+apiVersion: autoscaling.openshift.io/v1beta1
+kind: MachineAutoscaler
+metadata:
+  name: i3-gpu-pool-autoscaler
+  namespace: openshift-machine-api
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.platform/imp: "IMP-10"
+  annotations:
+    i3.platform/gap: "GPU autoscaling gated — activate after bench_gpu.py PASS"
+spec:
+  minReplicas: 0   # Scale to 0 during off-hours to avoid idle GPU cost
+  maxReplicas: 3   # Hard ceiling: 3 × V100 nodes = 3 GPU cards max (ResourceQuota enforces)
+  scaleTargetRef:
+    apiVersion: machine.openshift.io/v1beta1
+    kind: MachineSet
+    name: i3-gpu-pool
+
+---
+# ── KEDA ScaledObject: ollama-gpu (0 → 3 replicas) ─────────
+# [GAP] Paused until benchmark PASS.  Set paused: false after PASS.
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: ollama-gpu-scaler
+  namespace: i3-model-gateway
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.platform/imp: "IMP-10"
+  annotations:
+    i3.platform/gap: "GPU ScaledObject paused — activate after bench_gpu.py PASS"
+spec:
+  scaleTargetRef:
+    name: ollama-gpu
+    kind: StatefulSet
+  paused: true                 # ← REMOVE after bench_gpu.py PASS
+  pollingInterval: 15
+  cooldownPeriod: 300          # 5 min: GPU nodes take ~90s to come up; longer cooldown avoids thrash
+  minReplicaCount: 0           # Scale to 0 when idle (GPU billing is per-minute on IBM Cloud)
+  maxReplicaCount: 3
+  # Scale to 0 outside business hours (Africa/Nairobi TZ = UTC+3).
+  # 19:00 EAT → 16:00 UTC scale-in; 07:00 EAT → 04:00 UTC scale-out.
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 600   # Wait 10 min before scaling in
+          policies:
+            - type: Pods
+              value: 1
+              periodSeconds: 120
+        scaleUp:
+          stabilizationWindowSeconds: 60
+          policies:
+            - type: Pods
+              value: 1
+              periodSeconds: 60
+  triggers:
+    # Primary trigger: GPU-model request rate via Prometheus
+    - type: prometheus
+      metadata:
+        serverAddress: "http://prometheus-operated.i3-monitoring.svc.cluster.local:9090"
+        metricName: litellm_gpu_requests_pending
+        threshold: "5"
+        # Count requests targeting -gpu aliases only
+        query: >
+          sum(rate(litellm_request_total{model=~".*-gpu"}[1m]))
+    # Secondary trigger: GPU utilisation via DCGM exporter
+    # (install DCGM exporter from NVIDIA GPU Operator before enabling)
+    - type: prometheus
+      metadata:
+        serverAddress: "http://prometheus-operated.i3-monitoring.svc.cluster.local:9090"
+        metricName: dcgm_gpu_utilization
+        threshold: "70"
+        query: >
+          avg(DCGM_FI_DEV_GPU_UTIL{namespace="i3-model-gateway"})

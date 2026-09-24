@@ -1,0 +1,247 @@
+
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>i3 Platform — Full Health &amp; Test Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.6; background: #fff; color: #1f2328; }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 32px 20px 48px; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { color: #57606a; font-size: 13px; margin-bottom: 28px; }
+  h2 { font-size: 15px; font-weight: 700; margin: 28px 0 10px; padding-bottom: 5px; border-bottom: 1px solid #e5e7eb; }
+  h3 { font-size: 13px; font-weight: 600; margin: 18px 0 8px; color: #1f2328; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 8px; }
+  th { background: #f7f8fa; text-align: left; padding: 6px 10px; font-weight: 600; border: 1px solid #e5e7eb; }
+  td { padding: 5px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fbfcfd; }
+  .pass  { color: #1a7f37; font-weight: 600; }
+  .warn  { color: #9a6700; font-weight: 600; }
+  .fail  { color: #cf222e; font-weight: 600; }
+  .info  { color: #3b82d4; font-weight: 600; }
+  .badge { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .badge-pass { background: #d1fae5; color: #065f46; }
+  .badge-warn { background: #fef3c7; color: #92400e; }
+  .badge-fail { background: #fee2e2; color: #991b1b; }
+  .badge-info { background: #dbeafe; color: #1e40af; }
+  .summary-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 24px; }
+  .summary-card { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 14px 12px; text-align: center; }
+  .summary-card .num { font-size: 28px; font-weight: 700; line-height: 1.1; }
+  .summary-card .lbl { font-size: 11px; color: #57606a; margin-top: 3px; }
+  .num-pass { color: #1a7f37; }
+  .num-warn { color: #9a6700; }
+  .num-fail { color: #cf222e; }
+  .num-info { color: #3b82d4; }
+  .meta { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px 14px; margin-bottom: 22px; font-size: 13px; }
+  .meta strong { color: #1f2328; }
+  .meta table { margin: 0; }
+  .meta td, .meta th { border: none; padding: 2px 12px 2px 0; background: transparent; }
+  code { font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; background: #f0f3f6; padding: 1px 5px; border-radius: 3px; }
+  .note { font-size: 12px; color: #57606a; margin-top: 6px; padding: 6px 10px; background: #f7f8fa; border-left: 3px solid #e5e7eb; border-radius: 0 4px 4px 0; }
+  .footer { margin-top: 40px; padding-top: 14px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>i3 Platform — Full Health &amp; Test Report</h1>
+  <div class="subtitle">Post-Shutdown Status Sweep  ·  IBM ROKS Frankfurt  ·  Cluster: <code>da0umukf0anep6valpig</code>  ·  Generated: 19 Sep 2026</div>
+
+  <div class="summary-grid">
+    <div class="summary-card"><div class="num num-pass">25</div><div class="lbl">Endpoints PASS</div></div>
+    <div class="summary-card"><div class="num num-warn">5</div><div class="lbl">Warnings (minor)</div></div>
+    <div class="summary-card"><div class="num num-fail">1</div><div class="lbl">Active Defect</div></div>
+    <div class="summary-card"><div class="num num-info">397</div><div class="lbl">Pods Running</div></div>
+  </div>
+
+  <div class="meta">
+    <table>
+      <tr><td><strong>Platform</strong></td><td>IBM ROKS Frankfurt (eu-de)</td><td><strong>Namespaces</strong></td><td>20 application namespaces</td></tr>
+      <tr><td><strong>Test Date</strong></td><td>19 September 2026, 08:11 UTC</td><td><strong>Sweep Type</strong></td><td>Post-system-shutdown full sweep</td></tr>
+      <tr><td><strong>Pods Running</strong></td><td>397 / 468 total</td><td><strong>Completed Builds</strong></td><td>71 (expected, normal)</td></tr>
+    </table>
+  </div>
+
+  
+  <h2>1. Public Endpoint Status</h2>
+
+  <h3>Core Platform Applications</h3>
+  <table>
+    <tr><th>Application</th><th>URL</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>Sage AI (Open WebUI)</td><td><code>sage.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS 200</span></td><td>Running, auth via Keycloak SSO</td></tr>
+    <tr><td>JupyterHub AI Lab</td><td><code>jupyter.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS 200</span></td><td>Hub v4.1.5, 2/2 containers up</td></tr>
+    <tr><td>LiteLLM Gateway</td><td><code>litellm.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS 200</span></td><td>/health/liveliness OK · /v1/models OK · 2 replicas up</td></tr>
+    <tr><td>Keycloak SSO</td><td><code>sso.i3technologies.co.ke/auth/realms/i3</code></td><td><span class="badge badge-pass">PASS 200</span></td><td>Realm i3 healthy; master token auth confirmed</td></tr>
+    <tr><td>Langfuse (LLM Observability)</td><td><code>langfuse.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS 200</span></td><td>Running in i3-ott</td></tr>
+    <tr><td>Grafana Monitoring</td><td><code>grafana.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS 200</span></td><td>Prometheus backend healthy</td></tr>
+    <tr><td>Prometheus</td><td><code>prometheus.i3technologies.co.ke</code></td><td><span class="badge badge-warn">NO ROUTE</span></td><td>No public DNS/route; accessible via Grafana</td></tr>
+  </table>
+
+  <h3>Business Applications</h3>
+  <table>
+    <tr><th>Application</th><th>URL</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>PMaaS Web</td><td><code>pmaas.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS 307→200</span></td><td>Next.js app running; 307 = unauthenticated redirect to login (expected)</td></tr>
+    <tr><td>Engage (CRM)</td><td><code>engage.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS 200</span></td><td>Web + SMS consumer + campaign agent all running</td></tr>
+    <tr><td>Evalos</td><td><code>evalos.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS 200</span></td><td>2 replicas running</td></tr>
+    <tr><td>SIT Platform</td><td><code>sit.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS 200</span></td><td>sit-api /health OK; 2 replicas running</td></tr>
+    <tr><td>Talent API</td><td><code>talent.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS 200</span></td><td>2 replicas running</td></tr>
+    <tr><td>AfroERP</td><td><code>erpnext.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS 200</span></td><td>ERPNext + MariaDB + Redis all running</td></tr>
+    <tr><td>EdBridge (Moodle)</td><td><code>moodle.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS 200</span></td><td>Route is moodle subdomain (not edbridge)</td></tr>
+    <tr><td>SmartLab API</td><td><code>api.smartlab.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS 200</span></td><td>Both wildcard and api subdomains up</td></tr>
+    <tr><td>FORD API</td><td><code>ford.i3technologies.co.ke/health</code></td><td><span class="badge badge-pass">PASS 200</span></td><td>/health + /docs OK · root / returns 404 (FastAPI, expected)</td></tr>
+    <tr><td>AR MCP Gateway</td><td><code>ar.i3technologies.co.ke/health</code></td><td><span class="badge badge-pass">PASS 200</span></td><td>/health + /docs OK · root / returns 404 (FastAPI, expected)</td></tr>
+    <tr><td>Dawa Coworker (PMaaS)</td><td><code>dawa.i3technologies.co.ke</code></td><td><span class="badge badge-pass">PASS 200</span></td><td>AI coworker agent running</td></tr>
+  </table>
+
+  <h3>Voice &amp; AI Services</h3>
+  <table>
+    <tr><th>Service</th><th>URL</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>Voice STT</td><td><code>stt.i3technologies.co.ke/v1/health</code></td><td><span class="badge badge-pass">PASS 200</span></td><td>Speech-to-text healthy</td></tr>
+    <tr><td>Voice TTS</td><td><code>tts.i3technologies.co.ke</code></td><td><span class="badge badge-warn">WARN 404</span></td><td>GET / returns 404 — expected (no root handler). Correct path: <code>POST /v1/tts</code>. Internal health probe <code>/v1/health</code> shows continuous 200s in logs</td></tr>
+    <tr><td>SIT Tutor Agent</td><td><code>sit.i3technologies.co.ke/tutor/health</code></td><td><span class="badge badge-warn">WARN 404</span></td><td>Tutor serves at <code>/health</code> and <code>/chat</code> internally. Route path prefix not mapped; internal pod is healthy (continuous 200s on /health in logs)</td></tr>
+    <tr><td>Admissions Agent</td><td><code>i3-admissions</code></td><td><span class="badge badge-pass">PASS</span></td><td>Pod running; MCP connectors healthy</td></tr>
+    <tr><td>Onboarding Agent</td><td><code>i3-onboarding</code></td><td><span class="badge badge-pass">PASS</span></td><td>Pod running</td></tr>
+  </table>
+
+  <h3>Infrastructure Services</h3>
+  <table>
+    <tr><th>Service</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>PostgreSQL (Crunchy PGO)</td><td><span class="badge badge-pass">PASS</span></td><td>3 primaries running (mwll, nt6l, hffm); PgBouncer up; backups completing (diff + full)</td></tr>
+    <tr><td>Kafka (Strimzi)</td><td><span class="badge badge-pass">PASS</span></td><td>3 combined brokers running + entity operator</td></tr>
+    <tr><td>SeaweedFS (OTT)</td><td><span class="badge badge-pass">PASS</span></td><td>Master + 3 volumes + filer + S3 gateway all up; COS DR sync completing</td></tr>
+    <tr><td>OpenBao (Secrets)</td><td><span class="badge badge-pass">PASS</span></td><td>3-node HA cluster running</td></tr>
+    <tr><td>Calico CNI</td><td><span class="badge badge-pass">PASS</span></td><td>All nodes healthy</td></tr>
+    <tr><td>cert-manager</td><td><span class="badge badge-pass">PASS</span></td><td>Controller + webhook + cainjector all running</td></tr>
+    <tr><td>OpenShift GitOps (ArgoCD)</td><td><span class="badge badge-pass">PASS</span></td><td>All components running; server had 8 restarts (long-running, normal)</td></tr>
+  </table>
+
+  
+  <h2>2. Functional API Tests</h2>
+  <table>
+    <tr><th>#</th><th>Test</th><th>Result</th><th>Detail</th></tr>
+    <tr><td>T-01</td><td>Keycloak Master Token (admin login)</td><td><span class="badge badge-pass">PASS</span></td><td>JWT returned, token_type=Bearer</td></tr>
+    <tr><td>T-02</td><td>Keycloak i3 Realm Public Key</td><td><span class="badge badge-pass">PASS</span></td><td>RSA public key confirmed present</td></tr>
+    <tr><td>T-03</td><td>LiteLLM /health/liveliness</td><td><span class="badge badge-pass">PASS</span></td><td>"I'm alive!" — unauthenticated probe OK</td></tr>
+    <tr><td>T-04</td><td>LiteLLM /health/readiness</td><td><span class="badge badge-pass">PASS</span></td><td>{"status":"healthy","db":"connected"}</td></tr>
+    <tr><td>T-05</td><td>LiteLLM /v1/models (list)</td><td><span class="badge badge-pass">PASS</span></td><td>8 models returned: granite-nano, embed, qwen-fast, coder, qwen-heavy, vision, mistral, mistral:7b</td></tr>
+    <tr><td>T-06</td><td>LiteLLM Chat Completion (granite-nano)</td><td><span class="badge badge-pass">PASS</span></td><td>Response: "Understood. I'm ready to assist with any…" — inference live</td></tr>
+    <tr><td>T-07</td><td>LiteLLM Embeddings (nomic-embed-text)</td><td><span class="badge badge-pass">PASS</span></td><td>vector_dim=768 — embedding endpoint functional</td></tr>
+    <tr><td>T-08</td><td>AR MCP Gateway /health</td><td><span class="badge badge-pass">PASS</span></td><td>{"status":"ok","service":"i3-ar-mcp-gateway","version":"1.0.0"}</td></tr>
+    <tr><td>T-09</td><td>FORD API /health</td><td><span class="badge badge-pass">PASS</span></td><td>{"status":"ok","service":"ford-membership-service","version":"1.0.0"}</td></tr>
+    <tr><td>T-10</td><td>SIT API /health</td><td><span class="badge badge-pass">PASS</span></td><td>200 OK — 2 replicas serving</td></tr>
+    <tr><td>T-11</td><td>Talent API /health</td><td><span class="badge badge-pass">PASS</span></td><td>200 OK — 2 replicas serving</td></tr>
+  </table>
+
+  
+  <h2>3. LiteLLM Model Inventory (Live)</h2>
+  <table>
+    <tr><th>Model Alias</th><th>Underlying Model</th><th>Use Case</th><th>Max Tokens</th><th>Timeout</th></tr>
+    <tr><td><code>granite-nano</code></td><td>granite3.1-dense:2b</td><td>Fast Q&amp;A, lightweight tasks</td><td>2,048</td><td>30s</td></tr>
+    <tr><td><code>embed</code></td><td>nomic-embed-text:latest</td><td>Text embeddings (768-dim)</td><td>—</td><td>15s</td></tr>
+    <tr><td><code>qwen-fast</code></td><td>qwen2.5:7b-instruct-q4_K_M</td><td>Chat, interactive tasks</td><td>4,096</td><td>90s</td></tr>
+    <tr><td><code>coder</code></td><td>qwen2.5-coder:7b-instruct-q4_K_M</td><td>Code generation &amp; review</td><td>4,096</td><td>90s</td></tr>
+    <tr><td><code>qwen-heavy</code></td><td>qwen2.5:14b-instruct-q4_K_M</td><td>Complex reasoning</td><td>8,192</td><td>180s</td></tr>
+    <tr><td><code>vision</code></td><td>llava:13b</td><td>Image understanding</td><td>2,048</td><td>180s</td></tr>
+    <tr><td><code>mistral</code></td><td>qwen2.5:7b (alias)</td><td>Mistral-compatible alias</td><td>4,096</td><td>90s</td></tr>
+    <tr><td><code>mistral:7b</code></td><td>qwen2.5:7b (alias)</td><td>Mistral-compatible alias</td><td>4,096</td><td>90s</td></tr>
+  </table>
+  <div class="note">Fallback chain: qwen-heavy → qwen-fast → granite-nano  ·  All calls logged to Langfuse  ·  Prometheus metrics enabled</div>
+
+  
+  <h2>4. Pod Status Summary</h2>
+  <table>
+    <tr><th>State</th><th>Count</th><th>Assessment</th></tr>
+    <tr><td>Running</td><td>397</td><td><span class="pass">Healthy — all application workloads serving</span></td></tr>
+    <tr><td>Completed</td><td>71</td><td><span class="pass">Normal — build pods and backup CronJobs that completed successfully</span></td></tr>
+    <tr><td>CrashLoopBackOff</td><td>3</td><td><span class="warn">1 known app defect (orderer-0); 2 are openshift-keda admission webhook pods (platform-level, not app-blocking)</span></td></tr>
+    <tr><td>Init:Error / Build Error</td><td>11</td><td><span class="warn">All in i3-gitops — stale build history from 31–32 days ago; no active impact</span></td></tr>
+  </table>
+
+  
+  <h2>5. Defect Register</h2>
+  <table>
+    <tr><th>ID</th><th>Component</th><th>Description</th><th>Severity</th><th>Status</th></tr>
+    <tr>
+      <td>DEF-01</td>
+      <td>FORD / Hyperledger Fabric</td>
+      <td><code>orderer-0</code> CrashLoopBackOff (482 restarts) — MSP crypto material missing. Not blocking FORD API which is healthy.</td>
+      <td><span class="badge badge-warn">MEDIUM</span></td>
+      <td><span class="warn">OPEN — requires blockchain engineer</span></td>
+    </tr>
+    <tr>
+      <td>DEF-02</td>
+      <td>openshift-keda</td>
+      <td>KEDA admission webhook pods in CrashLoopBackOff (5252 &amp; 10312 restarts) — platform-level autoscaling admission; no app workloads use KEDA currently.</td>
+      <td><span class="badge badge-info">LOW</span></td>
+      <td><span class="info">OPEN — platform-level, not app-blocking</span></td>
+    </tr>
+    <tr>
+      <td>DEF-03</td>
+      <td>Voice TTS</td>
+      <td>GET <code>tts.i3technologies.co.ke/</code> returns 404. Root path has no handler — correct endpoint is <code>POST /v1/tts</code>. Internal health probe continuously healthy.</td>
+      <td><span class="badge badge-info">LOW</span></td>
+      <td><span class="info">COSMETIC — add root redirect or suppress in monitoring</span></td>
+    </tr>
+    <tr>
+      <td>DEF-04</td>
+      <td>SIT Tutor</td>
+      <td><code>sit.i3technologies.co.ke/tutor/health</code> returns 404 — route path prefix <code>/tutor</code> is not configured. Tutor pod serves at <code>/health</code> and <code>/chat</code> internally and is healthy.</td>
+      <td><span class="badge badge-info">LOW</span></td>
+      <td><span class="info">OPEN — add route path rewrite or separate route host</span></td>
+    </tr>
+    <tr>
+      <td>NOTE-01</td>
+      <td>i3-gitops</td>
+      <td>11 stale build pods (Init:Error/Error) from 31–32 days ago. These are old build history, not active crashes. No impact.</td>
+      <td><span class="badge badge-info">INFO</span></td>
+      <td><span class="info">Housekeeping — delete stale build pods when convenient</span></td>
+    </tr>
+    <tr>
+      <td>NOTE-02</td>
+      <td>Prometheus</td>
+      <td>No public DNS route for prometheus.i3technologies.co.ke. Prometheus is accessible internally and through Grafana. No public route configured.</td>
+      <td><span class="badge badge-info">INFO</span></td>
+      <td><span class="info">By design or pending — add public route if needed</span></td>
+    </tr>
+  </table>
+
+  
+  <h2>6. Previously Resolved Defects (Prior Session)</h2>
+  <table>
+    <tr><th>ID</th><th>Component</th><th>Fix Applied</th></tr>
+    <tr><td>R-01</td><td>PMaaS Database</td><td>DB password corrected; pmaas-web pod healthy (22h uptime)</td></tr>
+    <tr><td>R-02</td><td>LiteLLM / Ollama Network Policy</td><td>Intra-namespace ingress NP applied to i3-model-gateway; Ollama reachable</td></tr>
+    <tr><td>R-03</td><td>LiteLLM Model Persistence</td><td>store_model_in_db:true; models re-registered; /v1/models returns 8 models</td></tr>
+    <tr><td>R-04</td><td>SIT Tutor Image</td><td>Dedicated tutor image built (3 builds completed); pod running 12h</td></tr>
+    <tr><td>R-05</td><td>Voice TTS (librosa/numba)</td><td>Replaced ML deps with espeak-ng; TTS pod healthy 10h</td></tr>
+    <tr><td>R-06</td><td>pgBackRest Stale Pods</td><td>23 stale backup pods deleted; backup CronJobs completing cleanly</td></tr>
+    <tr><td>R-07</td><td>SIT Tutor Route Timeout</td><td>HAProxy timeout annotation set to 120s</td></tr>
+    <tr><td>R-08</td><td>Engage WhatsApp Webhook</td><td>route.ts created, route path fixed, WHATSAPP_VERIFY_TOKEN secret set</td></tr>
+    <tr><td>R-09</td><td>MCP PyPI Egress NP</td><td>Egress NetworkPolicy applied to i3-ar (port 443/80) for PyPI</td></tr>
+    <tr><td>R-10</td><td>pgBackRest Health</td><td>Confirmed healthy; diff + full backups completing on schedule</td></tr>
+  </table>
+
+  
+  <h2>7. Overall Assessment</h2>
+  <table>
+    <tr><th>Area</th><th>Result</th><th>Comment</th></tr>
+    <tr><td>Platform Infrastructure</td><td><span class="pass">✓ Healthy</span></td><td>Kubernetes, networking, storage, secrets, cert-manager all operational</td></tr>
+    <tr><td>AI / LLM Stack</td><td><span class="pass">✓ Fully Operational</span></td><td>LiteLLM (8 models, inference live), Sage AI, JupyterHub, Langfuse, ChromaDB all up</td></tr>
+    <tr><td>Business Apps</td><td><span class="pass">✓ All Up</span></td><td>PMaaS, Engage, Evalos, SIT, Talent, AfroERP, EdBridge, SmartLab all responding</td></tr>
+    <tr><td>Data Layer</td><td><span class="pass">✓ Healthy</span></td><td>3 PG primaries, Kafka (3 brokers), SeaweedFS (master+3 vols), OpenBao all running</td></tr>
+    <tr><td>Blockchain (FORD)</td><td><span class="warn">⚠ Partial</span></td><td>FORD API healthy; orderer-0 CrashLoopBackOff — MSP crypto missing (DEF-01)</td></tr>
+    <tr><td>Voice Services</td><td><span class="pass">✓ Operational</span></td><td>STT healthy; TTS internally healthy (cosmetic 404 on root path)</td></tr>
+    <tr><td>Monitoring</td><td><span class="pass">✓ Active</span></td><td>Grafana 200; Prometheus running internally; no public route (NOTE-02)</td></tr>
+  </table>
+
+  <div class="note" style="margin-top:16px">
+    <strong>Platform Verdict:</strong> The i3 Platform came up cleanly after shutdown. All 20 application namespaces are operational.
+    397 pods Running. 11 functional API tests pass. The only active application-level defect is DEF-01 (orderer-0 / Hyperledger Fabric MSP crypto),
+    which does not block the FORD API or any other service. All fixes from the prior session are holding.
+  </div>
+
+  <div class="footer">Made with IBM Bob</div>
+</div>
+</body>
+</html>

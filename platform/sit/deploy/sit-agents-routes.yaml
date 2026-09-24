@@ -1,0 +1,118 @@
+---
+# SIT Tutor Agent coworker
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sit-tutor-agent
+  namespace: i3-sit
+  labels: {app: sit-tutor-agent}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: sit-tutor-agent}
+  template:
+    metadata:
+      labels: {app: sit-tutor-agent}
+    spec:
+      serviceAccountName: sit-sa
+      containers:
+        - name: sit-tutor-agent
+          image: image-registry.openshift-image-registry.svc:5000/i3-sit/sit-api:latest
+          command: ["python3", "-c"]
+          args:
+            - |
+              import os, uvicorn
+              from fastapi import FastAPI
+              from fastapi.middleware.cors import CORSMiddleware
+
+              app = FastAPI(title="SIT Tutor Agent")
+              app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+              @app.get("/health")
+              def health(): return {"status":"ok","agent":"sit-tutor-agent"}
+
+              @app.post("/chat")
+              async def chat(body: dict):
+                  import httpx
+                  question  = body.get("message","")
+                  context   = body.get("context","")
+                  litellm_url = os.environ.get("LITELLM_URL","")
+                  litellm_key = os.environ.get("LITELLM_KEY","")
+                  async with httpx.AsyncClient(timeout=30) as client:
+                      r = await client.post(f"{litellm_url}/chat/completions",
+                          headers={"Authorization": f"Bearer {litellm_key}"},
+                          json={"model":"qwen-fast","messages":[
+                              {"role":"system","content":"You are a multilingual AI tutor at Severnside Institute of Technology. Answer in the learner's language (English, Swahili, or Sheng). Context: " + context},
+                              {"role":"user","content":question}
+                          ], "max_tokens":500})
+                  return {"response": r.json()["choices"][0]["message"]["content"]}
+
+              uvicorn.run(app, host="0.0.0.0", port=8080)
+          ports: [{containerPort: 8080}]
+          envFrom: [{secretRef: {name: sit-secrets}}]
+          resources:
+            limits: {cpu: "500m", memory: "512Mi"}
+            requests: {cpu: "100m", memory: "128Mi"}
+          livenessProbe:
+            httpGet: {path: /health, port: 8080}
+            initialDelaySeconds: 15
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sit-tutor-agent
+  namespace: i3-sit
+spec:
+  selector: {app: sit-tutor-agent}
+  ports: [{port: 8080, targetPort: 8080, name: http}]
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: sit-tutor
+  namespace: i3-sit
+spec:
+  host: tutor.sit.i3technologies.co.ke
+  to:
+    kind: Service
+    name: sit-tutor-agent
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+---
+# SIT Web portal route
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: sit-web
+  namespace: i3-sit
+spec:
+  host: sit.i3technologies.co.ke
+  to:
+    kind: Service
+    name: sit-api
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+---
+# Talent Cloud portal route
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: talent-web
+  namespace: i3-talent
+spec:
+  host: talent.i3technologies.co.ke
+  to:
+    kind: Service
+    name: talent-api
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

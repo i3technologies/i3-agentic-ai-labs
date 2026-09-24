@@ -1,0 +1,242 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Voice / TTS Service — User Guide</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.7;background:#fff;color:#1f2328}
+  .wrapper{max-width:820px;margin:0 auto;padding:32px 24px}
+  h1{font-size:22px;font-weight:700;color:#1f2328;border-bottom:2px solid #3b82d4;padding-bottom:8px;margin-bottom:6px}
+  .subtitle{color:#57606a;font-size:13px;margin-bottom:24px}
+  h2{font-size:16px;font-weight:700;color:#1f2328;margin:28px 0 10px;padding:6px 12px;background:#f7f8fa;border-left:4px solid #3b82d4}
+  h3{font-size:14px;font-weight:700;margin:16px 0 7px;color:#1f2328}
+  p{margin-bottom:10px}
+  ul,ol{padding-left:22px;margin-bottom:10px}
+  li{margin-bottom:5px}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px}
+  th{background:#f7f8fa;border:1px solid #e5e7eb;padding:7px 10px;text-align:left;font-weight:700}
+  td{border:1px solid #e5e7eb;padding:7px 10px;vertical-align:top}
+  tr:nth-child(even) td{background:#fafbfc}
+  code{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:3px;padding:1px 5px;font-size:12px;font-family:"Consolas","Courier New",monospace}
+  pre{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:4px;padding:12px 14px;overflow-x:auto;margin-bottom:12px;font-size:12px;font-family:"Consolas","Courier New",monospace}
+  .step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start}
+  .step-num{min-width:30px;height:30px;background:#3b82d4;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+  .step-body{flex:1}
+  .callout{border-left:4px solid #3b82d4;background:#f0f6ff;padding:10px 14px;margin:12px 0;border-radius:0 4px 4px 0;font-size:13px}
+  .callout-tip{border-left-color:#22c55e;background:#f0fdf4}
+  .callout-warn{border-left-color:#f59e0b;background:#fffbeb}
+  .app-header{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:14px 18px;margin-bottom:24px;display:flex;gap:18px;flex-wrap:wrap;font-size:13px}
+  .app-header div strong{color:#1f2328;display:block;margin-bottom:2px}
+  .app-header div span{color:#57606a}
+  .divider{border:none;border-top:1px solid #e5e7eb;margin:24px 0}
+  footer{border-top:1px solid #e5e7eb;margin-top:40px;padding-top:12px;text-align:center;font-size:12px;color:#57606a}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<h1>i3 Voice / TTS Service — User Guide</h1>
+<p class="subtitle">Multi-language text-to-speech synthesis for campaign content, voice messaging, and accessibility use cases</p>
+
+<div class="app-header">
+  <div><strong>Application</strong><span>i3 Voice / TTS Service</span></div>
+  <div><strong>Audience</strong><span>Campaign Managers, Developers, Content Teams</span></div>
+  <div><strong>Primary Use</strong><span>Voice broadcast scripts, accessibility audio, campaign recordings</span></div>
+  <div><strong>Output Format</strong><span>WAV audio</span></div>
+</div>
+
+<h2>1. What is the Voice / TTS Service?</h2>
+<p>The i3 Voice/TTS (Text-to-Speech) service converts written text into spoken audio using the espeak-ng synthesis engine. It is designed for fast, lightweight, multilingual voice generation — ideal for political voice broadcast campaigns, accessible content delivery, and automated voice messaging. No heavy ML dependencies means low latency and high reliability.</p>
+
+<table>
+  <tr><th>Feature</th><th>Details</th></tr>
+  <tr><td>Languages supported</td><td>English (en, en-us, en-gb), Swahili (sw), French (fr), German (de), Spanish (es), Portuguese (pt), Arabic (ar), Hindi (hi)</td></tr>
+  <tr><td>Speed control</td><td>0.5× (very slow) to 2.0× (very fast)</td></tr>
+  <tr><td>Max input length</td><td>5,000 characters per request</td></tr>
+  <tr><td>Output format</td><td>WAV audio file</td></tr>
+  <tr><td>Authentication</td><td>Bearer API token required</td></tr>
+</table>
+
+<hr class="divider" />
+
+<h2>2. How to Use the TTS Service</h2>
+
+<p>The TTS service is accessed via its REST API. It is designed for integration by developers and campaign automation systems, not a graphical UI. If you need a UI wrapper, your administrator can embed it in your campaign platform.</p>
+
+<h3>API Endpoint Summary</h3>
+<table>
+  <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+  <tr><td>GET</td><td><code>/v1/health</code></td><td>Check if service is online and espeak-ng is available</td></tr>
+  <tr><td>POST</td><td><code>/v1/tts</code></td><td>Convert text to WAV audio</td></tr>
+  <tr><td>GET</td><td><code>/v1/voices</code></td><td>List all available voice languages and codes</td></tr>
+</table>
+
+<hr class="divider" />
+
+<h2>3. Making a Text-to-Speech Request</h2>
+
+<h3>Step 1 — Get Your API Token</h3>
+<p>Contact your administrator to obtain your TTS API bearer token (<code>VOICE_API_KEY</code>). This is required for all requests.</p>
+
+<h3>Step 2 — Make the Request</h3>
+
+<p><strong>Using curl (command line):</strong></p>
+<pre>curl -X POST https://voice.i3technologies.co.ke/v1/tts \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Habari! Tunakualika ushiriki katika mkutano wa wapiga kura wa Machakos leo.",
+    "language": "sw",
+    "rate": 1.0
+  }' \
+  --output campaign_audio.wav</pre>
+
+<p><strong>Using Python:</strong></p>
+<pre>import requests
+
+response = requests.post(
+    "https://voice.i3technologies.co.ke/v1/tts",
+    headers={
+        "Authorization": "Bearer YOUR_API_TOKEN",
+        "Content-Type": "application/json"
+    },
+    json={
+        "text": "Welcome to the i3 platform. Your onboarding plan is ready.",
+        "language": "en",
+        "rate": 0.9
+    }
+)
+
+# Save the WAV file
+with open("output.wav", "wb") as f:
+    f.write(response.content)
+
+print("Audio saved to output.wav")</pre>
+
+<h3>Step 3 — Play or Distribute the Audio</h3>
+<p>The returned <code>.wav</code> file can be:
+  </p><ul>
+    <li>Played directly (any media player on Windows, macOS, Linux)</li>
+    <li>Uploaded to a voice broadcast platform (e.g. AfricasTalking, Twilio)</li>
+    <li>Embedded in a web page using an HTML <code>&lt;audio&gt;</code> tag</li>
+    <li>Used as input for PMaaS voice campaign delivery</li>
+  </ul>
+<p></p>
+
+<hr class="divider" />
+
+<h2>4. Request Parameters Reference</h2>
+
+<table>
+  <tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr>
+  <tr><td><code>text</code></td><td>string</td><td>Yes</td><td>The text to convert to speech. Max 5,000 characters.</td></tr>
+  <tr><td><code>language</code></td><td>string</td><td>No (default: en)</td><td>BCP-47 language code — see table below</td></tr>
+  <tr><td><code>rate</code></td><td>float</td><td>No (default: 1.0)</td><td>Speech rate multiplier: 0.5 (slowest) → 2.0 (fastest)</td></tr>
+</table>
+
+<h3>Supported Language Codes</h3>
+<table>
+  <tr><th>Code</th><th>Language</th><th>Notes</th></tr>
+  <tr><td><code>en</code></td><td>English (default)</td><td>Standard neutral English</td></tr>
+  <tr><td><code>en-us</code></td><td>English (American)</td><td>US pronunciation</td></tr>
+  <tr><td><code>en-gb</code></td><td>English (British)</td><td>UK pronunciation</td></tr>
+  <tr><td><code>sw</code></td><td>Swahili</td><td>Kiswahili — best for Kenya/Tanzania audiences</td></tr>
+  <tr><td><code>fr</code></td><td>French</td><td>Standard French</td></tr>
+  <tr><td><code>de</code></td><td>German</td><td>Standard German</td></tr>
+  <tr><td><code>es</code></td><td>Spanish</td><td>Standard Spanish</td></tr>
+  <tr><td><code>pt</code></td><td>Portuguese</td><td>Standard Portuguese</td></tr>
+  <tr><td><code>ar</code></td><td>Arabic</td><td>Modern Standard Arabic</td></tr>
+  <tr><td><code>hi</code></td><td>Hindi</td><td>Standard Hindi</td></tr>
+</table>
+
+<h3>Rate Guide</h3>
+<table>
+  <tr><th>Rate Value</th><th>Speech Speed</th><th>Use Case</th></tr>
+  <tr><td>0.5 – 0.7</td><td>Very slow</td><td>Accessibility content, elderly audiences</td></tr>
+  <tr><td>0.8 – 0.9</td><td>Slow / clear</td><td>Announcements, formal notifications</td></tr>
+  <tr><td>1.0</td><td>Normal (default)</td><td>General voice messages</td></tr>
+  <tr><td>1.1 – 1.3</td><td>Slightly fast</td><td>Busy professionals, concise updates</td></tr>
+  <tr><td>1.5 – 2.0</td><td>Fast</td><td>Internal automated previews only</td></tr>
+</table>
+
+<hr class="divider" />
+
+<h2>5. Listing Available Voices</h2>
+
+<p>To see all available voices and language codes:</p>
+<pre>curl https://voice.i3technologies.co.ke/v1/voices \
+  -H "Authorization: Bearer YOUR_API_TOKEN"</pre>
+
+<p>Response example:</p>
+<pre>{
+  "voices": [
+    {"code": "en", "name": "English", "language": "en"},
+    {"code": "sw", "name": "Swahili", "language": "sw"},
+    {"code": "fr", "name": "French", "language": "fr"},
+    ...
+  ]
+}</pre>
+
+<hr class="divider" />
+
+<h2>6. Checking Service Health</h2>
+
+<pre>curl https://voice.i3technologies.co.ke/v1/health \
+  -H "Authorization: Bearer YOUR_API_TOKEN"</pre>
+
+<p>A healthy response:</p>
+<pre>{
+  "status": "ok",
+  "espeak": "available",
+  "version": "1.0"
+}</pre>
+
+<p>If <code>espeak</code> shows <code>"unavailable"</code>, contact your administrator immediately — the espeak-ng engine may need to be reinstalled in the container.</p>
+
+<hr class="divider" />
+
+<h2>7. PMaaS Integration</h2>
+
+<p>If you are a PMaaS user and have requested a voice script from the Content Generator, the generated script text can be passed directly to the TTS service to produce broadcast-ready audio:</p>
+<ol>
+  <li>In PMaaS, generate a voice script for your target ward and audience.</li>
+  <li>Review and approve the script content.</li>
+  <li>Copy the approved script text.</li>
+  <li>Submit to the TTS API with <code>"language": "sw"</code> (or appropriate language).</li>
+  <li>Download the WAV file.</li>
+  <li>Upload to your voice broadcast provider (e.g. AfricasTalking IVR).</li>
+</ol>
+
+<div class="callout callout-tip"><strong>Best Practice for Voice Broadcasts:</strong> Keep scripts under 60 seconds of audio (~150 words). Test playback at normal speed before distributing. Use <code>rate: 0.9</code> for clearer, more professional-sounding recordings.</div>
+
+<hr class="divider" />
+
+<h2>8. Best Practices for Text Input</h2>
+
+<ul>
+  <li>Use proper punctuation — commas and full stops create natural pauses in speech.</li>
+  <li>Avoid acronyms (write "Kenya Revenue Authority" instead of "KRA") for better pronunciation.</li>
+  <li>Numbers: write out short numbers in words for cleaner speech ("fifty" not "50") in broadcast scripts.</li>
+  <li>Do not exceed 5,000 characters per request — split long content into multiple requests.</li>
+  <li>For Swahili content, use standard Kiswahili spelling for best pronunciation quality.</li>
+</ul>
+
+<hr class="divider" />
+
+<h2>9. Troubleshooting</h2>
+
+<table>
+  <tr><th>Issue</th><th>Cause</th><th>Solution</th></tr>
+  <tr><td>401 Unauthorized</td><td>Missing or incorrect API token</td><td>Verify Bearer token in Authorization header; contact admin if expired</td></tr>
+  <tr><td>422 Validation Error</td><td>Text too long (&gt;5,000 chars) or invalid language code</td><td>Trim text to 5,000 chars; check language code against supported list</td></tr>
+  <tr><td>Audio quality sounds robotic</td><td>espeak-ng is a rule-based synthesiser (not neural)</td><td>Adjust rate; use shorter sentences; neural TTS upgrade is a planned enhancement</td></tr>
+  <tr><td>Swahili words mispronounced</td><td>espeak-ng Swahili phoneme coverage limitations</td><td>Phonetically respell the word in Roman script to guide pronunciation</td></tr>
+  <tr><td>Service returns 503</td><td>TTS pod unavailable</td><td>Check <code>/v1/health</code>; contact administrator; retry after 2 minutes</td></tr>
+</table>
+
+<footer>Made with IBM Bob  |  i3 Technologies — Voice/TTS User Guide v2.0  |  © 2026</footer>
+</div>
+</body>
+</html>

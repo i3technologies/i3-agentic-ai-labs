@@ -1,0 +1,227 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Lab (JupyterHub) User Guide — i3 Technologies</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.6;color:#1f2328;background:#fff}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 24px}
+  h1{font-size:26px;font-weight:700;color:#1f2328;margin-bottom:4px}
+  h2{font-size:18px;font-weight:600;color:#3b82d4;margin:32px 0 10px;padding-bottom:4px;border-bottom:2px solid #e5e7eb}
+  h3{font-size:15px;font-weight:600;color:#1f2328;margin:18px 0 6px}
+  p{margin-bottom:10px}
+  ul,ol{margin:0 0 10px 20px}
+  li{margin-bottom:4px}
+  a{color:#3b82d4;text-decoration:none}
+  a:hover{text-decoration:underline}
+  .cover{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:20px 24px;margin-bottom:28px}
+  .toc{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:16px 20px;margin-bottom:28px}
+  .toc h3{margin-top:0;margin-bottom:10px;font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:#57606a}
+  .toc ol{margin-left:18px}
+  .toc li{margin-bottom:3px;font-size:14px}
+  table{width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:14px}
+  th{background:#f7f8fa;text-align:left;padding:8px 10px;border:1px solid #e5e7eb;font-weight:600}
+  td{padding:8px 10px;border:1px solid #e5e7eb;vertical-align:top}
+  tr:nth-child(even) td{background:#fafafa}
+  .steps{counter-reset:step;list-style:none;margin-left:0}
+  .steps li{counter-increment:step;display:flex;gap:12px;margin-bottom:10px;align-items:flex-start}
+  .steps li::before{content:counter(step);min-width:26px;height:26px;border-radius:50%;background:#3b82d4;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+  .note{background:#eff6ff;border-left:4px solid #3b82d4;padding:10px 14px;margin:12px 0;font-size:14px;border-radius:0 4px 4px 0}
+  .warn{background:#fffbeb;border-left:4px solid #f59e0b;padding:10px 14px;margin:12px 0;font-size:14px;border-radius:0 4px 4px 0}
+  .note strong,.warn strong{display:block;margin-bottom:2px}
+  .tag{display:inline-block;background:#e5e7eb;color:#57606a;font-size:12px;padding:1px 7px;border-radius:3px;font-family:monospace}
+  pre{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:4px;padding:12px 14px;font-size:13px;overflow-x:auto;margin:10px 0}
+  code{font-family:monospace;background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:13px}
+  .footer{text-align:center;font-size:12px;color:#57606a;margin-top:40px;padding-top:16px;border-top:1px solid #e5e7eb}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="cover">
+    <h1>AI Lab User Guide</h1>
+    <p style="color:#57606a;margin-bottom:12px">JupyterHub Notebook Environment with On-Cluster LLMs</p>
+    <div style="font-size:13px;color:#57606a">
+      <span><strong>JupyterHub:</strong> <a href="https://jupyter.i3technologies.co.ke">jupyter.i3technologies.co.ke</a></span>  
+      <span><strong>Sage AI Lab:</strong> <a href="https://sage.i3technologies.co.ke">sage.i3technologies.co.ke</a></span>  
+      <span><strong>Support:</strong> <a href="mailto:support@i3technologies.co.ke">support@i3technologies.co.ke</a></span>
+    </div>
+  </div>
+
+  <div class="toc">
+    <h3>Table of Contents</h3>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#login">Login &amp; Spawning a Server</a></li>
+      <li><a href="#notebooks">Working with Notebooks</a></li>
+      <li><a href="#models">Available AI Models (LiteLLM)</a></li>
+      <li><a href="#using-ai">Calling AI Models in Notebooks</a></li>
+      <li><a href="#storage">Storage &amp; File Management</a></li>
+      <li><a href="#libraries">Pre-installed Libraries</a></li>
+      <li><a href="#sage">Sage AI Lab Co-worker</a></li>
+      <li><a href="#best-practices">Best Practices</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+    </ol>
+  </div>
+
+  <h2 id="overview">1 — Overview</h2>
+  <p>The i3 AI Lab provides a managed JupyterHub environment for data science, machine learning experimentation, and AI application development. All computation runs on-cluster inside IBM ROKS (OpenShift) in Frankfurt, and all AI model inference is served from the on-cluster Ollama + LiteLLM gateway — no external API keys or egress required for AI features.</p>
+
+  <h2 id="login">2 — Login &amp; Spawning a Server</h2>
+  <ol class="steps">
+    <li>Navigate to <a href="https://jupyter.i3technologies.co.ke">https://jupyter.i3technologies.co.ke</a>.</li>
+    <li>Click <strong>Sign In with i3 SSO</strong> and log in with your <span class="tag">@i3technologies.co.ke</span> credentials.</li>
+    <li>JupyterHub presents a server options form. Select a profile (Standard or Large) and click <strong>Start</strong>.</li>
+    <li>Your personal notebook server starts in approximately 30–60 seconds. You are redirected to the JupyterLab interface.</li>
+  </ol>
+  <div class="note"><strong>Note</strong>Your notebook server automatically shuts down after <strong>60 minutes of inactivity</strong> to conserve cluster resources. Your files are persisted on a PVC and will be available next time you spawn a server.</div>
+
+  <h2 id="notebooks">3 — Working with Notebooks</h2>
+  <h3>3.1 Creating a Notebook</h3>
+  <ol class="steps">
+    <li>In JupyterLab, click the <strong>+</strong> button (Launcher) or <strong>File → New → Notebook</strong>.</li>
+    <li>Select a kernel: <em>Python 3 (ipykernel)</em> is the default and recommended kernel.</li>
+    <li>Rename your notebook by right-clicking the tab and selecting <strong>Rename</strong>.</li>
+  </ol>
+  <h3>3.2 Kernel Shortcuts</h3>
+  <table>
+    <tr><th>Action</th><th>Shortcut</th></tr>
+    <tr><td>Run cell and advance</td><td>Shift + Enter</td></tr>
+    <tr><td>Run cell, stay on cell</td><td>Ctrl + Enter</td></tr>
+    <tr><td>Insert cell below</td><td>B (command mode)</td></tr>
+    <tr><td>Delete cell</td><td>D, D (command mode)</td></tr>
+    <tr><td>Interrupt kernel</td><td>I, I (command mode)</td></tr>
+    <tr><td>Restart kernel</td><td>0, 0 (command mode)</td></tr>
+    <tr><td>Enter command mode</td><td>Esc</td></tr>
+    <tr><td>Enter edit mode</td><td>Enter</td></tr>
+  </table>
+
+  <h2 id="models">4 — Available AI Models (LiteLLM)</h2>
+  <p>All models are served via the LiteLLM proxy at <code>http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000</code>. Use the alias names below in your API calls.</p>
+  <table>
+    <tr><th>Alias</th><th>Underlying Model</th><th>Best For</th></tr>
+    <tr><td><code>granite-nano</code></td><td>granite3.1-dense:2b</td><td>Fast classification, short Q&amp;A, lightweight tasks</td></tr>
+    <tr><td><code>qwen-fast</code></td><td>qwen2.5:7b-instruct-q4_K_M</td><td>General purpose — summaries, drafting, analysis</td></tr>
+    <tr><td><code>qwen-heavy</code></td><td>qwen2.5:14b-instruct-q4_K_M</td><td>Complex reasoning, long-context tasks</td></tr>
+    <tr><td><code>coder</code></td><td>qwen2.5-coder:7b-instruct-q4_K_M</td><td>Code generation, debugging, code review</td></tr>
+    <tr><td><code>vision</code></td><td>llava:13b</td><td>Image understanding (pass base64 images)</td></tr>
+    <tr><td><code>embed</code></td><td>nomic-embed-text:latest</td><td>Text embeddings for RAG and semantic search</td></tr>
+  </table>
+  <div class="note"><strong>Note</strong>All models run on CPU with Q4/Q5 quantisation. First-token latency is 5–30 seconds depending on model size. Use <code>granite-nano</code> or <code>qwen-fast</code> for iterative experimentation.</div>
+
+  <h2 id="using-ai">5 — Calling AI Models in Notebooks</h2>
+  <h3>5.1 Using the OpenAI-Compatible API</h3>
+  <pre>from openai import OpenAI
+
+client = OpenAI(
+    base_url="http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000",
+    api_key="sk-i3-internal"  # LiteLLM master key — already set as env var LITELLM_API_KEY
+)
+
+response = client.chat.completions.create(
+    model="qwen-fast",
+    messages=[{"role": "user", "content": "Summarise the key principles of data governance."}]
+)
+print(response.choices[0].message.content)</pre>
+
+  <h3>5.2 Using the LiteLLM Python SDK Directly</h3>
+  <pre>import litellm
+import os
+
+litellm.api_base = "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000"
+litellm.api_key = os.environ.get("LITELLM_API_KEY", "sk-i3-internal")
+
+response = litellm.completion(
+    model="openai/coder",
+    messages=[{"role": "user", "content": "Write a Python function to parse a CSV and return a pandas DataFrame."}]
+)
+print(response.choices[0].message.content)</pre>
+
+  <h3>5.3 Generating Embeddings</h3>
+  <pre>response = client.embeddings.create(
+    model="embed",
+    input=["The quick brown fox jumps over the lazy dog"]
+)
+vector = response.data[0].embedding
+print(f"Embedding dimensions: {len(vector)}")</pre>
+
+  <h3>5.4 Vision (Image Input)</h3>
+  <pre>import base64
+
+with open("chart.png", "rb") as f:
+    img_b64 = base64.b64encode(f.read()).decode()
+
+response = client.chat.completions.create(
+    model="vision",
+    messages=[{
+        "role": "user",
+        "content": [
+            {"type": "text", "text": "Describe this chart and identify the key trend."},
+            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{img_b64}"}}
+        ]
+    }]
+)
+print(response.choices[0].message.content)</pre>
+
+  <h2 id="storage">6 — Storage &amp; File Management</h2>
+  <table>
+    <tr><th>Location</th><th>Persisted</th><th>Use For</th></tr>
+    <tr><td><code>/home/jovyan/</code> (your home dir)</td><td>Yes — PVC per user</td><td>Notebooks, datasets, scripts you want to keep</td></tr>
+    <tr><td><code>/tmp/</code></td><td>No — lost on server restart</td><td>Temporary files, cache</td></tr>
+    <tr><td>Shared datasets</td><td>Yes — read-only shared PVC</td><td>Common training datasets, reference files</td></tr>
+  </table>
+  <p>Upload files via the JupyterLab file browser (drag-and-drop or the upload button). Maximum single upload size is <strong>500 MB</strong>.</p>
+  <div class="warn"><strong>Warning</strong>Do not store sensitive credentials (API keys, passwords) in notebooks. Use environment variables injected by the administrator instead.</div>
+
+  <h2 id="libraries">7 — Pre-installed Libraries</h2>
+  <table>
+    <tr><th>Category</th><th>Libraries</th></tr>
+    <tr><td>Data Science</td><td>numpy, pandas, scipy, scikit-learn, statsmodels</td></tr>
+    <tr><td>Visualisation</td><td>matplotlib, seaborn, plotly</td></tr>
+    <tr><td>Deep Learning</td><td>torch (CPU), transformers, datasets (HuggingFace)</td></tr>
+    <tr><td>AI / LLM</td><td>openai, litellm, langchain, chromadb</td></tr>
+    <tr><td>Utilities</td><td>requests, httpx, pydantic, python-dotenv, tqdm</td></tr>
+    <tr><td>Notebooks</td><td>ipywidgets, nbformat, papermill</td></tr>
+  </table>
+  <p>To install additional packages: <code>%pip install package-name</code> in a cell. Installed packages persist in your home directory across server restarts.</p>
+
+  <h2 id="sage">8 — Sage AI Lab Co-worker</h2>
+  <p>Sage is a full-featured AI chat interface (Open WebUI) available at <a href="https://sage.i3technologies.co.ke">sage.i3technologies.co.ke</a>. It provides a ChatGPT-style interface to all on-cluster models with document upload, conversation history, and prompt management — no coding required.</p>
+  <table>
+    <tr><th>Feature</th><th>Description</th></tr>
+    <tr><td>Model switching</td><td>Select any model from the dropdown (granite-nano, qwen-fast, coder, vision, etc.)</td></tr>
+    <tr><td>Document upload</td><td>Upload PDFs or text files — Sage uses RAG to answer questions about your documents</td></tr>
+    <tr><td>Conversation history</td><td>All chats are saved and searchable in the left sidebar</td></tr>
+    <tr><td>System prompts</td><td>Set custom personas or task-specific instructions for the model</td></tr>
+    <tr><td>Code execution</td><td>Request code snippets; copy to your JupyterHub notebook with one click</td></tr>
+  </table>
+  <p>Log in to Sage with the same i3 SSO credentials as JupyterHub.</p>
+
+  <h2 id="best-practices">9 — Best Practices</h2>
+  <ul>
+    <li><strong>Start small:</strong> Use <code>granite-nano</code> or <code>qwen-fast</code> for prompt prototyping before switching to <code>qwen-heavy</code>.</li>
+    <li><strong>Streaming:</strong> For long responses add <code>stream=True</code> to your completion call to receive tokens incrementally and avoid gateway timeouts.</li>
+    <li><strong>Chunk large documents:</strong> LLMs have a context window. Split large PDFs into 500-token chunks before passing to the model.</li>
+    <li><strong>Clear kernel output</strong> before committing notebooks to Git — avoid leaking data in cell outputs.</li>
+    <li><strong>Shut down idle servers:</strong> Use <strong>File → Hub Control Panel → Stop My Server</strong> when done to free cluster resources for other users.</li>
+    <li><strong>Version your notebooks:</strong> Use the <strong>nbgit</strong> extension or commit to your personal GitHub repo regularly.</li>
+  </ul>
+
+  <h2 id="troubleshooting">10 — Troubleshooting</h2>
+  <table>
+    <tr><th>Issue</th><th>Fix</th></tr>
+    <tr><td>Server spawn times out</td><td>Cluster may be under load. Click <strong>Stop Server</strong> and try again in 2 minutes. If persistent, contact support.</td></tr>
+    <tr><td>Kernel dies mid-execution</td><td>Memory limit exceeded. Reduce dataset size or use chunked processing. Switch to a "Large" server profile if available.</td></tr>
+    <tr><td>LiteLLM returns connection error</td><td>Verify the base URL uses the cluster-internal DNS: <code>http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000</code>. External URLs are not accessible from within pods.</td></tr>
+    <tr><td>Model response very slow</td><td>CPU inference — expected. Use a smaller model alias (<code>granite-nano</code>) for faster responses during development.</td></tr>
+    <tr><td>File upload fails</td><td>Files over 500 MB cannot be uploaded via the browser. Use the JupyterLab Terminal to <code>wget</code> or <code>curl</code> large files from accessible sources.</td></tr>
+    <tr><td>Package install not persisting</td><td>Use <code>%pip install</code> (not <code>!pip install</code>) to ensure packages install into the correct user-space environment.</td></tr>
+  </table>
+  <p><strong>Support:</strong> <a href="mailto:support@i3technologies.co.ke">support@i3technologies.co.ke</a></p>
+
+  <div class="footer">Made with IBM Bob</div>
+</div>
+</body>
+</html>

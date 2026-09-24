@@ -1,0 +1,36 @@
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: voice-stt
+  namespace: i3-voice
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  host: stt.i3technologies.co.ke
+  port:
+    targetPort: 8001
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  to:
+    kind: Service
+    name: voice-stt
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: voice-tts
+  namespace: i3-voice
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  host: tts.i3technologies.co.ke
+  port:
+    targetPort: 8000
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  to:
+    kind: Service
+    name: voice-tts

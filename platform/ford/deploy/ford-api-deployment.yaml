@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ford-api
+  namespace: i3-ford
+spec:
+  replicas: 2
+  selector:
+    matchLabels: {app: ford-api}
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels: {app: ford-api}
+    spec:
+      serviceAccountName: ford-sa
+      containers:
+        - name: ford-api
+          image: image-registry.openshift-image-registry.svc:5000/i3-ford/ford-api:latest
+          ports: [{containerPort: 8000}]
+          envFrom: [{secretRef: {name: ford-secrets}}]
+          livenessProbe:
+            httpGet: {path: /health, port: 8000}
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet: {path: /health, port: 8000}
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            limits: {cpu: "1", memory: "1Gi"}
+            requests: {cpu: "250m", memory: "256Mi"}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ford-api
+  namespace: i3-ford
+spec:
+  selector: {app: ford-api}
+  ports: [{port: 8000, targetPort: 8000, name: http}]
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: ford-api
+  namespace: i3-ford
+spec:
+  host: ford.i3technologies.co.ke
+  to:
+    kind: Service
+    name: ford-api
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

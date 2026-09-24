@@ -1,0 +1,17 @@
+---
+# Certificate for api.smartlab.i3technologies.co.ke via Let's Encrypt
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: smartlab-api-tls
+  namespace: i3-smartlab
+spec:
+  secretName: smartlab-api-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - api.smartlab.i3technologies.co.ke
+---
+# Updated route using the new cert once issued
+# (will be patched after cert is ready)

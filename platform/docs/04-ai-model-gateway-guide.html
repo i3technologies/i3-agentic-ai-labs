@@ -230,7 +230,7 @@
   <div class="kv"><span class="k">Public URL</span><code>https://litellm.i3technologies.co.ke</code></div>
   <div class="kv"><span class="k">Internal (in-cluster)</span><code>litellm-proxy.i3-model-gateway.svc.cluster.local:4000</code></div>
   <div class="kv"><span class="k">Namespace</span><code>i3-model-gateway</code></div>
-  <div class="kv"><span class="k">Master Key</span><code>sk-litellm-i3-f951c9377163a11275864cb92e90ad13</code></div>
+  <div class="kv"><span class="k">Master Key</span><code>[REDACTED — rotate via OpenBao i3/model-gateway/litellm]</code></div>
 </div>
 
 <div class="danger"><strong>Secret â€” Master Key</strong> The master key grants full admin access to the proxy, including the ability to create and delete model configurations. Store it in a Kubernetes Secret or your password manager. Never commit it to source control.</div>
@@ -239,14 +239,14 @@
 
 <h4>Accessing the Admin Dashboard</h4>
 <div class="step"><div class="num">1</div><div class="body">Open <code>https://litellm.i3technologies.co.ke/ui</code> in your browser.</div></div>
-<div class="step"><div class="num">2</div><div class="body">When prompted for an API key, enter the master key: <code>sk-litellm-i3-f951c9377163a11275864cb92e90ad13</code></div></div>
+<div class="step"><div class="num">2</div><div class="body">When prompted for an API key, enter the master key: <code>[REDACTED — rotate via OpenBao i3/model-gateway/litellm]</code></div></div>
 <div class="step"><div class="num">3</div><div class="body">The dashboard shows live request counts, model usage breakdown, latency percentiles, and error rates.</div></div>
 
 <h4>Adding a New Model</h4>
 <p>Models can be added via the dashboard UI (<strong>Models â†’ Add Model</strong>) or via the API:</p>
 <pre><code># Add an Ollama-hosted model through the API
 curl -X POST https://litellm.i3technologies.co.ke/model/new \
-  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  -H "Authorization: Bearer [REDACTED — rotate via OpenBao i3/model-gateway/litellm]" \
   -H "Content-Type: application/json" \
   -d '{
     "model_name": "mistral-7b",
@@ -261,7 +261,7 @@ curl -X POST https://litellm.i3technologies.co.ke/model/new \
 
 <pre><code># Add an OpenAI model (requires OPENAI_API_KEY in env)
 curl -X POST https://litellm.i3technologies.co.ke/model/new \
-  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  -H "Authorization: Bearer [REDACTED — rotate via OpenBao i3/model-gateway/litellm]" \
   -H "Content-Type: application/json" \
   -d '{
     "model_name": "gpt-4o",
@@ -273,13 +273,13 @@ curl -X POST https://litellm.i3technologies.co.ke/model/new \
 
 <h4>Listing Configured Models</h4>
 <pre><code>curl https://litellm.i3technologies.co.ke/model/info \
-  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" | jq .
+  -H "Authorization: Bearer [REDACTED — rotate via OpenBao i3/model-gateway/litellm]" | jq .
 </code></pre>
 
 <h4>Creating User-Specific Keys</h4>
 <p>Issue per-user or per-application keys with spend limits to avoid sharing the master key:</p>
 <pre><code>curl -X POST https://litellm.i3technologies.co.ke/key/generate \
-  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  -H "Authorization: Bearer [REDACTED — rotate via OpenBao i3/model-gateway/litellm]" \
   -H "Content-Type: application/json" \
   -d '{
     "key_alias": "data-team-notebook",
@@ -292,15 +292,15 @@ curl -X POST https://litellm.i3technologies.co.ke/model/new \
 <h4>Checking Usage &amp; Spend</h4>
 <pre><code># Overall spend summary
 curl https://litellm.i3technologies.co.ke/spend/logs \
-  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13"
+  -H "Authorization: Bearer [REDACTED — rotate via OpenBao i3/model-gateway/litellm]"
 
 # Per-key spend
 curl "https://litellm.i3technologies.co.ke/spend/keys?key=sk-..." \
-  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13"</code></pre>
+  -H "Authorization: Bearer [REDACTED — rotate via OpenBao i3/model-gateway/litellm]"</code></pre>
 
 <h4>Deleting a Model</h4>
 <pre><code>curl -X POST https://litellm.i3technologies.co.ke/model/delete \
-  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  -H "Authorization: Bearer [REDACTED — rotate via OpenBao i3/model-gateway/litellm]" \
   -H "Content-Type: application/json" \
   -d '{"id": "&lt;model_id_from_model_info&gt;"}'</code></pre>
 
@@ -310,7 +310,7 @@ curl "https://litellm.i3technologies.co.ke/spend/keys?key=sk-..." \
 
 <h4>Chat Completions â€” cURL</h4>
 <pre><code>curl https://litellm.i3technologies.co.ke/v1/chat/completions \
-  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  -H "Authorization: Bearer [REDACTED — rotate via OpenBao i3/model-gateway/litellm]" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "mistral-7b",
@@ -327,7 +327,7 @@ curl "https://litellm.i3technologies.co.ke/spend/keys?key=sk-..." \
 
 client = OpenAI(
     base_url="https://litellm.i3technologies.co.ke/v1",
-    api_key="sk-litellm-i3-f951c9377163a11275864cb92e90ad13",
+    api_key="[REDACTED — rotate via OpenBao i3/model-gateway/litellm]",
 )
 
 response = client.chat.completions.create(
@@ -342,7 +342,7 @@ print(response.choices[0].message.content)</code></pre>
 
 <h4>Embeddings</h4>
 <pre><code>curl https://litellm.i3technologies.co.ke/v1/embeddings \
-  -H "Authorization: Bearer sk-litellm-i3-f951c9377163a11275864cb92e90ad13" \
+  -H "Authorization: Bearer [REDACTED — rotate via OpenBao i3/model-gateway/litellm]" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "text-embedding-3-small",
@@ -524,7 +524,7 @@ curl http://localhost:11434/api/generate \
 
 llm = OpenAI(
     base_url="http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1",
-    api_key="sk-litellm-i3-f951c9377163a11275864cb92e90ad13",
+    api_key="[REDACTED — rotate via OpenBao i3/model-gateway/litellm]",
 )
 
 resp = llm.chat.completions.create(
@@ -552,7 +552,7 @@ context = "\n".join(results["documents"][0])
 # Ask the LLM with context
 llm = OpenAI(
     base_url="http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1",
-    api_key="sk-litellm-i3-f951c9377163a11275864cb92e90ad13",
+    api_key="[REDACTED — rotate via OpenBao i3/model-gateway/litellm]",
 )
 resp = llm.chat.completions.create(
     model="mistral-7b",
@@ -770,7 +770,7 @@ collection.delete(where={"source": "outdated-policy-v1.pdf"})</code></pre>
       <td>LiteLLM</td>
       <td>https://litellm.i3technologies.co.ke</td>
       <td>litellm-proxy.i3-model-gateway.svc.cluster.local:4000</td>
-      <td><code>sk-litellm-i3-f951c9377163a11275864cb92e90ad13</code></td>
+      <td><code>[REDACTED — rotate via OpenBao i3/model-gateway/litellm]</code></td>
     </tr>
     <tr>
       <td>Ollama</td>

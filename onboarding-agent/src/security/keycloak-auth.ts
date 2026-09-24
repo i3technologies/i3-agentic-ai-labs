@@ -5,6 +5,10 @@
  *
  * On success, attaches req.user = { sub, email, roles, preferred_username }
  * to the Express request object.
+ *
+ * HC-7: DEV_BYPASS_AUTH is permanently removed. JWT validation is mandatory
+ * in all environments. Use a real Keycloak token for local development
+ * (see platform/docs/02-keycloak-sso-guide.html for a local dev realm setup).
  */
 
 import { Request, Response, NextFunction } from "express";
@@ -47,21 +51,6 @@ export function requireAuth(
   res: Response,
   next: NextFunction
 ): void {
-  // ── LOCAL DEV BYPASS ─────────────────────────────────────────────────────
-  // Set DEV_BYPASS_AUTH=true in .env to skip JWT validation on your laptop.
-  // NEVER enable this in production or staging.
-  if (process.env.DEV_BYPASS_AUTH === 'true') {
-    req.user = {
-      sub:                'local-dev-user',
-      email:              'dev@localhost',
-      preferred_username: 'dev',
-      roles:              ['i3-admin', 'i3-user'],
-    };
-    next();
-    return;
-  }
-  // ─────────────────────────────────────────────────────────────────────────
-
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) {
     res.status(401).json({ error: "Missing or malformed Authorization header" });

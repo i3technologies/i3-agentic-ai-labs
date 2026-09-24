@@ -1,0 +1,724 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>i3 Platform — Technical Administrator's Guide</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.6;background:#fff;color:#1f2328}
+  .wrapper{max-width:860px;margin:0 auto;padding:32px 24px}
+  h1{font-size:22px;font-weight:700;color:#1f2328;border-bottom:2px solid #3b82d4;padding-bottom:8px;margin-bottom:4px}
+  .subtitle{color:#57606a;font-size:13px;margin-bottom:28px}
+  h2{font-size:17px;font-weight:700;color:#1f2328;margin:32px 0 10px;padding:6px 10px;background:#f7f8fa;border-left:4px solid #3b82d4}
+  h3{font-size:14px;font-weight:700;color:#1f2328;margin:20px 0 8px}
+  h4{font-size:13px;font-weight:700;color:#3b82d4;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.4px}
+  p{margin-bottom:10px;color:#1f2328}
+  ul,ol{padding-left:20px;margin-bottom:10px}
+  li{margin-bottom:4px}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px}
+  th{background:#f7f8fa;border:1px solid #e5e7eb;padding:7px 10px;text-align:left;font-weight:700;color:#1f2328}
+  td{border:1px solid #e5e7eb;padding:7px 10px;vertical-align:top}
+  tr:nth-child(even) td{background:#fafbfc}
+  code{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:3px;padding:1px 5px;font-family:"Consolas","Courier New",monospace;font-size:12px;color:#1f2328}
+  pre{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:4px;padding:12px 14px;overflow-x:auto;margin-bottom:12px}
+  pre code{background:none;border:none;padding:0;font-size:12px}
+  .badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:700;margin-right:4px}
+  .badge-green{background:#dcfce7;color:#166534}
+  .badge-blue{background:#dbeafe;color:#1d4ed8}
+  .badge-red{background:#fee2e2;color:#991b1b}
+  .badge-yellow{background:#fef9c3;color:#854d0e}
+  .badge-purple{background:#ede9fe;color:#6d28d9}
+  .toc{background:#f7f8fa;border:1px solid #e5e7eb;border-radius:4px;padding:16px 20px;margin-bottom:28px}
+  .toc h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;color:#57606a;letter-spacing:.4px}
+  .toc ol{padding-left:18px;margin:0}
+  .toc li{margin-bottom:3px;font-size:13px}
+  .toc a{color:#3b82d4;text-decoration:none}
+  .toc a:hover{text-decoration:underline}
+  .callout{border-left:4px solid #3b82d4;background:#f0f6ff;padding:10px 14px;margin:12px 0;border-radius:0 4px 4px 0}
+  .callout-warn{border-left-color:#f59e0b;background:#fffbeb}
+  .callout-danger{border-left-color:#ef4444;background:#fef2f2}
+  .callout strong{font-weight:700}
+  .section-divider{border:none;border-top:1px solid #e5e7eb;margin:28px 0}
+  .meta-row{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px;font-size:13px;color:#57606a}
+  .meta-row span strong{color:#1f2328}
+  footer{border-top:1px solid #e5e7eb;margin-top:48px;padding-top:14px;text-align:center;font-size:12px;color:#57606a}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<h1>i3 Agentic AI Platform — Technical Administrator's Guide</h1>
+<p class="subtitle">Instrumented, Interconnected &amp; Intelligent Technologies Limited  |  Platform v2.0  |  Updated: 2026</p>
+
+<div class="meta-row">
+  <span><strong>Prepared for:</strong> Philip Mukiti, CEO &amp; Solutions Architect</span>
+  <span><strong>Organisation:</strong> i3 Technologies</span>
+  <span><strong>Infra:</strong> OpenShift / ROKS (Frankfurt)</span>
+  <span><strong>Classification:</strong> Internal — Restricted</span>
+</div>
+
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <ol>
+    <li><a href="#s1">Platform Architecture Overview</a></li>
+    <li><a href="#s2">Infrastructure &amp; Namespaces</a></li>
+    <li><a href="#s3">Identity &amp; Access Management (Keycloak)</a></li>
+    <li><a href="#s4">Model Gateway Administration (LiteLLM)</a></li>
+    <li><a href="#s5">Secrets Management (OpenBao)</a></li>
+    <li><a href="#s6">Kafka Event Backbone</a></li>
+    <li><a href="#s7">Database Administration (PostgreSQL)</a></li>
+    <li><a href="#s8">Application Service Administration</a></li>
+    <li><a href="#s9">Monitoring, Observability &amp; Alerting</a></li>
+    <li><a href="#s10">Security Administration &amp; Hard Constraints</a></li>
+    <li><a href="#s11">CI/CD Pipeline Administration (Tekton)</a></li>
+    <li><a href="#s12">Backup, Recovery &amp; Rollback</a></li>
+    <li><a href="#s13">Tenant Provisioning</a></li>
+    <li><a href="#s14">Operational Runbooks</a></li>
+    <li><a href="#s15">Hard Constraints Reference (HC-1 → HC-8)</a></li>
+  </ol>
+</div>
+
+
+<h2 id="s1">1. Platform Architecture Overview</h2>
+
+<p>The i3 Agentic AI Platform is a unified, multi-tenant agentic AI system built on Red Hat OpenShift (ROKS, Frankfurt region). It operates on a <strong>one-core, many-products</strong> architecture: shared identity, model gateway, event backbone, and governance layer — with individual product applications (EvalOS, AfroERP, Engage, PMaaS, Admissions, AI Lab, Voice, Onboarding) mounted on top.</p>
+
+<h3>Architectural Layers</h3>
+<table>
+  <tr><th>Layer</th><th>Component</th><th>Technology</th><th>Purpose</th></tr>
+  <tr><td>Identity</td><td>Keycloak</td><td>Keycloak OIDC</td><td>Single SSO realm <code>i3</code> for all apps</td></tr>
+  <tr><td>Model &amp; Agent Gateway</td><td>LiteLLM + MCP Gateway</td><td>LiteLLM Proxy + FastAPI</td><td>All LLM calls routed here; no direct Ollama/vLLM from apps</td></tr>
+  <tr><td>Secrets</td><td>OpenBao</td><td>HashiCorp Vault-compatible</td><td>KV v2 secret store; HMAC keys, DB passwords, API keys</td></tr>
+  <tr><td>Event Backbone</td><td>Kafka (KRaft)</td><td>Apache Kafka</td><td>9-field CloudEvent envelope; async campaign triggers, audit events</td></tr>
+  <tr><td>Storage</td><td>PostgreSQL (Crunchy)</td><td>PostgreSQL 15+</td><td>Per-service schemas + RLS tenant isolation</td></tr>
+  <tr><td>Vector DB</td><td>ChromaDB</td><td>ChromaDB</td><td>RAG collections per service (manifesto, afroerp-kb, etc.)</td></tr>
+  <tr><td>Cache</td><td>Redis</td><td>Redis 7</td><td>Semantic cache (LiteLLM), session state, plan TTLs</td></tr>
+  <tr><td>Observability</td><td>Prometheus + Langfuse</td><td>Prometheus Stack</td><td>Metrics, LLM tracing, evaluation harness</td></tr>
+  <tr><td>CI/CD</td><td>Tekton Pipelines</td><td>Tekton</td><td>4-gate build pipeline; secret scan → container scan → eval → deploy</td></tr>
+</table>
+
+<h3>Architecture Rules (Mandatory)</h3>
+<table>
+  <tr><th>Rule</th><th>Requirement</th><th>Enforcement</th></tr>
+  <tr><td>R1</td><td>All model calls go through LiteLLM. No direct Ollama/vLLM calls.</td><td>Network policy + code review</td></tr>
+  <tr><td>R2</td><td>All tool calls go through MCP Gateway. Agents hold no direct DB credentials.</td><td>OpenBao injection only</td></tr>
+  <tr><td>R3</td><td>One Keycloak realm (<code>i3</code>). SSO group claims drive RBAC.</td><td>Shared realm config + CI check</td></tr>
+  <tr><td>R4</td><td>Per-project LiteLLM API keys only. Master key disabled for interactive use.</td><td>LiteLLM config + nightly audit</td></tr>
+  <tr><td>R5</td><td>Metering reads from Postgres <code>spend_logs</code> only. No independent invoicing.</td><td>Single ETL pipeline</td></tr>
+</table>
+
+<hr class="section-divider" />
+
+
+<h2 id="s2">2. Infrastructure &amp; Namespaces</h2>
+
+<h3>OpenShift Namespace Inventory</h3>
+<table>
+  <tr><th>Namespace</th><th>Application</th><th>Key Workloads</th></tr>
+  <tr><td><code>i3-admissions</code></td><td>Admissions Agent</td><td>FastAPI agent, ChromaDB consumer</td></tr>
+  <tr><td><code>i3-afroerp</code></td><td>AfroERP</td><td>ERPNext (Frappe), MariaDB, Redis, AfroERP Agent, Mfumo Open WebUI</td></tr>
+  <tr><td><code>i3-engage</code></td><td>Engage</td><td>Next.js 15, Kafka consumers, Brevo SMTP</td></tr>
+  <tr><td><code>i3-evalos</code></td><td>EvalOS</td><td>Next.js 15 exam engine, Study Coach API</td></tr>
+  <tr><td><code>i3-pmaas</code></td><td>PMaaS</td><td>Next.js 15 UI, LangGraph campaign agent</td></tr>
+  <tr><td><code>i3-ai-lab</code></td><td>AI Lab</td><td>JupyterHub 3.3.7, KubeSpawner, per-user notebook pods</td></tr>
+  <tr><td><code>i3-voice</code></td><td>Voice / TTS</td><td>FastAPI TTS service, espeak-ng</td></tr>
+  <tr><td><code>i3-onboarding</code></td><td>Onboarding Agent</td><td>Node.js Express orchestrator, Redis plan store</td></tr>
+  <tr><td><code>i3-model-gateway</code></td><td>Model Gateway</td><td>LiteLLM proxy, vLLM, Ollama, KEDA HPA, Langfuse</td></tr>
+  <tr><td><code>i3-platform</code></td><td>Platform Core</td><td>Keycloak, OpenBao, MCP Gateway, Agent Registry, ChromaDB</td></tr>
+  <tr><td><code>i3-monitoring</code></td><td>Monitoring</td><td>Prometheus, Grafana, Alertmanager</td></tr>
+  <tr><td><code>i3-kafka</code></td><td>Kafka</td><td>Kafka KRaft cluster</td></tr>
+</table>
+
+<h3>Node Pool Configuration</h3>
+<table>
+  <tr><th>Pool</th><th>Purpose</th><th>Current State</th></tr>
+  <tr><td>CPU worker nodes</td><td>All application workloads</td><td><span class="badge badge-green">ACTIVE</span></td></tr>
+  <tr><td>GPU workers (B1)</td><td>vLLM GPU inference acceleration</td><td><span class="badge badge-yellow">FUTURE WORKSTREAM</span> [GAP B1]</td></tr>
+</table>
+
+<div class="callout callout-warn"><strong>Gap B3 — Nairobi Residency:</strong> Current ROKS footprint is Frankfurt. Data residency migration to Nairobi is a planned workstream, not yet active. Do not state Nairobi residency in customer-facing material until evidence exists.</div>
+
+<h3>Key DNS / Routes</h3>
+<table>
+  <tr><th>URL</th><th>Service</th><th>Namespace</th></tr>
+  <tr><td><code>https://afroerp.i3technologies.co.ke</code></td><td>AfroERP (ERPNext)</td><td>i3-afroerp</td></tr>
+  <tr><td><code>https://mfumo.i3technologies.co.ke</code></td><td>Mfumo AI Co-worker (Open WebUI)</td><td>i3-afroerp</td></tr>
+  <tr><td><code>https://jupyter.i3technologies.co.ke</code></td><td>JupyterHub AI Lab</td><td>i3-ai-lab</td></tr>
+  <tr><td><code>https://evalos.i3technologies.co.ke</code></td><td>EvalOS Exam Platform</td><td>i3-evalos</td></tr>
+  <tr><td><code>https://engage.i3technologies.co.ke</code></td><td>Engage Campaign Platform</td><td>i3-engage</td></tr>
+  <tr><td><code>https://pmaas.i3technologies.co.ke</code></td><td>PMaaS Political Marketing</td><td>i3-pmaas</td></tr>
+</table>
+
+<hr class="section-divider" />
+
+
+<h2 id="s3">3. Identity &amp; Access Management (Keycloak)</h2>
+
+<h3>Realm Configuration</h3>
+<p>All platform applications share a <strong>single Keycloak realm: <code>i3</code></strong>. The AI Lab uses a separate sub-realm <code>i3-ai-lab</code>.</p>
+<table>
+  <tr><th>Setting</th><th>Value</th></tr>
+  <tr><td>Realm Name</td><td><code>i3</code></td></tr>
+  <tr><td>Token Algorithm</td><td>RS256 (asymmetric)</td></tr>
+  <tr><td>Access Token TTL</td><td>5 minutes (configurable per client)</td></tr>
+  <tr><td>Refresh Token TTL</td><td>30 minutes</td></tr>
+  <tr><td>tenant_id claim</td><td>Injected via mapper on JWT — <strong>UUID NOT NULL</strong></td></tr>
+</table>
+
+<h3>Client Registration (per application)</h3>
+<table>
+  <tr><th>Client ID</th><th>Application</th><th>Flow</th></tr>
+  <tr><td><code>admissions-agent</code></td><td>Admissions</td><td>Bearer JWT (Authorization Code + PKCE)</td></tr>
+  <tr><td><code>evalos-web</code></td><td>EvalOS</td><td>NextAuth session + RS256 JWT</td></tr>
+  <tr><td><code>engage-web</code></td><td>Engage</td><td>NextAuth session + RS256 JWT</td></tr>
+  <tr><td><code>pmaas-web</code></td><td>PMaaS</td><td>Bearer JWT</td></tr>
+  <tr><td><code>pmaas-agent</code></td><td>PMaaS Agent</td><td>Bearer JWT</td></tr>
+  <tr><td><code>onboarding-agent</code></td><td>Onboarding</td><td>Bearer JWT</td></tr>
+  <tr><td><code>jupyterhub</code></td><td>AI Lab</td><td>OIDC (realm: i3-ai-lab)</td></tr>
+</table>
+
+<h3>Role Hierarchy</h3>
+<table>
+  <tr><th>Role</th><th>Description</th><th>Applications</th></tr>
+  <tr><td><code>platform-admin</code></td><td>Full platform administration</td><td>All services</td></tr>
+  <tr><td><code>tenant-admin</code></td><td>Tenant-scoped administration</td><td>Evalos, Engage, PMaaS</td></tr>
+  <tr><td><code>evaluator</code></td><td>Exam creation and grading</td><td>EvalOS</td></tr>
+  <tr><td><code>student</code></td><td>Exam taking, AI Lab access</td><td>EvalOS, AI Lab</td></tr>
+  <tr><td><code>campaign-manager</code></td><td>Campaign creation and sending</td><td>Engage, PMaaS</td></tr>
+  <tr><td><code>data-scientist</code></td><td>Notebook access, model experimentation</td><td>AI Lab</td></tr>
+  <tr><td><code>erp-user</code></td><td>AfroERP module access</td><td>AfroERP</td></tr>
+</table>
+
+<h3>Adding a New User — Admin Steps</h3>
+<ol>
+  <li>Navigate to Keycloak Admin Console → Realm <code>i3</code> → Users → Add User</li>
+  <li>Set username, email, first/last name</li>
+  <li>Assign <code>tenant_id</code> attribute (UUID) matching the user's tenant</li>
+  <li>Assign appropriate role(s) from the hierarchy above</li>
+  <li>Set Temporary Password → send credential reset email</li>
+  <li>Verify JWT contains correct <code>tenant_id</code> claim before production use</li>
+</ol>
+
+<div class="callout callout-danger"><strong>HC-7 Enforced:</strong> Never set <code>DEV_BYPASS_AUTH=true</code> in any environment. This is a release blocker if found in any tracked file.</div>
+
+<hr class="section-divider" />
+
+
+<h2 id="s4">4. Model Gateway Administration (LiteLLM)</h2>
+
+<h3>Model Inventory</h3>
+<table>
+  <tr><th>Alias</th><th>Model</th><th>Tier</th><th>Timeout</th><th>Primary Use</th></tr>
+  <tr><td><code>granite-nano</code></td><td>Granite 3.1 Dense 2B (Ollama)</td><td>3 — Fast/Edge</td><td>60s</td><td>Always-warm fallback, embeddings</td></tr>
+  <tr><td><code>embed-nomic</code></td><td>Nomic Embed v1.5 (Ollama)</td><td>3 — Embed</td><td>15s</td><td>Vector embeddings (ChromaDB)</td></tr>
+  <tr><td><code>qwen-fast</code></td><td>Qwen 2.5 7B Instruct q4 (Ollama)</td><td>2 — RAG/Interactive</td><td>180s</td><td>Campaign content, Q&amp;A, personalization</td></tr>
+  <tr><td><code>qwen-coder</code></td><td>Qwen Coder 7B Instruct q4 (Ollama)</td><td>2 — Coder</td><td>180s</td><td>Code generation (AI Lab, EvalOS coding)</td></tr>
+  <tr><td><code>qwen-heavy</code></td><td>Qwen 2.5 14B Instruct q4 (Ollama)</td><td>1 — Heavy</td><td>240s</td><td>Complex reasoning, ward analysis, briefings</td></tr>
+  <tr><td><code>vision</code></td><td>LLaVA 13B q4 (Ollama)</td><td>1 — Vision</td><td>240s</td><td>Image understanding</td></tr>
+</table>
+
+<h3>Routing Fallback Chain</h3>
+<pre><code>qwen-heavy → qwen-fast → granite-nano (terminal)
+qwen-fast  → granite-nano
+qwen-coder → qwen-fast
+vision     → qwen-heavy</code></pre>
+
+<h3>Semantic Cache (Redis)</h3>
+<table>
+  <tr><th>Parameter</th><th>Value</th></tr>
+  <tr><td>Cache backend</td><td>Redis (platform Redis instance)</td></tr>
+  <tr><td>Similarity threshold</td><td>0.95 (cosine)</td></tr>
+  <tr><td>TTL</td><td>3600 seconds (1 hour)</td></tr>
+</table>
+
+<h3>API Key Management</h3>
+<ol>
+  <li><strong>Master key</strong> — stored in OpenBao, never used interactively. Break-glass only.</li>
+  <li><strong>Per-service virtual keys</strong> — issued via Agent Registry, scoped per tenant + model tier.</li>
+  <li>To issue a new service key: add entry to Agent Registry → LiteLLM generates scoped key → key injected via OpenBao into service Secret.</li>
+  <li>To revoke a key: remove from Agent Registry → key deactivated within 60 seconds.</li>
+</ol>
+
+<div class="callout callout-danger"><strong>Gap B2:</strong> A shared master key was previously in circulation. Verify it has been rotated out and all services use per-service virtual keys before production go-live.</div>
+
+<h3>KEDA Auto-scaling (vLLM)</h3>
+<p>KEDA ScaledObjects monitor Kafka consumer group lag and GPU memory metrics to scale vLLM worker pods. Minimum replicas: 1 (CPU), 0 (GPU — future). Maximum replicas: configurable per tenant quota in <code>platform/model-gateway/keda/keda-scaled-objects.yaml</code>.</p>
+
+<hr class="section-divider" />
+
+
+<h2 id="s5">5. Secrets Management (OpenBao)</h2>
+
+<h3>Mount Layout (KV v2)</h3>
+<pre><code>i3/
+├── keycloak/admin          # Keycloak admin credentials
+├── litellm/master-key      # LiteLLM master key (break-glass)
+├── litellm/service-keys/   # Per-service virtual keys
+├── db/postgres/            # PostgreSQL service passwords
+├── kafka/credentials/      # Kafka SASL credentials
+├── hmac/member-secret      # MEMBER_HMAC_SECRET (HC-6 — NID/phone anonymisation)
+├── mpesa/daraja/           # M-Pesa consumer key, secret, passkey
+├── kra/etims/              # KRA eTIMS PIN + API credentials
+└── brevo/smtp-key          # Brevo SMTP/API key</code></pre>
+
+<div class="callout callout-danger"><strong>HC-6:</strong> <code>i3/hmac/member-secret</code> is the <code>MEMBER_HMAC_SECRET</code> used for HMAC-SHA256 hashing of Kenyan National IDs and phone numbers. This key must NEVER be exposed in logs, environment variables, or code. Access via OpenBao inject sidecar only.</div>
+
+<h3>Secret Rotation Procedure</h3>
+<ol>
+  <li>Use the <code>rotate-secrets</code> Bob skill for step-by-step rotation of any <code>i3/</code> mount secret.</li>
+  <li>For HMAC key rotation: all previously hashed identifiers must be re-hashed. Coordinate with Data team before rotation.</li>
+  <li>For DB passwords: update OpenBao KV → rolling restart of affected pods. Verify pool reconnection.</li>
+  <li>For LiteLLM master key: disable old key in LiteLLM admin → update OpenBao → redeploy model-gateway pod.</li>
+</ol>
+
+<h3>OpenBao Inject Sidecar Pattern</h3>
+<pre><code>annotations:
+  vault.hashicorp.com/agent-inject: "true"
+  vault.hashicorp.com/role: "i3-service-role"
+  vault.hashicorp.com/agent-inject-secret-db-password: "i3/db/postgres/service-name"</code></pre>
+
+<hr class="section-divider" />
+
+
+<h2 id="s6">6. Kafka Event Backbone</h2>
+
+<h3>Cluster Configuration</h3>
+<table>
+  <tr><th>Parameter</th><th>Value</th></tr>
+  <tr><td>Mode</td><td>KRaft (ZooKeeper-free)</td></tr>
+  <tr><td>Namespace</td><td><code>i3-kafka</code></td></tr>
+  <tr><td>Replicas</td><td>3 (combined controller/broker)</td></tr>
+  <tr><td>Retention</td><td>7 days (configurable per topic)</td></tr>
+</table>
+
+<h3>Topic Inventory</h3>
+<table>
+  <tr><th>Topic</th><th>Producer</th><th>Consumer</th><th>Purpose</th></tr>
+  <tr><td><code>engage.campaign-trigger</code></td><td>Engage Web</td><td>Engage Kafka Consumer</td><td>Async campaign send CloudEvents</td></tr>
+  <tr><td><code>pmaas.content-request</code></td><td>PMaaS Agent</td><td>PMaaS Kafka Consumer</td><td>Content generation requests</td></tr>
+  <tr><td><code>platform.audit-events</code></td><td>All services</td><td>Audit Service</td><td>WORM audit event stream</td></tr>
+  <tr><td><code>platform.agent-decisions</code></td><td>Agent Registry</td><td>Audit/Monitoring</td><td>Agent decision logging</td></tr>
+</table>
+
+<h3>CloudEvent Envelope (9 mandatory fields)</h3>
+<pre><code>{
+  "specversion": "1.0",
+  "id": "uuid-v4",
+  "source": "service-name",
+  "type": "com.i3.domain.event",
+  "time": "ISO8601",
+  "datacontenttype": "application/json",
+  "tenantid": "UUID NOT NULL",   &lt;-- HC-4 required
+  "subject": "resource-id",
+  "data": { ... }
+}</code></pre>
+
+<div class="callout callout-danger"><strong>HC-4:</strong> The <code>tenantid</code> field is mandatory in every CloudEvent. Events without <code>tenantid</code> must be rejected by the consumer and routed to the dead-letter queue.</div>
+
+<h3>Dead-Letter Queue (DLQ)</h3>
+<p>Every consumer group has a paired DLQ topic: <code>&lt;topic&gt;.dlq</code>. Unprocessable or schema-invalid events are forwarded here with a reason header. Admins must review DLQ contents daily via the Monitoring dashboard.</p>
+
+<hr class="section-divider" />
+
+
+<h2 id="s7">7. Database Administration (PostgreSQL)</h2>
+
+<h3>Database Inventory</h3>
+<table>
+  <tr><th>Database</th><th>Service</th><th>Key Tables</th><th>RLS</th></tr>
+  <tr><td><code>evalos</code></td><td>EvalOS</td><td>exams, attempts, questions, answers, users</td><td><span class="badge badge-green">ENABLED</span></td></tr>
+  <tr><td><code>engage</code></td><td>Engage</td><td>campaigns, contacts, sends, consent_records</td><td><span class="badge badge-green">ENABLED</span></td></tr>
+  <tr><td><code>pmaas</code></td><td>PMaaS</td><td>briefings, content_jobs, ward_analyses</td><td><span class="badge badge-green">ENABLED</span></td></tr>
+  <tr><td><code>admissions</code></td><td>Admissions</td><td>chat_sessions, documents</td><td><span class="badge badge-green">ENABLED</span></td></tr>
+  <tr><td><code>platform</code></td><td>Platform Core</td><td>tenants, spend_logs, agent_registry</td><td><span class="badge badge-green">ENABLED</span></td></tr>
+  <tr><td><code>langfuse</code></td><td>Langfuse</td><td>traces, observations, scores</td><td>N/A</td></tr>
+</table>
+
+<h3>Row-Level Security (RLS) Pattern</h3>
+<pre><code>-- All application queries must set the session variable:
+SET LOCAL app.tenant_id = '&lt;tenant-uuid&gt;';
+
+-- Policy enforced on every table:
+CREATE POLICY tenant_isolation ON &lt;table&gt;
+  USING (tenant_id = current_setting('app.tenant_id')::uuid);
+
+ALTER TABLE &lt;table&gt; ENABLE ROW LEVEL SECURITY;</code></pre>
+
+<div class="callout callout-danger"><strong>HC-4 Enforcement:</strong> Any table missing RLS or allowing queries without <code>SET LOCAL app.tenant_id</code> is a release blocker. Run <code>check_rls_policy</code> MCP tool on every DDL before deploy.</div>
+
+<h3>Connection Pooling (asyncpg)</h3>
+<ul>
+  <li>Python services: use <code>asyncpg.create_pool()</code> inside FastAPI <code>lifespan</code>. Never <code>asyncpg.connect()</code> inside a request handler.</li>
+  <li>TypeScript services: pg pool with <code>rejectUnauthorized: true</code> and Crunchy Postgres CA cert mounted.</li>
+  <li>Max pool size: 10 per pod (tune per workload). Monitor with Prometheus pg pool metrics.</li>
+</ul>
+
+<h3>Backup Schedule</h3>
+<table>
+  <tr><th>Backup Type</th><th>Frequency</th><th>Retention</th><th>Tool</th></tr>
+  <tr><td>Full backup</td><td>Daily 02:00 UTC</td><td>30 days</td><td>Crunchy PostgreSQL Operator</td></tr>
+  <tr><td>WAL archiving</td><td>Continuous</td><td>7 days</td><td>pgBackRest</td></tr>
+  <tr><td>Point-in-time recovery</td><td>Available up to WAL retention</td><td>7 days</td><td>pgBackRest restore</td></tr>
+</table>
+
+<hr class="section-divider" />
+
+
+<h2 id="s8">8. Application Service Administration</h2>
+
+<h4>8.1 Admissions Agent</h4>
+<table>
+  <tr><th>Attribute</th><th>Value</th></tr>
+  <tr><td>Namespace</td><td><code>i3-admissions</code></td></tr>
+  <tr><td>Health endpoint</td><td><code>GET /healthz</code></td></tr>
+  <tr><td>Default model</td><td><code>mistral-nemo</code> (via LiteLLM)</td></tr>
+  <tr><td>Auth</td><td>Keycloak RS256 Bearer JWT</td></tr>
+  <tr><td>RAG collection</td><td><code>admissions-kb</code> (ChromaDB)</td></tr>
+  <tr><td>Prompt firewall</td><td>Lobster Trap — 14 patterns, pre-LLM</td></tr>
+  <tr><td>Tenant isolation</td><td><code>tenant_id</code> from JWT claim</td></tr>
+</table>
+<p><strong>Admin tasks:</strong> Update ChromaDB <code>admissions-kb</code> collection with new prospectus documents via the Embedding Pipeline (<code>platform/ai-lab/chromadb/embedding_pipeline.py</code>). Restart pod after collection update to refresh RAG index.</p>
+
+<h4>8.2 EvalOS</h4>
+<table>
+  <tr><th>Attribute</th><th>Value</th></tr>
+  <tr><td>Namespace</td><td><code>i3-evalos</code></td></tr>
+  <tr><td>Framework</td><td>Next.js 15 (App Router)</td></tr>
+  <tr><td>Auth</td><td>NextAuth (Keycloak provider)</td></tr>
+  <tr><td>Default pass threshold</td><td>90%</td></tr>
+  <tr><td>Max attempts</td><td>5 (configurable per exam)</td></tr>
+  <tr><td>Anti-cheat</td><td>Batch event logging (<code>/api/exam/[examId]/anticheat/batch</code>)</td></tr>
+</table>
+<p><strong>Admin tasks:</strong> Create exams via Admin panel → <code>/api/admin/questions</code>. Generate AI questions via <code>/api/admin/generate-questions</code>. Export results via <code>/api/admin/export</code>. View all attempts via <code>/api/admin/attempts</code>.</p>
+
+<h4>8.3 Engage</h4>
+<table>
+  <tr><th>Attribute</th><th>Value</th></tr>
+  <tr><td>Namespace</td><td><code>i3-engage</code></td></tr>
+  <tr><td>Email provider</td><td>Brevo SMTP + API</td></tr>
+  <tr><td>Auth (webhooks)</td><td>HMAC-SHA256 (<code>X-Brevo-Signature</code>)</td></tr>
+  <tr><td>Async send flag</td><td><code>ASYNC_CAMPAIGN_SEND=true</code> enables Kafka path</td></tr>
+  <tr><td>Consent service</td><td>Required — validated per recipient before dispatch</td></tr>
+</table>
+<p><strong>Admin tasks:</strong> Configure Brevo API key in OpenBao (<code>i3/brevo/smtp-key</code>). Toggle <code>ASYNC_CAMPAIGN_SEND</code> in ConfigMap for sync vs async campaign dispatch. Monitor Kafka DLQ for failed send events.</p>
+
+<h4>8.4 PMaaS</h4>
+<table>
+  <tr><th>Attribute</th><th>Value</th></tr>
+  <tr><td>Namespace</td><td><code>i3-pmaas</code></td></tr>
+  <tr><td>Agent type</td><td>LangGraph (L1 autonomy — Supervised Draft)</td></tr>
+  <tr><td>Models used</td><td>Qwen Heavy (analysis), Qwen Fast (content)</td></tr>
+  <tr><td>RAG collection</td><td><code>pmaas-manifesto</code> (ChromaDB)</td></tr>
+  <tr><td>Consent</td><td>HMAC-SHA256 per channel (whatsapp, voice, sms)</td></tr>
+</table>
+<p><strong>Admin tasks:</strong> Upload manifesto documents to ChromaDB <code>pmaas-manifesto</code> collection. Monitor Agent Registry decision logs. Ensure consent records are current before ward analysis or content generation runs.</p>
+
+<h4>8.5 AfroERP</h4>
+<table>
+  <tr><th>Attribute</th><th>Value</th></tr>
+  <tr><td>Namespace</td><td><code>i3-afroerp</code></td></tr>
+  <tr><td>ERP Framework</td><td>Frappe v15 / ERPNext</td></tr>
+  <tr><td>Database</td><td>MariaDB 10.6 (50Gi PVC)</td></tr>
+  <tr><td>M-Pesa integration</td><td>Daraja STK Push + B2C</td></tr>
+  <tr><td>KRA integration</td><td>eTIMS e-invoicing</td></tr>
+  <tr><td>AI Co-worker</td><td>Mfumo (Open WebUI + LiteLLM)</td></tr>
+</table>
+<p><strong>Admin tasks:</strong> Frappe admin via <code>https://afroerp.i3technologies.co.ke/app</code>. Rotate M-Pesa and KRA credentials in OpenBao (<code>i3/mpesa/daraja/</code>, <code>i3/kra/etims/</code>). Perform MariaDB backups via <code>mysqldump</code> + PVC snapshot. Monitor Mfumo at <code>https://mfumo.i3technologies.co.ke</code>.</p>
+
+<h4>8.6 AI Lab (JupyterHub)</h4>
+<table>
+  <tr><th>Attribute</th><th>Value</th></tr>
+  <tr><td>Namespace</td><td><code>i3-ai-lab</code></td></tr>
+  <tr><td>JupyterHub version</td><td>3.3.7 (KubeSpawner)</td></tr>
+  <tr><td>Per-user storage</td><td>5Gi PVC (username-templated)</td></tr>
+  <tr><td>Resource limits</td><td>2 CPU / 4GB RAM per notebook pod</td></tr>
+  <tr><td>Auth</td><td>Keycloak OIDC (realm: i3-ai-lab)</td></tr>
+  <tr><td>Env injected</td><td>LITELLM_URL, LITELLM_KEY, CHROMA_HOST, CHROMA_TOKEN, OLLAMA_URL</td></tr>
+</table>
+<p><strong>Admin tasks:</strong> Manage users via JupyterHub Admin panel (<code>https://jupyter.i3technologies.co.ke/hub/admin</code>). Adjust resource limits in KubeSpawner config. Clean up idle notebook pods via JupyterHub idle-culler. Monitor PVC usage per user.</p>
+
+<h4>8.7 Voice / TTS Service</h4>
+<table>
+  <tr><th>Attribute</th><th>Value</th></tr>
+  <tr><td>Namespace</td><td><code>i3-voice</code></td></tr>
+  <tr><td>Engine</td><td>espeak-ng (no ML dependencies)</td></tr>
+  <tr><td>Supported languages</td><td>en, en-us, en-gb, sw, fr, de, es, pt, ar, hi</td></tr>
+  <tr><td>Input limit</td><td>5000 characters</td></tr>
+  <tr><td>Auth</td><td>Bearer token (<code>VOICE_API_KEY</code> from OpenBao)</td></tr>
+  <tr><td>Output</td><td>WAV audio stream</td></tr>
+</table>
+<p><strong>Admin tasks:</strong> Verify espeak-ng availability via <code>GET /v1/health</code>. Update <code>VOICE_API_KEY</code> in OpenBao when rotating. Monitor request rate and audio generation latency in Prometheus.</p>
+
+<h4>8.8 Onboarding Agent</h4>
+<table>
+  <tr><th>Attribute</th><th>Value</th></tr>
+  <tr><td>Namespace</td><td><code>i3-onboarding</code></td></tr>
+  <tr><td>Runtime</td><td>Node.js / Express</td></tr>
+  <tr><td>Plan storage</td><td>Redis (TTL: 2 hours, key: <code>plan:&lt;ownerSub&gt;:&lt;planId&gt;</code>)</td></tr>
+  <tr><td>Auth</td><td>Keycloak Bearer JWT + webhook HMAC-SHA256</td></tr>
+  <tr><td>Readiness check</td><td>ChromaDB connectivity (<code>GET /ready</code>)</td></tr>
+</table>
+<p><strong>Admin tasks:</strong> Monitor Redis TTL utilization. Update ChromaDB skill corpus collections. Review CRM sync logs (<code>/api/onboarding/status</code>). Adjust plan TTL in Redis config if needed.</p>
+
+<hr class="section-divider" />
+
+
+<h2 id="s9">9. Monitoring, Observability &amp; Alerting</h2>
+
+<h3>Observability Stack</h3>
+<table>
+  <tr><th>Component</th><th>Purpose</th><th>Access</th></tr>
+  <tr><td>Prometheus</td><td>Metrics collection (all pods, LiteLLM, Kafka)</td><td><code>i3-monitoring</code> namespace</td></tr>
+  <tr><td>Grafana</td><td>Dashboards, SLA tracking</td><td>Internal route</td></tr>
+  <tr><td>Alertmanager</td><td>PagerDuty/email alert routing</td><td>Configured via <code>prometheus-stack.yaml</code></td></tr>
+  <tr><td>Langfuse</td><td>LLM traces, RAGAS evaluation scores</td><td><code>platform/model-gateway/langfuse/</code></td></tr>
+</table>
+
+<h3>Key Metrics to Monitor</h3>
+<ul>
+  <li><strong>LiteLLM:</strong> tokens/second, cache hit rate, fallback rate, per-key spend</li>
+  <li><strong>Kafka:</strong> consumer lag per topic (trigger KEDA scale-up if lag &gt; threshold)</li>
+  <li><strong>PostgreSQL:</strong> connection pool utilization, slow query count, RLS policy evaluation time</li>
+  <li><strong>Redis:</strong> memory usage, eviction rate, TTL expiry rate</li>
+  <li><strong>AI Lab:</strong> notebook pod count, PVC usage, idle pod count</li>
+  <li><strong>Voice TTS:</strong> request rate, error rate, espeak latency P95</li>
+</ul>
+
+<h3>Health Endpoints Summary</h3>
+<table>
+  <tr><th>Service</th><th>Liveness</th><th>Readiness</th></tr>
+  <tr><td>Admissions</td><td><code>GET /healthz</code></td><td><code>GET /healthz</code></td></tr>
+  <tr><td>Voice TTS</td><td><code>GET /v1/health</code></td><td><code>GET /v1/health</code></td></tr>
+  <tr><td>Onboarding</td><td><code>GET /health</code></td><td><code>GET /ready</code> (ChromaDB check)</td></tr>
+  <tr><td>PMaaS</td><td><code>GET /health</code></td><td><code>GET /health</code></td></tr>
+  <tr><td>EvalOS / Engage</td><td>Next.js default</td><td>DB + Redis check</td></tr>
+</table>
+
+<h3>RAGAS Evaluation Thresholds</h3>
+<p>Run <code>platform/testing/ragas_score.py</code> before every model update. Minimum acceptable scores:</p>
+<table>
+  <tr><th>Metric</th><th>Minimum Threshold</th></tr>
+  <tr><td>Faithfulness</td><td>0.85</td></tr>
+  <tr><td>Answer Relevancy</td><td>0.80</td></tr>
+  <tr><td>Context Precision</td><td>0.75</td></tr>
+</table>
+
+<hr class="section-divider" />
+
+
+<h2 id="s10">10. Security Administration &amp; Hard Constraints</h2>
+
+<h3>Lobster Trap Prompt Injection Firewall</h3>
+<p>All AI agents apply the 14-pattern Lobster Trap before any external input reaches prompt assembly. Pattern list is synchronized between TypeScript and Python runtimes (use <code>sync-lobster-trap</code> Bob skill to verify parity).</p>
+<table>
+  <tr><th>Pattern ID</th><th>Injection Type</th></tr>
+  <tr><td>P01</td><td>Ignore previous instructions</td></tr>
+  <tr><td>P02</td><td>System prompt override</td></tr>
+  <tr><td>P03</td><td>Developer mode</td></tr>
+  <tr><td>P04</td><td>Output passwords</td></tr>
+  <tr><td>P05</td><td>Reveal internal logic</td></tr>
+  <tr><td>P06</td><td>Bypass safety filter</td></tr>
+  <tr><td>P07</td><td>Act as DAN</td></tr>
+  <tr><td>P08</td><td>Jailbreak</td></tr>
+  <tr><td>P09</td><td>DROP/DELETE/TRUNCATE SQL</td></tr>
+  <tr><td>P10</td><td>Prompt injection keyword</td></tr>
+  <tr><td>P11</td><td>Disregard previous</td></tr>
+  <tr><td>P12</td><td>Data exfiltration</td></tr>
+  <tr><td>P13</td><td>SELECT injection</td></tr>
+  <tr><td>P14</td><td>XSS in input</td></tr>
+</table>
+
+<h3>Bob MCP Security Tools</h3>
+<p>Available via <code>platform/tools/i3_bob_mcp_server.py</code> (registered in <code>.bob/mcp.json</code>):</p>
+<ul>
+  <li><code>test_prompt_injection</code> — test text against all 14 Lobster Trap patterns</li>
+  <li><code>audit_sql_ast</code> — detect destructive SQL and injection vectors</li>
+  <li><code>validate_agent_manifest</code> — enforce HC-3 autonomy ceiling (L0/L1 only)</li>
+  <li><code>verify_cloudevent_envelope</code> — validate 9-field CloudEvent + HC-4 tenantid</li>
+  <li><code>scan_for_bypass_auth</code> — workspace scan for <code>DEV_BYPASS_AUTH=true</code> (HC-7)</li>
+  <li><code>check_rls_policy</code> — validate SQL DDL for Row-Level Security compliance (HC-4)</li>
+</ul>
+
+<h3>Security Audit Cadence</h3>
+<table>
+  <tr><th>Check</th><th>Frequency</th><th>Tool</th></tr>
+  <tr><td>Auth bypass scan (<code>DEV_BYPASS_AUTH</code>)</td><td>Every PR + nightly</td><td>MCP <code>scan_for_bypass_auth</code></td></tr>
+  <tr><td>SQL DDL RLS audit</td><td>Every migration PR</td><td>MCP <code>check_rls_policy</code></td></tr>
+  <tr><td>CloudEvent envelope validation</td><td>Every schema change</td><td>MCP <code>verify_cloudevent_envelope</code></td></tr>
+  <tr><td>Secret sweep (raw NIDs/phones)</td><td>Weekly</td><td>Static analysis + grep</td></tr>
+  <tr><td>Agent manifest audit</td><td>Every new agent PR</td><td>MCP <code>validate_agent_manifest</code></td></tr>
+  <tr><td>LiteLLM master key check</td><td>Nightly</td><td>LiteLLM audit job</td></tr>
+</table>
+
+<hr class="section-divider" />
+
+
+<h2 id="s11">11. CI/CD Pipeline Administration (Tekton)</h2>
+
+<h3>4-Gate Pipeline</h3>
+<table>
+  <tr><th>Gate</th><th>Check</th><th>Failure Action</th></tr>
+  <tr><td>Gate 1 — Secret Scan</td><td>Detect secrets, <code>DEV_BYPASS_AUTH</code>, raw NIDs in committed code</td><td>Block PR</td></tr>
+  <tr><td>Gate 2 — Container Scan</td><td>CVE scan of Docker images, dependency audit</td><td>Block PR if HIGH/CRITICAL</td></tr>
+  <tr><td>Gate 3 — RAG/AI Quality Eval</td><td>RAGAS score against thresholds (faithfulness ≥0.85, etc.)</td><td>Block PR if below threshold</td></tr>
+  <tr><td>Gate 4 — Deploy</td><td>Rolling deploy to staging → smoke test → promote to prod</td><td>Rollback if smoke test fails</td></tr>
+</table>
+
+<p>Pipeline definition: <code>platform/gitops/tekton/pipeline-build.yaml</code></p>
+
+<h3>GitOps (ArgoCD / Flux)</h3>
+<p>Deployment manifests live in <code>platform/gitops/apps/</code>. Changes to manifests are automatically synced to the cluster. Production promotions require a PR approval from the Tech Lead.</p>
+
+<hr class="section-divider" />
+
+
+<h2 id="s12">12. Backup, Recovery &amp; Rollback</h2>
+
+<h3>Backup Matrix</h3>
+<table>
+  <tr><th>Component</th><th>Backup Method</th><th>RPO</th><th>RTO</th></tr>
+  <tr><td>PostgreSQL (all DBs)</td><td>pgBackRest WAL + full daily</td><td>15 min</td><td>30 min</td></tr>
+  <tr><td>MariaDB (AfroERP)</td><td>mysqldump + PVC snapshot</td><td>1 hour</td><td>2 hours</td></tr>
+  <tr><td>ChromaDB collections</td><td>PVC snapshot daily</td><td>24 hours</td><td>1 hour</td></tr>
+  <tr><td>Redis state</td><td>RDB snapshot hourly + AOF</td><td>1 hour</td><td>15 min</td></tr>
+  <tr><td>OpenBao secrets</td><td>Sealed backup + unseal keys in cold storage</td><td>Continuous</td><td>1 hour</td></tr>
+</table>
+
+<h3>Rollback Procedure (Application)</h3>
+<ol>
+  <li>Identify failing deployment: <code>oc rollout history deployment/&lt;name&gt; -n &lt;namespace&gt;</code></li>
+  <li>Roll back: <code>oc rollout undo deployment/&lt;name&gt; -n &lt;namespace&gt;</code></li>
+  <li>Verify rollback: <code>oc rollout status deployment/&lt;name&gt; -n &lt;namespace&gt;</code></li>
+  <li>For database migrations: use down-migration script in <code>platform/migrations/</code></li>
+  <li>Record incident in audit trail (Langfuse / WORM audit store)</li>
+</ol>
+
+<hr class="section-divider" />
+
+
+<h2 id="s13">13. Tenant Provisioning</h2>
+
+<h3>New Tenant Onboarding Steps</h3>
+<ol>
+  <li><strong>Assign UUID</strong> — generate a new <code>tenant_id</code> UUID (v4). Record in platform registry.</li>
+  <li><strong>Keycloak</strong> — create realm group, assign <code>tenant_id</code> attribute, create initial admin user.</li>
+  <li><strong>PostgreSQL</strong> — create database schema; verify RLS policies apply <code>tenant_id</code> correctly.</li>
+  <li><strong>LiteLLM</strong> — issue per-tenant virtual key via Agent Registry with appropriate model tier and budget limit.</li>
+  <li><strong>Namespace</strong> — apply <code>i3-tenant</code> Helm template: <code>helm upgrade --install tenant-&lt;id&gt; ./helm/i3-tenant --set tenantId=&lt;uuid&gt;</code></li>
+  <li><strong>Kafka</strong> — verify CloudEvent consumer validates <code>tenantid</code> field on all subscribed topics.</li>
+  <li><strong>OpenBao</strong> — provision tenant-scoped secrets path and policy.</li>
+  <li><strong>ChromaDB</strong> — create tenant-prefixed collection(s) if using RAG.</li>
+  <li><strong>Verify</strong> — run end-to-end smoke test: auth → LLM call → DB write → Kafka event, all with new <code>tenant_id</code>.</li>
+</ol>
+
+<div class="callout"><strong>Tenant tiers:</strong> sandbox (shared resources, limited quota), standard (isolated namespace, standard quota), dedicated (dedicated node pool + private model tier). Configured via <code>i3-tenant</code> Helm chart values.</div>
+
+<hr class="section-divider" />
+
+
+<h2 id="s14">14. Operational Runbooks</h2>
+
+<h3>Runbook: Kafka Consumer Lag Spike</h3>
+<ol>
+  <li>Check KEDA ScaledObject status: <code>kubectl get scaledobject -n i3-engage</code></li>
+  <li>Check consumer pod count: <code>kubectl get pods -n i3-engage -l app=kafka-consumer</code></li>
+  <li>If KEDA not scaling: verify Kafka metrics exporter is reachable by KEDA controller.</li>
+  <li>If DLQ filling: inspect DLQ messages for schema errors; replay after fix.</li>
+  <li>Manually scale if urgent: <code>kubectl scale deployment/kafka-consumer --replicas=5 -n i3-engage</code></li>
+</ol>
+
+<h3>Runbook: LiteLLM Model Fallback Triggered</h3>
+<ol>
+  <li>Check Prometheus: <code>litellm_fallback_total</code> counter rising.</li>
+  <li>Check Langfuse: which model triggered fallback and why (timeout / error).</li>
+  <li>Inspect Ollama pod health: <code>kubectl logs -n i3-model-gateway deployment/ollama</code></li>
+  <li>If OOM: increase Ollama pod memory limit in <code>vllm-deploy.yaml</code>.</li>
+  <li>If model not loaded: exec into pod and run <code>ollama pull &lt;model-name&gt;</code>.</li>
+</ol>
+
+<h3>Runbook: Auth Token Validation Failures (JWT 401)</h3>
+<ol>
+  <li>Verify Keycloak is healthy: <code>kubectl get pods -n i3-platform -l app=keycloak</code></li>
+  <li>Check JWKS endpoint: <code>curl https://keycloak.i3technologies.co.ke/realms/i3/protocol/openid-connect/certs</code></li>
+  <li>Verify service is fetching latest JWKS (token cache TTL).</li>
+  <li>If realm key rotated: restart affected service pods to refresh JWKS cache.</li>
+  <li>Check that <code>tenant_id</code> claim is present in token: decode JWT payload and inspect.</li>
+</ol>
+
+<h3>Runbook: Database Connection Pool Exhaustion</h3>
+<ol>
+  <li>Check Prometheus <code>pg_pool_connections_active</code> metric — identify saturated service.</li>
+  <li>Check for connection leaks: look for long-running transactions in <code>pg_stat_activity</code>.</li>
+  <li>Kill blocking connections: <code>SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE state='idle' AND query_start &lt; NOW() - INTERVAL '10 minutes';</code></li>
+  <li>Restart affected service pod to force pool reconnect.</li>
+  <li>Review asyncpg pool configuration — ensure <code>max_size</code> is appropriate for replica count.</li>
+</ol>
+
+<h3>Runbook: Secret Rotation Emergency (Suspected Leak)</h3>
+<ol>
+  <li>Immediately revoke suspected secret in OpenBao: <code>vault kv metadata delete i3/&lt;path&gt;</code></li>
+  <li>Activate <code>rotate-secrets</code> Bob skill for step-by-step rotation.</li>
+  <li>Rotate affected service keys in LiteLLM Agent Registry.</li>
+  <li>Audit <code>platform.audit-events</code> Kafka topic for unauthorized access patterns.</li>
+  <li>Submit incident report to security lead within 2 hours.</li>
+</ol>
+
+<hr class="section-divider" />
+
+
+<h2 id="s15">15. Hard Constraints Reference (HC-1 → HC-8)</h2>
+
+<table>
+  <tr><th>ID</th><th>Constraint</th><th>Enforcement</th></tr>
+  <tr>
+    <td><span class="badge badge-blue">HC-1</span></td>
+    <td>solution-01 through solution-08 workloads have been fully migrated off this cluster. Constraint retired on this server — documented for audit traceability only.</td>
+    <td>Audit only</td>
+  </tr>
+  <tr>
+    <td><span class="badge badge-blue">HC-2</span></td>
+    <td>Hyperledger Fabric chaincode and USSD bridge must reach staging verification by November 2026 for the 16 March 2027 IEBC statutory deadline.</td>
+    <td>Programme milestone</td>
+  </tr>
+  <tr>
+    <td><span class="badge badge-red">HC-3</span></td>
+    <td>All AI agents ship at L0/L1 autonomy. Never promote to L2/L3 without verified evaluation evidence and explicit human approval.</td>
+    <td>Agent Registry + MCP Gateway enforcement</td>
+  </tr>
+  <tr>
+    <td><span class="badge badge-red">HC-4</span></td>
+    <td><code>tenant_id UUID NOT NULL</code> across every SQL DDL, RLS policy, Kafka CloudEvent envelope, application query, cache, and audit record.</td>
+    <td>Release blocker if missing</td>
+  </tr>
+  <tr>
+    <td><span class="badge badge-red">HC-5</span></td>
+    <td>Agents propose, policy disposes. Models never directly execute state-mutating tools. All consequential actions: Agent → Orchestrator → MCP Gateway → Policy Check → Human Approval → Tool → Audit.</td>
+    <td>MCP Gateway interceptor</td>
+  </tr>
+  <tr>
+    <td><span class="badge badge-red">HC-6</span></td>
+    <td>Kenyan National IDs and phone numbers use keyed HMAC-SHA256 with MEMBER_HMAC_SECRET (OpenBao). Never raw SHA-256.</td>
+    <td>Secret sweep + static analysis</td>
+  </tr>
+  <tr>
+    <td><span class="badge badge-red">HC-7</span></td>
+    <td><code>DEV_BYPASS_AUTH=true</code> is forbidden. Presence in any tracked file is a release blocker.</td>
+    <td>Nightly scan + every PR</td>
+  </tr>
+  <tr>
+    <td><span class="badge badge-red">HC-8</span></td>
+    <td>Voter identity and ballot choice must be architecturally separated via Fabric Private Data Collections. Never co-located.</td>
+    <td>Architecture review + red-team</td>
+  </tr>
+</table>
+
+<p style="margin-top:20px;color:#57606a;font-size:13px">For task-level application of these constraints, use IBM Bob with the <code>i3-audit</code> or <code>i3-remediation</code> mode as appropriate.</p>
+
+<footer>
+  <p>Made with IBM Bob  |  i3 Technologies — Internal Restricted  |  v2.0 © 2026</p>
+</footer>
+
+</div>
+</body>
+</html>

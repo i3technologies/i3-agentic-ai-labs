@@ -1,0 +1,211 @@
+{
+  "name": "SmartLab — VOD Post-Stream Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "smartlab-vod-pipeline",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook: Stream Ended",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract session data from webhook payload\nconst body = $input.first().json.body || $input.first().json;\nreturn [{\n  json: {\n    session_id:  body.session_id,\n    stream_key:  body.stream_key,\n    course_id:   body.course_id || '',\n    title:       body.title,\n    hls_source:  body.hls_source,\n    api_base:    'http://smartlab-api.i3-smartlab.svc:8000/api/v1'\n  }\n}];"
+      },
+      "name": "Parse Webhook",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.api_base }}/live/sessions/{{ $json.session_id }}/start-vod-processing",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "session_id", "value": "={{ $json.session_id }}" },
+            { "name": "stream_key", "value": "={{ $json.stream_key }}" }
+          ]
+        },
+        "options": { "timeout": 30000 }
+      },
+      "name": "Mark VOD Processing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "amount": 30,
+        "unit": "seconds"
+      },
+      "name": "Wait for Recording",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Parse Webhook').item.json.api_base }}/ai/tutor",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "question",        "value": "Generate chapter titles for this live class recording" },
+            { "name": "course_context",  "value": "={{ $('Parse Webhook').item.json.title }}" },
+            { "name": "lesson_context",  "value": "Live class recording" }
+          ]
+        },
+        "options": { "timeout": 60000 }
+      },
+      "name": "AI Generate Chapters",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Parse Webhook').item.json.api_base }}/lessons",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "course_id",    "value": "={{ $('Parse Webhook').item.json.course_id }}" },
+            { "name": "title",        "value": "Recording: {{ $('Parse Webhook').item.json.title }}" },
+            { "name": "video_source", "value": "={{ $('Parse Webhook').item.json.hls_source }}" },
+            { "name": "from_live_session", "value": "={{ $('Parse Webhook').item.json.session_id }}" }
+          ]
+        },
+        "options": { "timeout": 30000 }
+      },
+      "name": "Create VOD Lesson",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the VOD HLS URL from the stream key\nconst key    = $('Parse Webhook').item.json.stream_key;\nconst base   = 'https://cdn.i3technologies.co.ke/vod';\nconst lesson = $('Create VOD Lesson').item.json;\nreturn [{\n  json: {\n    lesson_id:   lesson.id || lesson.lesson_id,\n    hls_url_720: `${base}/${key}_720p/index.m3u8`,\n    hls_url_480: `${base}/${key}_480p/index.m3u8`,\n    hls_url_240: `${base}/${key}_240p/index.m3u8`,\n    stream_key:  key\n  }\n}];"
+      },
+      "name": "Build VOD URLs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 400]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $('Parse Webhook').item.json.api_base }}/lessons/{{ $json.lesson_id }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "hls_url",      "value": "={{ $json.hls_url_720 }}" },
+            { "name": "vod_ready",    "value": "true" }
+          ]
+        },
+        "options": { "timeout": 30000 }
+      },
+      "name": "Update Lesson with VOD URL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Parse Webhook').item.json.api_base }}/lessons/{{ $('Build VOD URLs').item.json.lesson_id }}/transcribe",
+        "options": { "timeout": 300000 }
+      },
+      "name": "Trigger Transcription",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "amount": 120,
+        "unit": "seconds"
+      },
+      "name": "Wait for Transcription",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [2000, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Parse Webhook').item.json.api_base }}/publish/video/{{ $('Build VOD URLs').item.json.lesson_id }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "course_id",    "value": "={{ $('Parse Webhook').item.json.course_id }}" },
+            { "name": "hls_url",      "value": "={{ $('Build VOD URLs').item.json.hls_url_720 }}" },
+            { "name": "title",        "value": "Recording: {{ $('Parse Webhook').item.json.title }}" }
+          ]
+        },
+        "options": { "timeout": 60000 }
+      },
+      "name": "Publish VOD to Moodle",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2220, 300]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $('Parse Webhook').item.json.api_base }}/live/sessions/{{ $('Parse Webhook').item.json.session_id }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "status",        "value": "vod_ready" },
+            { "name": "vod_lesson_id", "value": "={{ $('Build VOD URLs').item.json.lesson_id }}" }
+          ]
+        },
+        "options": { "timeout": 15000 }
+      },
+      "name": "Mark Session VOD Ready",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2440, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'pipeline_complete', session_id: $('Parse Webhook').item.json.session_id, lesson_id: $('Build VOD URLs').item.json.lesson_id }) }}"
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2660, 300]
+    }
+  ],
+  "connections": {
+    "Webhook: Stream Ended":     { "main": [[{ "node": "Parse Webhook",        "type": "main", "index": 0 }]] },
+    "Parse Webhook":             { "main": [[{ "node": "Mark VOD Processing",   "type": "main", "index": 0 }]] },
+    "Mark VOD Processing":       { "main": [[{ "node": "Wait for Recording",    "type": "main", "index": 0 }]] },
+    "Wait for Recording":        { "main": [[{ "node": "AI Generate Chapters",  "type": "main", "index": 0 },
+                                              { "node": "Create VOD Lesson",    "type": "main", "index": 0 }]] },
+    "AI Generate Chapters":      { "main": [[{ "node": "Create VOD Lesson",     "type": "main", "index": 0 }]] },
+    "Create VOD Lesson":         { "main": [[{ "node": "Build VOD URLs",        "type": "main", "index": 0 }]] },
+    "Build VOD URLs":            { "main": [[{ "node": "Update Lesson with VOD URL", "type": "main", "index": 0 }]] },
+    "Update Lesson with VOD URL":{ "main": [[{ "node": "Trigger Transcription", "type": "main", "index": 0 }]] },
+    "Trigger Transcription":     { "main": [[{ "node": "Wait for Transcription","type": "main", "index": 0 }]] },
+    "Wait for Transcription":    { "main": [[{ "node": "Publish VOD to Moodle", "type": "main", "index": 0 }]] },
+    "Publish VOD to Moodle":     { "main": [[{ "node": "Mark Session VOD Ready","type": "main", "index": 0 }]] },
+    "Mark Session VOD Ready":    { "main": [[{ "node": "Respond to Webhook",    "type": "main", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "tags": ["smartlab", "vod", "ott"]
+}

@@ -24,6 +24,7 @@ LITELLM_BASE=os.getenv("LITELLM_BASE","http://litellm-proxy.i3-model-gateway.svc
 LITELLM_KEY=os.environ["LITELLM_KEY"]
 MODEL=os.getenv("RAGAS_MODEL","qwen-fast")
 EMBED_MODEL=os.getenv("RAGAS_EMBED","embed")
+_CA_BUNDLE=os.getenv("LITELLM_CA_CERT",True)
 QUESTIONS=["What are the undergraduate admission requirements?","How do I apply for postgraduate studies?","What is the application deadline for the next intake?","Which programmes are offered in the Faculty of Engineering?","How do I obtain a student ID card after admission?","What documents are required for international student admission?","How is the fee structure determined for part-time students?","What is the minimum grade for direct entry to a degree programme?","How do I defer my admission to the next academic year?","What support services are available for students with disabilities?"]
 CONTEXT="The institution offers undergraduate and postgraduate programmes. Undergraduate admission requires a minimum grade of C+ in KCSE or equivalent. Applications are submitted online via the student portal. The next intake deadline is 31 March. Faculty of Engineering offers Civil, Electrical, and Mechanical programmes. Student ID cards are issued at the registrar office after fee payment confirmation. International students require certified transcripts, passport copy, and health certificate. Part-time fees are calculated per unit. Direct entry requires a C+ minimum grade. Deferral requests must be submitted before the semester begins. Disability support services include accessible facilities, readers, and extended exam time."
 questions,answers,contexts,ground_truths=[],[],[],[]
@@ -33,7 +34,7 @@ for i,q in enumerate(QUESTIONS):
         r=requests.post(LITELLM_BASE+"/chat/completions",
             headers={"Authorization":"Bearer "+LITELLM_KEY,"Content-Type":"application/json"},
             json={"model":MODEL,"messages":[{"role":"system","content":"Answer only from this context: "+CONTEXT},{"role":"user","content":q}],"max_tokens":300},
-            timeout=60,verify=False)
+            timeout=60,verify=_CA_BUNDLE)
         d=r.json()
         if "error" in d: print("  ["+str(i+1)+"/10] ERR:"+str(d["error"])[:60]); continue
         a=d["choices"][0]["message"]["content"]

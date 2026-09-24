@@ -1,0 +1,216 @@
+
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>i3 Platform — Health Check Report</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.6; background: #ffffff; color: #1f2328; }
+.wrapper { max-width: 760px; margin: 0 auto; padding: 32px 20px 48px; }
+h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.subtitle { color: #57606a; font-size: 13px; margin-bottom: 24px; }
+.score-bar { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px 24px; margin-bottom: 28px; display: flex; align-items: center; gap: 24px; }
+.score-num { font-size: 42px; font-weight: 800; color: #1a7f37; line-height: 1; }
+.score-label { font-size: 13px; color: #57606a; }
+.score-label strong { display: block; font-size: 15px; color: #1f2328; margin-bottom: 2px; }
+.badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.badge-green { background: #dafbe1; color: #116329; }
+.badge-blue { background: #ddf4ff; color: #0969da; }
+.badge-amber { background: #fff8c5; color: #9a6700; }
+h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #57606a; margin: 28px 0 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+th { text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #57606a; padding: 6px 8px; border-bottom: 1px solid #e5e7eb; }
+td { padding: 6px 8px; border-bottom: 1px solid #f3f4f6; font-size: 13px; vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+.p { color: #1a7f37; font-weight: 700; }
+.w { color: #9a6700; font-weight: 700; }
+.url { font-family: monospace; font-size: 12px; color: #0969da; }
+.ns { font-family: monospace; font-size: 12px; color: #6e40c9; }
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 4px; }
+.stat { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px 14px; }
+.stat-val { font-size: 24px; font-weight: 700; color: #1f2328; line-height: 1.1; }
+.stat-lbl { font-size: 11px; color: #57606a; margin-top: 2px; }
+.action-box { background: #fff8c5; border: 1px solid #e3b341; border-radius: 6px; padding: 14px 16px; margin-top: 24px; }
+.action-box h3 { font-size: 13px; font-weight: 700; color: #9a6700; margin-bottom: 8px; }
+.action-box ul { list-style: none; padding: 0; }
+.action-box li { font-size: 13px; padding: 3px 0; color: #1f2328; }
+.action-box li::before { content: "→ "; color: #9a6700; font-weight: 700; }
+.done-box { background: #dafbe1; border: 1px solid #82cfaa; border-radius: 6px; padding: 14px 16px; margin-top: 12px; }
+.done-box h3 { font-size: 13px; font-weight: 700; color: #116329; margin-bottom: 8px; }
+.done-box ul { list-style: none; padding: 0; }
+.done-box li { font-size: 13px; padding: 2px 0; color: #1f2328; }
+.done-box li::before { content: "✓ "; color: #116329; font-weight: 700; }
+.keys-table td:first-child { font-family: monospace; font-size: 11px; }
+footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <h1>i3 Platform — Full Health Check Report</h1>
+  <p class="subtitle">IBM ROKS Frankfurt (eu-de) · OpenShift 4.17 · 12 nodes × bx2.4x16 · Run: September 2026</p>
+
+  <div class="score-bar">
+    <div class="score-num">79<span style="font-size:22px;color:#57606a">/79</span></div>
+    <div>
+      <div class="score-label"><strong>PLATFORM HEALTHY</strong>All checks passing · 23/23 HTTPS endpoints live · October 2026 pilot ready</div>
+      <div style="margin-top:6px">
+        <span class="badge badge-green">79/79 PASS</span> 
+        <span class="badge badge-blue">23 live endpoints</span> 
+        <span class="badge badge-green">All Steps Complete</span>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="stat-grid">
+    <div class="stat"><div class="stat-val">386</div><div class="stat-lbl">Running pods</div></div>
+    <div class="stat"><div class="stat-val">18</div><div class="stat-lbl">Namespaces</div></div>
+    <div class="stat"><div class="stat-val">27</div><div class="stat-lbl">Public HTTPS routes</div></div>
+    <div class="stat"><div class="stat-val">13</div><div class="stat-lbl">PostgreSQL databases</div></div>
+  </div>
+  <div class="stat-grid" style="margin-top:10px">
+    <div class="stat"><div class="stat-val">10</div><div class="stat-lbl">Pilot users provisioned</div></div>
+    <div class="stat"><div class="stat-val">2</div><div class="stat-lbl">LiteLLM replicas</div></div>
+    <div class="stat"><div class="stat-val">6</div><div class="stat-lbl">AI models loaded</div></div>
+    <div class="stat"><div class="stat-val">11</div><div class="stat-lbl">Argo CD apps synced</div></div>
+  </div>
+
+  <h2>Section 1 — Namespace Topology (19 checks)</h2>
+  <table>
+    <tr><th>Namespace</th><th>Purpose</th><th>Status</th></tr>
+    <tr><td class="ns">i3-data</td><td>Crunchy PostgreSQL HA (3-node) + pgBouncer</td><td class="p">PASS</td></tr>
+    <tr><td class="ns">i3-messaging</td><td>Strimzi Kafka KRaft (3-node)</td><td class="p">PASS</td></tr>
+    <tr><td class="ns">i3-security</td><td>OpenBao (Vault) HA — 3 pods, unsealed</td><td class="p">PASS</td></tr>
+    <tr><td class="ns">i3-auth</td><td>Keycloak / RHSSO — OIDC SSO</td><td class="p">PASS</td></tr>
+    <tr><td class="ns">i3-model-gateway</td><td>LiteLLM (2 replicas) + Ollama + Langfuse</td><td class="p">PASS</td></tr>
+    <tr><td class="ns">i3-ai-lab</td><td>JupyterHub + Open WebUI (Sage) + ChromaDB</td><td class="p">PASS</td></tr>
+    <tr><td class="ns">i3-evalos</td><td>EvalOS (2 replicas) + sandbox</td><td class="p">PASS</td></tr>
+    <tr><td class="ns">i3-ott</td><td>OvenMedia + Nginx HLS + SeaweedFS + Directus + N8N</td><td class="p">PASS</td></tr>
+    <tr><td class="ns">i3-admissions</td><td>Admissions Agent + ChromaDB</td><td class="p">PASS</td></tr>
+    <tr><td class="ns">i3-monitoring</td><td>Prometheus + Grafana</td><td class="p">PASS</td></tr>
+    <tr><td class="ns">i3-gitops</td><td>ArgoCD webhook listener</td><td class="p">PASS</td></tr>
+    <tr><td class="ns">i3-pmaas</td><td>PMaaS web + Dawa AI coworker + Campaign Agent</td><td class="p">PASS</td></tr>
+    <tr><td class="ns">i3-engage</td><td>Engage web + Nuru AI coworker + SMS consumer</td><td class="p">PASS</td></tr>
+    <tr><td class="ns">i3-onboarding</td><td>Onboarding Agent (HPA min=1 max=3)</td><td class="p">PASS</td></tr>
+    <tr><td class="ns">i3-afroerp</td><td>AfroERP (ERPNext) + MariaDB + Mfumo AI</td><td class="p">PASS</td></tr>
+    <tr><td class="ns">i3-voice</td><td>Voice STT (:8001) + Voice TTS (:8000)</td><td class="p">PASS</td></tr>
+    <tr><td class="ns">i3-edbridge</td><td>i3EduBridge — Moodle 4.4 (installed)</td><td class="p">PASS</td></tr>
+    <tr><td class="ns">i3-social</td><td>i3Social — Nextcloud 28 (installed) + Redis</td><td class="p">PASS</td></tr>
+  </table>
+
+  <h2>Section 10 — Live HTTPS Endpoints (23 checks)</h2>
+  <table>
+    <tr><th>Service</th><th>URL</th><th>HTTP</th><th>Status</th></tr>
+    <tr><td>SSO / Keycloak</td><td class="url">sso.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>EvalOS</td><td class="url">evalos.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>PMaaS</td><td class="url">pmaas.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>Engage</td><td class="url">engage.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>LiteLLM Gateway</td><td class="url">litellm.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>Langfuse Tracing</td><td class="url">langfuse.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>Grafana</td><td class="url">grafana.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>JupyterHub</td><td class="url">jupyter.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>Sage / Open WebUI</td><td class="url">sage.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>CMS / Directus</td><td class="url">cms.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>N8N Automation</td><td class="url">n8n.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>Admissions Agent</td><td class="url">admissions.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>Onboarding Agent</td><td class="url">onboarding.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>Zuri AI Coworker</td><td class="url">zuri.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>Dawa AI Coworker</td><td class="url">dawa.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>Nuru AI Coworker</td><td class="url">nuru.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>Mfumo AI Coworker</td><td class="url">mfumo.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>AfroERP (ERPNext)</td><td class="url">afroerp.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>Voice STT</td><td class="url">stt.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>Voice TTS</td><td class="url">tts.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>i3EduBridge (Moodle 4.4)</td><td class="url">moodle.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>i3Social (Nextcloud 28)</td><td class="url">nextcloud.i3technologies.co.ke</td><td>200</td><td class="p">PASS</td></tr>
+    <tr><td>Vault / OpenBao HA</td><td class="url">vault.i3technologies.co.ke</td><td>429*</td><td class="p">PASS</td></tr>
+  </table>
+  <p style="font-size:11px;color:#57606a;margin-top:4px">* HTTP 429 = OpenBao HA standby response. Active node returns 200. Both indicate a healthy, unsealed cluster.</p>
+
+  <h2>Implementation Steps Completed</h2>
+  <div class="done-box">
+    <ul>
+      <li>Step 1 — LiteLLM DB mode enabled; virtual keys created: pilot-internal, pilot-customers, pilot-jupyterhub</li>
+      <li>Step 2 — LiteLLM scaled to 2 replicas (KEDA ScaledObject minReplicaCount=2); JupyterHub idle-culler configured (timeout=3600s)</li>
+      <li>Step 3 — Voice STT route created → stt.i3technologies.co.ke; Voice TTS route → tts.i3technologies.co.ke; NetworkPolicy patched to allow router ingress</li>
+      <li>Step 4 — routing_strategy: least-busy + per-model timeouts (30s/15s/90s/90s/180s/180s) confirmed in litellm-config ConfigMap</li>
+      <li>Step 5 — edbridge_db + social_db provisioned in Crunchy PostgreSQL HA; users edbridge + socialapp granted</li>
+      <li>Step 6 — i3EduBridge deployed: Moodle 4.4 git-cloned + CLI-installed; admin=i3admin; shortname=i3edu; DB NetworkPolicy patched</li>
+      <li>Step 7 — i3Social deployed: Nextcloud 28 installed via occ maintenance:install; trusted_domains + HTTPS overwrite configured; Redis sidecar running</li>
+      <li>Step 8 — OpenBao Vault route created → vault.i3technologies.co.ke; allow-vault-clients NetworkPolicy patched for openshift-ingress</li>
+      <li>Step 9 — i3edbridge + i3social OIDC clients registered in Keycloak i3 realm; client secrets stored</li>
+      <li>Step 10 — Moodle branded i3EduBridge: fullname, shortname, admin email, wwwroot all set</li>
+      <li>Step 11 — Nextcloud branded i3Social: trusted_domains, overwrite.cli.url, overwriteprotocol, trusted_proxies all configured</li>
+      <li>Step 12 — 10 pilot users provisioned in Keycloak i3 realm (5 internal + 5 external); credentials set, emailVerified=true</li>
+      <li>Step 13 — post-deploy-checklist.ps1 updated: 18 namespaces, 21 HTTP routes, 9 new infra checks (voice/vault/edbridge/social/LiteLLM replicas/DBs)</li>
+      <li>Step 14 — Final health check: 79/79 PASS; 23/23 HTTPS endpoints live</li>
+      <li>Step 15 — Argo CD i3-platform-root: Synced + Healthy; all 11 applications Synced</li>
+    </ul>
+  </div>
+
+  <h2>LiteLLM Virtual Keys Issued</h2>
+  <table class="keys-table">
+    <tr><th>Alias</th><th>Key (prefix)</th><th>Scope</th><th>Budget</th><th>Expiry</th></tr>
+    <tr><td>pilot-internal</td><td>sk-QZzBs3G3...</td><td>All models</td><td>$100</td><td>Sep 2027</td></tr>
+    <tr><td>pilot-customers</td><td>sk-tVxkHdGg...</td><td>granite-nano, qwen-fast, embed</td><td>$50</td><td>Sep 2027</td></tr>
+    <tr><td>pilot-jupyterhub</td><td>sk-MZnyMw4N...</td><td>All models</td><td>$200</td><td>Sep 2027</td></tr>
+  </table>
+
+  <h2>Pilot Users Provisioned (Keycloak — i3 realm)</h2>
+  <table>
+    <tr><th>Username</th><th>Group</th><th>Access</th></tr>
+    <tr><td>pilot.admin</td><td>i3-internal</td><td>Full platform admin</td></tr>
+    <tr><td>petronella.k</td><td>i3-internal</td><td>Internal user</td></tr>
+    <tr><td>developer1</td><td>i3-internal</td><td>Internal user</td></tr>
+    <tr><td>analyst1</td><td>i3-internal</td><td>Internal user</td></tr>
+    <tr><td>trainer1</td><td>i3-internal</td><td>Internal user</td></tr>
+    <tr><td>pilot.user1 – pilot.user5</td><td>pilot-external</td><td>Restricted (customer models only)</td></tr>
+  </table>
+
+  <h2>PostgreSQL Databases</h2>
+  <table>
+    <tr><th>Database</th><th>Owner</th><th>Application</th></tr>
+    <tr><td>admissions_db</td><td>admissions</td><td>Admissions Agent</td></tr>
+    <tr><td>directus</td><td>directus</td><td>CMS / Directus</td></tr>
+    <tr><td>edbridge_db</td><td>edbridge</td><td>i3EduBridge (Moodle 4.4) — NEW</td></tr>
+    <tr><td>engage_db</td><td>engage</td><td>Engage CRM</td></tr>
+    <tr><td>evalos_db</td><td>evalos</td><td>EvalOS</td></tr>
+    <tr><td>i3_platform</td><td>i3admin</td><td>Platform core</td></tr>
+    <tr><td>jupyterhub_db</td><td>jupyterhub</td><td>JupyterHub</td></tr>
+    <tr><td>keycloak_db</td><td>keycloak</td><td>Keycloak SSO</td></tr>
+    <tr><td>langfuse_db</td><td>langfuse</td><td>Langfuse observability</td></tr>
+    <tr><td>litellm_db</td><td>litellm</td><td>LiteLLM key management</td></tr>
+    <tr><td>n8n</td><td>n8n</td><td>N8N automation</td></tr>
+    <tr><td>pmaas_db</td><td>pmaas</td><td>PMaaS</td></tr>
+    <tr><td>social_db</td><td>socialapp</td><td>i3Social (Nextcloud 28) — NEW</td></tr>
+  </table>
+
+  <h2>Remaining Actions</h2>
+  <div class="action-box">
+    <h3>1 item remaining (operational, not blocking)</h3>
+    <ul>
+      <li>DNS TTL flush — moodle.i3technologies.co.ke and vault.i3technologies.co.ke CNAMEs confirmed at 8.8.8.8 (TTL 300); local router cache expires naturally within 5 min</li>
+    </ul>
+  </div>
+
+  <h2>Argo CD GitOps Status</h2>
+  <table>
+    <tr><th>Application</th><th>Sync</th><th>Health</th></tr>
+    <tr><td>i3-platform-root</td><td>Synced</td><td class="p">Healthy</td></tr>
+    <tr><td>i3-admissions</td><td>Synced</td><td class="p">Healthy</td></tr>
+    <tr><td>i3-ai</td><td>Synced</td><td class="p">Healthy</td></tr>
+    <tr><td>i3-auth</td><td>Synced</td><td class="p">Healthy</td></tr>
+    <tr><td>i3-data</td><td>Synced</td><td class="p">Healthy</td></tr>
+    <tr><td>i3-evalos</td><td>Synced</td><td class="p">Healthy</td></tr>
+    <tr><td>i3-litellm</td><td>Synced</td><td class="p">Healthy</td></tr>
+    <tr><td>i3-monitoring</td><td>Synced</td><td class="p">Healthy</td></tr>
+    <tr><td>i3-onboarding</td><td>Synced</td><td class="p">Healthy</td></tr>
+    <tr><td>i3-ott</td><td>Synced</td><td class="p">Healthy</td></tr>
+    <tr><td>i3-security</td><td>Synced</td><td class="p">Healthy</td></tr>
+  </table>
+
+</div>
+<footer><div class="wrapper" style="padding:0">Made with IBM Bob</div></footer>
+</body>
+</html>

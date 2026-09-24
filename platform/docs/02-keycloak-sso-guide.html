@@ -94,7 +94,7 @@ footer{margin-top:48px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:
 <div class="danger">
   <strong>Admin Credentials â€” RESTRICTED ACCESS</strong><br/>
   Username: <code>admin</code><br/>
-  Password: <code>REDACTED-keycloak-admin</code><br/>
+  Password: <code>[REDACTED — rotate via OpenBao i3/keycloak/admin]</code><br/>
   <em>These credentials give full control over all users and application access. Share only with senior IT staff.</em>
 </div>
 
@@ -173,7 +173,7 @@ footer{margin-top:48px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:
 <h3>Finding a User</h3>
 <pre><code># Via Admin API (useful for bulk queries)
 # Get token first
-TOKEN=$(curl -s -d "username=admin&password=REDACTED-keycloak-admin&grant_type=password&client_id=admin-cli" \
+TOKEN=$(curl -s -d "username=admin&password=[REDACTED — rotate via OpenBao i3/keycloak/admin]&grant_type=password&client_id=admin-cli" \
   https://sso.i3technologies.co.ke/auth/realms/master/protocol/openid-connect/token | jq -r .access_token)
 
 # Search users by email

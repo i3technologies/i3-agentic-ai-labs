@@ -1,0 +1,18 @@
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: vault-public
+  namespace: i3-security
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  host: vault.i3technologies.co.ke
+  port:
+    targetPort: 8200
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  to:
+    kind: Service
+    name: openbao-ui

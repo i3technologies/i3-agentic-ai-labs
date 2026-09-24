@@ -1,0 +1,3 @@
+#!/bin/bash
+# S2I run script — starts the FastAPI app via uvicorn
+exec uvicorn main:app --host 0.0.0.0 --port 8080 --workers 2 --loop uvloop --http h11

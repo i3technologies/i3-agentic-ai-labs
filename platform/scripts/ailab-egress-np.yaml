@@ -1,0 +1,73 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ailab-egress
+  namespace: i3-ai-lab
+  labels:
+    app: open-webui
+spec:
+  podSelector:
+    matchLabels:
+      app: open-webui
+  policyTypes:
+  - Egress
+  egress:
+  # LiteLLM + Ollama in model-gateway
+  - ports:
+    - port: 4000
+      protocol: TCP
+    - port: 11434
+      protocol: TCP
+    to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: i3-model-gateway
+  # ChromaDB (local namespace)
+  - ports:
+    - port: 8000
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app: chromadb
+  # STT + TTS
+  - ports:
+    - port: 8000
+      protocol: TCP
+    - port: 8001
+      protocol: TCP
+    to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: i3-voice
+  # Keycloak OIDC — direct internal port (for metadata fetch only)
+  - ports:
+    - port: 8080
+      protocol: TCP
+    - port: 8443
+      protocol: TCP
+    to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: i3-auth
+  # External HTTPS — allows reaching sso.i3technologies.co.ke (IBM Cloud LB external IP)
+  - ports:
+    - port: 443
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+        except:
+        - 10.0.0.0/8
+        - 172.16.0.0/12
+        - 192.168.0.0/16
+  # Cluster DNS
+  - ports:
+    - port: 5353
+      protocol: UDP
+    - port: 5353
+      protocol: TCP
+    to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: openshift-dns

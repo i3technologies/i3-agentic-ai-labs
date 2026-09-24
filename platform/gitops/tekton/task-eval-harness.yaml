@@ -1,0 +1,217 @@
+---
+# ── IMP-11 Tekton Tasks: eval-harness-gate + model-card-gen ──────────────────
+#
+# eval-harness-gate
+#   Runs the pluggable evaluation harness (all suites including Swahili/Sheng).
+#   Exit 0 → gate passed (all suites above threshold).
+#   Exit 1 → gate failed → pipeline fails → promotion blocked.
+#
+# model-card-gen
+#   Renders a model card from harness + RAGAS results.
+#   Always exits 0; renders "N/A" for missing scores.
+#
+# Integration in i3-build-pipeline:
+#   eval-harness-gate runs in parallel with ragas-eval after deploy-staging.
+#   promote-production has runAfter: [..., eval-harness-gate, model-card-gen].
+#
+# Failing-change proof (IMP-11):
+#   To verify the gate blocks a bad change, apply the patch in
+#   platform/testing/eval_harness/test_gate_block_proof.sh, which temporarily
+#   sets threshold=0.99 (guaranteed fail).  The pipeline run ID is captured and
+#   the TaskRun status is asserted Failed.  The patch is then reverted.
+#
+# Namespace: i3-gitops
+
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: eval-harness-gate
+  namespace: i3-gitops
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    app.kubernetes.io/component: eval-harness
+    imp: "11"
+spec:
+  params:
+    - name: SUITE
+      description: "Suite to run: all | swahili_sheng | english_baseline"
+      default: "all"
+    - name: SWAHILI_THRESHOLD
+      description: "Gate threshold for swahili_sheng suite"
+      default: "0.65"
+    - name: ENGLISH_THRESHOLD
+      description: "Gate threshold for english_baseline suite"
+      default: "0.75"
+    - name: MODEL
+      description: "LiteLLM model name to evaluate"
+      default: "qwen-fast"
+    - name: PIPELINE_RUN_ID
+      description: "Tekton PipelineRun name (for provenance)"
+      default: "unknown"
+  workspaces:
+    - name: source
+  results:
+    - name: gate-status
+      description: "PASS or FAIL"
+    - name: harness-result-path
+      description: "Path to JSON result file"
+  steps:
+    - name: run-harness
+      image: python:3.11-slim
+      workingDir: /workspace/source
+      env:
+        - name: LITELLM_BASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: litellm-api-secret
+              key: base-url
+        - name: LITELLM_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: litellm-api-secret
+              key: api-key
+        - name: EVAL_MODEL
+          value: "$(params.MODEL)"
+        - name: EVAL_JUDGE_MODEL
+          value: "granite-nano"
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        echo "=== IMP-11 Eval Harness Gate ==="
+        echo "Suite:             $(params.SUITE)"
+        echo "Model:             $(params.MODEL)"
+        echo "Swahili threshold: $(params.SWAHILI_THRESHOLD)"
+        echo "English threshold: $(params.ENGLISH_THRESHOLD)"
+
+        pip install --quiet requests 2>/dev/null
+
+        # Apply per-suite thresholds at runtime via env overrides
+        # (the CLI --threshold flag applies to all suites uniformly;
+        #  per-suite override is done by patching the suite objects at import time)
+        python - <<'PYEOF'
+        import os, sys
+        # Add platform/testing to path so eval_harness is importable directly
+        sys.path.insert(0, "/workspace/source/platform/testing")
+
+        # Import and configure suites
+        from eval_harness.suite_swahili_sheng import SUITE as sw
+        from eval_harness.suite_english_baseline import SUITE as en
+
+        sw.threshold = float(os.environ.get("SWAHILI_THRESHOLD", "0.65"))
+        en.threshold = float(os.environ.get("ENGLISH_THRESHOLD", "0.75"))
+
+        suite_name = os.environ.get("EVAL_SUITE", "all")
+        if suite_name == "all":
+            selected = [sw, en]
+        elif suite_name == "swahili_sheng":
+            selected = [sw]
+        elif suite_name == "english_baseline":
+            selected = [en]
+        else:
+            print(f"Unknown suite: {suite_name}", file=sys.stderr)
+            sys.exit(2)
+
+        import json
+        all_results = []
+        any_failed = False
+
+        for suite in selected:
+            print(f"\n{'='*60}")
+            print(f"Running suite: {suite.name}  threshold={suite.threshold}")
+            result = suite.run(verbose=True)
+            all_results.append(result.to_dict())
+            status = "PASS" if result.gate_passed else "FAIL"
+            print(f"{result.summary_line()}  →  {status}")
+            if not result.gate_passed:
+                any_failed = True
+
+        aggregate = {
+            "gate": "IMP-11-eval-harness",
+            "status": "FAIL" if any_failed else "PASS",
+            "pipeline_run_id": os.environ.get("PIPELINE_RUN_ID", "unknown"),
+            "suites": all_results,
+        }
+        with open("/tmp/eval_harness_result.json", "w") as fh:
+            json.dump(aggregate, fh, indent=2)
+
+        print(f"\nOverall: {'FAIL' if any_failed else 'PASS'}")
+        sys.exit(1 if any_failed else 0)
+        PYEOF
+
+        STATUS=$?
+
+        # Write Tekton result
+        if [ $STATUS -eq 0 ]; then
+          printf "PASS" | tee $(results.gate-status.path)
+        else
+          printf "FAIL" | tee $(results.gate-status.path)
+        fi
+        printf "/tmp/eval_harness_result.json" | tee $(results.harness-result-path.path)
+
+        echo ""
+        echo "eval-harness-gate: $(cat $(results.gate-status.path))"
+        exit $STATUS
+      env:
+        - name: SWAHILI_THRESHOLD
+          value: "$(params.SWAHILI_THRESHOLD)"
+        - name: ENGLISH_THRESHOLD
+          value: "$(params.ENGLISH_THRESHOLD)"
+        - name: EVAL_SUITE
+          value: "$(params.SUITE)"
+        - name: PIPELINE_RUN_ID
+          value: "$(params.PIPELINE_RUN_ID)"
+---
+# ── Task: model-card-gen ──────────────────────────────────────────────────────
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: model-card-gen
+  namespace: i3-gitops
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    app.kubernetes.io/component: model-card
+    imp: "11"
+spec:
+  params:
+    - name: MODEL
+      description: "LiteLLM model name"
+      default: "qwen-fast"
+    - name: QUANTISATION
+      description: "Quantisation label (e.g. q4_K_M)"
+      default: "N/A"
+    - name: PIPELINE_RUN_ID
+      description: "Tekton PipelineRun name"
+      default: "unknown"
+    - name: HARNESS_RESULT_PATH
+      description: "Path to eval_harness_result.json"
+      default: "/tmp/eval_harness_result.json"
+    - name: RAGAS_RESULT_PATH
+      description: "Path to ragas_result.json (may not exist)"
+      default: "/tmp/ragas_result.json"
+    - name: OUTPUT_PATH
+      description: "Where to write the rendered model card"
+      default: "/tmp/model-card.md"
+  workspaces:
+    - name: source
+  steps:
+    - name: generate-card
+      image: python:3.11-slim
+      workingDir: /workspace/source
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+        echo "=== IMP-11 Model Card Generator ==="
+
+        python -m platform.tools.model_card_gen \
+          --model "$(params.MODEL)" \
+          --quantisation "$(params.QUANTISATION)" \
+          --pipeline-run-id "$(params.PIPELINE_RUN_ID)" \
+          --harness-result "$(params.HARNESS_RESULT_PATH)" \
+          --ragas-result "$(params.RAGAS_RESULT_PATH)" \
+          --output "$(params.OUTPUT_PATH)"
+
+        echo "Model card generated: $(params.OUTPUT_PATH)"
+        echo "--- Preview (first 30 lines) ---"
+        head -30 "$(params.OUTPUT_PATH)"
+        echo "model-card-gen: PASS"

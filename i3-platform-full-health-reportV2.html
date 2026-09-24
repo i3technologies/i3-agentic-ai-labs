@@ -1,0 +1,190 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>i3 Platform — Full Health Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.6; background: #f7f8fa; color: #1f2328; }
+  .page { max-width: 760px; margin: 0 auto; padding: 32px 16px 48px; }
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .meta { color: #57606a; font-size: 12px; margin-bottom: 28px; }
+  h2 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #57606a; margin: 28px 0 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 8px; }
+  .kpi { background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; padding: 14px 12px; text-align: center; }
+  .kpi .num { font-size: 28px; font-weight: 700; line-height: 1.1; }
+  .kpi .lbl { font-size: 11px; color: #57606a; margin-top: 2px; }
+  .green { color: #16a34a; }
+  .red { color: #dc2626; }
+  .amber { color: #d97706; }
+  .blue { color: #3b82d4; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 6px; }
+  th { background: #f7f8fa; text-align: left; padding: 6px 10px; font-weight: 600; border-bottom: 2px solid #e5e7eb; font-size: 12px; }
+  td { padding: 6px 10px; border-bottom: 1px solid #f0f1f3; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .badge { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .badge-up    { background: #dcfce7; color: #16a34a; }
+  .badge-down  { background: #fee2e2; color: #dc2626; }
+  .badge-warn  { background: #fef3c7; color: #92400e; }
+  .badge-ok    { background: #dbeafe; color: #1d4ed8; }
+  .badge-info  { background: #f3f4f6; color: #374151; }
+  .issue-card { background: #fff; border: 1px solid #e5e7eb; border-left: 4px solid #d97706; border-radius: 6px; padding: 14px 16px; margin-bottom: 10px; }
+  .issue-card.critical { border-left-color: #dc2626; }
+  .issue-card.minor { border-left-color: #3b82d4; }
+  .issue-card.info-card { border-left-color: #16a34a; }
+  .issue-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .issue-body { font-size: 12px; color: #57606a; }
+  .issue-body code { background: #f3f4f6; padding: 1px 5px; border-radius: 3px; font-size: 11px; font-family: monospace; color: #1f2328; }
+  .nodes-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+  .node-dot { display: inline-block; background: #dcfce7; border: 1px solid #16a34a; color: #166534; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+  footer { text-align: center; font-size: 12px; color: #57606a; border-top: 1px solid #e5e7eb; padding-top: 16px; margin-top: 40px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>i3 Master AI Platform — Full Health Report</h1>
+  <p class="meta">Post-shutdown status sweep  ·  IBM ROKS Frankfurt  ·  September 16, 2026  ·  Cluster: c113-e.eu-de  ·  12/12 nodes Ready</p>
+
+  <div class="summary-grid">
+    <div class="kpi"><div class="num green">22</div><div class="lbl">Apps UP (200)</div></div>
+    <div class="kpi"><div class="num red">5</div><div class="lbl">Issues Found</div></div>
+    <div class="kpi"><div class="num amber">18</div><div class="lbl">PG Backup Errors</div></div>
+    <div class="kpi"><div class="num blue">12</div><div class="lbl">Nodes Ready</div></div>
+  </div>
+
+  <h2>Cluster Nodes</h2>
+  <div class="nodes-bar">
+    <span class="node-dot">10.240.0.18 ✓</span>
+    <span class="node-dot">10.240.0.19 ✓</span>
+    <span class="node-dot">10.240.0.20 ✓</span>
+    <span class="node-dot">10.240.0.21 ✓</span>
+    <span class="node-dot">10.240.128.17 ✓</span>
+    <span class="node-dot">10.240.128.18 ✓</span>
+    <span class="node-dot">10.240.128.20 ✓</span>
+    <span class="node-dot">10.240.128.21 ✓</span>
+    <span class="node-dot">10.240.64.17 ✓</span>
+    <span class="node-dot">10.240.64.18 ✓</span>
+    <span class="node-dot">10.240.64.20 ✓</span>
+    <span class="node-dot">10.240.64.21 ✓</span>
+  </div>
+
+  <h2>Route Health — All 27 Public Endpoints</h2>
+  <table>
+    <tr><th>Application</th><th>URL</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>EvalOS</td><td>evalos.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>2 replicas running</td></tr>
+    <tr><td>Engage Web</td><td>engage.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>Build 5 — Next.js 14</td></tr>
+    <tr><td>PMaaS Web</td><td>pmaas.i3technologies.co.ke</td><td><span class="badge badge-warn">307 WARN</span></td><td>Redirecting to /login (expected Next.js auth redirect, not a loop)</td></tr>
+    <tr><td>Sage (Open-WebUI)</td><td>sage.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>OIDC fixed last session</td></tr>
+    <tr><td>JupyterHub</td><td>jupyter.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>2/2 containers running</td></tr>
+    <tr><td>Moodle (EdBridge)</td><td>moodle.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>Healthy</td></tr>
+    <tr><td>AfroERP</td><td>afroerp.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>ERPNext + MariaDB running</td></tr>
+    <tr><td>SSO / Keycloak</td><td>sso.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>Self-signed cert on keycloak.* route (TLS trust issue in PS)</td></tr>
+    <tr><td>Keycloak (direct)</td><td>keycloak.i3technologies.co.ke</td><td><span class="badge badge-warn">SSL WARN</span></td><td>Self-signed / reencrypt cert — browsers accept; PowerShell test rejected cert</td></tr>
+    <tr><td>CMS (Directus)</td><td>cms.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>Healthy</td></tr>
+    <tr><td>Directus</td><td>directus.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>Healthy</td></tr>
+    <tr><td>n8n</td><td>n8n.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>HOST fix applied last session</td></tr>
+    <tr><td>Langfuse</td><td>langfuse.i3technologies.co.ke</td><td><span class="badge badge-warn">SSL WARN</span></td><td>Self-signed cert on route — functional in browser, PS test rejected cert</td></tr>
+    <tr><td>Grafana</td><td>grafana.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>Redirect loop fixed last session</td></tr>
+    <tr><td>LiteLLM</td><td>litellm.i3technologies.co.ke</td><td><span class="badge badge-warn">SSL WARN</span></td><td>Self-signed cert — functional; PS test rejected cert</td></tr>
+    <tr><td>Nextcloud</td><td>nextcloud.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>Healthy</td></tr>
+    <tr><td>OpenBao (Vault)</td><td>vault.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>3 replicas running</td></tr>
+    <tr><td>SmartLab API</td><td>api.smartlab.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>LE cert issued last session</td></tr>
+    <tr><td>SmartLab API (alt)</td><td>smartlab-api.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>LE cert issued last session</td></tr>
+    <tr><td>Voice STT</td><td>stt.i3technologies.co.ke</td><td><span class="badge badge-down">TIMEOUT ✗</span></td><td>Pod running healthy; NetworkPolicy blocks router ingress — see Issue #1</td></tr>
+    <tr><td>Voice TTS</td><td>tts.i3technologies.co.ke</td><td><span class="badge badge-down">TIMEOUT ✗</span></td><td>Pod running healthy; NetworkPolicy blocks router ingress — see Issue #1</td></tr>
+    <tr><td>Admissions Agent</td><td>admissions.i3technologies.co.ke</td><td><span class="badge badge-down">404 ✗</span></td><td>Pod returns 404 on /; API at /health — see Issue #2</td></tr>
+    <tr><td>Onboarding Agent</td><td>onboarding.i3technologies.co.ke</td><td><span class="badge badge-down">404 ✗</span></td><td>Pod returns 404 on /; API at /health — see Issue #2</td></tr>
+    <tr><td>Mfumo Coworker</td><td>mfumo.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>Healthy</td></tr>
+    <tr><td>Nuru Coworker</td><td>nuru.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>Healthy</td></tr>
+    <tr><td>Zuri Coworker</td><td>zuri.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>Healthy</td></tr>
+    <tr><td>Dawa Coworker</td><td>dawa.i3technologies.co.ke</td><td><span class="badge badge-up">200 UP</span></td><td>Healthy</td></tr>
+  </table>
+
+  <h2>Issues Found — 5 Items</h2>
+
+  <div class="issue-card critical">
+    <div class="issue-title">🔴 Issue #1 — Voice STT &amp; TTS: External Timeout (NetworkPolicy)</div>
+    <div class="issue-body">
+      Both <code>voice-stt</code> (port 8001) and <code>voice-tts</code> (port 8000) pods are <strong>1/1 Running and healthy</strong> internally (confirmed via <code>GET /v1/health → 200</code>). The routes are edge-terminated and point to the correct service. However, <code>voice-ingress</code> NetworkPolicy only allows ingress from: <code>i3-ai-lab</code>, <code>i3-evalos</code>, <code>i3-pmaas</code>, <code>i3-engage</code>, <code>i3-smartlab</code> namespaces — the OpenShift router namespace (<code>openshift-ingress</code>) is not included, so all external HTTP traffic is silently dropped (timeout).<br /><br />
+      <strong>Fix:</strong> Add <code>namespaceSelector: kubernetes.io/metadata.name: openshift-ingress</code> to the <code>voice-ingress</code> NetworkPolicy ingress rules.
+    </div>
+  </div>
+
+  <div class="issue-card critical">
+    <div class="issue-title">🔴 Issue #2 — Admissions &amp; Onboarding: 404 on Root Path</div>
+    <div class="issue-body">
+      Both agent pods are <strong>Running</strong> and respond <code>200</code> on <code>/health</code>. The routes have no path prefix set (serve from <code>/</code>). The FastAPI apps do not register a handler for <code>GET /</code> — only <code>/health</code>, <code>/metrics</code>, and API sub-paths exist. The root path returns 404 by default from FastAPI/Starlette.<br /><br />
+      <strong>Fix:</strong> Add a root <code>GET /</code> redirect to <code>/docs</code> or return a 200 status page in the FastAPI app; or set the route <code>path: /health</code> for health-check purposes. For a public-facing UI, a root handler is required.
+    </div>
+  </div>
+
+  <div class="issue-card">
+    <div class="issue-title">🟡 Issue #3 — PostgreSQL Backup Failures (pgBackRest — 18 Error pods)</div>
+    <div class="issue-body">
+      Since <strong>Sep 14 ~06:00 UTC</strong>, all scheduled diff and full backup jobs are erroring with:<br />
+      <code>HostConnectError: timeout connecting to i3-postgres-primary-*:8432</code> → <code>unable to find primary cluster</code><br /><br />
+      The 3 primary pods are all <strong>4/4 Running</strong> and PGBouncer is <strong>2/2 Running</strong> (port 5432 serving fine). The issue is pgBackRest reaching the primary pods on port <strong>8432</strong> (direct primary port) rather than through PGBouncer. Last <em>successful</em> full backup was Sep 13 01:00 UTC (3 days ago). Data is safe; application access is unaffected. The quota error on PGBouncer replica creation (<code>limits.cpu exceeded</code>) is a separate pre-existing constraint.<br /><br />
+      <strong>Fix:</strong> Investigate why port 8432 became unreachable from the backup job — likely a NetworkPolicy change or pod IP rotation. Trigger a manual backup and review the pgBackRest stanza config.
+    </div>
+  </div>
+
+  <div class="issue-card minor">
+    <div class="issue-title">🔵 Issue #4 — PMaaS Web: 307 Redirect on Root</div>
+    <div class="issue-body">
+      <code>GET /</code> returns HTTP 307 to <code>/login</code>. This is expected Next.js middleware auth redirect behaviour — the root page redirects unauthenticated users to the login page. <strong>Not a fault</strong>; the app is running correctly (1/1 Running, all env vars set including <code>NEXTAUTH_URL=https://pmaas.i3technologies.co.ke</code>). Browsers follow the redirect correctly.
+    </div>
+  </div>
+
+  <div class="issue-card minor">
+    <div class="issue-title">🔵 Issue #5 — Keycloak, Langfuse, LiteLLM: SSL Test False-Positive</div>
+    <div class="issue-body">
+      The PowerShell <code>Invoke-WebRequest</code> test rejected TLS connections on <code>keycloak.i3technologies.co.ke</code>, <code>langfuse.i3technologies.co.ke</code>, and <code>litellm.i3technologies.co.ke</code> due to self-signed or platform-issued certificates not in the Windows trust store. All three services are <strong>functionally healthy</strong> — pods Running, routes active, confirmed reachable via SSO flows and internal service-to-service calls. <strong>Not a real fault</strong>; browser clients accept these certs.
+    </div>
+  </div>
+
+  <h2>Core Infrastructure Status</h2>
+  <table>
+    <tr><th>Service</th><th>Namespace</th><th>Pods</th><th>Status</th></tr>
+    <tr><td>PostgreSQL (Crunchy PGO)</td><td>i3-data</td><td>3× primary (4/4), PGBouncer (2/2 replicas, 1/3 available)</td><td><span class="badge badge-up">DB OK</span> <span class="badge badge-warn">Backup ERR</span></td></tr>
+    <tr><td>Keycloak</td><td>i3-auth</td><td>keycloak-0 (1/1)</td><td><span class="badge badge-up">Running</span></td></tr>
+    <tr><td>Kafka (Strimzi)</td><td>i3-messaging</td><td>3× combined (1/1 each), entity-operator (2/2)</td><td><span class="badge badge-up">Running</span></td></tr>
+    <tr><td>SeaweedFS</td><td>i3-ott</td><td>master-0, 3× volume, filer, s3-gw — all 1/1</td><td><span class="badge badge-up">Running</span></td></tr>
+    <tr><td>LiteLLM Proxy</td><td>i3-model-gateway</td><td>2× replicas (1/1 each)</td><td><span class="badge badge-up">Running</span></td></tr>
+    <tr><td>Ollama (model-gateway)</td><td>i3-model-gateway</td><td>ollama-0 (1/1)</td><td><span class="badge badge-up">Running</span></td></tr>
+    <tr><td>ChromaDB (ai-lab)</td><td>i3-ai-lab</td><td>chromadb-0 (1/1)</td><td><span class="badge badge-up">Running</span></td></tr>
+    <tr><td>ChromaDB (admissions)</td><td>i3-admissions</td><td>chromadb (1/1)</td><td><span class="badge badge-up">Running</span></td></tr>
+    <tr><td>OpenBao (Vault)</td><td>i3-security</td><td>3× openbao (1/1 each)</td><td><span class="badge badge-up">Running</span></td></tr>
+    <tr><td>n8n</td><td>i3-ott</td><td>n8n (1/1) — 19h uptime</td><td><span class="badge badge-up">Running</span></td></tr>
+    <tr><td>GitOps Listener</td><td>i3-gitops</td><td>el-i3-github-listener (1/1)</td><td><span class="badge badge-up">Running</span></td></tr>
+    <tr><td>Grafana / Prometheus</td><td>i3-monitoring</td><td>grafana (1/1), prometheus (1/1)</td><td><span class="badge badge-up">Running</span></td></tr>
+    <tr><td>Langfuse</td><td>i3-model-gateway / i3-ott</td><td>langfuse-web (1/1 each)</td><td><span class="badge badge-up">Running</span></td></tr>
+  </table>
+
+  <h2>Recommended Actions (Priority Order)</h2>
+  <table>
+    <tr><th>#</th><th>Priority</th><th>Action</th></tr>
+    <tr><td>1</td><td><span class="badge badge-down">CRITICAL</span></td><td>Fix <code>voice-ingress</code> NetworkPolicy — add <code>openshift-ingress</code> namespace to allow router traffic to STT/TTS pods</td></tr>
+    <tr><td>2</td><td><span class="badge badge-down">CRITICAL</span></td><td>Investigate pgBackRest port-8432 timeout — trigger manual backup, check NetworkPolicy for <code>i3-data</code> namespace changes</td></tr>
+    <tr><td>3</td><td><span class="badge badge-warn">MEDIUM</span></td><td>Add <code>GET /</code> root handler to Admissions and Onboarding FastAPI apps (redirect to <code>/docs</code> or status page)</td></tr>
+    <tr><td>4</td><td><span class="badge badge-ok">LOW</span></td><td>Issue LE certificates for Langfuse and LiteLLM public routes (replace self-signed certs)</td></tr>
+    <tr><td>5</td><td><span class="badge badge-info">INFO</span></td><td>PMaaS 307 on root — no action needed; expected auth redirect behaviour</td></tr>
+  </table>
+
+  <h2>Next Steps — Talent Cloud Phase 1</h2>
+  <p style="font-size:13px;color:#57606a;margin-bottom:10px">Platform is stable enough to proceed. All Talent Cloud dependencies are healthy: PostgreSQL ✓, Keycloak ✓, Kafka ✓, SeaweedFS ✓, ChromaDB ✓, LiteLLM ✓.</p>
+  <table>
+    <tr><th>Step</th><th>Task</th><th>Status</th></tr>
+    <tr><td>P1-1</td><td>Write <code>platform/talent/migrations/001_init.sql</code> — 9-table Talent Graph schema</td><td><span class="badge badge-info">Ready</span></td></tr>
+    <tr><td>P1-2</td><td>Create <code>i3-talent</code> namespace, SA, SCC, <code>talent-secrets</code></td><td><span class="badge badge-info">Ready</span></td></tr>
+    <tr><td>P1-3</td><td>Register Keycloak <code>i3talent</code> OIDC client + 4 roles</td><td><span class="badge badge-info">Ready</span></td></tr>
+    <tr><td>P1-4</td><td>Create SeaweedFS buckets: <code>talent-cvs</code>, <code>talent-certs</code>, <code>talent-reports</code></td><td><span class="badge badge-info">Ready</span></td></tr>
+    <tr><td>P1-5</td><td>Create Kafka topics: <code>talent-assessments</code>, <code>talent-score-updates</code>, <code>talent-placements</code></td><td><span class="badge badge-info">Ready</span></td></tr>
+    <tr><td>P1-6</td><td>Build &amp; deploy FastAPI Talent API</td><td><span class="badge badge-info">Next Sprint</span></td></tr>
+    <tr><td>P1-7</td><td>Build 4 n8n automation workflows</td><td><span class="badge badge-info">Next Sprint</span></td></tr>
+  </table>
+
+  <footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>
