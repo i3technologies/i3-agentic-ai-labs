@@ -1,0 +1,80 @@
+---
+# Job: enroll orderer identity against ford-ca and populate orderer-msp Secret.
+# Run once: kubectl apply -f orderer-msp-init-job.yaml
+# The orderer StatefulSet must be patched (orderer-statefulset-patch.yaml)
+# to mount the resulting Secret before the orderer pod will start.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: orderer-msp-enroll
+  namespace: i3-ford
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    app.kubernetes.io/component: fabric-msp-init
+spec:
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app: orderer-msp-enroll
+    spec:
+      serviceAccountName: ford-sa
+      restartPolicy: OnFailure
+      initContainers:
+        # Step 1: enroll the orderer admin identity
+        - name: enroll
+          image: hyperledger/fabric-ca:1.5.12
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              export FABRIC_CA_CLIENT_HOME=/tmp/orderer-msp
+              mkdir -p ${FABRIC_CA_CLIENT_HOME}
+              # Enroll orderer against ford-ca (TLS disabled per orderer env)
+              fabric-ca-client enroll \
+                -u http://admin:adminpw@ford-ca.i3-ford.svc:7054 \
+                --mspdir ${FABRIC_CA_CLIENT_HOME}/msp \
+                --caname ca-ford \
+                --enrollment.profile tls 2>/dev/null || \
+              fabric-ca-client enroll \
+                -u http://admin:adminpw@ford-ca.i3-ford.svc:7054 \
+                --mspdir ${FABRIC_CA_CLIENT_HOME}/msp
+              echo "Enroll complete"
+              ls ${FABRIC_CA_CLIENT_HOME}/msp
+          volumeMounts:
+            - name: msp-work
+              mountPath: /tmp/orderer-msp
+      containers:
+        # Step 2: write MSP dirs as a Kubernetes Secret
+        - name: write-secret
+          image: bitnami/kubectl:latest
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              MSP=/tmp/orderer-msp/msp
+              # Build kubectl create secret args from directory structure
+              ARGS=""
+              for dir in cacerts signcerts keystore tlscacerts; do
+                if [ -d "${MSP}/${dir}" ]; then
+                  for f in ${MSP}/${dir}/*; do
+                    [ -f "$f" ] || continue
+                    key="${dir}-$(basename $f | tr '.' '-')"
+                    ARGS="$ARGS --from-file=${key}=${f}"
+                  done
+                fi
+              done
+              # Delete old secret if present, then recreate
+              kubectl delete secret orderer-msp -n i3-ford --ignore-not-found
+              eval kubectl create secret generic orderer-msp -n i3-ford $ARGS \
+                --type=Opaque
+              echo "Secret orderer-msp created"
+              kubectl get secret orderer-msp -n i3-ford
+          volumeMounts:
+            - name: msp-work
+              mountPath: /tmp/orderer-msp
+      volumes:
+        - name: msp-work
+          emptyDir: {}

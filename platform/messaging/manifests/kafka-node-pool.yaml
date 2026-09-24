@@ -1,0 +1,51 @@
+---
+# KafkaNodePool resource — resolves Strimzi v0.51 deprecation warnings:
+# - spec.kafka.replicas (deprecated)
+# - spec.kafka.resources (deprecated)
+# - spec.kafka.storage (deprecated)
+#
+# This resource adopts the existing 3 combined-mode KRaft brokers.
+# Annotations on the Kafka CR already have strimzi.io/node-pools: enabled
+# and strimzi.io/kraft: enabled, so this resource is ready to activate.
+#
+# Apply with:
+#   oc apply -f platform/messaging/manifests/kafka-node-pool.yaml
+#
+# After applying, remove the deprecated fields from the Kafka CR:
+#   spec.kafka.replicas, spec.kafka.resources, spec.kafka.storage
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  name: combined
+  namespace: i3-messaging
+  labels:
+    strimzi.io/cluster: i3-kafka
+    app.kubernetes.io/part-of: i3-platform
+  annotations:
+    # Adopt existing pods — prevents data loss on first reconcile
+    strimzi.io/next-node-ids: "[0,1,2]"
+spec:
+  replicas: 3
+  roles:
+    - controller
+    - broker
+  resources:
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+    requests:
+      cpu: "500m"
+      memory: "2Gi"
+  storage:
+    type: persistent-claim
+    size: 20Gi
+    deleteClaim: false
+  template:
+    pod:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  strimzi.io/cluster: i3-kafka
+              topologyKey: kubernetes.io/hostname

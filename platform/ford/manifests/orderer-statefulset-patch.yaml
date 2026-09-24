@@ -1,0 +1,79 @@
+---
+# Strategic patch to orderer StatefulSet:
+# 1. Mount orderer-msp Secret at /var/hyperledger/production/msp (fixes CrashLoop — 602 restarts)
+# 2. Three subPath mounts reconstruct the Fabric MSP directory structure expected by the orderer
+#
+# Apply with:
+#   oc apply -f platform/ford/manifests/orderer-statefulset-patch.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: orderer
+  namespace: i3-ford
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: fix-permissions
+          command:
+            - sh
+            - -c
+            - |
+              chown -R 1000:1000 /var/hyperledger/production/orderer && echo chown-done
+          volumeMounts:
+            - name: orderer-data
+              mountPath: /var/hyperledger/production/orderer
+      containers:
+        - name: orderer
+          env:
+            - name: FABRIC_LOGGING_SPEC
+              value: INFO
+            - name: ORDERER_GENERAL_LISTENADDRESS
+              value: 0.0.0.0
+            - name: ORDERER_GENERAL_LISTENPORT
+              value: "7050"
+            - name: ORDERER_GENERAL_BOOTSTRAPMETHOD
+              value: none
+            - name: ORDERER_CHANNELPARTICIPATION_ENABLED
+              value: "true"
+            - name: ORDERER_ADMIN_LISTENADDRESS
+              value: "0.0.0.0:8443"
+            - name: ORDERER_ADMIN_TLS_ENABLED
+              value: "false"
+            - name: ORDERER_GENERAL_TLS_ENABLED
+              value: "false"
+            - name: ORDERER_OPERATIONS_LISTENADDRESS
+              value: "0.0.0.0:9443"
+            - name: ORDERER_GENERAL_CLUSTER_SENDBUFFERSIZE
+              value: "100"
+            - name: ORDERER_FILELEDGER_LOCATION
+              value: /var/hyperledger/production/orderer
+            - name: ORDERER_GENERAL_LOCALMSPID
+              value: i3TechMSP
+            - name: ORDERER_GENERAL_LOCALMSPDIR
+              value: /var/hyperledger/production/msp
+          volumeMounts:
+            - name: orderer-data
+              mountPath: /var/hyperledger/production/orderer
+            # Reconstruct MSP directory tree from flat Secret keys via subPath
+            - name: orderer-msp
+              mountPath: /var/hyperledger/production/msp/cacerts/ca.pem
+              subPath: cacerts-ca.pem
+              readOnly: true
+            - name: orderer-msp
+              mountPath: /var/hyperledger/production/msp/signcerts/cert.pem
+              subPath: signcerts-cert.pem
+              readOnly: true
+            - name: orderer-msp
+              mountPath: /var/hyperledger/production/msp/keystore/server.key
+              subPath: keystore-server.key
+              readOnly: true
+      volumes:
+        - name: orderer-data
+          persistentVolumeClaim:
+            claimName: orderer0-pvc
+        # MSP material from Secret (created by orderer-msp-init-job / oc cp workflow)
+        - name: orderer-msp
+          secret:
+            secretName: orderer-msp
+            defaultMode: 0444
