@@ -32,7 +32,7 @@ export function DashboardClient({ stats, userName }: { stats: Stats; userName: s
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-bold text-slate-800">Good day, {userName} 👋</h2>
-        <p className="text-slate-500 text-sm mt-0.5">Here's your engagement overview</p>
+        <p className="text-slate-500 text-sm mt-0.5">Here&apos;s your engagement overview</p>
       </div>
 
       {/* KPI grid */}

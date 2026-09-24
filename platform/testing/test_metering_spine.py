@@ -54,19 +54,21 @@ def _hmac_key(raw: str) -> str:
 @pytest_asyncio.fixture
 async def db():
     """Async DB connection with app.tenant_id set."""
-    conn = await asyncpg.connect(BILLING_DB_URL)
-    await conn.execute(f"SET app.tenant_id = '{TENANT_ID}'")
-    yield conn
-    await conn.close()
+    pool = await asyncpg.create_pool(BILLING_DB_URL, min_size=1, max_size=1)
+    async with pool.acquire() as conn:
+        await conn.execute(f"SET app.tenant_id = '{TENANT_ID}'")
+        yield conn
+    await pool.close()
 
 
 @pytest_asyncio.fixture
 async def db_other_tenant():
     """Connection as a different tenant — used to assert RLS blocks reads."""
-    conn = await asyncpg.connect(BILLING_DB_URL)
-    await conn.execute(f"SET app.tenant_id = '{TENANT_ID_OTHER}'")
-    yield conn
-    await conn.close()
+    pool = await asyncpg.create_pool(BILLING_DB_URL, min_size=1, max_size=1)
+    async with pool.acquire() as conn:
+        await conn.execute(f"SET app.tenant_id = '{TENANT_ID_OTHER}'")
+        yield conn
+    await pool.close()
 
 
 # ── 1. Migration integrity ───────────────────────────────────────────────

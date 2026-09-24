@@ -468,7 +468,7 @@ async def invoke_tool(
     handler = _TOOL_HANDLERS[tool_name]
     try:
         output = await asyncio.wait_for(
-            handler(body.input, tenant_id=x_tenant_id),
+            handler(body.input, tenant_id=x_tenant_id, db=request.app.state.db),
             timeout=spec.timeout_ms / 1000,
         )
     except asyncio.TimeoutError as exc:

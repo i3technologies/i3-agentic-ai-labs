@@ -81,3 +81,10 @@ engage-token-patch.json
 # Block secret overlay files used for manual kubectl patching
 *-secret-overlay.yaml
 *-secret-overlay.json
+
+# Next.js build output -- never commit compiled app bundles or generated files
+**/.next/
+**/next-env.d.ts
+**/workbox-*.js
+**/sw.js
+**/package-lock.json

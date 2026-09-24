@@ -51,7 +51,7 @@ def _get_client() -> chromadb.HttpClient:
     )
 
 
-async def handle(payload: dict[str, Any], *, tenant_id: str) -> dict:
+async def handle(payload: dict[str, Any], *, tenant_id: str, db=None) -> dict:
     query      = payload.get("query", "")
     collection = payload.get("collection", "admissions-docs")
     n_results  = min(int(payload.get("n_results", 5)), 20)

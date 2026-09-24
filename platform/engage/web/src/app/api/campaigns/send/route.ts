@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getServerSession, type Session } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import pool from '@/lib/db'
 import { randomUUID, createHmac, timingSafeEqual } from 'crypto'
@@ -171,6 +171,8 @@ export async function POST(req: NextRequest) {
   // deserialise JSON without consuming the stream twice.
   let parsedBody: Record<string, unknown>
   let tenantId: string = ENGAGE_TENANT_ID
+  // Hoisted so the async path below can read session.user.sub as the actor.
+  let session: Session | null = null
   const brevoSig = req.headers.get('x-brevo-signature')
 
   if (brevoSig !== null) {
@@ -184,7 +186,7 @@ export async function POST(req: NextRequest) {
     // Webhook calls do not carry a session — tenantId stays as default.
   } else {
     // UI caller: must have a valid session.
-    const session = await getServerSession(authOptions)
+    session = await getServerSession(authOptions)
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     tenantId = (session.user as { tenant_id?: string })?.tenant_id ?? ENGAGE_TENANT_ID
     parsedBody = await req.json() as Record<string, unknown>
@@ -233,9 +235,10 @@ export async function POST(req: NextRequest) {
       const jobId      = randomUUID()
       const sendJobId  = randomUUID()
       const correlationId = randomUUID()  // FIX-06: trace ID propagated into CloudEvent
-      // FIX-06: extract actor (Keycloak sub) from session — never null in authenticated path
-      const actor = (session.user as { sub?: string; id?: string })?.sub
-        ?? (session.user as { sub?: string; id?: string })?.id
+      // FIX-06: extract actor (Keycloak sub) from session.
+      // session is null on Brevo webhook path — actor falls back to null in that case.
+      const actor = (session?.user as { sub?: string; id?: string } | undefined)?.sub
+        ?? (session?.user as { sub?: string; id?: string } | undefined)?.id
         ?? null
 
       // Persist initial job status so the polling endpoint can answer immediately

@@ -152,7 +152,7 @@ async def handle_confirm(payload: dict[str, Any], *, tenant_id: str) -> dict:
     return {"success": True, "lead_id": lead_id}
 
 
-async def handle_read(payload: dict[str, Any], *, tenant_id: str) -> dict:
+async def handle_read(payload: dict[str, Any], *, tenant_id: str, db=None) -> dict:
     email   = payload.get("email", "")
     records = await _odoo_call(
         "crm.lead", "search_read",

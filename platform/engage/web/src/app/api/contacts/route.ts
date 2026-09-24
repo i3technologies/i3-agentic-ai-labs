@@ -135,7 +135,11 @@ export async function POST(req: NextRequest) {
   }
 
   const body = parsedBody
-  const { email, first_name, last_name, company, tags } = body
+  const email      = body.email      as string | undefined
+  const first_name = body.first_name as string | undefined
+  const last_name  = body.last_name  as string | undefined
+  const company    = body.company    as string | undefined
+  const tags       = body.tags
 
   if (!email?.trim()) return NextResponse.json({ error: 'Email required' }, { status: 400 })
 
@@ -143,7 +147,7 @@ export async function POST(req: NextRequest) {
   try {
     await client.query('SET LOCAL app.tenant_id = $1', [tenantId])
     // HC-6: compute keyed HMAC before any DB write — raw email must not be the lookup key.
-    const subjectIdHash = hmacSubjectId(email as string)
+    const subjectIdHash = hmacSubjectId(email)
 
     const { rows } = await client.query(
       `INSERT INTO contacts (email, first_name, last_name, company, tags, subscribed, created_at, tenant_id, subject_id_hash)

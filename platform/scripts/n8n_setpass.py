@@ -29,25 +29,30 @@ async def main():
             f"ERROR: Could not retrieve credentials from OpenBao.\n{exc.stderr}"
         )
 
-    conn = await asyncpg.connect(
+    pool = await asyncpg.create_pool(
         host="i3-postgres-ha.i3-data.svc",
         port=5432,
         database="n8n",
         user="n8n",
         password=db_password,
+        min_size=1,
+        max_size=1,
     )
 
-    hashed = bcrypt.hashpw(new_pass.encode(), bcrypt.gensalt()).decode()
-    await conn.execute(
-        "UPDATE public.user SET password=$1 WHERE role='global:owner'",
-        hashed,
-    )
-    row = await conn.fetchrow(
-        "SELECT id, email, role FROM public.user WHERE role='global:owner'"
-    )
-    print("Updated user:", dict(row))
-    print("New password hash set")
-    await conn.close()
+    try:
+        hashed = bcrypt.hashpw(new_pass.encode(), bcrypt.gensalt()).decode()
+        async with pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE public.user SET password=$1 WHERE role='global:owner'",
+                hashed,
+            )
+            row = await conn.fetchrow(
+                "SELECT id, email, role FROM public.user WHERE role='global:owner'"
+            )
+        print("Updated user:", dict(row))
+        print("New password hash set")
+    finally:
+        await pool.close()
 
 
 asyncio.run(main())

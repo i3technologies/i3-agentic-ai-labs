@@ -75,7 +75,7 @@ async def handle_book(payload: dict[str, Any], *, tenant_id: str) -> dict:
     }
 
 
-async def handle_confirm(payload: dict[str, Any], *, tenant_id: str) -> dict:
+async def handle_confirm(payload: dict[str, Any], *, tenant_id: str, db=None) -> dict:
     import asyncio
     token = payload.get("token", "")
     key   = f"mcp:pending:{token}"

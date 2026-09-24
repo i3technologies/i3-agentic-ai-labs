@@ -62,7 +62,7 @@ SPEC_CONFIRM = McpToolSpec(
 )
 
 
-async def handle_prepare(payload: dict[str, Any], *, tenant_id: str) -> dict:
+async def handle_prepare(payload: dict[str, Any], *, tenant_id: str, db=None) -> dict:
     tasks = payload.get("tasks", [])
     if not tasks:
         from fastapi import HTTPException

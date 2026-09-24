@@ -39,7 +39,7 @@ SPEC = McpToolSpec(
 )
 
 
-async def handle(payload: dict[str, Any], *, tenant_id: str) -> dict:
+async def handle(payload: dict[str, Any], *, tenant_id: str, db=None) -> dict:
     model       = payload.get("model", "mistral-nemo")
     messages    = payload.get("messages", [])
     max_tokens  = int(payload.get("max_tokens", 2048))

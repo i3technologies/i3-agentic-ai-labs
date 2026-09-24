@@ -28,23 +28,28 @@ async def main():
             f"ERROR: Could not retrieve i3/edbridge/db from OpenBao.\n{exc.stderr}"
         )
 
-    conn = await asyncpg.connect(
+    pool = await asyncpg.create_pool(
         host="i3-postgres-ha.i3-data.svc",
         port=5432,
         database="edbridge_db",
         user="edbridge",
         password=db_password,
+        min_size=1,
+        max_size=1,
     )
 
-    row = await conn.fetchrow("SELECT name, value FROM mdl_config WHERE name = 'version'")
-    print(f"Current DB version: {row['value']}")
+    try:
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow("SELECT name, value FROM mdl_config WHERE name = 'version'")
+            print(f"Current DB version: {row['value']}")
 
-    await conn.execute(
-        "UPDATE mdl_config SET value = '2024042212.00' WHERE name = 'version'"
-    )
-    row2 = await conn.fetchrow("SELECT name, value FROM mdl_config WHERE name = 'version'")
-    print(f"Updated DB version: {row2['value']}")
-    await conn.close()
+            await conn.execute(
+                "UPDATE mdl_config SET value = '2024042212.00' WHERE name = 'version'"
+            )
+            row2 = await conn.fetchrow("SELECT name, value FROM mdl_config WHERE name = 'version'")
+            print(f"Updated DB version: {row2['value']}")
+    finally:
+        await pool.close()
 
 
 asyncio.run(main())

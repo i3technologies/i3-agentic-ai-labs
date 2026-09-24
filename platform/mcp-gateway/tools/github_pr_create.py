@@ -48,7 +48,7 @@ SPEC = McpToolSpec(
 )
 
 
-async def handle(payload: dict[str, Any], *, tenant_id: str) -> dict:
+async def handle(payload: dict[str, Any], *, tenant_id: str, db=None) -> dict:
     """
     Execute PR creation AFTER the gateway has verified the signed
     APPROVED human_approval_record (approval_id must be in payload).

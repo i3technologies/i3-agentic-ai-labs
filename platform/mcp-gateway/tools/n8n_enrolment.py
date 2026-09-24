@@ -37,7 +37,7 @@ SPEC = McpToolSpec(
 )
 
 
-async def handle(payload: dict[str, Any], *, tenant_id: str) -> dict:
+async def handle(payload: dict[str, Any], *, tenant_id: str, db=None) -> dict:
     if not N8N_WEBHOOK_URL:
         from fastapi import HTTPException
         raise HTTPException(status_code=503, detail="n8n webhook URL not configured")

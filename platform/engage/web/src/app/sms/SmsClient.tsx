@@ -46,7 +46,7 @@ export function SmsClient() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-slate-800">SMS Messages</h2>
-          <p className="text-slate-500 text-xs mt-0.5">Sent via Africa's Talking</p>
+          <p className="text-slate-500 text-xs mt-0.5">Sent via Africa&apos;s Talking</p>
         </div>
         <button onClick={() => setShowSend(true)}
           className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg">

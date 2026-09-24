@@ -34,9 +34,6 @@ from schemas import McpToolSpec
 
 log = logging.getLogger("mcp.postgres.members.write")
 
-# Injected by OpenBao sidecar at runtime — never hard-coded
-MEMBERS_DB_URL = os.environ.get("MEMBERS_DB_URL", "")
-
 # HC-6: member_token must be a 64-char hex HMAC-SHA256, never raw NID
 _TOKEN_RE = re.compile(r"^[0-9a-f]{64}$", re.I)
 
@@ -58,7 +55,7 @@ SPEC = McpToolSpec(
 )
 
 
-async def handle(payload: dict[str, Any], *, tenant_id: str) -> dict:
+async def handle(payload: dict[str, Any], *, tenant_id: str, db=None) -> dict:
     """
     Execute the members write AFTER a signed APPROVED human_approval_record
     has been verified by the gateway interceptor.  By the time this handler
@@ -69,6 +66,8 @@ async def handle(payload: dict[str, Any], *, tenant_id: str) -> dict:
       - confirmed payload_digest matches sha256(payload)
 
     This handler only needs to do the actual DB write.
+
+    ``db`` is the asyncpg.Pool injected by the gateway lifespan (app.state.db).
     """
     # HC-6: Reject raw NIDs — only accept pre-hashed tokens
     member_token = payload.get("member_token", "")
@@ -85,18 +84,16 @@ async def handle(payload: dict[str, Any], *, tenant_id: str) -> dict:
     if not tenant_id:
         raise HTTPException(status_code=422, detail="HC-4: tenant_id is required")
 
-    import asyncpg  # noqa: PLC0415 — only imported when DB URL is available
-
-    if not MEMBERS_DB_URL:
-        # [GAP] MEMBERS_DB_URL not configured — return stub for integration test
-        log.warning("[GAP] MEMBERS_DB_URL not set; returning stub response")
+    if db is None:
+        # [GAP] pool not injected — return stub for integration test
+        log.warning("[GAP] db pool not injected; returning stub response")
         return {
             "success": True,
             "member_id": "00000000-0000-0000-0000-000000000000",
-            "gap": "MEMBERS_DB_URL not configured — stub response",
+            "gap": "db pool not injected — stub response",
         }
 
-    async with await asyncpg.connect(MEMBERS_DB_URL) as conn:
+    async with db.acquire() as conn:
         # HC-4: set tenant context for RLS
         await conn.execute(f"SET app.tenant_id = '{tenant_id}'")
 
