@@ -77,6 +77,8 @@ function createPool(): Pool {
   // the build container. The check is enforced at runtime (pod startup), not
   // at build time, so fail-closed behaviour is preserved.
   const caCertPath = process.env.PG_CA_CERT_PATH
+  // Guard: only skip SSL when NEXT_BUILD is the exact string 'true'.
+  // An empty string (ENV NEXT_BUILD= in runner stage) must NOT disable SSL.
   const isBuildPhase = process.env.NEXT_BUILD === 'true'
   if (process.env.NODE_ENV === 'production' && !isBuildPhase) {
     if (!caCertPath) {

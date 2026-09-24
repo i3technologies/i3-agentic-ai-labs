@@ -30,6 +30,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
+# Explicitly clear the build-phase flag — NEXT_BUILD=true set in the builder
+# stage must NOT carry over into the runner, or db.ts will disable SSL at runtime.
+ENV NEXT_BUILD=
 
 RUN addgroup --system --gid 1001 nodejs && \
     adduser  --system --uid  1001 nextjs
