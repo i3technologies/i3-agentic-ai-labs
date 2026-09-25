@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { authOptions } from '@/lib/auth'
-import pool from '@/lib/db'
+import pool, { setTenantContext } from '@/lib/db'
 import QuestionGeneratorPanel from '../question-generator-panel'
 
 interface Question {
@@ -30,7 +30,11 @@ interface Filters {
 
 const PAGE_SIZE = 20
 
-async function getQuestions(filters: Filters): Promise<{ rows: Question[]; total: number }> {
+// HC-4: tenant-scoped via setTenantContext before all queries
+async function getQuestions(
+  filters: Filters,
+  tenantId: string
+): Promise<{ rows: Question[]; total: number }> {
   const conditions: string[] = []
   const values: unknown[] = []
   let idx = 1
@@ -52,17 +56,22 @@ async function getQuestions(filters: Filters): Promise<{ rows: Question[]; total
   const page = Math.max(1, filters.page ?? 1)
   const offset = (page - 1) * PAGE_SIZE
 
-  const countRes = await pool.query(`SELECT COUNT(*)::int AS total FROM questions ${where}`, values)
-  const dataRes = await pool.query<Question>(
-    `SELECT id, set_number, domain_number, domain_name, topic,
-            LEFT(text, 120) AS text, type, options, correct_answers, explanation, is_active
-     FROM questions ${where}
-     ORDER BY set_number, domain_number, id
-     LIMIT ${PAGE_SIZE} OFFSET ${offset}`,
-    values
-  )
-
-  return { rows: dataRes.rows, total: countRes.rows[0].total }
+  const client = await pool.connect()
+  try {
+    await setTenantContext(client, tenantId)
+    const countRes = await client.query(`SELECT COUNT(*)::int AS total FROM questions ${where}`, values)
+    const dataRes = await client.query<Question>(
+      `SELECT id, set_number, domain_number, domain_name, topic,
+              LEFT(text, 120) AS text, type, options, correct_answers, explanation, is_active
+       FROM questions ${where}
+       ORDER BY set_number, domain_number, id
+       LIMIT ${PAGE_SIZE} OFFSET ${offset}`,
+      values
+    )
+    return { rows: dataRes.rows, total: countRes.rows[0].total }
+  } finally {
+    client.release()
+  }
 }
 
 export default async function QuestionBankPage({
@@ -73,6 +82,8 @@ export default async function QuestionBankPage({
   const session = await getServerSession(authOptions)
   if (!session?.user.isAdmin) redirect('/dashboard')
 
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id || '00000000-0000-0000-0000-000000000002'
+
   const filters: Filters = {
     set: searchParams.set ? parseInt(searchParams.set) : undefined,
     domain: searchParams.domain ? parseInt(searchParams.domain) : undefined,
@@ -82,14 +93,22 @@ export default async function QuestionBankPage({
     page: searchParams.page ? parseInt(searchParams.page) : 1,
   }
 
-  const { rows: questions, total } = await getQuestions(filters)
+  const { rows: questions, total } = await getQuestions(filters, tenantId)
   const totalPages = Math.ceil(total / PAGE_SIZE)
   const currentPage = filters.page ?? 1
 
-  // Domain list for filter dropdown
-  const { rows: domains } = await pool.query<{ domain_number: number; domain_name: string }>(
-    `SELECT DISTINCT domain_number, domain_name FROM questions ORDER BY domain_number`
-  )
+  // Domain list for filter dropdown — HC-4: tenant-scoped
+  const domainClient = await pool.connect()
+  let domains: { domain_number: number; domain_name: string }[] = []
+  try {
+    await setTenantContext(domainClient, tenantId)
+    const { rows } = await domainClient.query<{ domain_number: number; domain_name: string }>(
+      `SELECT DISTINCT domain_number, domain_name FROM questions ORDER BY domain_number`
+    )
+    domains = rows
+  } finally {
+    domainClient.release()
+  }
 
   function buildUrl(override: Record<string, string | number | undefined>) {
     const p = new URLSearchParams()

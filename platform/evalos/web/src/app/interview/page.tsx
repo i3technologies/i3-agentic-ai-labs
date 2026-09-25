@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
-import pool from '@/lib/db'
+import pool, { setTenantContext } from '@/lib/db'
 import InterviewClient from './interview-client'
 
 // IBM watsonx Orchestrate AI Interview — 5 questions (3 text + 2 code)
@@ -102,10 +102,15 @@ export default async function InterviewPage() {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/api/auth/signin')
 
-  // Load questions from DB if table exists, else use static set
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id || '00000000-0000-0000-0000-000000000002'
+  const userId = session.user.userId || session.user.email || ''
+
+  // Load questions from DB if table exists, else use static set — HC-4: tenant-scoped
   let questions = STATIC_QUESTIONS
+  const qClient = await pool.connect()
   try {
-    const { rows } = await pool.query(
+    await setTenantContext(qClient, tenantId)
+    const { rows } = await qClient.query(
       `SELECT id, text, type, language, rubric, time_limit AS "timeLimit"
        FROM ai_interview_questions
        WHERE is_active = true
@@ -117,18 +122,27 @@ export default async function InterviewPage() {
     }
   } catch {
     // Table may not exist yet — use static questions
+  } finally {
+    qClient.release()
   }
 
   const studentName = session.user.name || session.user.email || 'Student'
 
-  // Get the most recent submitted exam attempt for this user (for examId)
-  const { rows: attempts } = await pool.query(
-    `SELECT qa.id FROM quiz_attempts qa
-     WHERE qa.student_id = $1 AND qa.status = 'submitted'
-     ORDER BY qa.submitted_at DESC LIMIT 1`,
-    [session.user.userId || session.user.email]
-  )
-  const examId = attempts[0]?.id ?? 'standalone'
+  // Get the most recent submitted exam attempt for this user (for examId) — HC-4: tenant-scoped
+  let examId = 'standalone'
+  const aClient = await pool.connect()
+  try {
+    await setTenantContext(aClient, tenantId)
+    const { rows: attempts } = await aClient.query(
+      `SELECT qa.id FROM quiz_attempts qa
+       WHERE qa.student_id = $1 AND qa.status = 'submitted'
+       ORDER BY qa.submitted_at DESC LIMIT 1`,
+      [userId]
+    )
+    examId = attempts[0]?.id ?? 'standalone'
+  } finally {
+    aClient.release()
+  }
 
   return (
     <div>

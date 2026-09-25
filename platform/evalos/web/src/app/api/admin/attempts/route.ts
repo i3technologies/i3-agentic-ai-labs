@@ -5,7 +5,7 @@ import pool, { setTenantContext } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getServerSession(authOptions)
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -16,6 +16,12 @@ export async function GET() {
   }
 
   const tenantId = (session.user as { tenant_id?: string }).tenant_id || '00000000-0000-0000-0000-000000000002'
+
+  // Pagination: ?page=1&limit=100  (max 500 per page)
+  const { searchParams } = new URL(req.url)
+  const page   = Math.max(1, parseInt(searchParams.get('page')  ?? '1',   10))
+  const limit  = Math.min(500, Math.max(1, parseInt(searchParams.get('limit') ?? '100', 10)))
+  const offset = (page - 1) * limit
 
   const client = await pool.connect()
   try {
@@ -40,10 +46,23 @@ export async function GET() {
        FROM quiz_attempts qa
        JOIN exams e ON e.id = qa.exam_id
        ORDER BY qa.started_at DESC
-       LIMIT 500`
+       LIMIT $1 OFFSET $2`,
+      [limit, offset]
     )
 
-    return NextResponse.json(rows)
+    const { rows: countRows } = await client.query(
+      `SELECT COUNT(*)::int AS total FROM quiz_attempts`
+    )
+
+    return NextResponse.json({
+      data: rows,
+      pagination: {
+        page,
+        limit,
+        total: countRows[0]?.total ?? 0,
+        pages: Math.ceil((countRows[0]?.total ?? 0) / limit),
+      },
+    })
   } finally {
     client.release()
   }

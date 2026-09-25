@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createHmac } from 'crypto'
+import { createHmac, timingSafeEqual } from 'crypto'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,7 +42,16 @@ function verifyLTIHmac(body: string, signatureHeader: string | null): boolean {
   if (!LTI_HMAC_SECRET) return true  // dev: skip if not configured
   if (!signatureHeader) return false
   const expected = createHmac('sha256', LTI_HMAC_SECRET).update(body, 'utf8').digest('hex')
-  return expected === signatureHeader
+  // Use timingSafeEqual to prevent HMAC timing-oracle attacks
+  try {
+    return timingSafeEqual(
+      Buffer.from(expected, 'hex'),
+      Buffer.from(signatureHeader, 'hex')
+    )
+  } catch {
+    // Buffer lengths differ (malformed hex) — reject
+    return false
+  }
 }
 
 export async function POST(req: Request) {

@@ -5,12 +5,19 @@ import pool, { setTenantContext } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   if (!session.user.isAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const tenantId = (session.user as { tenant_id?: string }).tenant_id || '00000000-0000-0000-0000-000000000002'
+
+  // Optional date-range filter: ?since=YYYY-MM-DD&until=YYYY-MM-DD
+  const { searchParams } = new URL(req.url)
+  const sinceParam = searchParams.get('since')
+  const untilParam = searchParams.get('until')
+  const since = sinceParam ? new Date(sinceParam) : null
+  const until = untilParam ? new Date(untilParam) : null
 
   const client = await pool.connect()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -34,8 +41,11 @@ export async function GET() {
          COALESCE(qa.clipboard_events, 0)  AS clipboard_events
        FROM quiz_attempts qa
        JOIN exams e ON e.id = qa.exam_id
+       WHERE ($1::timestamptz IS NULL OR qa.started_at >= $1)
+         AND ($2::timestamptz IS NULL OR qa.started_at <= $2)
        ORDER BY qa.started_at DESC
-       LIMIT 5000`
+       LIMIT 10000`,
+      [since, until]
     )
     rows = result.rows
   } finally {

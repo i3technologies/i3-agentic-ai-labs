@@ -1,0 +1,477 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Phase 1 · Step 3 — API Synchronization &amp; Route Verification</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    background: #ffffff;
+    color: #1f2328;
+    padding: 32px 16px 48px;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 700; color: #1f2328; margin-bottom: 4px; }
+  .sub { font-size: 12px; color: #57606a; margin-bottom: 28px; }
+  h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+       color: #57606a; margin: 28px 0 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-bottom: 24px; }
+  thead tr { background: #f7f8fa; }
+  th { text-align: left; padding: 8px 10px; font-weight: 600; color: #57606a;
+       border-bottom: 2px solid #e5e7eb; white-space: nowrap; }
+  td { padding: 7px 10px; border-bottom: 1px solid #f0f1f3; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f7f8fa; }
+  code { font-family: "SFMono-Regular", Consolas, monospace; font-size: 11.5px;
+         background: #f0f1f3; padding: 1px 5px; border-radius: 3px; }
+  .pass  { display:inline-block; padding:2px 7px; border-radius:12px; font-size:11px; font-weight:600;
+           background:#dcfce7; color:#166534; white-space:nowrap; }
+  .fail  { display:inline-block; padding:2px 7px; border-radius:12px; font-size:11px; font-weight:600;
+           background:#fee2e2; color:#991b1b; white-space:nowrap; }
+  .warn  { display:inline-block; padding:2px 7px; border-radius:12px; font-size:11px; font-weight:600;
+           background:#fef3c7; color:#92400e; white-space:nowrap; }
+  .na    { display:inline-block; padding:2px 7px; border-radius:12px; font-size:11px; font-weight:600;
+           background:#f0f1f3; color:#57606a; white-space:nowrap; }
+  .issue-box { background:#fff7ed; border:1px solid #fed7aa; border-radius:8px;
+               padding:14px 16px; margin-bottom:12px; }
+  .issue-box h3 { font-size:13px; font-weight:700; color:#9a3412; margin-bottom:4px; }
+  .issue-box p, .issue-box li { font-size:12.5px; color:#431407; }
+  .issue-box ul { padding-left:18px; }
+  .issue-box.crit { background:#fef2f2; border-color:#fca5a5; }
+  .issue-box.crit h3 { color:#991b1b; }
+  .issue-box.crit p, .issue-box.crit li { color:#450a0a; }
+  .section-label { font-size:11px; font-weight:700; text-transform:uppercase;
+                   letter-spacing:.05em; color:#57606a; margin-bottom:6px; }
+  .legend { display:flex; gap:16px; font-size:11.5px; color:#57606a; margin-bottom:20px; flex-wrap:wrap; }
+  .legend span { display:flex; align-items:center; gap:4px; }
+  footer { margin-top:40px; padding-top:16px; border-top:1px solid #e5e7eb;
+           text-align:center; font-size:11px; color:#57606a; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Phase 1 · Step 3 — API Synchronization &amp; Frontend Route Verification</h1>
+  <div class="sub">Executed: September 2025 · Source: <code>platform/deploy/api-gateway/kong-routes.yaml</code> + frontend src inspection</div>
+
+  <div class="legend">
+    <span><span class="pass">PASS</span> Verified / compliant</span>
+    <span><span class="fail">FAIL</span> Defect found, action required</span>
+    <span><span class="warn">WARN</span> Gap or caveat — review needed</span>
+    <span><span class="na">N/A</span> Not applicable in this environment</span>
+  </div>
+
+  
+  <h2>1 · Kong Gateway — API Endpoint Matrix</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Route</th>
+        <th>Kong Route Name</th>
+        <th>Target Service (cluster DNS)</th>
+        <th>Protocol</th>
+        <th>strip_path</th>
+        <th>Auth Plugin</th>
+        <th>Rate Limit (RPM)</th>
+        <th>CORS Origins</th>
+        <th>Expected Code (no auth)</th>
+        <th>Tested Code</th>
+        <th>Sync Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>/engage/*</code></td>
+        <td><code>engage-route</code></td>
+        <td><code>engage-web.i3-engage.svc:3000</code></td>
+        <td>HTTPS</td>
+        <td>true</td>
+        <td>jwt (RS256/Keycloak)</td>
+        <td>100</td>
+        <td>engage.i3technologies.co.ke, app.i3technologies.co.ke</td>
+        <td>401</td>
+        <td><span class="warn">Static Analysis</span></td>
+        <td><span class="pass">PRESENT</span></td>
+      </tr>
+      <tr>
+        <td><code>/evalos/*</code></td>
+        <td><code>evalos-route</code></td>
+        <td><code>evalos-web.i3-evalos.svc:3000</code></td>
+        <td>HTTPS</td>
+        <td>true</td>
+        <td>jwt (RS256/Keycloak)</td>
+        <td>100</td>
+        <td>evalos.i3technologies.co.ke, app.i3technologies.co.ke</td>
+        <td>401</td>
+        <td><span class="warn">Static Analysis</span></td>
+        <td><span class="pass">PRESENT</span></td>
+      </tr>
+      <tr>
+        <td><code>/admissions/*</code></td>
+        <td><code>admissions-route</code></td>
+        <td><code>admissions-agent.i3-admissions.svc:8000</code></td>
+        <td>HTTPS</td>
+        <td>true</td>
+        <td>jwt (RS256/Keycloak)</td>
+        <td>10 (AI)</td>
+        <td>admissions.i3technologies.co.ke, app.i3technologies.co.ke</td>
+        <td>401</td>
+        <td><span class="warn">Static Analysis</span></td>
+        <td><span class="pass">PRESENT</span></td>
+      </tr>
+      <tr>
+        <td><code>/pmaas/*</code></td>
+        <td><code>pmaas-route</code></td>
+        <td><code>pmaas-agent.i3-pmaas.svc:8000</code></td>
+        <td>HTTPS</td>
+        <td>true</td>
+        <td>jwt (RS256/Keycloak)</td>
+        <td>10 (AI)</td>
+        <td>pmaas.i3technologies.co.ke, app.i3technologies.co.ke</td>
+        <td>401</td>
+        <td><span class="warn">Static Analysis</span></td>
+        <td><span class="pass">PRESENT</span></td>
+      </tr>
+      <tr>
+        <td><code>/onboarding/*</code></td>
+        <td><code>onboarding-route</code></td>
+        <td><code>onboarding-agent.i3-admissions.svc:3000</code></td>
+        <td>HTTPS</td>
+        <td>true</td>
+        <td>jwt (RS256/Keycloak)</td>
+        <td>100</td>
+        <td>admissions.i3technologies.co.ke, app.i3technologies.co.ke</td>
+        <td>401</td>
+        <td><span class="warn">Static Analysis</span></td>
+        <td><span class="pass">PRESENT</span></td>
+      </tr>
+      <tr>
+        <td><code>/voice/*</code></td>
+        <td><code>voice-route</code></td>
+        <td><code>tts-service.i3-voice.svc:8000</code></td>
+        <td>HTTPS</td>
+        <td>true</td>
+        <td>jwt (RS256/Keycloak)</td>
+        <td>10 (AI)</td>
+        <td>app.i3technologies.co.ke, evalos.i3technologies.co.ke</td>
+        <td>401</td>
+        <td><span class="warn">Static Analysis</span></td>
+        <td><span class="pass">PRESENT</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size:11.5px;color:#57606a;margin-top:-16px;margin-bottom:20px">
+    ⚠ "Tested Code" is <strong>Static Analysis</strong> — cluster not running in this environment. Live curl tests require a running Kong pod. All 6 routes have JWT plugin configured for all external paths (no bypass mode in Kong config confirmed).
+  </p>
+
+  
+  <h2>2 · Auth Endpoint Audit</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Endpoint</th>
+        <th>Service</th>
+        <th>Auth Mechanism</th>
+        <th>Unauthenticated → Expected</th>
+        <th>Unauthenticated → Confirmed</th>
+        <th>Authenticated → Expected</th>
+        <th>tenant_id claim extracted</th>
+        <th>RLS SET LOCAL applied</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>POST /api/campaigns/send</code><br /><small>(Engage)</small></td>
+        <td>engage-web</td>
+        <td>NextAuth session OR Brevo HMAC-SHA256</td>
+        <td>HTTP 401</td>
+        <td><span class="pass">CONFIRMED</span> (code path: <code>if (!session) → 401</code>)</td>
+        <td>HTTP 202 (async) / HTTP 200 (sync legacy)</td>
+        <td><span class="pass">YES</span> — <code>session.user.tenant_id</code></td>
+        <td><span class="pass">YES</span> — <code>SET LOCAL app.tenant_id = $1</code></td>
+        <td><span class="pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td><code>POST /admissions/chat</code><br /><small>(admissions-agent)</small></td>
+        <td>admissions-agent (FastAPI)</td>
+        <td>Kong JWT plugin (RS256)</td>
+        <td>HTTP 401</td>
+        <td><span class="warn">Static: Kong jwt plugin present on admissions-route; agent source absent from workspace (no .py files)</span></td>
+        <td>HTTP 200</td>
+        <td><span class="warn">NOT VERIFIABLE</span> — Python source not present at platform/admissions/</td>
+        <td><span class="warn">NOT VERIFIABLE</span></td>
+        <td><span class="warn">PARTIAL</span></td>
+      </tr>
+      <tr>
+        <td><code>GET /api/campaigns/send/{jobId}</code><br /><small>(Engage)</small></td>
+        <td>engage-web</td>
+        <td>NextAuth session</td>
+        <td>HTTP 401</td>
+        <td><span class="pass">CONFIRMED</span> — <code>if (!session) → 401</code></td>
+        <td>HTTP 200 + job status JSON</td>
+        <td><span class="pass">YES</span></td>
+        <td><span class="pass">YES</span> + tenant filter on <code>WHERE tenant_id = $2</code></td>
+        <td><span class="pass">PASS</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h2>3 · Async Campaign Send Contract (P3-02)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Contract Item</th>
+        <th>Expected</th>
+        <th>Actual (code-verified)</th>
+        <th>Feature Flag</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>POST /api/campaigns/send</code> returns HTTP 202</td>
+        <td>202 + <code>{ job_id: UUID }</code></td>
+        <td><span class="pass">CONFIRMED</span> — <code>NextResponse.json({ job_id: jobId, status: 'queued', … }, { status: 202 })</code></td>
+        <td><code>ASYNC_CAMPAIGN_SEND=true</code></td>
+        <td><span class="pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td>Job persisted to <code>campaign_send_jobs</code> table before 202</td>
+        <td>Job immediately queryable</td>
+        <td><span class="pass">CONFIRMED</span> — INSERT before producer.send(), before return 202</td>
+        <td><code>ASYNC_CAMPAIGN_SEND=true</code></td>
+        <td><span class="pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td>CloudEvent produced to Kafka topic <code>engage.campaign-trigger</code></td>
+        <td>9-field envelope with <code>tenantid</code> (HC-4)</td>
+        <td><span class="pass">CONFIRMED</span> — <code>buildCloudEvent()</code> produces specversion, id, source, type, datacontenttype, time, tenantid, subject, data</td>
+        <td><code>ASYNC_CAMPAIGN_SEND=true</code></td>
+        <td><span class="pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td><code>GET /api/campaigns/send/{jobId}</code> polling endpoint exists</td>
+        <td>Returns job status JSON</td>
+        <td><span class="pass">CONFIRMED</span> — file <code>send/[jobId]/route.ts</code> present; schema: job_id, status, sent, failed, started_at, completed_at</td>
+        <td>N/A (always active)</td>
+        <td><span class="pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td>Synchronous fallback (flag off) returns HTTP 200 (not 202)</td>
+        <td>Legacy HTTP 200</td>
+        <td><span class="warn">NOTE</span> — sync path returns <code>NextResponse.json({ sent, failed, batch_id })</code> without status: → implicit HTTP 200 ✓ but <strong>no async job entry created</strong></td>
+        <td><code>ASYNC_CAMPAIGN_SEND=false</code></td>
+        <td><span class="warn">WARN</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h2>4 · Frontend Build &amp; Tenant Header Audit</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Frontend</th>
+        <th>Next.js</th>
+        <th>lint script</th>
+        <th>build result</th>
+        <th>rejectUnauthorized: false</th>
+        <th>tenant_id in JWT callback</th>
+        <th>RLS SET LOCAL on DB calls</th>
+        <th>X-Tenant-Id header in client fetches</th>
+        <th>next-pwa present</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>engage-web</strong><br /><code>platform/engage/web</code></td>
+        <td>14.2.5</td>
+        <td><span class="fail">ABSENT</span> — no "lint" script in package.json</td>
+        <td><span class="fail">FAIL</span> — <code>next-pwa</code>: missing <code>@babel/helper-validator-identifier</code> in node_modules (dependency resolution breakage)</td>
+        <td><span class="pass">CLEAN</span> — SC-P1-03-A PASS</td>
+        <td><span class="pass">YES</span> — auth.ts jwt callback line 22</td>
+        <td><span class="pass">YES</span> — campaigns/send/route.ts</td>
+        <td><span class="fail">ABSENT</span> — client fetch() calls use relative /api/* paths; rely on NextAuth cookie session; no explicit X-Tenant-Id header forwarded</td>
+        <td><span class="warn">YES — but broken build</span></td>
+        <td><span class="fail">BLOCKED</span></td>
+      </tr>
+      <tr>
+        <td><strong>evalos-web</strong><br /><code>platform/evalos/web</code></td>
+        <td>14.2.5</td>
+        <td><span class="warn">PRESENT</span> — timed out in environment (no network for npx download)</td>
+        <td><span class="warn">NOT RUN</span> — environment blocked</td>
+        <td><span class="pass">CLEAN</span> — SC-P1-03-A PASS</td>
+        <td><span class="pass">YES</span> — auth.ts jwt callback line 35</td>
+        <td><span class="warn">PARTIAL</span> — <code>setTenantContext()</code> helper defined but usage varies by route</td>
+        <td><span class="fail">ABSENT</span> — no explicit X-Tenant-Id header in client-side fetches found</td>
+        <td><span class="pass">NO</span> — no next-pwa in evalos</td>
+        <td><span class="warn">PARTIAL</span></td>
+      </tr>
+      <tr>
+        <td><strong>pmaas-web</strong><br /><code>platform/pmaas/web</code></td>
+        <td>14.2.5</td>
+        <td><span class="warn">PRESENT</span> — not run (node_modules installed during this session)</td>
+        <td><span class="warn">NOT RUN</span> — node_modules installed but environment blocked</td>
+        <td><span class="pass">CLEAN</span> — SC-P1-03-A PASS</td>
+        <td><span class="pass">YES</span> — auth.ts jwt callback line 23</td>
+        <td><span class="fail">ABSENT</span> — pmaas campaigns/route.ts missing <code>SET LOCAL app.tenant_id</code></td>
+        <td><span class="fail">ABSENT</span> — no X-Tenant-Id header in client fetches</td>
+        <td><span class="warn">YES — same breakage risk as engage</span></td>
+        <td><span class="fail">FAIL</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h2>5 · P1-03 Sensor Verification Matrix</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Sensor ID</th>
+        <th>Command</th>
+        <th>Expected</th>
+        <th>Actual</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>SC-P1-03-A</td>
+        <td><code>grep -rn "rejectUnauthorized: false" platform/ *.ts *.js</code></td>
+        <td>Exit 1 — no matches</td>
+        <td>0 matches found</td>
+        <td><span class="pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td>HC-7 Check</td>
+        <td><code>grep -rn "DEV_BYPASS_AUTH" platform/ *.ts *.py *.js</code></td>
+        <td>0 matches in source files</td>
+        <td>0 matches in .ts/.py/.js source — only appears in documentation/ADR/MCP tool scanner</td>
+        <td><span class="pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td>Kong JWT Coverage</td>
+        <td>Inspect kong-routes.yaml for jwt plugin on all 6 routes</td>
+        <td>6 routes × jwt plugin</td>
+        <td>6/6 routes have jwt plugin (engage, evalos, admissions, pmaas, onboarding, voice)</td>
+        <td><span class="pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td>Kong Rate Limiting</td>
+        <td>Inspect kong-routes.yaml for rate-limiting plugin</td>
+        <td>6 routes with rate limits</td>
+        <td>6/6 routes: standard (100 RPM) on engage/evalos/onboarding; AI (10 RPM) on admissions/pmaas/voice</td>
+        <td><span class="pass">PASS</span></td>
+      </tr>
+      <tr>
+        <td>SC-P2-04-A (PMaaS)</td>
+        <td><code>grep chromadb pmaas/web/package.json</code></td>
+        <td>Exit 1 — removed</td>
+        <td><code>"chromadb": "^1.8.1"</code> found in pmaas-web dependencies</td>
+        <td><span class="fail">FAIL</span></td>
+      </tr>
+      <tr>
+        <td>engage-web build</td>
+        <td><code>npm run build</code> in engage/web</td>
+        <td>Exit 0</td>
+        <td>Exit 1 — <code>@babel/helper-validator-identifier</code> missing from next-pwa transitive deps</td>
+        <td><span class="fail">FAIL</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h2>6 · Issues &amp; Required Actions</h2>
+
+  <div class="issue-box crit">
+    <h3>🔴 ISSUE-P1S3-01 · engage-web build broken (next-pwa babel transitive dep)</h3>
+    <p><strong>Severity:</strong> Critical — CI/CD pipeline cannot produce a deployable image</p>
+    <p><strong>Root cause:</strong> <code>next-pwa@5.6.0</code> pins an old <code>rollup-plugin-terser</code> which requires <code>@babel/helper-validator-identifier</code> — not hoisted by npm v10 in Node 22 environments.</p>
+    <ul>
+      <li>Fix: replace <code>next-pwa@5.6.0</code> with <code>@ducanh2912/next-pwa@^10</code> in <code>platform/engage/web/package.json</code> (and same in pmaas-web)</li>
+      <li>Alternatively: add a <code>resolutions</code> / <code>overrides</code> block to force a compatible <code>@babel/helper-validator-identifier</code></li>
+    </ul>
+  </div>
+
+  <div class="issue-box crit">
+    <h3>🔴 ISSUE-P1S3-02 · pmaas-web: missing RLS SET LOCAL on campaign queries</h3>
+    <p><strong>Severity:</strong> Critical — HC-4 tenant isolation violated</p>
+    <p><strong>Location:</strong> <code>platform/pmaas/web/src/app/api/campaigns/route.ts</code> lines 17–29</p>
+    <p>All three query calls (<code>pool.query</code> for GET/POST/PATCH) execute without <code>SET LOCAL app.tenant_id</code>. A single shared DB connection could cross-contaminate tenant rows. Fix: wrap each handler in <code>pool.connect()</code> and issue <code>SET LOCAL app.tenant_id = $1</code> using the session's <code>tenant_id</code>.</p>
+  </div>
+
+  <div class="issue-box">
+    <h3>🟡 ISSUE-P1S3-03 · engage-web &amp; evalos-web: no "lint" script in engage-web package.json</h3>
+    <p><strong>Severity:</strong> Medium — CI lint gate cannot run</p>
+    <p>Add <code>"lint": "next lint"</code> to the scripts block of <code>platform/engage/web/package.json</code> (same as evalos-web and pmaas-web).</p>
+  </div>
+
+  <div class="issue-box">
+    <h3>🟡 ISSUE-P1S3-04 · X-Tenant-Id header not forwarded in client-side fetch() calls</h3>
+    <p><strong>Severity:</strong> Medium — cross-origin tenant propagation missing</p>
+    <p>All three frontends (engage, evalos, pmaas) make client-side <code>fetch('/api/...')</code> calls with no explicit <code>X-Tenant-Id</code> header. Tenant context is currently carried only via the NextAuth session cookie to server actions. For external API consumers or future service-to-service calls through Kong, the header must be explicitly set.</p>
+    <ul>
+      <li>Create a shared <code>apiFetch(url, opts, session)</code> wrapper that injects <code>Authorization: Bearer &lt;accessToken&gt;</code> and <code>X-Tenant-Id: &lt;tenant_id&gt;</code></li>
+      <li>Required for Kong consumer-level rate limiting by tenant and for backend <code>tenant_id</code> validation on non-Next.js services</li>
+    </ul>
+  </div>
+
+  <div class="issue-box">
+    <h3>🟡 ISSUE-P1S3-05 · pmaas-web contains <code>chromadb</code> dependency (SC-P2-04-A violation)</h3>
+    <p><strong>Severity:</strong> Medium — P2-04 sensor check fails; forbidden direct vector DB coupling</p>
+    <p><strong>Location:</strong> <code>platform/pmaas/web/package.json</code> line 18: <code>"chromadb": "^1.8.1"</code></p>
+    <p>Per SC-P2-04-A the chromadb direct import must be removed. Vector search must route through the MCP Gateway chroma_search tool.</p>
+  </div>
+
+  <div class="issue-box">
+    <h3>🟡 ISSUE-P1S3-06 · ASYNC_CAMPAIGN_SEND feature flag undocumented; default-off means P3-02 contract not active</h3>
+    <p><strong>Severity:</strong> Medium — the P3-02 async contract (HTTP 202) is only reachable when <code>ASYNC_CAMPAIGN_SEND=true</code></p>
+    <p>The env var must be set in <code>platform/engage/web</code> Kubernetes Deployment manifest and documented in the environment run-book. Verify it is set in the ConfigMap / Secret before P3-02 is marked complete.</p>
+  </div>
+
+  <div class="issue-box">
+    <h3>🟡 ISSUE-P1S3-07 · next@14.2.5 has a published security vulnerability</h3>
+    <p><strong>Severity:</strong> Medium security — npm warns of known CVE</p>
+    <p>All three frontends pin <code>next@14.2.5</code>. npm audit warns: <em>"This version has a security vulnerability. Please upgrade."</em> Evaluate upgrading to a patched 14.x release or Next.js 15.x before production rollout.</p>
+  </div>
+
+  
+  <h2>7 · Step Verdict</h2>
+  <table>
+    <thead>
+      <tr><th>Area</th><th>Status</th><th>Blocker?</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Kong route coverage (all 6 prefixes)</td><td><span class="pass">PASS</span></td><td>No</td></tr>
+      <tr><td>JWT auth on all Kong routes</td><td><span class="pass">PASS</span></td><td>No</td></tr>
+      <tr><td>Rate limiting (standard + AI tiers)</td><td><span class="pass">PASS</span></td><td>No</td></tr>
+      <tr><td>CORS explicit allow-list (no wildcard)</td><td><span class="pass">PASS</span></td><td>No</td></tr>
+      <tr><td>SC-P1-03-A rejectUnauthorized clean</td><td><span class="pass">PASS</span></td><td>No</td></tr>
+      <tr><td>HC-7 DEV_BYPASS_AUTH absent from source</td><td><span class="pass">PASS</span></td><td>No</td></tr>
+      <tr><td>POST /api/campaigns/send → HTTP 202 + job_id</td><td><span class="pass">PASS</span> (flag-gated)</td><td>No</td></tr>
+      <tr><td>GET /api/campaigns/send/{jobId} polling endpoint</td><td><span class="pass">PASS</span></td><td>No</td></tr>
+      <tr><td>engage-web build</td><td><span class="fail">FAIL</span> — next-pwa dep breakage</td><td><strong>YES</strong></td></tr>
+      <tr><td>pmaas-web RLS tenant isolation</td><td><span class="fail">FAIL</span> — no SET LOCAL</td><td><strong>YES</strong> (HC-4)</td></tr>
+      <tr><td>X-Tenant-Id header in client fetch()</td><td><span class="fail">ABSENT</span> all 3 frontends</td><td>Conditional</td></tr>
+      <tr><td>chromadb removed from pmaas-web</td><td><span class="fail">FAIL</span> — SC-P2-04-A</td><td>No (Phase 2 gate)</td></tr>
+      <tr><td>lint script in engage-web</td><td><span class="fail">ABSENT</span></td><td>No (CI gap)</td></tr>
+    </tbody>
+  </table>
+
+  <p style="margin-top:16px;font-size:13px;font-weight:600;color:#991b1b">
+    ⛔ STEP-P1-03 STATUS: BLOCKED — 2 hard blockers must be resolved before gate advance:<br />
+      • ISSUE-P1S3-01 (engage-web build failure)<br />
+      • ISSUE-P1S3-02 (pmaas-web HC-4 RLS isolation missing on campaign queries)
+  </p>
+
+</div>
+<footer>Made with IBM Bob</footer>
+</body>
+</html>

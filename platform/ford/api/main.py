@@ -31,6 +31,27 @@ from pydantic import BaseModel, Field
 # Circuit-breaker for the consent-service (fail-closed, STEP-P2-02)
 from platform.consent.circuit_breaker import consent_allowed as _cb_consent_allowed, breaker_state as _cb_state
 
+# ── OpenTelemetry — STEP-P1-13 ────────────────────────────────────────────────
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
+_tracer_provider = TracerProvider()
+_tracer_provider.add_span_processor(
+    BatchSpanProcessor(
+        OTLPSpanExporter(
+            endpoint=os.environ.get(
+                "OTEL_EXPORTER_OTLP_ENDPOINT",
+                "http://otel-collector.i3-monitoring.svc.cluster.local:4317",
+            )
+        )
+    )
+)
+trace.set_tracer_provider(_tracer_provider)
+_tracer = trace.get_tracer("ford-api")
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s [%(name)s] %(message)s")
 log = logging.getLogger("ford-api")
 
@@ -71,6 +92,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="FORD-Asili Registration API", lifespan=lifespan)
+# OTel FastAPI auto-instrumentation (STEP-P1-13)
+FastAPIInstrumentor.instrument_app(app, tracer_provider=_tracer_provider)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -82,9 +105,9 @@ def hmac_token(value: str) -> str:
     making rate-limit and OTP keys collision-resistant across whitespace variants.
     """
     return hmac.new(
-        MEMBER_HMAC_SECRET.encode(),
-        value.strip().upper().encode(),
-        hashlib.sha256,
+        key=MEMBER_HMAC_SECRET.encode(),
+        msg=value.strip().upper().encode(),
+        digestmod=hashlib.sha256,
     ).hexdigest()
 
 

@@ -6,7 +6,7 @@ import { traceLangfuse, estimateTokens } from '@/lib/langfuse'
 import { randomUUID } from 'crypto'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 115   // seconds — covers 110 s LLM AbortSignal + overhead, under 120 s HAProxy cut-off
+export const maxDuration = 120   // seconds — 10 s headroom above 110 s LLM AbortSignal + Langfuse trace overhead
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 

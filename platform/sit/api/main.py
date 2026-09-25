@@ -4,6 +4,7 @@ i3 SIT Digital Work-Centers API — FastAPI
 Endpoints: enrollment, exam booking, credentials, ecitizen, membership, professionals
 """
 import hashlib
+import hmac as _hmac
 import io
 import os
 import uuid
@@ -40,6 +41,7 @@ CONSENT_SERVICE_URL   = os.environ.get(
     "http://consent-service.i3-consent.svc.cluster.local:8000",
 )
 SIT_TENANT_ID         = os.environ.get("SIT_TENANT_ID", "00000000-0000-0000-0000-000000000004")
+MEMBER_HMAC_SECRET    = os.environ["MEMBER_HMAC_SECRET"]  # HC-6: OpenBao-injected
 
 from fastapi.responses import RedirectResponse
 
@@ -124,6 +126,20 @@ class ProfBooking(BaseModel):
     scheduled_at: str
 
 
+# ── HC-6 helper ───────────────────────────────────────────────────────────────
+def _hmac_token(value: str) -> str:
+    """Return HMAC-SHA256(UPPER(STRIP(value)), MEMBER_HMAC_SECRET) hex digest (HC-6).
+
+    Matches the tokenisation contract used by ford/api/main.py.
+    Returns an empty string when value is None / falsy (optional fields).
+    """
+    return _hmac.new(
+        MEMBER_HMAC_SECRET.encode(),
+        value.strip().upper().encode(),
+        hashlib.sha256,
+    ).hexdigest()
+
+
 # ── Learners ──────────────────────────────────────────────────────────────────
 async def _check_sit_consent(subject_hash: str, tenant_id: str) -> None:
     """
@@ -143,19 +159,25 @@ async def _check_sit_consent(subject_hash: str, tenant_id: str) -> None:
 
 @app.post("/api/v1/learners", status_code=201)
 async def create_learner(req: LearnerCreate):
-    # Derive subject hash for consent lookup (use keycloak_sub as the identifier)
-    subject_hash = hashlib.sha256(req.keycloak_sub.encode()).hexdigest()  # public sub; not PII
+    # Derive subject hash for consent lookup (use keycloak_sub as the identifier).
+    # keycloak_sub is a UUID-format public claim (not PII), but we use _hmac_token for
+    # consistency with the platform HC-6 HMAC pattern across all services (MEMBER_HMAC_SECRET).
+    subject_hash = _hmac_token(req.keycloak_sub)
     if req.consent:
         await _check_sit_consent(subject_hash, SIT_TENANT_ID)
     else:
         raise HTTPException(400, "Consent is required under Data Protection Act 2019")
+    # HC-6: HMAC-SHA256 tokenise NID and phone via MEMBER_HMAC_SECRET before storage.
+    # Column names match the 002_rls_all_databases.sql migration (id_number_hmac / phone_hmac).
+    id_number_hmac = _hmac_token(req.id_number) if req.id_number else None
+    phone_hmac     = _hmac_token(req.phone)     if req.phone     else None
     async with get_pool().acquire() as conn:
         row = await conn.fetchrow("""
-            INSERT INTO learners (keycloak_sub, full_name, id_number, phone, email, ward, consent_at)
+            INSERT INTO learners (keycloak_sub, full_name, id_number_hmac, phone_hmac, email, ward, consent_at)
             VALUES ($1,$2,$3,$4,$5,$6, now())
             ON CONFLICT (keycloak_sub) DO UPDATE SET full_name = EXCLUDED.full_name
             RETURNING id, keycloak_sub, full_name, created_at
-        """, req.keycloak_sub, req.full_name, req.id_number, req.phone, req.email, req.ward)
+        """, req.keycloak_sub, req.full_name, id_number_hmac, phone_hmac, req.email, req.ward)
     return dict(row)
 
 

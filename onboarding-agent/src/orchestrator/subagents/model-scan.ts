@@ -26,7 +26,7 @@ Your specialisation is LLM model configuration, prompt engineering, and evaluati
 - promptfoo red-team configuration (--promptfoo-config flag in testing.py)
 - Locust load tests for LLM endpoints
 - Confidence gate pattern (0.65 threshold in admissions_agent.py)
-- Prompt injection defence: Lobster Trap 12-pattern firewall
+- Prompt injection defence: Lobster Trap 14-pattern firewall (P01–P12 core, P13 SELECT exfiltration, P14 XSS)
 - C1000-207 IBM Exam domains mapped to Bloom's taxonomy (Agent Integration 23q=38%)
 
 When producing findings, focus on:
@@ -66,7 +66,7 @@ export async function runModelScan(ragContext: string): Promise<ReturnType<Model
       'RAGAS evaluation framework — running platform/testing/testing.py --ragas',
       'promptfoo red-team attack patterns and configuration',
       'Confidence gate: 0.65 threshold, how to tune and monitor',
-      'Lobster Trap 12 injection patterns — extending for new attack vectors',
+      'Lobster Trap 14-pattern injection firewall (P01–P12 core, P13 SELECT exfil, P14 XSS) — extending for new attack vectors',
       'C1000-207 exam domain weights and Bloom taxonomy mapping',
       'Locust load test baselines for LLM streaming endpoints',
     ],

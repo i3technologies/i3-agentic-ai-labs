@@ -40,17 +40,37 @@ CREATE INDEX idx_questions_stem_trgm    ON questions USING GIN (stem gin_trgm_op
 
 -- ── Exam Definitions ─────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS exams (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    title           TEXT NOT NULL,
-    description     TEXT,
+    id                   UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title                TEXT NOT NULL,
+    description          TEXT,
+    -- Exam code displayed in UI (e.g. "C1000-207-SET1")
+    code                 VARCHAR(50),
     -- Draw spec: [{"topic":"..","count":5,"difficulty_min":2,"difficulty_max":4}, ...]
-    draw_spec       JSONB NOT NULL,
-    duration_secs   INT NOT NULL DEFAULT 3600,
-    passing_score   NUMERIC(5,2) NOT NULL DEFAULT 70.0,
-    profile         CHAR(1) CHECK (profile IN ('A','B','C','D')),
-    is_published    BOOLEAN NOT NULL DEFAULT FALSE,
-    created_by      TEXT NOT NULL,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    draw_spec            JSONB NOT NULL,
+    duration_secs        INT NOT NULL DEFAULT 3600,
+    -- Derived convenience column used by dashboard query (duration_secs / 60)
+    duration_minutes     INTEGER GENERATED ALWAYS AS (duration_secs / 60) STORED,
+    passing_score        NUMERIC(5,2) NOT NULL DEFAULT 70.0,
+    -- Alias so queries can use either column name interchangeably
+    pass_threshold       NUMERIC(5,2) GENERATED ALWAYS AS (passing_score) STORED,
+    -- Maximum attempts a student may make
+    max_attempts         INTEGER NOT NULL DEFAULT 5,
+    -- set_number parsed from code (e.g. "SET1" → 1) for question_count subquery
+    set_number           INTEGER GENERATED ALWAYS AS (
+                             CASE WHEN code ~ 'SET[0-9]+$'
+                             THEN REGEXP_REPLACE(code, '^.*SET', '')::integer
+                             ELSE 0 END
+                         ) STORED,
+    -- Prerequisite: student must pass this exam before attempting this one
+    prerequisite_exam_id UUID REFERENCES exams(id),
+    -- Retake window: hours from first attempt in which retakes are permitted
+    retake_window_hours  INTEGER,
+    -- Whether to shuffle question order per attempt
+    randomize_order      BOOLEAN NOT NULL DEFAULT TRUE,
+    profile              CHAR(1) CHECK (profile IN ('A','B','C','D')),
+    is_published         BOOLEAN NOT NULL DEFAULT FALSE,
+    created_by           TEXT NOT NULL,
+    created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ── Quiz Attempts ─────────────────────────────────────────────────────────────
@@ -76,12 +96,16 @@ CREATE TABLE IF NOT EXISTS quiz_attempts (
     -- Scores
     raw_score           NUMERIC(5,2),
     percentage          NUMERIC(5,2),
+    -- Aliased columns used by results/page.tsx and dashboard/page.tsx queries
+    score               NUMERIC(5,2) GENERATED ALWAYS AS (raw_score) STORED,
+    max_score           NUMERIC(5,2),
+    pct_score           NUMERIC(5,2) GENERATED ALWAYS AS (percentage) STORED,
     passed              BOOLEAN,
     -- MOSS plagiarism
     moss_similarity     NUMERIC(5,2),   -- 0–100%
     moss_report_url     TEXT,
     status              TEXT NOT NULL DEFAULT 'in_progress'
-                        CHECK (status IN ('in_progress','submitted','graded','flagged','voided')),
+                        CHECK (status IN ('in_progress','grading','grading_failed','submitted','graded','flagged','voided')),
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

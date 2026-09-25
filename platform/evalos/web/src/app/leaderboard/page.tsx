@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { authOptions } from '@/lib/auth'
-import pool from '@/lib/db'
+import pool, { setTenantContext } from '@/lib/db'
 
 interface LeaderboardEntry {
   student_id: string
@@ -15,29 +15,36 @@ interface LeaderboardEntry {
   last_active: string | null
 }
 
-async function getLeaderboard(): Promise<LeaderboardEntry[]> {
-  const { rows } = await pool.query<LeaderboardEntry>(`
-    SELECT
-      qa.student_id,
-      COUNT(*) FILTER (WHERE qa.status = 'submitted')::int               AS total_submitted,
-      COUNT(DISTINCT e.id) FILTER (
-        WHERE qa.status = 'submitted' AND qa.passed = true
-      )::int                                                              AS sets_passed,
-      MAX(qa.pct_score) FILTER (WHERE qa.status = 'submitted')           AS best_score,
-      AVG(qa.pct_score) FILTER (WHERE qa.status = 'submitted')           AS avg_score,
-      SUM(
-        COALESCE((qa.proctor_flags->>'focus_lost_count')::int, 0) +
-        COALESCE((qa.proctor_flags->>'fullscreen_exits')::int, 0) +
-        COALESCE((qa.proctor_flags->>'clipboard_events')::int, 0)
-      )::int                                                              AS total_flags,
-      MAX(qa.submitted_at)                                               AS last_active
-    FROM quiz_attempts qa
-    JOIN exams e ON e.id = qa.exam_id
-    GROUP BY qa.student_id
-    HAVING COUNT(*) FILTER (WHERE qa.status = 'submitted') > 0
-    ORDER BY sets_passed DESC, best_score DESC NULLS LAST
-  `)
-  return rows
+// HC-4: tenant_id scoped via RLS — leaderboard shows only same-tenant students
+async function getLeaderboard(tenantId: string): Promise<LeaderboardEntry[]> {
+  const client = await pool.connect()
+  try {
+    await setTenantContext(client, tenantId)
+    const { rows } = await client.query<LeaderboardEntry>(`
+      SELECT
+        qa.student_id,
+        COUNT(*) FILTER (WHERE qa.status = 'submitted')::int               AS total_submitted,
+        COUNT(DISTINCT e.id) FILTER (
+          WHERE qa.status = 'submitted' AND qa.passed = true
+        )::int                                                              AS sets_passed,
+        MAX(qa.pct_score) FILTER (WHERE qa.status = 'submitted')           AS best_score,
+        AVG(qa.pct_score) FILTER (WHERE qa.status = 'submitted')           AS avg_score,
+        SUM(
+          COALESCE((qa.proctor_flags->>'focus_lost_count')::int, 0) +
+          COALESCE((qa.proctor_flags->>'fullscreen_exits')::int, 0) +
+          COALESCE((qa.proctor_flags->>'clipboard_events')::int, 0)
+        )::int                                                              AS total_flags,
+        MAX(qa.submitted_at)                                               AS last_active
+      FROM quiz_attempts qa
+      JOIN exams e ON e.id = qa.exam_id
+      GROUP BY qa.student_id
+      HAVING COUNT(*) FILTER (WHERE qa.status = 'submitted') > 0
+      ORDER BY sets_passed DESC, best_score DESC NULLS LAST
+    `)
+    return rows
+  } finally {
+    client.release()
+  }
 }
 
 async function resolveDisplayNames(
@@ -122,7 +129,8 @@ export default async function LeaderboardPage() {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/api/auth/signin')
 
-  const raw = await getLeaderboard()
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id || '00000000-0000-0000-0000-000000000002'
+  const raw = await getLeaderboard(tenantId)
   const entries = await resolveDisplayNames(raw)
   const currentUserId = session.user.userId || session.user.email || ''
   const myRank = entries.findIndex(e => e.student_id === currentUserId) + 1

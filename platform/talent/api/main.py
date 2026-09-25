@@ -21,6 +21,27 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 
+# ── OpenTelemetry — STEP-P1-13 ────────────────────────────────────────────────
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
+_tracer_provider = TracerProvider()
+_tracer_provider.add_span_processor(
+    BatchSpanProcessor(
+        OTLPSpanExporter(
+            endpoint=os.environ.get(
+                "OTEL_EXPORTER_OTLP_ENDPOINT",
+                "http://otel-collector.i3-monitoring.svc.cluster.local:4317",
+            )
+        )
+    )
+)
+trace.set_tracer_provider(_tracer_provider)
+_tracer = trace.get_tracer("talent-api")
+
 log = logging.getLogger("talent-api")
 logging.basicConfig(level=logging.INFO)
 
@@ -31,9 +52,9 @@ EVALOS_URL   = os.environ.get("EVALOS_URL", "http://evalos-web.i3-evalos.svc.clu
 
 from fastapi.responses import RedirectResponse
 
-# ── Lobster Trap (subset) — guard LLM prompts built from external inputs ──────
+# ── Lobster Trap — guard LLM prompts built from external inputs ───────────────
 # Job descriptions arrive from untrusted callers and are embedded directly in
-# the match prompt.  Block the same 12 patterns used by the Python services.
+# the match prompt.  Canonical 14-pattern set (FINDING-P1-05-1 remediation).
 _TRAP_PATTERNS: list[re.Pattern] = [
     re.compile(r"ignore\s+(all\s+)?previous\s+instructions?", re.I),
     re.compile(r"system\s+prompt\s+override", re.I),
@@ -43,10 +64,12 @@ _TRAP_PATTERNS: list[re.Pattern] = [
     re.compile(r"bypass\s+safety\s+filter", re.I),
     re.compile(r"act\s+as\s+DAN", re.I),
     re.compile(r"jailbreak", re.I),
-    re.compile(r"drop\s+table", re.I),
+    re.compile(r"(drop|delete|truncate)\s+table", re.I),  # expanded — was drop\s+table only
     re.compile(r"prompt\s+injection", re.I),
     re.compile(r"disregard\s+(all\s+)?previous", re.I),
     re.compile(r"\bexfiltrate\b", re.I),
+    re.compile(r"SELECT\s+.+FROM\s+", re.I | re.S),       # SQL exfiltration (added)
+    re.compile(r"<\s*(script|img|iframe|svg)\b", re.I),   # HTML/XSS injection (added)
 ]
 
 
@@ -84,6 +107,8 @@ def get_pool() -> asyncpg.Pool:
 
 
 app = FastAPI(title="i3 Talent Cloud API", version="1.0.0", lifespan=lifespan)
+# OTel FastAPI auto-instrumentation (STEP-P1-13)
+FastAPIInstrumentor.instrument_app(app, tracer_provider=_tracer_provider)
 # CORS is enforced at the Kong API Gateway layer (STEP-P2-07).
 app.add_middleware(
     CORSMiddleware,

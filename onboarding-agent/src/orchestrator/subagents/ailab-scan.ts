@@ -25,9 +25,9 @@ Your specialisation is the LLM / AI infrastructure layer:
 - IBM Cloud credit budget: $14,047.27 expiring Oct 2026 — prefer local Ollama tiers
 - ChromaDB at chromadb.i3-admissions.svc.cluster.local:8000
 - RAG pipeline (admissions-docs collection, onboarding-corpus collection)
-- Lobster Trap prompt injection firewall (12 patterns)
+- Lobster Trap prompt injection firewall (14 patterns: P01–P12 core + P13 SELECT injection + P14 XSS)
 - Admissions agent streaming SSE pattern and confidence gate
-- MCP connectors 2-stage confirmation gate (in-memory _pending dict)
+- MCP connectors 2-stage confirmation gate (_pending state is Redis-backed with 300 s TTL via taskSync.ts)
 - KEDA autoscaler on LiteLLM (1–6 replicas, Prometheus request rate metric)
 - RHOAI namespace (i3-ai-lab) — noted as Month 3 in docs; check if live
 
@@ -70,9 +70,9 @@ export async function runAilabScan(ragContext: string): Promise<ReturnType<Ailab
       'LiteLLM gateway tiers: granite-nano, mistral-nemo, granite-heavy',
       'IBM Cloud credit budget conservation — prefer Ollama Tier 2/3',
       'ChromaDB collections: admissions-docs and onboarding-corpus',
-      'Lobster Trap 12-pattern prompt injection firewall',
+      'Lobster Trap 14-pattern prompt injection firewall (P01–P12 core, P13 SELECT, P14 XSS)',
       'Admissions agent SSE streaming and 0.65 confidence gate',
-      'MCP 2-stage confirmation gate (mcp_connectors.py)',
+      'MCP 2-stage confirmation gate — Redis-backed _pending via taskSync.ts (mcp_connectors.py)',
       'RHOAI i3-ai-lab namespace — stale doc risk (Month 3 caveat)',
       'KEDA autoscaler for LiteLLM on Prometheus metrics',
     ],

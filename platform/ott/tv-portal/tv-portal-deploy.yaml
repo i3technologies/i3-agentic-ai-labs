@@ -1,0 +1,161 @@
+# ============================================================
+# i3 TV Portal — Deployment, Service, Route
+# Namespace: i3-ott
+# URL: https://tv.i3technologies.co.ke
+# Stack: Next.js 15 SSR on Node 20-alpine
+# Connects to: OME (live stats), Directus (VOD), nginx-hls (streams)
+# ============================================================
+
+# ── Namespace label (ensures i3-ott exists with correct labels) ─
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-ott
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+
+---
+# ── Deployment ───────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tv-portal
+  namespace: i3-ott
+  labels:
+    app: tv-portal
+    app.kubernetes.io/part-of: i3-platform
+  annotations:
+    app.openshift.io/connects-to: '["ome-origin","directus","nginx-hls"]'
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tv-portal
+  template:
+    metadata:
+      labels:
+        app: tv-portal
+    spec:
+      securityContext:
+        runAsUser: 1001
+        runAsNonRoot: true
+        runAsGroup: 1001
+      containers:
+        - name: tv-portal
+          image: image-registry.openshift-image-registry.svc:5000/i3-ott/tv-portal:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "3000"
+            - name: HOSTNAME
+              value: "0.0.0.0"
+            # Public-facing HLS CDN base URL (nginx-hls Route)
+            - name: NEXT_PUBLIC_HLS_BASE_URL
+              value: "https://stream.i3technologies.co.ke"
+            # Public CMS URL (Directus Route)
+            - name: NEXT_PUBLIC_CMS_URL
+              value: "https://cms.i3technologies.co.ke"
+            # SSO URL for account link
+            - name: NEXT_PUBLIC_SSO_URL
+              value: "https://sso.i3technologies.co.ke"
+            # Internal service URLs (cluster-local, never exposed)
+            - name: OME_INTERNAL_URL
+              value: "http://ome-origin.i3-ott.svc.cluster.local:8081"
+            - name: DIRECTUS_INTERNAL_URL
+              value: "http://directus.i3-ott.svc.cluster.local:8055"
+            - name: DIRECTUS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: tv-portal-secrets
+                  key: DIRECTUS_TOKEN
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+      terminationGracePeriodSeconds: 30
+
+---
+# ── Secret (placeholder — patch with real token after apply, see runbook) ──
+# oc patch secret tv-portal-secrets -n i3-ott \
+#   -p '{"stringData":{"DIRECTUS_TOKEN":"<your-token>"}}'
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tv-portal-secrets
+  namespace: i3-ott
+  annotations:
+    openbao.org/agent-inject: "true"
+    openbao.org/role: "ott"
+type: Opaque
+stringData:
+  DIRECTUS_TOKEN: ""
+
+---
+# ── Service ─────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: tv-portal
+  namespace: i3-ott
+  labels:
+    app: tv-portal
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  selector:
+    app: tv-portal
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+  type: ClusterIP
+
+---
+# ── OpenShift Route — tv.i3technologies.co.ke ───────────────
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: tv-portal
+  namespace: i3-ott
+  labels:
+    app: tv-portal
+    app.kubernetes.io/part-of: i3-platform
+  annotations:
+    # Increase timeout for SSR pages that call upstream services
+    haproxy.router.openshift.io/timeout: 60s
+spec:
+  host: tv.i3technologies.co.ke
+  to:
+    kind: Service
+    name: tv-portal
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+    # Certificate managed by OpenShift cert-manager / cluster wildcard TLS
+  wildcardPolicy: None

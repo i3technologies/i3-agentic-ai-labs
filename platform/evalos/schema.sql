@@ -36,20 +36,40 @@ CREATE INDEX idx_questions_active ON questions (is_active) WHERE is_active = TRU
 
 -- ── Exams ─────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS exams (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    title           VARCHAR(255) NOT NULL,
-    description     TEXT,
-    cohort_id       VARCHAR(50),
-    track           CHAR(1) CHECK (track IN ('A','B','C','D')),
-    duration_secs   INTEGER NOT NULL DEFAULT 5400,  -- 90 minutes default
-    draw_spec       JSONB NOT NULL,                 -- [{topic, count, difficulty_min, difficulty_max}]
-    pass_threshold  NUMERIC(5,2) NOT NULL DEFAULT 60.0,
-    is_published    BOOLEAN NOT NULL DEFAULT FALSE,
-    start_time      TIMESTAMPTZ,
-    end_time        TIMESTAMPTZ,
-    created_by      UUID,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    id                   UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title                VARCHAR(255) NOT NULL,
+    description          TEXT,
+    -- Exam code displayed in UI (e.g. "C1000-207-SET1")
+    code                 VARCHAR(50),
+    cohort_id            VARCHAR(50),
+    track                CHAR(1) CHECK (track IN ('A','B','C','D')),
+    duration_secs        INTEGER NOT NULL DEFAULT 5400,  -- 90 minutes default
+    -- Derived column used by dashboard: duration_minutes = duration_secs / 60
+    duration_minutes     INTEGER GENERATED ALWAYS AS (duration_secs / 60) STORED,
+    draw_spec            JSONB NOT NULL,                 -- [{topic, count, difficulty_min, difficulty_max}]
+    pass_threshold       NUMERIC(5,2) NOT NULL DEFAULT 60.0,
+    -- Alias for compatibility with db/schema.sql which uses passing_score
+    passing_score        NUMERIC(5,2) GENERATED ALWAYS AS (pass_threshold) STORED,
+    -- Maximum attempts a student may make
+    max_attempts         INTEGER NOT NULL DEFAULT 5,
+    -- If set, student must re-attempt within this window (hours) after first attempt
+    retake_window_hours  INTEGER,
+    -- set_number is parsed from code (e.g. "SET1" → 1); used by question_count subquery
+    set_number           INTEGER GENERATED ALWAYS AS (
+                             CASE WHEN code ~ 'SET[0-9]+$'
+                             THEN REGEXP_REPLACE(code, '^.*SET', '')::integer
+                             ELSE 0 END
+                         ) STORED,
+    -- Prerequisite exam: student must pass this exam before attempting this one
+    prerequisite_exam_id UUID REFERENCES exams(id),
+    -- Whether to shuffle question order per attempt
+    randomize_order      BOOLEAN NOT NULL DEFAULT TRUE,
+    is_published         BOOLEAN NOT NULL DEFAULT FALSE,
+    start_time           TIMESTAMPTZ,
+    end_time             TIMESTAMPTZ,
+    created_by           UUID,
+    created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_exams_cohort ON exams (cohort_id);
@@ -62,7 +82,7 @@ CREATE TABLE IF NOT EXISTS quiz_attempts (
     student_id          VARCHAR(255) NOT NULL,  -- Keycloak subject claim
     cohort_id           VARCHAR(50),
     status              VARCHAR(20) NOT NULL DEFAULT 'in_progress'
-                            CHECK (status IN ('in_progress','submitted','graded','flagged','invalidated')),
+                            CHECK (status IN ('in_progress','grading','grading_failed','submitted','graded','flagged','invalidated')),
     question_snapshot   JSONB NOT NULL,         -- Randomized question order + shuffled options
     answers             JSONB DEFAULT '{}',     -- {question_id: answer_value}
     score               NUMERIC(5,2),

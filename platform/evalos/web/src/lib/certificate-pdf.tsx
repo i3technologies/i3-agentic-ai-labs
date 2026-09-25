@@ -271,16 +271,25 @@ const s = StyleSheet.create({
 })
 
 // ── i3 Logo rendered as SVG primitives ────────────────────────────────────────
+// @react-pdf/renderer v3 has incomplete SVG typedef overloads — fill/stroke are
+// not declared on Circle, Rect, or Path. Cast through any to unblock compilation.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const AnyCircle = Circle as any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const AnyRect   = Rect   as any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const AnyPath   = Path   as any
+
 function I3Logo({ size }: { size: number }) {
   const w = (120 / 40) * size
   return (
     <Svg width={w} height={size} viewBox="0 0 120 40">
-      <Circle cx="12" cy="8" r="4" fill="#60A5FA" />
-      <Rect x="9" y="15" width="6" height="20" rx="3" fill="#60A5FA" />
-      <Path
+      <AnyCircle cx={12} cy={8} r={4} fill="#60A5FA" />
+      <AnyRect   x={9} y={15} width={6} height={20} rx={3} fill="#60A5FA" />
+      <AnyPath
         d="M32 12 Q48 12 48 20 Q48 28 36 28 Q48 28 48 34 Q48 40 32 40"
         stroke="#60A5FA"
-        strokeWidth="5.5"
+        strokeWidth={5.5}
         strokeLinecap="round"
         fill="none"
       />

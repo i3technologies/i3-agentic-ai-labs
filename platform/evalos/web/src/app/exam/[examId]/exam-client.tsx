@@ -209,13 +209,24 @@ export default function ExamClient({
     setSubmitting(true)
     await flushAnticheat()
     try {
-      await fetch(`/api/exam/${exam.id}/submit`, {
+      const res = await fetch(`/api/exam/${exam.id}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ attemptId }),
       })
-      router.push(`/exam/${exam.id}/results?attemptId=${attemptId}`)
+      if (res.ok) {
+        router.push(`/exam/${exam.id}/results?attemptId=${attemptId}`)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        if (res.status === 503 && data.retryable) {
+          setError(data.message ?? 'Grading is temporarily unavailable. Your answers are saved — please resubmit shortly.')
+        } else {
+          setError('Submission failed. Please try again.')
+        }
+        setSubmitting(false)
+      }
     } catch {
+      setError('Submission failed. Please check your connection and try again.')
       setSubmitting(false)
     }
   }, [attemptId, exam.id, flushAnticheat, router, submitting])
@@ -226,14 +237,24 @@ export default function ExamClient({
     setShowConfirm(false)
     await flushAnticheat()
     try {
-      await fetch(`/api/exam/${exam.id}/submit`, {
+      const res = await fetch(`/api/exam/${exam.id}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ attemptId }),
       })
-      router.push(`/exam/${exam.id}/results?attemptId=${attemptId}`)
+      if (res.ok) {
+        router.push(`/exam/${exam.id}/results?attemptId=${attemptId}`)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        if (res.status === 503 && data.retryable) {
+          setError(data.message ?? 'Grading is temporarily unavailable. Your answers are saved — please resubmit shortly.')
+        } else {
+          setError('Submission failed. Please try again.')
+        }
+        setSubmitting(false)
+      }
     } catch {
-      setError('Submission failed. Please try again.')
+      setError('Submission failed. Please check your connection and try again.')
       setSubmitting(false)
     }
   }

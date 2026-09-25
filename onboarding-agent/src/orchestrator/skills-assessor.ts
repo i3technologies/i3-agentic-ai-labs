@@ -218,7 +218,7 @@ const SCAN_PLANS: Record<OnboardingRole, ScanPlan[]> = {
       query:        'Lobster Trap prompt injection firewall security MCP confirmation gate',
       roleTag:      'security_engineer',
       focusAreas: [
-        'Lobster Trap 12-pattern prompt injection defence',
+        'Lobster Trap 14-pattern prompt injection defence (P01–P14)',
         'MCP 2-stage confirmation gate prevents unsanctioned writes',
         'Human approval gates: green/yellow/red policy',
         'LiteLLM key rotation and API key management',

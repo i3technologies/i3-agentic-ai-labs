@@ -271,7 +271,11 @@ export async function POST(
     const examCodeRow = (await client.query(`SELECT code FROM exams WHERE id = $1`, [examId])).rows[0]
     const examCode: string = examCodeRow?.code ?? examId
 
-    if (passed && examCode.endsWith('SET6')) {
+    // Enrolment queue: trigger for any final set (SET6 or SET7+) when passed
+    const SET_RE = /SET(\d+)$/
+    const setMatch = examCode.match(SET_RE)
+    const setNumber = setMatch ? parseInt(setMatch[1], 10) : 0
+    if (passed && setNumber >= 6) {
       client.query(
         `INSERT INTO enrolment_queue
            (student_id, email, cohort_id, evalos_score, status)
@@ -314,7 +318,8 @@ export async function POST(
       student_name: session.user.name || session.user.email || userId,
       student_email: session.user.email || '',
       exam_code: examCode,
-      set6_completed: passed && examCode.endsWith('SET6'),
+      set_number: setNumber,
+      final_set_completed: passed && setNumber >= 6,
       pct_score,
       correct: score,
       total: max_score,

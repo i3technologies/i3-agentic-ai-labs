@@ -6,7 +6,7 @@ import pool, { setTenantContext } from '@/lib/db'
 import { runEvaluationPipeline, type AgentInput } from '@/lib/agent-pipeline'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 115
+export const maxDuration = 120   // 10 s headroom above the 60 s per-agent LLM AbortSignal × 5 stages
 
 /**
  * POST /api/agent/evaluate

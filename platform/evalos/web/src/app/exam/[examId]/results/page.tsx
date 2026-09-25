@@ -6,9 +6,10 @@ import pool, { setTenantContext } from '@/lib/db'
 import CertificateButton from './certificate-button'
 import StudyCoachPanel from './study-coach-panel'
 
+// Next.js 15: params and searchParams are Promises — must be awaited
 interface ResultsPageProps {
-  params: { examId: string }
-  searchParams: { attemptId?: string }
+  params: Promise<{ examId: string }>
+  searchParams: Promise<{ attemptId?: string }>
 }
 
 interface AttemptRow {
@@ -47,14 +48,19 @@ interface DomainRow {
   pct: number
 }
 
-async function getAttemptResults(attemptId: string, userId: string, tenantId: string): Promise<AttemptRow | null> {
+async function getAttemptResults(
+  attemptId: string,
+  userId: string,
+  tenantId: string
+): Promise<(AttemptRow & { status: string }) | null> {
   const client = await pool.connect()
   try {
     await setTenantContext(client, tenantId)
-    const { rows } = await client.query<AttemptRow>(
+    const { rows } = await client.query<AttemptRow & { status: string }>(
       `SELECT
          qa.id,
          qa.exam_id,
+         qa.status,
          e.title AS exam_title,
          e.code  AS exam_code,
          COALESCE(e.pass_threshold, e.passing_score, 68) AS pass_threshold,
@@ -68,7 +74,7 @@ async function getAttemptResults(attemptId: string, userId: string, tenantId: st
        FROM quiz_attempts qa
        JOIN exams e ON e.id = qa.exam_id
        WHERE qa.id = $1 AND qa.student_id = $2
-         AND qa.status IN ('submitted','graded')`,
+         AND qa.status IN ('submitted','graded','grading','grading_failed')`,
       [attemptId, userId]
     )
     return rows[0] ?? null
@@ -119,8 +125,9 @@ export default async function ResultsPage({ params, searchParams }: ResultsPageP
   if (!session) redirect('/api/auth/signin')
 
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-  const examId = params.examId
-  const attemptId = searchParams.attemptId ?? ''
+  const { examId }    = await params
+  const { attemptId: rawAttemptId } = await searchParams
+  const attemptId = rawAttemptId ?? ''
 
   if (!UUID_RE.test(examId) || !UUID_RE.test(attemptId)) redirect('/dashboard')
 
@@ -129,6 +136,48 @@ export default async function ResultsPage({ params, searchParams }: ResultsPageP
   const attempt  = await getAttemptResults(attemptId, userId, tenantId)
 
   if (!attempt) redirect('/dashboard')
+
+  // Grading in progress — show a holding page so students don't see a blank dashboard
+  if (attempt.status === 'grading' || attempt.status === 'grading_failed') {
+    const isRetryable = attempt.status === 'grading_failed'
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+        <div className="bg-white border border-slate-200 rounded-xl p-10 inline-block">
+          <div className="text-4xl mb-4">{isRetryable ? '⚠️' : '⏳'}</div>
+          <h1 className="text-xl font-bold text-slate-900 mb-2">
+            {isRetryable ? 'Grading temporarily unavailable' : 'Your exam is being graded…'}
+          </h1>
+          <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">
+            {isRetryable
+              ? 'The grading service encountered an issue. Your answers are safely saved. Please go back and resubmit.'
+              : 'This usually takes a few seconds. Refresh this page to check for your results.'}
+          </p>
+          <div className="flex flex-wrap gap-3 justify-center">
+            {isRetryable && (
+              <a
+                href={`/exam/${examId}`}
+                className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Resubmit Exam
+              </a>
+            )}
+            <a
+              href={`/exam/${examId}/results?attemptId=${attemptId}`}
+              className="px-5 py-2.5 border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors"
+            >
+              Refresh
+            </a>
+            <a
+              href="/dashboard"
+              className="px-5 py-2.5 border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors"
+            >
+              Back to Dashboard
+            </a>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const domains = computeDomainBreakdown(attempt.question_snapshot, attempt.answers)
   const score = Math.round(attempt.pct_score)

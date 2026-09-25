@@ -4,8 +4,9 @@ import { authOptions } from '@/lib/auth'
 import pool, { setTenantContext } from '@/lib/db'
 import ExamClient from './exam-client'
 
+// Next.js 15: params is a Promise — must be awaited
 interface ExamPageProps {
-  params: { examId: string }
+  params: Promise<{ examId: string }>
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -51,7 +52,7 @@ export default async function ExamPage({ params }: ExamPageProps) {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/api/auth/signin')
 
-  const examId = params.examId
+  const { examId } = await params
   if (!UUID_RE.test(examId)) redirect('/dashboard')
 
   const tenantId = (session.user as { tenant_id?: string }).tenant_id || '00000000-0000-0000-0000-000000000002'

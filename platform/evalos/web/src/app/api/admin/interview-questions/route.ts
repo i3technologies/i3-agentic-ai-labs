@@ -5,8 +5,9 @@ import pool, { setTenantContext } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-function isAdmin(session: { user: { roles?: string[] } }): boolean {
-  return session.user.roles?.includes('admin') ?? false
+// HC-7 / auth alignment: use isAdmin from session (role = 'i3-admin') consistent with all other routes
+function isAdmin(session: { user: { isAdmin?: boolean } }): boolean {
+  return session.user.isAdmin === true
 }
 
 export async function GET(req: NextRequest) {

@@ -5,7 +5,7 @@ import { authOptions } from '@/lib/auth'
 import pool, { setTenantContext } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 115
+export const maxDuration = 120   // 10 s headroom above 60 s LLM AbortSignal + DB persist overhead
 
 /**
  * POST /api/ai-engineering/assess

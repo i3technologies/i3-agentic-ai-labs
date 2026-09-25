@@ -419,8 +419,16 @@ export default async function DashboardPage() {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      {attempt.status === 'submitted' ? (
+                      {attempt.status === 'submitted' || attempt.status === 'graded' ? (
                         <ScoreBadge score={attempt.pct_score} passed={attempt.passed} />
+                      ) : attempt.status === 'grading' ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                          Grading…
+                        </span>
+                      ) : attempt.status === 'grading_failed' ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-800">
+                          Grading failed — resubmit
+                        </span>
                       ) : (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
                           In Progress
@@ -431,7 +439,7 @@ export default async function DashboardPage() {
                       {new Date(attempt.started_at).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {attempt.status === 'submitted' ? (
+                      {attempt.status === 'submitted' || attempt.status === 'graded' ? (
                         <div className="flex flex-col items-end gap-1">
                           <Link
                             href={`/exam/${attempt.exam_id}/results?attemptId=${attempt.id}`}
@@ -448,6 +456,13 @@ export default async function DashboardPage() {
                             </Link>
                           )}
                         </div>
+                      ) : attempt.status === 'grading_failed' ? (
+                        <Link
+                          href={`/exam/${attempt.exam_id}`}
+                          className="text-xs text-orange-600 hover:underline font-medium"
+                        >
+                          Resubmit →
+                        </Link>
                       ) : (
                         <span className="text-xs text-slate-400">—</span>
                       )}

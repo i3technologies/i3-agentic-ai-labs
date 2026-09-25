@@ -1,0 +1,294 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Phase 1 · Step 4 — Git Health Ledger</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px; line-height: 1.6;
+    background: #ffffff; color: #1f2328;
+    max-width: 760px; margin: 0 auto; padding: 32px 24px 48px;
+  }
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  h2 { font-size: 14px; font-weight: 600; margin: 28px 0 10px; text-transform: uppercase;
+       letter-spacing: .05em; color: #57606a; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
+  h3 { font-size: 13px; font-weight: 600; margin: 16px 0 6px; }
+  .meta { font-size: 12px; color: #57606a; margin-bottom: 24px; }
+  .badge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border-radius: 12px; vertical-align: middle; white-space: nowrap;
+  }
+  .pass  { background: #dcfce7; color: #166534; }
+  .warn  { background: #fef9c3; color: #713f12; }
+  .fail  { background: #fee2e2; color: #991b1b; }
+  .info  { background: #eff6ff; color: #1e40af; }
+  .note  { background: #f7f8fa; color: #57606a; }
+
+  /* commit box */
+  .commit-box {
+    background: #f7f8fa; border: 1px solid #e5e7eb;
+    border-radius: 8px; padding: 16px 20px; margin-bottom: 20px;
+  }
+  .commit-box .sha  { font-family: "Consolas","Courier New",monospace; font-size: 13px;
+                      font-weight: 700; color: #3b82d4; }
+  .commit-box .msg  { font-size: 13px; margin-top: 4px; font-weight: 600; }
+  .commit-box .sub  { font-size: 12px; color: #57606a; margin-top: 2px; }
+
+  /* tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 8px; }
+  th { background: #f7f8fa; text-align: left; padding: 7px 10px;
+       font-weight: 600; border-bottom: 1px solid #e5e7eb; }
+  td { padding: 6px 10px; border-bottom: 1px solid #f0f1f3; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  code { font-family: "Consolas","Courier New",monospace; font-size: 12px;
+         background: #f7f8fa; padding: 1px 4px; border-radius: 3px; }
+
+  /* sweep blocks */
+  .sweep { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px;
+           padding: 12px 16px; margin-bottom: 12px; }
+  .sweep .cmd  { font-family: "Consolas","Courier New",monospace; font-size: 12px;
+                 color: #57606a; margin-bottom: 6px; }
+  .sweep .result { font-size: 13px; font-weight: 600; }
+
+  /* findings */
+  .finding { border-left: 3px solid #e5e7eb; padding: 8px 12px; margin-bottom: 8px;
+             background: #fafbfc; }
+  .finding.warn  { border-left-color: #ca8a04; }
+  .finding.info  { border-left-color: #3b82d4; }
+  .finding.pass  { border-left-color: #16a34a; }
+
+  .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 8px; }
+  .summary-card { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 8px;
+                  padding: 14px 16px; text-align: center; }
+  .summary-card .num  { font-size: 28px; font-weight: 700; }
+  .summary-card .lbl  { font-size: 11px; color: #57606a; margin-top: 2px; }
+  .summary-card.green .num { color: #16a34a; }
+  .summary-card.amber .num { color: #ca8a04; }
+  .summary-card.red   .num { color: #dc2626; }
+
+  footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e5e7eb;
+           text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+
+<h1>Phase 1 · Step 4 — Git Health Ledger</h1>
+<p class="meta">Branch: <strong>main</strong>  ·  Audited: <strong>2026-09-24</strong>  ·  Platform: i3 Agentic AI Labs</p>
+
+
+<div class="commit-box">
+  <div class="sha">HEAD  6a5a682ab8d62b0fc56d229e69c4587fc74b98d3</div>
+  <div class="msg">fix(infra): remediate all P1 audit action items</div>
+  <div class="sub">Author: i3 Agentic AI Labs &lt;hackathon@i3technologies.co.ke&gt;  ·  2026-09-24 15:59:11 +0300</div>
+</div>
+
+
+<h2>Audit Scorecard</h2>
+<div class="summary-grid">
+  <div class="summary-card amber">
+    <div class="num">26</div>
+    <div class="lbl">Modified files (unstaged)</div>
+  </div>
+  <div class="summary-card green">
+    <div class="num">0</div>
+    <div class="lbl">Tracked secret files</div>
+  </div>
+  <div class="summary-card green">
+    <div class="num">0</div>
+    <div class="lbl">Hardcoded literal secrets</div>
+  </div>
+</div>
+
+
+<h2>1 · Working Tree Status</h2>
+<h3>1a — Modified (unstaged) tracked files — 26 files</h3>
+<table>
+  <thead><tr><th>Path</th><th>Change</th><th>ADR / HC signal</th></tr></thead>
+  <tbody>
+    <tr><td><code>platform/engage/web/src/lib/db.ts</code></td><td>+50 / restructured pool</td><td><span class="badge pass">ADR-004 ✓</span> <code>rejectUnauthorized: true</code>, CA cert</td></tr>
+    <tr><td><code>platform/pmaas/web/src/lib/db.ts</code></td><td>+52 / restructured pool</td><td><span class="badge pass">ADR-004 ✓</span> <code>rejectUnauthorized: true</code>, CA cert</td></tr>
+    <tr><td><code>platform/engage/web/src/lib/auth.ts</code></td><td>−19 / auth rewrite</td><td><span class="badge pass">HC-4 ✓</span> tenant_id extracted from Keycloak claim</td></tr>
+    <tr><td><code>platform/pmaas/web/src/lib/auth.ts</code></td><td>−22 / auth rewrite</td><td><span class="badge pass">HC-4 ✓</span> tenant_id propagated to session</td></tr>
+    <tr><td><code>platform/pmaas/web/src/app/api/campaigns/route.ts</code></td><td>+98 / full route</td><td><span class="badge warn">ADR-004 ⚠</span> tenant_id absent from SQL queries — see findings</td></tr>
+    <tr><td><code>platform/engage/web/src/app/api/campaigns/send/route.ts</code></td><td>+13</td><td><span class="badge pass">ADR-006 ✓</span> HMAC <code>timingSafeEqual</code> on Brevo webhook</td></tr>
+    <tr><td><code>platform/engage/web/src/app/api/contacts/route.ts</code></td><td>+8</td><td><span class="badge pass">ADR-004 ✓</span></td></tr>
+    <tr><td><code>platform/mcp-gateway/main.py</code></td><td>+2</td><td><span class="badge pass">ADR-003 ✓</span> X-Tenant-Id enforced; rate-limit keyed by tenant</td></tr>
+    <tr><td><code>platform/mcp-gateway/tools/postgres_members_write.py</code></td><td>+19</td><td><span class="badge pass">HC-4 ✓ HC-6 ✓</span> tenant_id on every INSERT; HMAC token validated</td></tr>
+    <tr><td><code>platform/mcp-gateway/tools/calendar_book.py</code></td><td>+2</td><td>—</td></tr>
+    <tr><td><code>platform/mcp-gateway/tools/chroma_search.py</code></td><td>+2</td><td>—</td></tr>
+    <tr><td><code>platform/mcp-gateway/tools/directus_tasks.py</code></td><td>+2</td><td>—</td></tr>
+    <tr><td><code>platform/mcp-gateway/tools/github_pr_create.py</code></td><td>+2</td><td>—</td></tr>
+    <tr><td><code>platform/mcp-gateway/tools/litellm_chat.py</code></td><td>+2</td><td>—</td></tr>
+    <tr><td><code>platform/mcp-gateway/tools/n8n_enrolment.py</code></td><td>+2</td><td>—</td></tr>
+    <tr><td><code>platform/mcp-gateway/tools/odoo_crm.py</code></td><td>+2</td><td>—</td></tr>
+    <tr><td><code>platform/scripts/moodle_fixver.py</code></td><td>+25 / vault migration</td><td><span class="badge pass">ADR-007 ✓</span> credentials via <code>get_vault_secret("i3/edbridge/db")</code></td></tr>
+    <tr><td><code>platform/scripts/n8n_setpass.py</code></td><td>+29 / vault migration</td><td><span class="badge pass">ADR-007 ✓</span> credentials via <code>get_vault_secret("i3/n8n/db")</code></td></tr>
+    <tr><td><code>platform/testing/test_metering_spine.py</code></td><td>+18</td><td>—</td></tr>
+    <tr><td><code>platform/engage/web/next.config.js</code></td><td>+2</td><td>—</td></tr>
+    <tr><td><code>platform/engage/web/package.json</code></td><td>+8</td><td>—</td></tr>
+    <tr><td><code>platform/pmaas/web/next.config.js</code></td><td>+2</td><td>—</td></tr>
+    <tr><td><code>platform/pmaas/web/package.json</code></td><td>+5</td><td>—</td></tr>
+    <tr><td><code>platform/engage/web/src/app/dashboard/DashboardClient.tsx</code></td><td>+2</td><td>—</td></tr>
+    <tr><td><code>platform/engage/web/src/app/sms/SmsClient.tsx</code></td><td>+2</td><td>—</td></tr>
+    <tr><td><code>platform/engage/web/tsconfig.tsbuildinfo</code></td><td>+2</td><td>Build artifact</td></tr>
+  </tbody>
+</table>
+
+<h3>1b — Untracked files (not yet staged)</h3>
+<table>
+  <thead><tr><th>Path</th><th>Type</th><th>Risk</th></tr></thead>
+  <tbody>
+    <tr><td><code>i3-platform-secret-rotation-verification-final-report.html</code></td><td>Report artifact</td><td><span class="badge note">Low — doc only</span></td></tr>
+    <tr><td><code>phase-1-step-3-api-synchronization-route-verification.html</code></td><td>Report artifact</td><td><span class="badge note">Low — doc only</span></td></tr>
+    <tr><td><code>platform/migrations/apply_tenant_id_remediation.sql</code></td><td>SQL migration</td><td><span class="badge info">Needs commit or .gitignore</span></td></tr>
+    <tr><td><code>platform/scripts/Invoke-DbAudit.ps1</code></td><td>PS1 script</td><td><span class="badge info">Needs commit or .gitignore</span></td></tr>
+    <tr><td><code>platform/engage/web/.eslintrc.json</code></td><td>Config</td><td><span class="badge note">Low</span></td></tr>
+    <tr><td><code>platform/engage/web/.next/</code></td><td>Build output</td><td><span class="badge note">Should be .gitignored</span></td></tr>
+    <tr><td><code>platform/engage/web/next-env.d.ts</code></td><td>Generated</td><td><span class="badge note">Low</span></td></tr>
+    <tr><td><code>platform/engage/web/package-lock.json</code></td><td>Lock file</td><td><span class="badge note">Low</span></td></tr>
+    <tr><td><code>platform/engage/web/public/sw.js</code></td><td>PWA service worker</td><td><span class="badge note">Low</span></td></tr>
+    <tr><td><code>platform/engage/web/public/workbox-f1770938.js</code></td><td>Build output</td><td><span class="badge note">Low</span></td></tr>
+    <tr><td><code>platform/pmaas/web/.eslintrc.json</code></td><td>Config</td><td><span class="badge note">Low</span></td></tr>
+    <tr><td><code>platform/pmaas/web/.next/</code></td><td>Build output</td><td><span class="badge note">Should be .gitignored</span></td></tr>
+    <tr><td><code>platform/pmaas/web/next-env.d.ts</code></td><td>Generated</td><td><span class="badge note">Low</span></td></tr>
+    <tr><td><code>platform/pmaas/web/package-lock.json</code></td><td>Lock file</td><td><span class="badge note">Low</span></td></tr>
+    <tr><td><code>platform/pmaas/web/public/sw.js</code></td><td>PWA service worker</td><td><span class="badge note">Low</span></td></tr>
+    <tr><td><code>platform/pmaas/web/public/workbox-c2c0676f.js</code></td><td>Build output</td><td><span class="badge note">Low</span></td></tr>
+  </tbody>
+</table>
+
+
+<h2>2 · ADR Compliance — Committed Modifications</h2>
+<table>
+  <thead><tr><th>ADR</th><th>Title</th><th>Evidence in this diff</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td>ADR-001</td><td>Consent service extraction</td><td>No changes to consent paths in this set of files</td><td><span class="badge note">N/A</span></td></tr>
+    <tr><td>ADR-002</td><td>Agent registry manifest schema</td><td>No manifest changes in this commit; <code>admissions-agent-v1.yaml</code> unchanged</td><td><span class="badge note">N/A</span></td></tr>
+    <tr><td>ADR-003</td><td>MCP Tool Gateway</td><td><code>main.py</code>: X-Tenant-Id header enforced; rate-limit and audit log keyed by tenant. All tool handlers require <code>tenant_id</code> arg.</td><td><span class="badge pass">COMPLIANT</span></td></tr>
+    <tr><td>ADR-004</td><td>Tenant isolation (HC-4)</td><td><strong>db.ts</strong> both services: <code>rejectUnauthorized:true</code>, CA cert. <strong>auth.ts</strong>: tenant_id injected from Keycloak claim into session. <strong>pmaas/campaigns</strong>: tenant_id absent from SQL — flagged below.</td><td><span class="badge warn">PARTIAL ⚠</span></td></tr>
+    <tr><td>ADR-005</td><td>Credential grading extraction</td><td>No evalos changes in this commit set</td><td><span class="badge note">N/A</span></td></tr>
+    <tr><td>ADR-006</td><td>API gateway / auth</td><td><code>send/route.ts</code>: HMAC <code>timingSafeEqual</code> on Brevo webhook signature; all routes call <code>getServerSession</code> with hard 401 on failure</td><td><span class="badge pass">COMPLIANT</span></td></tr>
+    <tr><td>ADR-007</td><td>OpenBao KV v2 migration</td><td><code>moodle_fixver.py</code> and <code>n8n_setpass.py</code>: all secrets via <code>get_vault_secret("i3/...")</code>; zero hardcoded values</td><td><span class="badge pass">COMPLIANT</span></td></tr>
+  </tbody>
+</table>
+
+
+<h2>3 · Secret File Sweep</h2>
+<div class="sweep">
+  <div class="cmd">git ls-files | Select-String -Pattern '\.env$|\.env\.local$|secret-patch\.json$'</div>
+  <div class="result"><span class="badge pass">✓ EMPTY — 0 matches</span>   No tracked .env, .env.local, or secret-patch.json files found.</div>
+</div>
+<div class="sweep">
+  <div class="cmd">git ls-files --others --exclude-standard | Select-String -Pattern '\.env|secret|credential|password|\.key$|\.pem$'</div>
+  <div class="result"><span class="badge pass">✓ EMPTY — 0 matches</span>   The only untracked sensitive-looking file is <code>i3-platform-secret-rotation-verification-final-report.html</code> (a report artifact, no credentials inside).</div>
+</div>
+
+
+<h2>4 · Secret Content Sweep (tracked source files)</h2>
+<div class="sweep">
+  <div class="cmd">git grep -n "password\s*=" -- "*.ts" "*.py" "*.js" | filter: not (process.env | os.getenv | os.environ | get_vault_secret | comment lines)</div>
+  <div class="result"><span class="badge pass">✓ NO HARDCODED LITERALS</span>   All matches are either parameterised queries (<code>password=$1</code>), env var lookups (<code>process.env.X</code>), or vault calls (<code>get_vault_secret("i3/...")</code>).</div>
+</div>
+<div class="sweep">
+  <div class="cmd">git grep -n "secret\s*=" -- "*.ts" "*.py" "*.js" | filter: literal values only</div>
+  <div class="result"><span class="badge pass">✓ NO HARDCODED LITERALS</span>   All secret assignments resolve to <code>os.getenv()</code>, <code>os.environ[]</code>, <code>process.env.X</code>, or test fixture stubs.</div>
+</div>
+<p style="font-size:13px;color:#57606a;margin-top:8px">
+  Notable clean patterns confirmed: 
+  <code>MPESA_CONSUMER_SECRET = frappe.conf.get("…", os.getenv("…",""))</code> ·
+  <code>client_secret = os.environ["KEYCLOAK_CLIENT_SECRET"]</code> ·
+  <code>MEMBER_HMAC_SECRET = os.getenv("MEMBER_HMAC_SECRET","") </code> — all environment-injected.
+</p>
+
+
+<h2>5 · HC-7 — DEV_BYPASS_AUTH Sweep</h2>
+<div class="sweep">
+  <div class="cmd">git grep "DEV_BYPASS_AUTH=true" -- "*.ts" "*.py" "*.js" "*.json" "*.yaml" "*.sh"</div>
+  <div class="result"><span class="badge pass">✓ ZERO ACTIVE CODE PATHS</span>   No source file executes or sets <code>DEV_BYPASS_AUTH=true</code>.</div>
+</div>
+<div class="sweep">
+  <div class="cmd">git grep "DEV_BYPASS_AUTH" (all files including docs)</div>
+  <div class="result"><span class="badge pass">✓ COMPLIANT</span>   All 50+ matches are <em>documentation references, comments, audit policy statements, or the HC-7 enforcement hook itself</em> — no active bypass logic anywhere. Key evidence:</div>
+</div>
+<table>
+  <thead><tr><th>File</th><th>Nature of match</th><th>Verdict</th></tr></thead>
+  <tbody>
+    <tr><td><code>onboarding-agent/src/security/keycloak-auth.ts</code></td><td>Comment: <em>"DEV_BYPASS_AUTH is permanently removed. JWT validation is mandatory."</em></td><td><span class="badge pass">✓ REMOVED</span></td></tr>
+    <tr><td><code>platform/admissions/admissions_agent.py</code></td><td>Docstring: <em>"HC-7: DEV_BYPASS_AUTH is permanently forbidden."</em></td><td><span class="badge pass">✓ POLICY COMMENT</span></td></tr>
+    <tr><td><code>.bob/hooks/hc7-prompt-guard.mjs</code></td><td>HC-7 enforcement hook — blocks any prompt attempting to write the pattern</td><td><span class="badge pass">✓ GUARD</span></td></tr>
+    <tr><td><code>.bob/hooks/post-write-scan.mjs</code></td><td>Post-write scanner pattern definition</td><td><span class="badge pass">✓ GUARD</span></td></tr>
+    <tr><td><code>platform/tools/i3_bob_mcp_server.py</code></td><td><code>NEEDLE = "DEV_BYPASS_AUTH=true"</code> — needle for the MCP scan tool</td><td><span class="badge pass">✓ SCANNER</span></td></tr>
+    <tr><td><code>docs/*, *.md, *.html</code></td><td>Historical audit evidence, ADR text, remediation plans</td><td><span class="badge pass">✓ DOCUMENTATION</span></td></tr>
+  </tbody>
+</table>
+
+
+<h2>6 · Recent Commit History (last 10)</h2>
+<table>
+  <thead><tr><th>SHA</th><th>Date</th><th>Message</th></tr></thead>
+  <tbody>
+    <tr style="background:#f0fdf4"><td><code>6a5a682</code></td><td>2026-09-24</td><td><strong>fix(infra): remediate all P1 audit action items</strong> ← HEAD</td></tr>
+    <tr><td><code>e072fe5</code></td><td>2026-09-24</td><td>fix(evalos): fix build — add NEXT_BUILD guard, es2015 target, lazy db pool</td></tr>
+    <tr><td><code>db39c7f</code></td><td>2026-09-24</td><td>sec: redact residual LiteLLM key from 8 tracked docs; fix rotation script</td></tr>
+    <tr><td><code>db0b061</code></td><td>2026-09-24</td><td>STEP-P1-01: Rotate all hardcoded credentials - SC-P1-01-a PASS</td></tr>
+    <tr><td><code>a910c71</code></td><td>2026-09-23</td><td>fix(evalos): revert serverExternalPackages for Next.js 14.x</td></tr>
+    <tr><td><code>be6a6f2</code></td><td>2026-09-23</td><td>fix(evalos): PgBouncer SET LOCAL compat, SSL sslmode strip, setTenantContext helper</td></tr>
+    <tr><td><code>99623b9</code></td><td>2026-09-23</td><td>feat(evalos): Set 7 retake rules, draw_spec, certificate tenant isolation</td></tr>
+    <tr><td><code>a680cd7</code></td><td>2026-09-23</td><td>feat(evalos): Set 7 exam + retake rules + i3 orb logo + 90% passmark</td></tr>
+    <tr><td><code>348223b</code></td><td>2026-09-23</td><td>fix(evalos): downlevelIteration TS error fix</td></tr>
+    <tr><td><code>3d36f28</code></td><td>2026-09-23</td><td>fix(evalos): add tenant_id to next-auth Session and JWT type declarations (HC-4)</td></tr>
+  </tbody>
+</table>
+
+
+<h2>7 · Findings &amp; Recommended Actions</h2>
+
+<div class="finding pass">
+  <strong>PASS — HC-7 Fully Closed:</strong> Zero active bypass paths for <code>DEV_BYPASS_AUTH</code>. All occurrences are enforcement hooks, policy comments, or historical documentation. Keycloak JWT validation is mandatory in all service code.
+</div>
+<div class="finding pass">
+  <strong>PASS — No tracked secret files:</strong> Zero <code>.env</code>, <code>.env.local</code>, or <code>secret-patch.json</code> files are git-tracked. OpenBao is the sole credentials store.
+</div>
+<div class="finding pass">
+  <strong>PASS — No hardcoded literal secrets:</strong> All password/secret/API-key assignments in tracked source resolve to environment variables or vault lookups. Parameterised queries (<code>$1</code>) confirmed for all DB credential usage.
+</div>
+<div class="finding warn">
+  <strong>WARN (F-01) — ADR-004 partial: tenant_id absent from pmaas/campaigns queries:</strong>
+  <code>platform/pmaas/web/src/app/api/campaigns/route.ts</code> — the GET/POST/PATCH handlers authenticate correctly but omit <code>tenant_id</code> from the SQL <code>WHERE</code> clause and <code>INSERT</code> columns. This breaks row-level tenant isolation required by HC-4. <em>Recommended action:</em> extract <code>tenant_id</code> from session and add to all campaign queries before committing.
+</div>
+<div class="finding warn">
+  <strong>WARN (F-02) — Untracked build artefacts in working tree:</strong>
+  <code>platform/engage/web/.next/</code> and <code>platform/pmaas/web/.next/</code> are present but not gitignored. Recommend adding <code>.next/</code> to the relevant <code>.gitignore</code> files if not already covered at repo root level.
+</div>
+<div class="finding info">
+  <strong>INFO (F-03) — Untracked migration and audit scripts need disposition:</strong>
+  <code>platform/migrations/apply_tenant_id_remediation.sql</code> and <code>platform/scripts/Invoke-DbAudit.ps1</code> are uncommitted. Stage and commit them as part of the P1 migration artefacts, or add them to <code>.gitignore</code> if they are ephemeral.
+</div>
+<div class="finding info">
+  <strong>INFO (F-04) — 26 modified files not yet committed:</strong>
+  The P1 remediation changes to <code>db.ts</code>, <code>auth.ts</code>, MCP gateway tools, and scripts reside in the working tree (not staged). After resolving F-01, stage and commit all 26 files to close the P1 remediation record cleanly.
+</div>
+
+
+<h2>8 · Definition of Done — Step 4 Checklist</h2>
+<table>
+  <thead><tr><th>Item</th><th>Status</th><th>Evidence</th></tr></thead>
+  <tbody>
+    <tr><td>Scope identified</td><td><span class="badge pass">✓</span></td><td>Working tree, commit log, secret sweeps</td></tr>
+    <tr><td>HC checks HC-1 → HC-8</td><td><span class="badge pass">✓</span></td><td>HC-7 zero bypass paths; HC-6 HMAC enforced in MCP; HC-4 partial ⚠ (F-01)</td></tr>
+    <tr><td>Secret file sweep</td><td><span class="badge pass">✓ CLEAN</span></td><td>0 tracked .env or secret files</td></tr>
+    <tr><td>Secret content sweep</td><td><span class="badge pass">✓ CLEAN</span></td><td>All credentials via env-var / vault; no hardcoded literals</td></tr>
+    <tr><td>DEV_BYPASS_AUTH sweep</td><td><span class="badge pass">✓ CLEAN</span></td><td>0 active code paths; enforcement hooks present</td></tr>
+    <tr><td>ADR compliance review</td><td><span class="badge warn">PARTIAL</span></td><td>ADR-003/006/007 compliant; ADR-004 gap in pmaas/campaigns (F-01)</td></tr>
+    <tr><td>Commit SHA verified</td><td><span class="badge pass">✓</span></td><td><code>6a5a682ab8d62b0fc56d229e69c4587fc74b98d3</code></td></tr>
+    <tr><td>Untracked files assessed</td><td><span class="badge pass">✓</span></td><td>16 untracked; none are secrets; disposition recommendations given (F-02, F-03)</td></tr>
+    <tr><td>Working tree committed</td><td><span class="badge warn">PENDING</span></td><td>26 modified files not yet staged — blocked by F-01 resolution</td></tr>
+  </tbody>
+</table>
+
+<footer>Made with IBM Bob  ·  i3 Agentic AI Labs  ·  Phase 1 Step 4</footer>
+</body>
+</html>

@@ -214,10 +214,16 @@ spec:
       port: 8080
       targetPort: 8080
       protocol: TCP
+    - name: api
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
   type: ClusterIP
 
 ---
 # RTMP/SRT require LoadBalancer (UDP)
+# IBM VPC Load Balancer annotations are required to provision the external IP.
+# Without these annotations the EXTERNAL-IP stays <pending> indefinitely.
 apiVersion: v1
 kind: Service
 metadata:
@@ -225,6 +231,14 @@ metadata:
   namespace: i3-ott
   labels:
     app: ome-origin
+  annotations:
+    # Required by IBM Cloud VPC Load Balancer to provision a public IP
+    service.kubernetes.io/ibm-load-balancer-cloud-provider-ip-type: "public"
+    # Use Network Load Balancer (NLB) for UDP/SRT support — ALB does not handle UDP
+    service.kubernetes.io/ibm-load-balancer-cloud-provider-enable-features: "nlb"
+    # Health-check on RTMP TCP port
+    service.kubernetes.io/ibm-load-balancer-cloud-provider-healthcheck-port: "1935"
+    service.kubernetes.io/ibm-load-balancer-cloud-provider-healthcheck-protocol: "tcp"
 spec:
   selector:
     app: ome-origin

@@ -185,6 +185,7 @@ spec:
   type: ClusterIP
 
 ---
+# Route 1: stream.i3technologies.co.ke — HLS CDN edge (primary, used by VideoPlayer)
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
@@ -194,6 +195,26 @@ metadata:
     app.kubernetes.io/part-of: i3-platform
 spec:
   host: stream.i3technologies.co.ke
+  to:
+    kind: Service
+    name: nginx-hls
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+---
+# Route 2: hls.i3technologies.co.ke — alias CDN edge (short-URL fallback)
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: nginx-hls-alias
+  namespace: i3-ott
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  host: hls.i3technologies.co.ke
   to:
     kind: Service
     name: nginx-hls

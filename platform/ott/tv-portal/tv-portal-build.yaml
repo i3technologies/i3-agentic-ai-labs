@@ -1,0 +1,49 @@
+# ============================================================
+# BuildConfig — i3 TV Portal
+# Namespace: i3-ott
+# Builds the Next.js app from Git source and pushes to
+# the internal OpenShift image registry.
+#
+# Apply: oc apply -f tv-portal-build.yaml -n i3-ott
+# Trigger: oc start-build tv-portal -n i3-ott
+# ============================================================
+
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: tv-portal
+  namespace: i3-ott
+  labels:
+    app: tv-portal
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  source:
+    type: Git
+    git:
+      uri: "https://github.com/i3-technologies/i3-Agentic-AI-Labs.git"
+      ref: main
+    contextDir: platform/ott/tv-portal
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: tv-portal:latest
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: tv-portal
+  namespace: i3-ott
+  labels:
+    app: tv-portal
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  lookupPolicy:
+    local: true

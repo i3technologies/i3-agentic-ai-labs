@@ -3,6 +3,7 @@ import { getServerSession, type Session } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import pool from '@/lib/db'
 import { randomUUID, createHmac, timingSafeEqual } from 'crypto'
+import { v7 as uuidv7 } from 'uuid'
 import { Kafka, CompressionTypes } from 'kafkajs'
 import { consentAllowed } from '@/lib/consent-breaker'
 
@@ -96,7 +97,7 @@ function buildCloudEvent(
 ): Record<string, unknown> {
   return {
     specversion:     '1.0',
-    id:              randomUUID(),        // UUIDv4 — upgrade to UUIDv7 when available in Node
+    id:              uuidv7(),            // UUIDv7 — time-ordered (FIX-12)
     source:          CE_SOURCE,
     type:            eventType,
     datacontenttype: 'application/json',
