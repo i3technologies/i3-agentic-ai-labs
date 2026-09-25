@@ -151,7 +151,7 @@ export default async function DashboardPage() {
   if (!session) redirect('/api/auth/signin')
 
   const userId   = session.user.userId || session.user.email || ''
-  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? DEFAULT_TENANT
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id || DEFAULT_TENANT
 
   const [exams, recentAttempts] = await Promise.all([
     getExamsWithAttempts(userId, tenantId),

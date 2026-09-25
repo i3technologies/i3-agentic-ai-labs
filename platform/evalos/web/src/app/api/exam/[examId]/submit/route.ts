@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+﻿import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { z } from 'zod'
 import { authOptions } from '@/lib/auth'
@@ -148,7 +148,7 @@ export async function POST(
     }
 
     attempt = rows[0]
-    tenantId = attempt.tenant_id ?? (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
+    tenantId = attempt.tenant_id || (session.user as { tenant_id?: string }).tenant_id || '00000000-0000-0000-0000-000000000002'
 
     // HC-4: set RLS context now that we have the tenant_id
     await setTenantContext(client, tenantId)

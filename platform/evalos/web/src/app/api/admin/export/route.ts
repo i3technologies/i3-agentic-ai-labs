@@ -10,7 +10,7 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   if (!session.user.isAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id || '00000000-0000-0000-0000-000000000002'
 
   const client = await pool.connect()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

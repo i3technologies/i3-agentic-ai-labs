@@ -35,7 +35,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'id and active are required' }, { status: 400 })
   }
 
-  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id || '00000000-0000-0000-0000-000000000002'
 
   const client = await pool.connect()
   try {
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Maximum 10 questions per save call' }, { status: 400 })
   }
 
-  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id || '00000000-0000-0000-0000-000000000002'
 
   const savedIds: string[] = []
   const client = await pool.connect()

@@ -1,4 +1,4 @@
-import { getServerSession } from 'next-auth'
+﻿import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import pool, { setTenantContext } from '@/lib/db'
@@ -54,7 +54,7 @@ export default async function ExamPage({ params }: ExamPageProps) {
   const examId = params.examId
   if (!UUID_RE.test(examId)) redirect('/dashboard')
 
-  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id || '00000000-0000-0000-0000-000000000002'
   const exam = await getExamMeta(examId, tenantId)
   if (!exam) redirect('/dashboard')
 

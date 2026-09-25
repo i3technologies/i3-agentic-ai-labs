@@ -31,7 +31,7 @@ export async function GET(req: Request) {
   const orgId = searchParams.get('org_id')
   if (!orgId) return NextResponse.json({ error: 'org_id is required' }, { status: 400 })
 
-  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id || '00000000-0000-0000-0000-000000000002'
 
   const client = await pool.connect()
   try {

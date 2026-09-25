@@ -71,7 +71,7 @@ export async function POST(req: Request) {
   }
 
   const event: CandidateInvited = parsed.data
-  const tenantId = event.tenant_id ?? DEFAULT_TENANT_ID
+  const tenantId = event.tenant_id || DEFAULT_TENANT_ID
 
   const client = await pool.connect()
   try {

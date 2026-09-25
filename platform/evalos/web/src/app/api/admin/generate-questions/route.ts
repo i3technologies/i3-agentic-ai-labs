@@ -72,7 +72,7 @@ export async function POST(req: Request) {
   if (!session?.user.isAdmin) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
-  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000001'
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id || '00000000-0000-0000-0000-000000000001'
 
   let body: GenerateRequest
   try {

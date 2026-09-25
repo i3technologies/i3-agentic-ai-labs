@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
   const { title, description, price_usd, exam_id, skill_tags, target_roles, difficulty_level } = parsed.data
   const authorId = session.user.userId || session.user.email || ''
-  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id || '00000000-0000-0000-0000-000000000002'
 
   // Platform share: 20% for admins, 25% standard, 30% for unverified authors
   const platformShare = session.user.isAdmin ? 20 : 25
@@ -90,7 +90,7 @@ export async function GET(req: Request) {
   const limit   = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') ?? '20', 10)))
   const offset  = (page - 1) * limit
 
-  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id || '00000000-0000-0000-0000-000000000002'
 
   const client = await pool.connect()
   try {

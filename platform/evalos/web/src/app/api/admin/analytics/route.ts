@@ -28,7 +28,7 @@ export async function GET(req: Request) {
   if (!session.user.isAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const tenantId =
-    (session.user as { tenant_id?: string }).tenant_id ??
+    (session.user as { tenant_id?: string }).tenant_id ||
     '00000000-0000-0000-0000-000000000002'
 
   const { searchParams } = new URL(req.url)

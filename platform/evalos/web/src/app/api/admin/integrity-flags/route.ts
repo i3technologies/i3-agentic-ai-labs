@@ -26,7 +26,7 @@ export async function GET() {
   }
 
   const tenantId =
-    (session.user as { tenant_id?: string }).tenant_id ??
+    (session.user as { tenant_id?: string }).tenant_id ||
     '00000000-0000-0000-0000-000000000002'
 
   const client = await pool.connect()
@@ -100,7 +100,7 @@ export async function PATCH(req: Request) {
   }
 
   const tenantId =
-    (session.user as { tenant_id?: string }).tenant_id ??
+    (session.user as { tenant_id?: string }).tenant_id ||
     '00000000-0000-0000-0000-000000000002'
   const reviewedBy = session.user.email ?? session.user.userId ?? 'admin'
 

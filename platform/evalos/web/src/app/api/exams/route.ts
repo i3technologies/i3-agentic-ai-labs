@@ -12,7 +12,7 @@ export async function GET() {
   }
 
   const userId   = session.user.userId || session.user.email || ''
-  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id || '00000000-0000-0000-0000-000000000002'
 
   const client = await pool.connect()
   try {

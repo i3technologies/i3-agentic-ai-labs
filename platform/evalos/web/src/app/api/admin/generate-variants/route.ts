@@ -108,7 +108,7 @@ export async function POST(req: Request) {
   }
 
   const tenantId =
-    (session.user as { tenant_id?: string }).tenant_id ??
+    (session.user as { tenant_id?: string }).tenant_id ||
     '00000000-0000-0000-0000-000000000001'
 
   let body: unknown

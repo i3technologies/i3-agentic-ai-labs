@@ -1,4 +1,4 @@
-import { getServerSession } from 'next-auth'
+﻿import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { authOptions } from '@/lib/auth'
@@ -125,7 +125,7 @@ export default async function ResultsPage({ params, searchParams }: ResultsPageP
   if (!UUID_RE.test(examId) || !UUID_RE.test(attemptId)) redirect('/dashboard')
 
   const userId   = session.user.userId || session.user.email || ''
-  const tenantId = (session.user as { tenant_id?: string }).tenant_id ?? '00000000-0000-0000-0000-000000000002'
+  const tenantId = (session.user as { tenant_id?: string }).tenant_id || '00000000-0000-0000-0000-000000000002'
   const attempt  = await getAttemptResults(attemptId, userId, tenantId)
 
   if (!attempt) redirect('/dashboard')

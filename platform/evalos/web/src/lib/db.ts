@@ -125,8 +125,8 @@ export async function setTenantContext(
   client: { query: (sql: string) => Promise<unknown> },
   tenantId: string
 ): Promise<void> {
-  if (!UUID_RE.test(tenantId)) {
-    throw new Error(`Invalid tenant_id — must be a UUID, got: ${tenantId}`)
+  if (!tenantId || !UUID_RE.test(tenantId)) {
+    throw new Error(`Invalid tenant_id — must be a UUID, got: ${JSON.stringify(tenantId)}`)
   }
   // Inline the UUID: no injection risk — UUID charset is [0-9a-f-] only.
   await client.query(`SET LOCAL app.tenant_id = '${tenantId}'`)
