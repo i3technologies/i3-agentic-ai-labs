@@ -109,15 +109,30 @@ if (process.env.NODE_ENV !== 'production') {
 export default pool
 
 /**
- * Set the RLS tenant context for the current transaction.
+ * Set the RLS tenant context for the current connection.
  *
  * PgBouncer in transaction-pooling mode rejects parameterised SET statements
  * (`SET LOCAL app.tenant_id = $1`) with "syntax error at or near $1" (PG-42601).
  * The workaround is to inline the value. This is safe because tenantId is always
  * a UUID extracted from the verified Keycloak JWT — never raw user input.
  *
+ * We use `SET` (session-level) rather than `SET LOCAL` (transaction-level).
+ * `SET LOCAL` only persists within an explicit BEGIN/COMMIT block; outside one
+ * the setting reverts after the statement completes, meaning the next query on
+ * the same pooled connection sees '' and the RLS cast fails with 22P02.
+ * `SET` persists for the lifetime of the connection checkout from the pool,
+ * which is what we want: all queries within a single request handler use the
+ * same client, so the setting stays in place for the whole handler.
+ *
+ * The RLS policies additionally use NULLIF(...,'') so that connections that
+ * never had the setting set return no rows (fail-closed) rather than crashing.
+ *
  * Usage:
- *   await setTenantContext(client, tenantId)
+ *   const client = await pool.connect()
+ *   try {
+ *     await setTenantContext(client, tenantId)
+ *     await client.query(...)
+ *   } finally { client.release() }
  */
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -128,6 +143,7 @@ export async function setTenantContext(
   if (!tenantId || !UUID_RE.test(tenantId)) {
     throw new Error(`Invalid tenant_id — must be a UUID, got: ${JSON.stringify(tenantId)}`)
   }
-  // Inline the UUID: no injection risk — UUID charset is [0-9a-f-] only.
-  await client.query(`SET LOCAL app.tenant_id = '${tenantId}'`)
+  // SET (session-level) so the tenant context persists for all queries on this
+  // client checkout. Inline the UUID — no injection risk, UUID charset is [0-9a-f-].
+  await client.query(`SET app.tenant_id = '${tenantId}'`)
 }
