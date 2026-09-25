@@ -255,8 +255,27 @@ export async function POST(
       rawQuestions = rows
     }
 
+    const LABELS = ['A', 'B', 'C', 'D', 'E', 'F']
+
+    /**
+     * Normalise options to [{label, text}] objects.
+     * Some question sets store options as plain strings ["opt1","opt2"...].
+     * The exam client expects {label, text} objects — plain strings render
+     * as empty boxes because opt.text is undefined on a string value.
+     */
+    function normaliseOptions(raw: unknown[]): { label: string; text: string }[] {
+      return raw.map((opt, i) => {
+        if (opt && typeof opt === 'object' && 'text' in (opt as object)) {
+          return opt as { label: string; text: string }
+        }
+        return { label: LABELS[i] ?? String(i + 1), text: String(opt) }
+      })
+    }
+
     const questions = rawQuestions.map((q) => {
-      const opts = exam.randomize_order ? shuffle(q.options as unknown[]) : q.options
+      const rawOpts = (q.options as unknown[]) ?? []
+      const normalised = normaliseOptions(rawOpts)
+      const opts = exam.randomize_order ? shuffle(normalised) : normalised
       return {
         id: q.id,
         text: q.text,
