@@ -122,7 +122,6 @@ spec:
     spec:
       serviceAccountName: admissions-agent
       securityContext:
-        runAsUser: 1000
         runAsNonRoot: true
       containers:
         - name: admissions-agent
@@ -136,14 +135,8 @@ spec:
               value: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000"
             - name: DEFAULT_MODEL
               value: "mistral-nemo"
-            # AUTH-01: use per-service virtual key, not master key.
-            # Issue via: litellm /key/generate with metadata.service=admissions-agent
+            # AUTH-01: LITELLM_KEY is injected via envFrom secretRef below.
             # OpenBao path: i3/litellm/virtual-keys/admissions-agent
-            - name: LITELLM_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: admissions-secrets
-                  key: LITELLM_KEY
             # SEC-06: Keycloak JWKS + issuer (admissions_agent.py FINDING-AA-2)
             # Values rendered at runtime by OpenBao sidecar via admissions-secrets.
             - name: KEYCLOAK_JWKS_URI
@@ -305,7 +298,6 @@ spec:
         app: mcp-connectors
     spec:
       securityContext:
-        runAsUser: 1000
         runAsNonRoot: true
       containers:
         - name: mcp-connectors

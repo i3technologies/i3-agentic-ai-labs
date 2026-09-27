@@ -14,8 +14,8 @@ RUN pip install --no-cache-dir --upgrade pip \
 
 COPY mcp_connectors.py .
 
+# OpenShift assigns a namespace-allocated UID at runtime (runAsNonRoot: true in Deployment).
 RUN chown -R appuser:appuser /app
-USER appuser
 
 EXPOSE 9000
 

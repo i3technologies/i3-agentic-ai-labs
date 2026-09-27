@@ -26,8 +26,9 @@ COPY admissions_agent.py .
 # sentence-transformers is no longer a dependency — all embedding/RAG
 # calls route through the MCP Gateway (chroma.search tool, STEP-P2-04).
 
+# OpenShift assigns a namespace-allocated UID at runtime (runAsNonRoot: true in Deployment).
+# Do NOT pin USER appuser (UID 1000) — it conflicts with OpenShift SCC UID ranges.
 RUN chown -R appuser:appuser /app
-USER appuser
 
 EXPOSE 8000
 
