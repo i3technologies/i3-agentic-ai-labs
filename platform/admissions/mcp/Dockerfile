@@ -8,11 +8,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc curl \
  && rm -rf /var/lib/apt/lists/*
 
-COPY platform/admissions/mcp/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip \
  && pip install --no-cache-dir -r requirements.txt
 
-COPY platform/admissions/mcp/mcp_connectors.py .
+COPY mcp_connectors.py .
 
 RUN chown -R appuser:appuser /app
 USER appuser

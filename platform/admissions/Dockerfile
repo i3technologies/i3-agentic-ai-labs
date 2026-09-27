@@ -14,13 +14,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # ── Dependencies layer ───────────────────────────────────────
 FROM base AS deps
-COPY platform/admissions/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip \
  && pip install --no-cache-dir -r requirements.txt
 
 # ── App layer ────────────────────────────────────────────────
 FROM deps AS app
-COPY platform/admissions/admissions_agent.py .
+COPY admissions_agent.py .
 
 # NOTE: download_model.py (BGE-Large pre-fetch) was removed.
 # sentence-transformers is no longer a dependency — all embedding/RAG
