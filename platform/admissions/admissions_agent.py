@@ -506,6 +506,28 @@ async def ws_chat(websocket: WebSocket):
         await websocket.close(code=1011)
 
 
+@app.get("/")
+async def root():
+    """Root endpoint — confirms the service is reachable and provides navigation."""
+    return {
+        "service": "i3 Admissions Assistant",
+        "version": "2.0.0",
+        "status": "ok",
+        "endpoints": {
+            "chat": "POST /chat  (Bearer token required)",
+            "ws_chat": "WS /ws/chat  (Bearer token in first message)",
+            "health": "GET /healthz",
+        },
+        "docs": "POST /chat with a valid Keycloak Bearer token to begin.",
+    }
+
+
+@app.get("/health")
+async def health():
+    """Alias for /healthz — matches monitoring scripts and documentation."""
+    return {"status": "ok", "gateway": MCP_GATEWAY_URL, "model": DEFAULT_MODEL}
+
+
 @app.get("/healthz")
 async def healthz():
     return {"status": "ok", "gateway": MCP_GATEWAY_URL, "model": DEFAULT_MODEL}

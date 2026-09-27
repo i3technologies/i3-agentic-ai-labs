@@ -1,11 +1,11 @@
 FROM python:3.12-slim AS base
 
-# Security hardening
+# Security hardening — non-root user
 RUN useradd --system --uid 1000 --no-create-home appuser
 
 WORKDIR /app
 
-# System deps
+# System deps — only what uvicorn + grpc need
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
@@ -22,9 +22,9 @@ RUN pip install --no-cache-dir --upgrade pip \
 FROM deps AS app
 COPY platform/admissions/admissions_agent.py .
 
-# BGE-Large pre-download (done at build time, not runtime)
-COPY platform/admissions/fastapi/download_model.py .
-RUN python download_model.py || true   # Non-fatal: model also downloaded at first request
+# NOTE: download_model.py (BGE-Large pre-fetch) was removed.
+# sentence-transformers is no longer a dependency — all embedding/RAG
+# calls route through the MCP Gateway (chroma.search tool, STEP-P2-04).
 
 RUN chown -R appuser:appuser /app
 USER appuser

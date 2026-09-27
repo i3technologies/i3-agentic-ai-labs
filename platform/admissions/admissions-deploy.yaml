@@ -134,10 +134,6 @@ spec:
           env:
             - name: LITELLM_URL
               value: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000"
-            - name: CHROMA_HOST
-              value: "chromadb.i3-admissions.svc.cluster.local"
-            - name: CHROMA_PORT
-              value: "8000"
             - name: DEFAULT_MODEL
               value: "mistral-nemo"
             # AUTH-01: use per-service virtual key, not master key.
@@ -148,6 +144,18 @@ spec:
                 secretKeyRef:
                   name: admissions-secrets
                   key: LITELLM_KEY
+            # SEC-06: Keycloak JWKS + issuer (admissions_agent.py FINDING-AA-2)
+            # Values rendered at runtime by OpenBao sidecar via admissions-secrets.
+            - name: KEYCLOAK_JWKS_URI
+              value: "https://sso.i3technologies.co.ke/realms/i3/protocol/openid-connect/certs"
+            - name: KEYCLOAK_ISSUER
+              value: "https://sso.i3technologies.co.ke/realms/i3"
+            # MCP Gateway — all tool calls route here (STEP-P2-04)
+            - name: MCP_GATEWAY_URL
+              value: "http://mcp-gateway.i3-agent-mesh.svc.cluster.local:8100"
+            # Agent Registry — decision log
+            - name: AGENT_REGISTRY_URL
+              value: "http://agent-registry.i3-agent-mesh.svc.cluster.local:8200"
             # STEP-P1-13: OTel trace exporter endpoint
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: "http://otel-collector.i3-monitoring.svc.cluster.local:4317"
