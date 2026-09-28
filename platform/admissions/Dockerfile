@@ -1,7 +1,7 @@
 FROM python:3.12-slim AS base
 
-# Security hardening — non-root user
-RUN useradd --system --uid 1000 --no-create-home appuser
+# Use nobody (65534) — universally non-root, satisfies OpenShift runAsNonRoot: true
+RUN useradd --system --uid 65534 --no-create-home nobody-app 2>/dev/null || true
 
 WORKDIR /app
 
@@ -28,9 +28,8 @@ COPY admissions_agent.py .
 # sentence-transformers is no longer a dependency — all embedding/RAG
 # calls route through the MCP Gateway (chroma.search tool, STEP-P2-04).
 
-# OpenShift assigns a namespace-allocated UID at runtime (runAsNonRoot: true in Deployment).
-# Do NOT pin USER appuser (UID 1000) — it conflicts with OpenShift SCC UID ranges.
-RUN chown -R appuser:appuser /app
+RUN chown -R 65534:65534 /app
+USER 65534
 
 EXPOSE 8000
 

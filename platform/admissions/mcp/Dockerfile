@@ -1,6 +1,8 @@
 FROM python:3.12-slim
 
-RUN useradd --system --uid 1000 --no-create-home appuser
+# Use nobody (65534) — universally non-root, satisfies OpenShift runAsNonRoot: true
+# without requiring a namespace-specific UID range.
+RUN useradd --system --uid 65534 --no-create-home nobody-app 2>/dev/null || true
 
 WORKDIR /app
 
@@ -9,13 +11,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip \
+# Pin setuptools<80 for pkg_resources compatibility with opentelemetry-instrumentation
+RUN pip install --no-cache-dir --upgrade pip "setuptools<80" \
  && pip install --no-cache-dir -r requirements.txt
 
 COPY mcp_connectors.py .
 
-# OpenShift assigns a namespace-allocated UID at runtime (runAsNonRoot: true in Deployment).
-RUN chown -R appuser:appuser /app
+RUN chown -R 65534:65534 /app
+USER 65534
 
 EXPOSE 9000
 
