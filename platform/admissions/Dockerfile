@@ -15,9 +15,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # ── Dependencies layer ───────────────────────────────────────
 FROM base AS deps
 COPY requirements.txt .
-# Install setuptools first — provides pkg_resources used by opentelemetry-instrumentation.
-# python:3.12-slim excludes setuptools; must be explicit before OTel packages install.
-RUN pip install --no-cache-dir --upgrade pip setuptools \
+# Pin setuptools<80: setuptools>=80 removed pkg_resources which
+# opentelemetry-instrumentation-fastapi==0.46b0 still imports.
+RUN pip install --no-cache-dir --upgrade pip "setuptools<80" \
  && pip install --no-cache-dir -r requirements.txt
 
 # ── App layer ────────────────────────────────────────────────
