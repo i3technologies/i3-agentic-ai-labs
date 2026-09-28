@@ -7,13 +7,12 @@ pydantic==2.7.4
 PyJWT[crypto]==2.9.0
 
 # OpenTelemetry — STEP-P1-13
-# Pin to 1.25.0 SDK/API; use 0.46b0-compatible instrumentation package
+# NOTE: setuptools is installed separately in Dockerfile before these packages
+# to ensure pkg_resources is available (python:3.12-slim strips it).
 opentelemetry-api==1.25.0
 opentelemetry-sdk==1.25.0
 opentelemetry-exporter-otlp-proto-grpc==1.25.0
-# opentelemetry-instrumentation-fastapi 0.46b0 requires pkg_resources (setuptools).
-# python:3.12-slim strips setuptools. Use latest stable release which uses importlib.metadata.
-opentelemetry-instrumentation-fastapi
+opentelemetry-instrumentation-fastapi==0.46b0
 
 # NOTE: chromadb, llama-index-*, sentence-transformers, docling, and ragas
 # were removed in STEP-P2-04 — all RAG calls now route through the MCP Gateway
