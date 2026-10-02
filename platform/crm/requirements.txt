@@ -1,0 +1,45 @@
+# CRM Intelligence Service — Python Dependencies
+# ============================================================
+# Runtime: Python 3.11+
+# Namespace: crm-intelligence (ROKS)
+#
+# Pin major versions; patch versions resolved by pip-compile.
+# Security note: never install packages that call raw hashlib.sha256
+# on PII values — all hashing goes through crm.crawler.hmac_sha256_hex.
+# ============================================================
+
+# ── FastAPI + ASGI ─────────────────────────────────────────────────────────────
+fastapi==0.111.1
+uvicorn[standard]==0.30.1
+pydantic==2.7.4
+
+# ── Database ───────────────────────────────────────────────────────────────────
+asyncpg==0.29.0
+
+# ── Auth (JWT / OIDC) ──────────────────────────────────────────────────────────
+python-jose[cryptography]==3.3.0
+
+# ── Celery + broker ────────────────────────────────────────────────────────────
+celery[redis]==5.4.0
+kombu==5.3.4
+redis==5.0.7
+
+# ── DNS MX verification ────────────────────────────────────────────────────────
+dnspython==2.6.1
+
+# ── HTTP crawl client (used by future httpx-based crawl phase) ─────────────────
+httpx==0.27.0
+
+# ── URL utilities ──────────────────────────────────────────────────────────────
+tldextract==5.1.2
+
+# ── Observability ──────────────────────────────────────────────────────────────
+opentelemetry-sdk==1.25.0
+opentelemetry-exporter-otlp-proto-http==1.25.0
+opentelemetry-instrumentation-fastapi==0.46b0
+opentelemetry-instrumentation-asyncpg==0.46b0
+
+# ── Dev / test ─────────────────────────────────────────────────────────────────
+pytest==8.2.2
+pytest-asyncio==0.23.7
+httpx==0.27.0        # also used in tests via TestClient

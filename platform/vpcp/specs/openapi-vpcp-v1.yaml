@@ -1,0 +1,658 @@
+openapi: "3.1.0"
+info:
+  title: VPCP Core API
+  description: |
+    Value Partner Channel Platform (VPCP) — Core API for deal registration
+    and partner management on the i3 AI Platform (OpenShift / ROKS 4.16).
+
+    ## HC Compliance
+    - **HC-4**: Every request body and response envelope carries `tenant_id`.
+    - **HC-5**: IBM Sales Cloud sync is never called directly; it is invoked
+      via the MCP Gateway Tier 3 gate (`vpcp.ibm_sales_cloud.sync`).
+    - **HC-7**: No `DEV_BYPASS_AUTH` is accepted; all routes require a valid
+      Keycloak-issued JWT in the `Authorization: Bearer` header.
+
+    ## Authentication
+    All endpoints require a Keycloak JWT containing:
+    - `tenant_id` (UUID) — identifies the partner organisation.
+    - `tier` — partner tier (`silver | gold | platinum`).
+    - `scopes` — space-separated list including `vpcp:deals:write`,
+      `vpcp:deals:read`, `vpcp:partners:read`, `vpcp:partners:admin`.
+
+    The JWT is validated against the Keycloak JWKS endpoint:
+    `https://keycloak.i3-auth.svc/realms/vpcp/protocol/openid-connect/certs`
+  version: "1.0.0"
+  contact:
+    name: i3 Platform Team
+    email: platform@i3.internal
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://vpcp-api.i3-vpcp-core.svc/v1
+    description: Internal cluster service (i3-vpcp-core namespace)
+  - url: https://vpcp.i3platform.io/v1
+    description: External OpenShift Route (TLS-terminated)
+
+# ────────────────────────────────────────────────────────────────────────────
+# Security Schemes
+# ────────────────────────────────────────────────────────────────────────────
+components:
+  securitySchemes:
+    keycloak_jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Keycloak-issued JWT from realm `vpcp`. Must contain claims:
+        `tenant_id`, `tier`, `scopes`.
+
+  # ── Reusable Schemas ──────────────────────────────────────────────────────
+  schemas:
+
+    # ── HC-4 common envelope ─────────────────────────────────────────────
+    TenantEnvelope:
+      type: object
+      required: [tenant_id]
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+          description: "HC-4: Partner organisation UUID from Keycloak JWT claim."
+          example: "a1b2c3d4-0000-0000-0000-000000000001"
+
+    # ── Pagination ─────────────────────────────────────────────────────
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        page_size:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+        total:
+          type: integer
+          minimum: 0
+        has_next:
+          type: boolean
+
+    # ── Error ──────────────────────────────────────────────────────────
+    ErrorResponse:
+      allOf:
+        - $ref: "#/components/schemas/TenantEnvelope"
+        - type: object
+          required: [error, message]
+          properties:
+            error:
+              type: string
+              example: "DEAL_CONFLICT"
+            message:
+              type: string
+              example: "An active deal for this customer and product already exists within 90 days."
+            correlation_id:
+              type: string
+              format: uuid
+
+    # ── Deal schemas ───────────────────────────────────────────────────
+    DealStatus:
+      type: string
+      enum:
+        - PENDING_REVIEW
+        - CONFLICT_FLAGGED_FOR_ARBITRATION
+        - AWAITING_COMMERCIAL_APPROVAL
+        - DEAL_REGISTERED_AND_SYNCED_IBM
+        - DEAL_REJECTED
+        - EXPIRED
+
+    DealRequest:
+      allOf:
+        - $ref: "#/components/schemas/TenantEnvelope"
+        - type: object
+          required:
+            - customer_account
+            - product_family
+            - estimated_arr_usd
+            - partner_id
+            - expected_close_date
+          properties:
+            customer_account:
+              type: string
+              minLength: 2
+              maxLength: 256
+              description: IBM account name or CRM account ID.
+              example: "Acme Corporation Kenya"
+            product_family:
+              type: string
+              enum:
+                - watsonx
+                - watsonx_code_assistant
+                - watson_orchestrate
+                - cloud_pak_for_data
+                - instana
+                - turbonomic
+              description: IBM product family for co-sell registration.
+            estimated_arr_usd:
+              type: number
+              format: double
+              minimum: 0
+              example: 125000.00
+              description: Estimated Annual Recurring Revenue in USD.
+            partner_id:
+              type: string
+              format: uuid
+              description: UUID of the registering partner (must match JWT `partner_id` claim).
+              example: "b1b2c3d4-0000-0000-0000-000000000002"
+            expected_close_date:
+              type: string
+              format: date
+              example: "2025-12-31"
+              description: Expected deal close date (ISO 8601 date).
+            notes:
+              type: string
+              maxLength: 2000
+              description: Optional notes for commercial desk review.
+
+    DealResponse:
+      allOf:
+        - $ref: "#/components/schemas/TenantEnvelope"
+        - type: object
+          required:
+            - deal_id
+            - status
+            - workflow_run_id
+            - created_at
+          properties:
+            deal_id:
+              type: string
+              format: uuid
+              example: "d1b2c3d4-0000-0000-0000-000000000003"
+            customer_account:
+              type: string
+            product_family:
+              type: string
+            estimated_arr_usd:
+              type: number
+            partner_id:
+              type: string
+              format: uuid
+            expected_close_date:
+              type: string
+              format: date
+            status:
+              $ref: "#/components/schemas/DealStatus"
+            workflow_run_id:
+              type: string
+              description: Temporal workflow run ID for traceability.
+              example: "1f82aab6-4c7a-4d3f-b3a9-bc6c1d9e0f2a"
+            ibm_sales_cloud_ref:
+              type: string
+              nullable: true
+              description: IBM Sales Cloud opportunity ID (set after SYNCED state).
+              example: "IBM-OPP-2025-088431"
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+
+    DealList:
+      allOf:
+        - $ref: "#/components/schemas/TenantEnvelope"
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/DealResponse"
+            meta:
+              $ref: "#/components/schemas/PaginationMeta"
+
+    # ── Partner schemas ────────────────────────────────────────────────
+    PartnerTier:
+      type: string
+      enum: [silver, gold, platinum]
+
+    PartnerStatus:
+      type: string
+      enum: [PENDING, ACTIVE, SUSPENDED, CHURNED]
+
+    PartnerRequest:
+      allOf:
+        - $ref: "#/components/schemas/TenantEnvelope"
+        - type: object
+          required:
+            - organisation_name
+            - contact_email
+            - tier
+            - country_code
+          properties:
+            organisation_name:
+              type: string
+              minLength: 2
+              maxLength: 256
+              example: "AfroTech Resellers Ltd"
+            contact_email:
+              type: string
+              format: email
+              example: "bd@afrotech.co.ke"
+            tier:
+              $ref: "#/components/schemas/PartnerTier"
+            country_code:
+              type: string
+              pattern: "^[A-Z]{2}$"
+              example: "KE"
+              description: ISO 3166-1 alpha-2 country code.
+            ibm_partner_id:
+              type: string
+              description: |
+                Optional IBM PartnerWorld ID for co-sell eligibility validation.
+              example: "PW-00123456"
+
+    PartnerResponse:
+      allOf:
+        - $ref: "#/components/schemas/TenantEnvelope"
+        - type: object
+          required:
+            - partner_id
+            - organisation_name
+            - tier
+            - status
+            - created_at
+          properties:
+            partner_id:
+              type: string
+              format: uuid
+              example: "b1b2c3d4-0000-0000-0000-000000000002"
+            organisation_name:
+              type: string
+            contact_email:
+              type: string
+              format: email
+            tier:
+              $ref: "#/components/schemas/PartnerTier"
+            country_code:
+              type: string
+            status:
+              $ref: "#/components/schemas/PartnerStatus"
+            ibm_partner_id:
+              type: string
+              nullable: true
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+
+    PartnerList:
+      allOf:
+        - $ref: "#/components/schemas/TenantEnvelope"
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/PartnerResponse"
+            meta:
+              $ref: "#/components/schemas/PaginationMeta"
+
+  # ── Reusable Responses ────────────────────────────────────────────────
+  responses:
+    Unauthorized:
+      description: Missing or invalid Keycloak JWT.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: Valid JWT but insufficient scope or OPA policy denial.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    UnprocessableEntity:
+      description: Request validation error (HC-4 tenant_id missing or malformed).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  # ── Reusable Parameters ───────────────────────────────────────────────
+  parameters:
+    DealId:
+      name: dealId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUID of the deal.
+    PartnerId:
+      name: partnerId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUID of the partner.
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSizeParam:
+      name: page_size
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+# ────────────────────────────────────────────────────────────────────────────
+# Global security — all paths require Keycloak JWT unless overridden
+# ────────────────────────────────────────────────────────────────────────────
+security:
+  - keycloak_jwt: []
+
+# ────────────────────────────────────────────────────────────────────────────
+# Paths
+# ────────────────────────────────────────────────────────────────────────────
+paths:
+
+  # ══════════════════════════════════════════════════════════════════════
+  # /v1/deals
+  # ══════════════════════════════════════════════════════════════════════
+  /deals:
+    post:
+      operationId: createDeal
+      summary: Register a new deal
+      description: |
+        Submits a new deal registration for the authenticated partner.
+
+        **Processing flow:**
+        1. API validates JWT claims (`tenant_id`, `vpcp:deals:write` scope).
+        2. OPA policy checked: partner tier must allow deal registration.
+        3. `DealRegistrationWorkflow` started in Temporal namespace `vpcp-deals`.
+        4. Returns `202 Accepted` with the workflow run ID and initial status.
+
+        **HC-4**: `tenant_id` from JWT injected into `DealRequest` before Temporal call.
+        **HC-5**: IBM Sales Cloud sync is gated via MCP Gateway Tier 3 approval flow.
+        **HC-3**: Commercial desk must approve before any state-mutating IBM call.
+      tags: [Deals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DealRequest"
+            example:
+              tenant_id: "a1b2c3d4-0000-0000-0000-000000000001"
+              customer_account: "Acme Corporation Kenya"
+              product_family: "watsonx"
+              estimated_arr_usd: 125000.00
+              partner_id: "b1b2c3d4-0000-0000-0000-000000000002"
+              expected_close_date: "2025-12-31"
+      responses:
+        "202":
+          description: Deal registration accepted and Temporal workflow started.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DealResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+    get:
+      operationId: listDeals
+      summary: List deals for the authenticated partner
+      description: |
+        Returns paginated list of deals scoped to the authenticated partner's
+        `tenant_id`. Row-level filtering is enforced at the database layer (RLS).
+        Requires `vpcp:deals:read` scope.
+      tags: [Deals]
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/PageSizeParam"
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/DealStatus"
+          description: Filter deals by status.
+        - name: product_family
+          in: query
+          schema:
+            type: string
+          description: Filter by IBM product family.
+      responses:
+        "200":
+          description: Paginated list of deals.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DealList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /deals/{dealId}:
+    get:
+      operationId: getDeal
+      summary: Get deal by ID
+      description: |
+        Returns a single deal. Enforces tenant isolation — a partner can only
+        retrieve their own deals (`tenant_id` from JWT must match deal record).
+        Requires `vpcp:deals:read` scope.
+      tags: [Deals]
+      parameters:
+        - $ref: "#/components/parameters/DealId"
+      responses:
+        "200":
+          description: Deal details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DealResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /deals/{dealId}/approve:
+    post:
+      operationId: approveDeal
+      summary: Commercial desk approves a pending deal
+      description: |
+        Sends the `commercial_desk_approved` signal to the running Temporal
+        `DealRegistrationWorkflow`. Only users with the `vpcp:deals:admin`
+        scope (commercial desk role) may call this endpoint.
+
+        **HC-3**: This endpoint IS the human approval gate. The agent
+        (`vpcp-deal-agent`) cannot self-approve — only commercial desk users
+        authenticated with the `commercial-desk` Keycloak realm role may invoke.
+        **HC-5**: Triggering this endpoint causes the workflow to advance to
+        the MCP Gateway Tier 3 approval stage for IBM Sales Cloud sync.
+      tags: [Deals]
+      parameters:
+        - $ref: "#/components/parameters/DealId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [approved_by, notes]
+              properties:
+                approved_by:
+                  type: string
+                  description: Email of the commercial desk user approving.
+                notes:
+                  type: string
+                  maxLength: 1000
+      responses:
+        "200":
+          description: Approval signal sent to Temporal workflow.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DealResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ══════════════════════════════════════════════════════════════════════
+  # /v1/partners
+  # ══════════════════════════════════════════════════════════════════════
+  /partners:
+    post:
+      operationId: createPartner
+      summary: Onboard a new partner
+      description: |
+        Registers a new partner organisation on the VPCP platform.
+        Creates a Keycloak group under the `vpcp` realm, provisions an
+        `i3/vpcp/tenants/<tenant_id>` secret in OpenBao, and persists the
+        partner record in `vpcp_db.partners` with RLS on `tenant_id`.
+        Requires `vpcp:partners:admin` scope (platform admin only).
+
+        **HC-4**: `tenant_id` is assigned at creation and enforced on all
+        subsequent deal registrations for this partner.
+      tags: [Partners]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartnerRequest"
+      responses:
+        "201":
+          description: Partner created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PartnerResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+    get:
+      operationId: listPartners
+      summary: List partners
+      description: |
+        Returns paginated list of partner organisations. Scope determines visibility:
+        - `vpcp:partners:admin` — all partners across all tenants.
+        - `vpcp:partners:read` — own partner record only.
+      tags: [Partners]
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/PageSizeParam"
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/PartnerStatus"
+        - name: tier
+          in: query
+          schema:
+            $ref: "#/components/schemas/PartnerTier"
+      responses:
+        "200":
+          description: Paginated list of partners.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PartnerList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /partners/{partnerId}:
+    get:
+      operationId: getPartner
+      summary: Get partner by ID
+      description: |
+        Returns partner details. Tenant isolation enforced: partners can only
+        retrieve their own record unless `vpcp:partners:admin` scope is present.
+      tags: [Partners]
+      parameters:
+        - $ref: "#/components/parameters/PartnerId"
+      responses:
+        "200":
+          description: Partner details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PartnerResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    patch:
+      operationId: updatePartner
+      summary: Update partner tier or status
+      description: |
+        Updates partner tier or status. Requires `vpcp:partners:admin` scope.
+        Status transitions: `PENDING → ACTIVE → SUSPENDED`.
+      tags: [Partners]
+      parameters:
+        - $ref: "#/components/parameters/PartnerId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tier:
+                  $ref: "#/components/schemas/PartnerTier"
+                status:
+                  $ref: "#/components/schemas/PartnerStatus"
+                ibm_partner_id:
+                  type: string
+      responses:
+        "200":
+          description: Partner updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PartnerResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+tags:
+  - name: Deals
+    description: Deal registration and lifecycle management.
+  - name: Partners
+    description: Partner onboarding and profile management.

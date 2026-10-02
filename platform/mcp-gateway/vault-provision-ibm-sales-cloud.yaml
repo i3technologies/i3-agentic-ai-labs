@@ -1,0 +1,94 @@
+# =============================================================
+# OpenBao KV Secret + ExternalSecret: IBM Sales Cloud API credentials
+# Namespace: i3-agent-mesh (MCP Gateway namespace)
+# HC-5: IBM Sales Cloud API key must ONLY be accessible to the
+#        MCP Gateway — never to agents directly.
+# HC-7: No DEV_BYPASS_AUTH. All secret access via OpenBao KV v2.
+#
+# Step 1: Write the secret to OpenBao (run once from a privileged terminal):
+#
+#   bao kv put i3/vpcp/ibm-sales-cloud \
+#     api_key="<IBM_SALES_CLOUD_API_KEY>" \
+#     api_url="https://api.ibm.com/sales/v1"
+#
+# Step 2: Apply this file to create the ExternalSecret + Kubernetes Secret.
+#   kubectl apply -f vault-provision-ibm-sales-cloud.yaml
+#
+# The MCP Gateway reads IBM_SALES_CLOUD_API_KEY and IBM_SALES_CLOUD_API_URL
+# from the generated Kubernetes Secret (vpcp-ibm-sales-cloud-secret).
+# =============================================================
+
+# ── ExternalSecret: pull from OpenBao KV v2 ─────────────────────────────────
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: vpcp-ibm-sales-cloud
+  namespace: i3-agent-mesh
+  labels:
+    app: mcp-gateway
+    secret-class: ibm-external-api
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: openbao-kv
+    kind: ClusterSecretStore
+  target:
+    name: vpcp-ibm-sales-cloud-secret
+    creationPolicy: Owner
+    # Rotate Deployment when secret changes
+    template:
+      metadata:
+        labels:
+          app: mcp-gateway
+  data:
+    - secretKey: IBM_SALES_CLOUD_API_KEY
+      remoteRef:
+        key: i3/vpcp/ibm-sales-cloud
+        property: api_key
+    - secretKey: IBM_SALES_CLOUD_API_URL
+      remoteRef:
+        key: i3/vpcp/ibm-sales-cloud
+        property: api_url
+---
+# ── MCP Gateway Deployment patch: mount the secret as env vars ───────────────
+# Apply with:
+#   kubectl patch deployment mcp-gateway -n i3-agent-mesh --patch-file vault-provision-ibm-sales-cloud.yaml
+# Or include in the base mcp-gateway deploy.yaml under spec.template.spec.containers[0].envFrom.
+#
+# This is a standalone patch object; adjust if you use Kustomize overlays.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-gateway
+  namespace: i3-agent-mesh
+spec:
+  template:
+    spec:
+      containers:
+        - name: mcp-gateway
+          envFrom:
+            - secretRef:
+                name: vpcp-ibm-sales-cloud-secret
+                # Exposes IBM_SALES_CLOUD_API_KEY and IBM_SALES_CLOUD_API_URL
+                # directly as environment variables consumed by
+                # platform/mcp-gateway/tools/vpcp_ibm_sales_cloud_sync.py
+---
+# ── OpenBao Policy: restrict access to i3/vpcp/ibm-sales-cloud ──────────────
+# Apply to OpenBao with:
+#   bao policy write mcp-gateway-vpcp-policy - <<EOF
+#     path "i3/data/vpcp/ibm-sales-cloud" {
+#       capabilities = ["read"]
+#     }
+#   EOF
+#
+# The ExternalSecret operator's OpenBao service account must be bound to this policy.
+# Kubernetes auth role binding (run once):
+#
+#   bao write auth/kubernetes/role/external-secrets \
+#     bound_service_account_names=external-secrets \
+#     bound_service_account_namespaces=external-secrets \
+#     policies=mcp-gateway-vpcp-policy \
+#     ttl=1h
+#
+# Only the MCP Gateway pod (via ExternalSecret) can read this path.
+# Agents access IBM Sales Cloud exclusively through vpcp.ibm_sales_cloud.sync (HC-5).

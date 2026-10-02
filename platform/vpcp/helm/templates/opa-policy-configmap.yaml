@@ -1,0 +1,74 @@
+{{/*
+  templates/opa-policy-configmap.yaml
+  Helm template for the VPCP OPA policy ConfigMap.
+
+  Mounts the entitlements.rego policy into the OPA sidecar at
+  /etc/opa/policies/entitlements.rego.
+
+  The OPA server config (vpcp-opa-config) references this path via its
+  bundle or file-watch configuration (see opa-config-configmap.yaml).
+
+  HC-4: policy enforces tenant_id_present guard on every decision.
+  HC-7: no DEV_BYPASS_AUTH path in policy — verified at authoring time.
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vpcp-opa-policy
+  namespace: {{ .Values.vpccCore.namespace }}
+  labels:
+    app.kubernetes.io/name: vpcp-opa-policy
+    app.kubernetes.io/part-of: vpcp
+    app.kubernetes.io/managed-by: Helm
+data:
+  entitlements.rego: |
+    package partner.entitlements
+
+    # ── Defaults ────────────────────────────────────────────────────────────
+    default allow_deal_registration = false
+    default download_factory_kit    = false
+    default tenant_id_present       = false
+
+    # ── HC-4 Guard ──────────────────────────────────────────────────────────
+    tenant_id_present {
+        input.tenant_id != ""
+        count(input.tenant_id) > 0
+    }
+
+    # ── Helper: active certifications for a given track ─────────────────────
+    certified_engineers(track) = certs {
+        certs := [cert |
+            cert := input.partner.certifications[_]
+            cert.track     == track
+            cert.is_active == true
+        ]
+    }
+
+    # ── Tier sets ────────────────────────────────────────────────────────────
+    deal_registration_tiers := {
+        "Registered",
+        "Solution",
+        "Authorised_Sovereign",
+        "OEM_Embedded",
+    }
+
+    factory_kit_tiers := {
+        "Authorised_Sovereign",
+        "OEM_Embedded",
+    }
+
+    # ── Deal Registration Entitlement ────────────────────────────────────────
+    allow_deal_registration {
+        tenant_id_present
+        input.partner.kyc_status               == "APPROVED"
+        input.user.role                         in {"partner_admin", "partner_sales"}
+        input.partner.tier                      in deal_registration_tiers
+    }
+
+    # ── Factory Integration Kit Download ─────────────────────────────────────
+    download_factory_kit {
+        tenant_id_present
+        input.partner.tier in factory_kit_tiers
+        count(certified_engineers("agent_ai_engineer"))         >= 2
+        count(certified_engineers("forward_deployed_engineer")) >= 1
+    }

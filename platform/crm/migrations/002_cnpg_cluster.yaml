@@ -1,0 +1,101 @@
+---
+# ============================================================
+# CloudNativePG Cluster — crm-intelligence namespace
+# Provisions a 3-node HA PostgreSQL 16 cluster.
+#
+# HC-4: app.tenant_id is injected per-connection by the app layer.
+# HC-6: PII columns (email_hmac, phone_hmac, content_hash) are
+#        HMAC-SHA256 values — enforced at the application layer.
+#
+# Bootstrap: runs migrations/001_initial_schema.sql on first init
+#            and any future migrations/ files in lexicographic order.
+# ============================================================
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: crm-pg
+  namespace: crm-intelligence
+  labels:
+    app.kubernetes.io/part-of: crm-intelligence
+    app.kubernetes.io/component: database
+spec:
+  instances: 3
+  imageName: ghcr.io/cloudnative-pg/postgresql:16.3
+
+  # ── Storage ──────────────────────────────────────────────
+  storage:
+    size: 50Gi
+    storageClass: ibmc-vpc-block-10iops-tier
+
+  # ── Bootstrap — creates the database and runs SQL migrations ──
+  bootstrap:
+    initdb:
+      database: crm_db
+      owner: crm_app
+      secret:
+        name: crm-pg-app-secret           # ExternalSecret — see external-secrets.yaml
+      postInitApplicationSQL:
+        - "ALTER SYSTEM SET log_min_duration_statement = '500';"
+        - "ALTER SYSTEM SET pg_stat_statements.track = 'all';"
+
+  # ── Backup — WAL archival to IBM COS ─────────────────────
+  backup:
+    barmanObjectStore:
+      destinationPath: "s3://i3-crm-pg-backups/crm-pg"
+      endpointURL: "https://s3.private.us-south.cloud-object-storage.appdomain.cloud"
+      s3Credentials:
+        accessKeyId:
+          name: crm-cos-secret
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: crm-cos-secret
+          key: SECRET_ACCESS_KEY
+      wal:
+        compression: gzip
+    retentionPolicy: "14d"
+
+  # ── TLS: Crunchy/CNPG self-signed CA ─────────────────────
+  certificates:
+    serverTLSSecret: crm-pg-server-tls
+    serverCASecret: crm-pg-ca
+
+  # ── Connection pooling via PgBouncer ─────────────────────
+  managed:
+    services:
+      additional:
+        - selectorType: rw
+          serviceTemplate:
+            metadata:
+              name: crm-pg-rw
+              annotations:
+                service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+
+  # ── Non-root security context (HC-7 aligned) ─────────────
+  podTemplate:
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 26        # postgres uid in CNPG base image
+        fsGroup: 26
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: postgres
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false   # CNPG requires writable /var/lib/postgresql
+            capabilities:
+              drop: ["ALL"]
+
+---
+# Scheduled full backup — daily at 02:00 UTC
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: crm-pg-daily
+  namespace: crm-intelligence
+spec:
+  schedule: "0 2 * * *"
+  backupOwnerReference: self
+  cluster:
+    name: crm-pg

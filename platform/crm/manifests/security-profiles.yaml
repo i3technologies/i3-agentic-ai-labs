@@ -1,0 +1,268 @@
+---
+# ============================================================
+# Security Profiles & NetworkPolicies — crm-intelligence namespace
+#
+# 1. OpenShift SecurityContextConstraints (SCC) — non-root, no privilege esc
+# 2. NetworkPolicy — default deny-all ingress + egress
+# 3. NetworkPolicy — allow internal service mesh (worker ↔ broker ↔ db)
+# 4. NetworkPolicy — restrict crawler egress to permitted CIDR ranges only
+# 5. NetworkPolicy — allow ingress from OpenShift ingress controller only
+# 6. NetworkPolicy — allow DNS egress (UDP/TCP 53) for MX verification
+#
+# HC-5: NetworkPolicies enforce the policy-gated external I/O requirement.
+# HC-7: No bypass flags; all containers run as UID 1001.
+# ============================================================
+
+# ── 1. SecurityContextConstraints — crm-worker ────────────────────────────────
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: crm-worker-scc
+  annotations:
+    platform.i3.io/rationale: >
+      Non-root, no privilege escalation, read-only root FS, RuntimeDefault
+      seccomp profile for all CRM worker containers.
+allowPrivilegeEscalation: false
+allowPrivilegedContainer: false
+allowHostNetwork: false
+allowHostPorts: false
+allowHostPID: false
+allowHostIPC: false
+readOnlyRootFilesystem: true           # workers write only to mounted volumes
+runAsUser:
+  type: MustRunAsRange
+  uidRangeMin: 1001
+  uidRangeMax: 1001
+fsGroup:
+  type: MustRunAs
+  ranges:
+    - min: 1001
+      max: 1001
+seLinuxContext:
+  type: MustRunAs
+seccompProfiles:
+  - runtime/default
+allowedCapabilities: []
+defaultAddCapabilities: []
+requiredDropCapabilities:
+  - ALL
+volumes:
+  - configMap
+  - emptyDir
+  - projected
+  - secret
+  - persistentVolumeClaim
+users:
+  - system:serviceaccount:crm-intelligence:crm-worker
+groups: []
+
+---
+# ── 2. Default deny-all ingress ───────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: crm-intelligence
+spec:
+  podSelector: {}       # applies to ALL pods in namespace
+  policyTypes:
+    - Ingress
+
+---
+# ── 3. Default deny-all egress (base; specific rules override below) ───────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: crm-intelligence
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+
+---
+# ── 4. Allow intra-namespace service mesh traffic ─────────────────────────────
+# Workers ↔ Redis broker, Workers ↔ PostgreSQL, API → Workers
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-intra-namespace
+  namespace: crm-intelligence
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: crm-intelligence
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: crm-intelligence
+
+---
+# ── 5. Allow ingress from OpenShift router only ───────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-openshift-ingress
+  namespace: crm-intelligence
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: api
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              network.openshift.io/policy-group: ingress
+      ports:
+        - protocol: TCP
+          port: 8000
+
+---
+# ── 6. Crawl worker — restricted egress to permitted public CIDR only ─────────
+# Crawler pods are labelled app.kubernetes.io/component=crawl-worker.
+# They are allowed egress ONLY to:
+#   a) DNS (UDP/TCP 53) via kube-dns
+#   b) HTTPS (TCP 443) to the internet (0.0.0.0/0 minus RFC-1918 blocks)
+#
+# RFC-1918 private ranges are explicitly blocked to prevent SSRF attacks.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: crawl-worker-egress
+  namespace: crm-intelligence
+  annotations:
+    platform.i3.io/rationale: >
+      HC-5: Prevents crawl workers from reaching internal cluster services,
+      cloud metadata endpoints (169.254.169.254), or private RFC-1918 ranges.
+      Only DNS resolution and outbound HTTPS to public internet are permitted.
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: crawl-worker
+  policyTypes:
+    - Egress
+  egress:
+    # DNS resolution — required for MX lookups (Rule 3) and crawl targets
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # HTTPS to public internet — exclude RFC-1918 + link-local via except clauses
+    # Note: Kubernetes NetworkPolicy does not support CIDR exclusions directly;
+    # use an additional deny policy or OPA/Calico for fine-grained SSRF prevention.
+    # The OPA source_policy gate (HC-5) provides the application-layer SSRF guard.
+    - to:
+        - ipBlock:
+            cidr: "0.0.0.0/0"
+            except:
+              - "10.0.0.0/8"
+              - "172.16.0.0/12"
+              - "192.168.0.0/16"
+              - "169.254.0.0/16"    # cloud metadata endpoint (SSRF mitigation)
+              - "100.64.0.0/10"     # shared address space (RFC 6598)
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 80
+
+    # Allow egress back to crm-intelligence namespace (broker, DB)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: crm-intelligence
+
+---
+# ── 7. Verify worker — DNS egress only ────────────────────────────────────────
+# Verify workers only perform DNS MX lookups — no HTTP.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: verify-worker-egress
+  namespace: crm-intelligence
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: verify-worker
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Intra-namespace (broker + DB)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: crm-intelligence
+
+---
+# ── 8. Export worker — egress to approved downstream CRM endpoints only ────────
+# Export workers need HTTPS access to Salesforce and HubSpot APIs.
+# Restrict by port; rely on OPA policy for hostname enforcement.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: export-worker-egress
+  namespace: crm-intelligence
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: export-worker
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: "0.0.0.0/0"
+            except:
+              - "10.0.0.0/8"
+              - "172.16.0.0/12"
+              - "192.168.0.0/16"
+              - "169.254.0.0/16"
+      ports:
+        - protocol: TCP
+          port: 443
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: crm-intelligence
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

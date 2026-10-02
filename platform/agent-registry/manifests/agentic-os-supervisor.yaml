@@ -1,0 +1,76 @@
+# ============================================================
+# Agent Manifest: agentic-os-supervisor
+# Registry:   i3 Agent Registry (i3-agent-mesh)
+# Version:    1.0.0
+# HC-3:       autonomy_tier = L1 (orchestrates L0/L1 sub-agents; no L2/L3 escalation)
+# HC-4:       tenant_id required on every tool invocation and CloudEvent
+# HC-5:       all tool calls route through MCP Gateway with appropriate tier enforcement
+# ============================================================
+
+agent_id:   agentic-os-supervisor
+name:       "i3 Agentic AI OS Supervisor"
+version:    "1.0.0"
+owner:      "i3-platform-team"
+
+# HC-3: L1 supervisor — can delegate to sub-agents and execute Tier 0/1/2 tools.
+#        May STAGE Tier 3 tool requests; human approval remains mandatory.
+#        NEVER promoted to L2/L3 without verified evaluation evidence.
+autonomy_tier: L1
+
+# HC-4: overridden per user session from Keycloak JWT tenant_id claim
+tenant_id: "00000000-0000-0000-0000-000000000002"
+
+state: active
+
+allowed_tools:
+  - chroma.search              # Tier 0: RAG retrieval from AI-Lab ChromaDB
+  - litellm.chat               # Tier 1: LLM reasoning (routes to vLLM or Ollama via LiteLLM)
+  - odoo.crm.read              # Tier 0: read CRM data for context
+  - kafka.produce              # Tier 2: emit CloudEvents (flywheel_curated, etc.)
+  # Tier 3 tools — require human approval before execution:
+  - vpcp.ibm_sales_cloud.sync  # Tier 3: GATED — never self-approved (HC-5)
+  - postgres.members.write     # Tier 3: GATED — PII write requires human gate (HC-6)
+
+forbidden_tools:
+  - github.pr.create           # Tier 3 — no code deployment autonomy at L1
+
+# HC-3: this agent supervises the following registered sub-agents:
+#        Sub-agents must also be registered in the Agent Registry before use.
+collaborators:
+  - crm-enrichment-agent       # L0 — CRM data enrichment
+  - vpcp-deal-agent            # L1 — VPCP opportunity copilot
+
+cost_budget_tokens: 100000
+guardrail_policy: "lobster-trap-v1"
+
+risk_tier: 3
+approval_policy: human_required    # IMP-12: Tier 3 tools require human sign-off
+side_effect_class: execute-gated   # Tier 3 tool calls require human approval gate
+
+# vLLM model routing configuration (HC-3: model routing logged per invocation)
+model_routing:
+  high_risk_or_financial:  "qwen-2.5-72b-instruct"   # GPU-resident via vLLM
+  multi_step_reasoning:    "llama-3.3-70b-instruct"   # GPU-resident via vLLM
+  simple_intent_or_draft:  "ibm-granite-3b-instruct"  # CPU via Ollama
+
+# All model routing decisions must be logged to Agent Registry decision log
+audit_model_routing: true
+
+description: >
+  Top-level supervisor for the i3 Enterprise Agentic AI Operating System.
+  Orchestrates CRM enrichment and VPCP deal copilot sub-agents. Routes model
+  invocations via LiteLLM to the appropriate vLLM (GPU) or Ollama (CPU) backend
+  based on task risk level and reasoning complexity.
+
+  Executes the ReAct loop: THOUGHT → OPA policy check → TOOL_CALL via MCP Gateway
+  → FINAL_RESPONSE. All tool calls are audited to the mcp_invocation_log table.
+  Curates production traces to the Continuous Learning Flywheel via
+  i3.agentic.trace.flywheel_curated CloudEvents.
+
+  NON-GOALS (explicit scope boundaries):
+  - Does NOT approve its own Tier 3 tool calls — humans approve via /approvals endpoint.
+  - Does NOT self-promote to L2 autonomy — requires explicit evaluation evidence (HC-3).
+  - Does NOT access FORD voter data or ballot-choice private data collections (HC-8).
+  - Does NOT call IBM Sales Cloud, bank APIs, or any Tier 3 system without human gate.
+  - Does NOT store raw Kenyan National IDs or phone numbers — HMAC only (HC-6).
+  - Does NOT bypass Keycloak authentication or JWT validation (HC-7).

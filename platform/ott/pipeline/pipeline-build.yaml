@@ -1,0 +1,55 @@
+# ============================================================
+# OTT Pipeline — BuildConfig + ImageStream
+# Namespace: i3-ott
+# Builds the FastAPI pipeline service from Git source.
+#
+# Apply: oc apply -f pipeline-build.yaml -n i3-ott
+# Trigger: oc start-build ott-pipeline -n i3-ott --follow
+# ============================================================
+
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: ott-pipeline
+  namespace: i3-ott
+  labels:
+    app: ott-pipeline
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  lookupPolicy:
+    local: true
+
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: ott-pipeline
+  namespace: i3-ott
+  labels:
+    app: ott-pipeline
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  source:
+    type: Binary
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+      buildArgs:
+        - name: WHISPER_MODEL
+          value: small    # pre-bakes the model into the image layer
+  output:
+    to:
+      kind: ImageStreamTag
+      name: ott-pipeline:latest
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 4Gi   # Reduced to fit i3-ott-quota; Whisper small model still fits

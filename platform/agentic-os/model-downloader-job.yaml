@@ -1,0 +1,115 @@
+# =============================================================
+# Model Downloader Kubernetes Job — i3 Agentic AI OS
+# Namespace: i3-agentic-os
+# Run once before vllm-deploy.yaml is applied.
+#
+# Fetches HuggingFace token from OpenBao via ExternalSecret:
+#   i3/agentic-os/huggingface-token → Secret/vllm-hf-token
+#
+# Downloads:
+#   1. meta-llama/Llama-3.3-70B-Instruct-AWQ  → /models/llama-3.3-70b-awq
+#   2. Qwen/Qwen2.5-72B-Instruct-AWQ          → /models/qwen-2.5-72b-awq
+#   3. ibm-granite/granite-3.0-3b-instruct     → /models/ibm-granite-3b
+#
+# Storage requirement: ~300 GB download; PVC must be at least 200 Gi
+#                      (AWQ models compress significantly vs BF16)
+# =============================================================
+
+# ── ExternalSecret: pull HF token from OpenBao ───────────────────────────────
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: vllm-hf-token
+  namespace: i3-agentic-os
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: openbao-kv
+    kind: ClusterSecretStore
+  target:
+    name: vllm-hf-token
+    creationPolicy: Owner
+  data:
+    - secretKey: HF_TOKEN
+      remoteRef:
+        key: i3/agentic-os/huggingface-token
+        property: token
+---
+# ── Job: download all three models onto the shared PVC ───────────────────────
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vllm-model-downloader
+  namespace: i3-agentic-os
+  labels:
+    app: vllm-model-downloader
+    component: model-management
+spec:
+  # Do not retry on failure — a partial download may corrupt the PVC
+  backoffLimit: 0
+  # Clean up completed/failed pod after 24 h
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app: vllm-model-downloader
+    spec:
+      restartPolicy: Never
+      nodeSelector:
+        # Run on a CPU node; GPU not needed for download
+        kubernetes.io/os: linux
+      containers:
+        - name: downloader
+          image: huggingface/transformers:4.45-python3.11
+          command:
+            - bash
+            - -c
+            - |
+              set -euo pipefail
+              pip install -q huggingface_hub[cli]
+
+              echo "=== Downloading Llama-3.3-70B-Instruct-AWQ ==="
+              huggingface-cli download \
+                meta-llama/Llama-3.3-70B-Instruct-AWQ \
+                --local-dir /models/llama-3.3-70b-awq \
+                --token "${HF_TOKEN}"
+
+              echo "=== Downloading Qwen2.5-72B-Instruct-AWQ ==="
+              huggingface-cli download \
+                Qwen/Qwen2.5-72B-Instruct-AWQ \
+                --local-dir /models/qwen-2.5-72b-awq \
+                --token "${HF_TOKEN}"
+
+              echo "=== Downloading IBM Granite-3.0-3B-Instruct ==="
+              huggingface-cli download \
+                ibm-granite/granite-3.0-3b-instruct \
+                --local-dir /models/ibm-granite-3b \
+                --token "${HF_TOKEN}"
+
+              echo "=== All models downloaded successfully ==="
+              ls -lh /models/llama-3.3-70b-awq/
+              ls -lh /models/qwen-2.5-72b-awq/
+              ls -lh /models/ibm-granite-3b/
+          env:
+            - name: HF_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: vllm-hf-token
+                  key: HF_TOKEN
+            # Disable HF progress bars in job logs
+            - name: HF_HUB_DISABLE_PROGRESS_BARS
+              value: "1"
+          resources:
+            requests:
+              cpu: "4"
+              memory: 8Gi
+            limits:
+              cpu: "8"
+              memory: 16Gi
+          volumeMounts:
+            - name: model-storage
+              mountPath: /models
+      volumes:
+        - name: model-storage
+          persistentVolumeClaim:
+            claimName: vllm-model-pvc

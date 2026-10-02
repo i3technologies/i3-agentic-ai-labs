@@ -1,0 +1,2 @@
+[console_scripts]
+i3-agent = agentic_os.cli:main

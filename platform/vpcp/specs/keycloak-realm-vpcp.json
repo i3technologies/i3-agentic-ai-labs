@@ -1,0 +1,285 @@
+{
+  "realm": "vpcp",
+  "enabled": true,
+  "displayName": "VPCP — Value Partner Channel Platform",
+  "displayNameHtml": "<strong>VPCP</strong> Partner Portal",
+  "loginTheme": "keycloak",
+  "adminTheme": "keycloak",
+  "accessTokenLifespan": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "ssoSessionIdleTimeout": 3600,
+  "refreshTokenMaxReuse": 0,
+  "revokeRefreshToken": true,
+
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 10,
+
+  "passwordPolicy": "length(12) and upperCase(1) and digits(1) and specialChars(1) and notUsername",
+
+  "smtpServer": {
+    "host": "${SMTP_HOST}",
+    "port": "587",
+    "auth": "true",
+    "starttls": "true",
+    "from": "noreply@i3platform.io",
+    "fromDisplayName": "i3 VPCP Platform"
+  },
+
+  "roles": {
+    "realm": [
+      {
+        "name": "vpcp-partner",
+        "description": "Standard partner — can submit deals and view own records",
+        "composite": false
+      },
+      {
+        "name": "vpcp-commercial-desk",
+        "description": "Commercial desk — can approve/reject deals (HC-3 human gate)",
+        "composite": false
+      },
+      {
+        "name": "vpcp-platform-admin",
+        "description": "Platform administrator — full access including partner creation",
+        "composite": false
+      }
+    ]
+  },
+
+  "groups": [
+    {
+      "name": "partners",
+      "path": "/partners",
+      "subGroups": []
+    },
+    {
+      "name": "commercial-desk",
+      "path": "/commercial-desk",
+      "subGroups": []
+    },
+    {
+      "name": "platform-admins",
+      "path": "/platform-admins",
+      "subGroups": []
+    }
+  ],
+
+  "clients": [
+    {
+      "clientId": "vpcp-core-api",
+      "name": "VPCP Core API (machine)",
+      "description": "Service account for VPCP Core API — deal registration and partner management",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "protocol": "openid-connect",
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false,
+      "publicClient": false,
+      "bearerOnly": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "attributes": {
+        "access.token.lifespan": "1800"
+      },
+      "defaultClientScopes": ["openid", "vpcp-api"],
+      "optionalClientScopes": []
+    },
+    {
+      "clientId": "vpcp-web",
+      "name": "VPCP Partner Web Portal",
+      "description": "Browser SPA — partner-facing Next.js portal",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "https://vpcp.i3platform.io/*",
+        "http://localhost:3000/*"
+      ],
+      "webOrigins": [
+        "https://vpcp.i3platform.io",
+        "http://localhost:3000"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "access.token.lifespan": "900"
+      },
+      "defaultClientScopes": ["openid", "profile", "email", "vpcp-api"],
+      "optionalClientScopes": ["offline_access"]
+    },
+    {
+      "clientId": "vpcp-collab",
+      "name": "VPCP Collaboration Hub",
+      "description": "Internal Next.js collaboration portal for commercial desk",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "https://vpcp-collab.i3platform.io/*",
+        "http://localhost:3001/*"
+      ],
+      "webOrigins": [
+        "https://vpcp-collab.i3platform.io",
+        "http://localhost:3001"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "access.token.lifespan": "900"
+      },
+      "defaultClientScopes": ["openid", "profile", "email", "vpcp-api"],
+      "optionalClientScopes": []
+    }
+  ],
+
+  "clientScopes": [
+    {
+      "name": "vpcp-api",
+      "description": "VPCP API scopes — deals and partners",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "tenant_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "tenant_id",
+            "claim.name": "tenant_id",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "tier",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "tier",
+            "claim.name": "tier",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "partner_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "partner_id",
+            "claim.name": "partner_id",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "scopes",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "vpcp_scopes",
+            "claim.name": "scopes",
+            "jsonType.label": "String",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "false",
+            "multivalued": "true",
+            "aggregate.attrs": "true"
+          }
+        },
+        {
+          "name": "realm_roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "claim.name": "realm_roles",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "false",
+            "multivalued": "true"
+          }
+        }
+      ]
+    }
+  ],
+
+  "identityProviders": [],
+
+  "authenticationFlows": [],
+
+  "_comment_jwt_structure": {
+    "description": "JWT access token structure issued to VPCP clients",
+    "example_payload": {
+      "iss": "https://keycloak.i3-auth.svc/realms/vpcp",
+      "sub": "user-uuid-here",
+      "aud": ["vpcp-core-api", "account"],
+      "exp": 1753000000,
+      "iat": 1752998200,
+      "jti": "jwt-jti-uuid",
+      "typ": "Bearer",
+      "azp": "vpcp-web",
+      "tenant_id": "a1b2c3d4-0000-0000-0000-000000000001",
+      "partner_id": "b1b2c3d4-0000-0000-0000-000000000002",
+      "tier": "gold",
+      "scopes": [
+        "vpcp:deals:read",
+        "vpcp:deals:write",
+        "vpcp:partners:read"
+      ],
+      "realm_roles": ["vpcp-partner"],
+      "preferred_username": "partner@afrotech.co.ke",
+      "email": "partner@afrotech.co.ke",
+      "email_verified": true
+    }
+  },
+
+  "_comment_scope_matrix": {
+    "description": "Scope-to-role mapping. Assign vpcp_scopes user attribute per role.",
+    "vpcp-partner": [
+      "vpcp:deals:read",
+      "vpcp:deals:write",
+      "vpcp:partners:read"
+    ],
+    "vpcp-commercial-desk": [
+      "vpcp:deals:read",
+      "vpcp:deals:write",
+      "vpcp:deals:admin",
+      "vpcp:partners:read"
+    ],
+    "vpcp-platform-admin": [
+      "vpcp:deals:read",
+      "vpcp:deals:write",
+      "vpcp:deals:admin",
+      "vpcp:partners:read",
+      "vpcp:partners:admin"
+    ]
+  },
+
+  "_comment_hc_compliance": {
+    "HC-4": "tenant_id is a mandatory custom claim in every access token. VPCP Core API rejects requests where the JWT tenant_id claim is absent or empty.",
+    "HC-7": "No DEV_BYPASS_AUTH anywhere in this realm configuration. All endpoints require a valid signed JWT.",
+    "HC-3": "Only users with realm role vpcp-commercial-desk carry the vpcp:deals:admin scope, enabling POST /v1/deals/{dealId}/approve. vpcp-deal-agent (service account) does NOT have vpcp:deals:admin."
+  }
+}

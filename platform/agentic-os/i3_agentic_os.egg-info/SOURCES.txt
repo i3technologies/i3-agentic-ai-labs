@@ -1,0 +1,16 @@
+pyproject.toml
+agentic_os/__init__.py
+agentic_os/__main__.py
+agentic_os/_router.py
+agentic_os/cli.py
+agentic_os/router/__init__.py
+i3_agentic_os.egg-info/PKG-INFO
+i3_agentic_os.egg-info/SOURCES.txt
+i3_agentic_os.egg-info/dependency_links.txt
+i3_agentic_os.egg-info/entry_points.txt
+i3_agentic_os.egg-info/requires.txt
+i3_agentic_os.egg-info/top_level.txt
+tests/test_agent_runtime_loop.py
+tests/test_model_harness.py
+tests/test_model_router.py
+tests/test_trace_flywheel.py

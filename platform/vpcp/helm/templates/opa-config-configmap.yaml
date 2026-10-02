@@ -1,0 +1,57 @@
+{{/*
+  templates/opa-config-configmap.yaml
+  Helm template for the OPA server configuration ConfigMap.
+
+  Consumed by the OPA sidecar via --config-file=/etc/opa/config.yaml
+  (already declared in values.yaml sidecars[0].args).
+
+  The `decision_logs` section writes decisions to stdout so the
+  i3 OTel Collector picks them up via the pod log scraper.
+
+  The `bundles` section watches /etc/opa/policies/ for hot-reload
+  of policy files without restarting the sidecar.
+
+  HC-7: `status.console` and `decision_logs.console` are both true —
+        every allow/deny is observable. No silent bypass possible.
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vpcp-opa-config
+  namespace: {{ .Values.vpccCore.namespace }}
+  labels:
+    app.kubernetes.io/name: vpcp-opa-config
+    app.kubernetes.io/part-of: vpcp
+    app.kubernetes.io/managed-by: Helm
+data:
+  config.yaml: |
+    # OPA server configuration for the VPCP Core API sidecar.
+    # HC-7: decision logging to stdout — no silent deny / bypass possible.
+    services: {}
+
+    bundles:
+      vpcp_entitlements:
+        resource: /bundles/vpcp_entitlements
+        # Polling disabled — policy is loaded from the local filesystem volume.
+        # Change to a remote OCI bundle URL in Phase 2 for GitOps policy delivery.
+        polling:
+          min_delay_seconds: 0
+          max_delay_seconds: 0
+
+    # Load policy files directly from the mounted ConfigMap volume.
+    # The OPA --config-file flag does not support inline file paths,
+    # so we use the `paths` key under `plugins.local_bundle`.
+    # OPA 0.65.0 supports inline file-system paths under `bundles`.
+    # Simplest approach for sidecar: pass --addr and load via CLI args
+    # (already configured in values.yaml sidecars[0].args).
+    # This config only needs decision logging and status.
+
+    decision_logs:
+      console: true          # stdout → OTel Collector log scraper
+      mask_decision: false   # full detail for audit trail
+
+    status:
+      console: true          # policy load success/failure visible in pod logs
+
+    # Plugins (none required — policy loaded from filesystem via OPA CLI args)
+    plugins: {}

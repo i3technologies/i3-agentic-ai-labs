@@ -1,0 +1,143 @@
+# ============================================================
+# OTT Content Pipeline — Deployment & Service
+# Namespace: i3-ott
+# Triggered by: OME stream-end webhook
+# Steps: FFmpeg ABR → Whisper ASR → SeaweedFS S3 → Directus
+# ============================================================
+
+# ── Secret (placeholder — patch from OpenBao i3/ott/pipeline before deploy) ──
+# oc patch secret ott-pipeline-secrets -n i3-ott \
+#   -p '{"stringData":{
+#     "PIPELINE_WEBHOOK_SECRET":"<random-32-char-string>",
+#     "AWS_ACCESS_KEY_ID":"<seaweedfs-hmac-key>",
+#     "AWS_SECRET_ACCESS_KEY":"<seaweedfs-hmac-secret>",
+#     "DIRECTUS_TOKEN":"<directus-static-token>"
+#   }}'
+# bao kv get i3/ott/pipeline
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ott-pipeline-secrets
+  namespace: i3-ott
+  annotations:
+    openbao.org/agent-inject: "true"
+    openbao.org/role: "ott"
+type: Opaque
+stringData:
+  PIPELINE_WEBHOOK_SECRET: ""
+  AWS_ACCESS_KEY_ID: ""
+  AWS_SECRET_ACCESS_KEY: ""
+  DIRECTUS_TOKEN: ""
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ott-pipeline
+  namespace: i3-ott
+  labels:
+    app: ott-pipeline
+    app.kubernetes.io/part-of: i3-platform
+  annotations:
+    app.openshift.io/connects-to: '["ome-origin","directus","seaweedfs-s3-gw"]'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ott-pipeline
+  template:
+    metadata:
+      labels:
+        app: ott-pipeline
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsNonRoot: true
+      containers:
+        - name: pipeline
+          image: image-registry.openshift-image-registry.svc:5000/i3-ott/ott-pipeline:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8090
+              protocol: TCP
+          env:
+            - name: SEAWEEDFS_ENDPOINT
+              value: "http://seaweedfs-s3.i3-ott.svc.cluster.local:8333"
+            - name: SEAWEEDFS_BUCKET
+              value: "i3-vod"
+            - name: DIRECTUS_URL
+              value: "http://directus.i3-ott.svc.cluster.local:8055"
+            - name: WHISPER_MODEL
+              value: "small"
+            # n8n callback URL so pipeline signals completion instead of n8n waiting 5 min
+            - name: N8N_CALLBACK_URL
+              value: "https://n8n.i3technologies.co.ke/webhook/pipeline-complete"
+            # Secrets from OpenBao
+            - name: PIPELINE_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ott-pipeline-secrets
+                  key: PIPELINE_WEBHOOK_SECRET
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: ott-pipeline-secrets
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ott-pipeline-secrets
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: DIRECTUS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: ott-pipeline-secrets
+                  key: DIRECTUS_TOKEN
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi     # faster-whisper small model + FFmpeg buffers (~2.5Gi)
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8090
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8090
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            failureThreshold: 3
+          volumeMounts:
+            - name: recordings
+              mountPath: /recordings
+      volumes:
+        - name: recordings
+          emptyDir: {}   # recordings are fetched from OME via webhook payload path; ephemeral is fine
+      terminationGracePeriodSeconds: 600   # allow long transcode jobs to finish
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ott-pipeline
+  namespace: i3-ott
+  labels:
+    app: ott-pipeline
+    app.kubernetes.io/part-of: i3-platform
+spec:
+  selector:
+    app: ott-pipeline
+  ports:
+    - name: http
+      port: 8090
+      targetPort: 8090
+      protocol: TCP
+  type: ClusterIP

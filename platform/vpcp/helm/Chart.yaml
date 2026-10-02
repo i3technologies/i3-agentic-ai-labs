@@ -1,0 +1,24 @@
+apiVersion: v2
+name: vpcp
+description: |
+  Value Partner Channel Platform (VPCP) — App 2 on OpenShift / ROKS 4.16.
+  Covers namespaces: vpcp-core (FastAPI API + Temporal), vpcp-web (partner portal),
+  vpcp-collab (commercial desk hub).
+type: application
+version: "1.0.0"
+appVersion: "1.0.0"
+keywords:
+  - vpcp
+  - ibm-sales-cloud
+  - temporal
+  - partner-channel
+home: https://github.com/i3-platform/i3-Agentic-AI-Labs
+maintainers:
+  - name: i3 Platform Team
+    email: platform@i3.internal
+
+dependencies:
+  - name: temporal
+    version: "0.38.0"
+    repository: "https://go.temporal.io/server/releases/helm-chart"
+    condition: vpccCore.temporal.enabled

@@ -1,0 +1,59 @@
+# ============================================================
+# Agent Manifest: vpcp-deal-agent
+# Registry:   i3 Agent Registry (i3-agent-mesh)
+# Version:    1.0.0
+# HC-3:       autonomy_tier = L1 (can draft + propose; Tier 3 tools require human gate)
+# HC-4:       tenant_id required on every tool invocation
+# HC-5:       IBM Sales Cloud sync routes through MCP Gateway Tier 3 gate
+# ============================================================
+
+agent_id:   vpcp-deal-agent
+name:       "VPCP Opportunity Copilot"
+version:    "1.0.0"
+owner:      "i3-platform-team"
+
+# HC-3: L1 = can execute Tier 0/1/2 tools autonomously;
+#        Tier 3 tools (IBM Sales Cloud sync) require explicit human approval via MCP gate.
+autonomy_tier: L1
+
+# HC-4: overridden per partner session from Keycloak JWT tenant_id claim
+tenant_id: "00000000-0000-0000-0000-000000000002"
+
+state: active
+
+allowed_tools:
+  - chroma.search              # Tier 0: retrieve TAM account history from knowledge base
+  - litellm.chat               # Tier 1: LLM for proposal drafting and conflict analysis
+  - odoo.crm.read              # Tier 0: read existing CRM opportunities
+  - kafka.produce              # Tier 2: emit CloudEvents (deal.registered, deal.conflict_flagged)
+  - vpcp.ibm_sales_cloud.sync  # Tier 3: GATED — human commercial-desk approval required (HC-5)
+
+forbidden_tools:
+  - postgres.members.write     # Tier 3 — not in VPCP deal agent scope
+  - github.pr.create           # Tier 3 — no code autonomy
+  - odoo.crm.create            # Tier 2 — deal agent reads but does not create CRM records directly
+
+cost_budget_tokens: 50000
+guardrail_policy: "lobster-trap-v1"
+
+risk_tier: 2
+approval_policy: auto          # IMP-12: Tier 2 tools auto-approved; Tier 3 tools within use human_required gate
+side_effect_class: propose     # Drafts proposals; Tier 3 execution requires human gate
+
+description: >
+  Opportunity Copilot for the VPCP platform. Triggered by i3.vpcp.deal.registered
+  CloudEvents. Retrieves the TAM account history from the CRM Knowledge Base,
+  summarises IBM product propensity scores and previous deal interactions, and
+  drafts an IBM co-sell proposal template for the commercial desk.
+
+  When the commercial desk approves, coordinates the MCP Gateway Tier 3 gate for
+  IBM Sales Cloud synchronisation (vpcp.ibm_sales_cloud.sync). The agent PROPOSES
+  the sync action — a human approver must sign the MCP approval record before
+  any data is sent to IBM external systems (HC-5).
+
+  NON-GOALS (explicit scope boundaries):
+  - Does NOT call IBM Sales Cloud directly — all IBM API calls gate through MCP.
+  - Does NOT approve its own Tier 3 tool calls — human commercial desk is the approver.
+  - Does NOT access FORD voter data, financial transaction records, or member NIDs.
+  - Does NOT generate deals or register opportunities without partner initiation.
+  - Does NOT modify Temporal workflow state — it only emits CloudEvents and proposes.

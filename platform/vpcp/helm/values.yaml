@@ -1,0 +1,446 @@
+# VPCP Helm Chart — values.yaml
+# Chart: platform/vpcp/helm/vpcp
+# Covers three OpenShift namespaces:
+#   vpcp-core   — FastAPI Core API + Temporal server + workers
+#   vpcp-web    — Partner-facing Next.js portal
+#   vpcp-collab — Commercial desk collaboration Next.js portal
+#
+# HC-4: tenant_id enforced at API layer — chart does not inject it (runtime concern).
+# HC-7: No DEV_BYPASS_AUTH in any values block.
+
+# ────────────────────────────────────────────────────────────────────────────
+# Global
+# ────────────────────────────────────────────────────────────────────────────
+global:
+  imageRegistry: "image-registry.openshift-image-registry.svc:5000"
+  imagePullPolicy: IfNotPresent
+  clusterDomain: "svc.cluster.local"
+  # Strimzi Kafka bootstrap — injected via ExternalSecret from OpenBao i3/vpcp/kafka-bootstrap
+  kafkaBootstrap: ""
+  # Keycloak JWKS endpoint for JWT validation across all services
+  keycloakIssuer: "https://keycloak.i3-auth.svc/realms/vpcp"
+  keycloakJwksUri: "https://keycloak.i3-auth.svc/realms/vpcp/protocol/openid-connect/certs"
+
+# ────────────────────────────────────────────────────────────────────────────
+# Namespace: vpcp-core
+# ────────────────────────────────────────────────────────────────────────────
+vpccCore:
+  namespace: vpcp-core
+
+  # ResourceQuota for vpcp-core namespace
+  resourceQuota:
+    enabled: true
+    hard:
+      requests.cpu: "4"
+      requests.memory: "8Gi"
+      limits.cpu: "8"
+      limits.memory: "16Gi"
+      pods: "20"
+      services: "10"
+
+  # NetworkPolicy: vpcp-core egress/ingress rules
+  networkPolicy:
+    enabled: true
+    # Allow ingress from vpcp-web and vpcp-collab only
+    allowIngressFrom:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: vpcp-web
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: vpcp-collab
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: i3-agent-mesh
+    # Allow egress to: Crunchy PG, Kafka, MCP Gateway, Temporal, Keycloak
+    allowEgressTo:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: i3-data
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: i3-kafka
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: i3-agent-mesh
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: i3-auth
+
+  # ── VPCP Core API (FastAPI) ──────────────────────────────────────────
+  coreApi:
+    enabled: true
+    replicaCount: 2
+    image:
+      repository: "vpcp/vpcp-core-api"
+      tag: "1.0.0"
+    service:
+      type: ClusterIP
+      port: 8000
+    # OpenShift Route (TLS edge termination)
+    route:
+      enabled: true
+      host: "vpcp-api.i3platform.io"
+      tls:
+        termination: edge
+        insecureEdgeTerminationPolicy: Redirect
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "256Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1Gi"
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 6
+      targetCPUUtilizationPercentage: 70
+    env:
+      # Injected from OpenBao via ExternalSecrets
+      - name: DATABASE_URL
+        valueFrom:
+          secretKeyRef:
+            name: vpcp-core-secrets
+            key: database-url
+      - name: TEMPORAL_HOST
+        value: "temporal-frontend.vpcp-core.svc.cluster.local:7233"
+      - name: TEMPORAL_NAMESPACE
+        value: "vpcp-deals"
+      - name: MCP_GATEWAY_URL
+        value: "http://mcp-gateway.i3-agent-mesh.svc.cluster.local:8000"
+      - name: KEYCLOAK_ISSUER
+        value: "https://keycloak.i3-auth.svc/realms/vpcp"
+      - name: KEYCLOAK_JWKS_URI
+        value: "https://keycloak.i3-auth.svc/realms/vpcp/protocol/openid-connect/certs"
+      - name: OPA_URL
+        value: "http://localhost:8181/v1/data/partner/entitlements"
+      - name: KAFKA_BOOTSTRAP
+        valueFrom:
+          secretKeyRef:
+            name: vpcp-core-secrets
+            key: kafka-bootstrap
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8000
+      initialDelaySeconds: 15
+      periodSeconds: 20
+    readinessProbe:
+      httpGet:
+        path: /readyz
+        port: 8000
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    # OPA sidecar
+    sidecars:
+      - name: opa
+        image: openpolicyagent/opa:0.65.0
+        args:
+          - "run"
+          - "--server"
+          - "--addr=0.0.0.0:8181"
+          - "--config-file=/etc/opa/config.yaml"
+          # Load the entitlements policy from the mounted ConfigMap volume.
+          # OPA `run` accepts filesystem paths as positional arguments.
+          - "/etc/opa/policies"
+        ports:
+          - containerPort: 8181
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+        volumeMounts:
+          - name: opa-config
+            mountPath: /etc/opa
+          - name: opa-policy
+            mountPath: /etc/opa/policies
+            readOnly: true
+    volumes:
+      - name: opa-config
+        configMap:
+          name: vpcp-opa-config
+      - name: opa-policy
+        configMap:
+          name: vpcp-opa-policy
+
+  # ── Temporal Server ──────────────────────────────────────────────────
+  temporal:
+    enabled: true
+    # Installed via sub-chart: helm install temporal temporal/temporal
+    # Values override for i3 platform:
+    server:
+      replicaCount: 1   # scale to 3 for HA in Phase 2
+      resources:
+        requests:
+          cpu: "500m"
+          memory: "512Mi"
+        limits:
+          cpu: "2000m"
+          memory: "2Gi"
+    web:
+      enabled: true
+      service:
+        type: ClusterIP   # No external Route — internal dashboard only
+    admintools:
+      enabled: true
+    persistence:
+      default:
+        driver: sql
+        sql:
+          driver: postgres12
+          host: "crunchy-pgbouncer.i3-data.svc.cluster.local"
+          port: 5432
+          database: temporal_db
+          user: temporal_user
+          existingSecret: temporal-db-secret
+    elasticsearch:
+      enabled: false
+    grafana:
+      enabled: false
+    prometheus:
+      enabled: false
+
+  # ── Temporal Worker ──────────────────────────────────────────────────
+  temporalWorker:
+    enabled: true
+    replicaCount: 2
+    image:
+      repository: "vpcp/vpcp-temporal-worker"
+      tag: "1.0.0"
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "256Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1Gi"
+    env:
+      - name: TEMPORAL_HOST
+        value: "temporal-frontend.vpcp-core.svc.cluster.local:7233"
+      - name: TEMPORAL_NAMESPACE
+        value: "vpcp-deals"
+      - name: TEMPORAL_TASK_QUEUE
+        value: "vpcp-deal-registration"
+      - name: MCP_GATEWAY_URL
+        value: "http://mcp-gateway.i3-agent-mesh.svc.cluster.local:8000"
+      - name: VPCP_DEAL_AGENT_ID
+        value: "vpcp-deal-agent"
+      - name: VPCP_AGENT_JWT
+        valueFrom:
+          secretKeyRef:
+            name: vpcp-core-secrets
+            key: vpcp-agent-jwt
+      - name: DATABASE_URL
+        valueFrom:
+          secretKeyRef:
+            name: vpcp-core-secrets
+            key: database-url
+      - name: KAFKA_BOOTSTRAP
+        valueFrom:
+          secretKeyRef:
+            name: vpcp-core-secrets
+            key: kafka-bootstrap
+
+  # ── ExternalSecrets for vpcp-core ────────────────────────────────────
+  externalSecrets:
+    enabled: true
+    secretStoreName: "openbao-cluster-store"
+    refreshInterval: "1h"
+    secrets:
+      - name: vpcp-core-secrets
+        data:
+          - secretKey: database-url
+            remoteRef:
+              key: i3/vpcp/db-url
+              property: value
+          - secretKey: vpcp-agent-jwt
+            remoteRef:
+              key: i3/vpcp/agent-jwt
+              property: value
+          - secretKey: kafka-bootstrap
+            remoteRef:
+              key: i3/vpcp/kafka-bootstrap
+              property: value
+          - secretKey: ibm-sales-cloud-api-key
+            remoteRef:
+              key: i3/vpcp/ibm-sales-cloud
+              property: api_key
+      - name: temporal-db-secret
+        data:
+          - secretKey: password
+            remoteRef:
+              key: i3/vpcp/temporal-db-url
+              property: password
+
+# ────────────────────────────────────────────────────────────────────────────
+# Namespace: vpcp-web
+# ────────────────────────────────────────────────────────────────────────────
+vpcpWeb:
+  namespace: vpcp-web
+
+  resourceQuota:
+    enabled: true
+    hard:
+      requests.cpu: "2"
+      requests.memory: "2Gi"
+      limits.cpu: "4"
+      limits.memory: "4Gi"
+      pods: "6"
+
+  networkPolicy:
+    enabled: true
+    allowIngressFrom:
+      - ipBlock:
+          cidr: "0.0.0.0/0"
+    allowEgressTo:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: vpcp-core
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: i3-auth
+
+  partnerPortal:
+    enabled: true
+    replicaCount: 2
+    image:
+      repository: "vpcp/vpcp-partner-portal"
+      tag: "1.0.0"
+    service:
+      type: ClusterIP
+      port: 3000
+    route:
+      enabled: true
+      host: "vpcp.i3platform.io"
+      tls:
+        termination: edge
+        insecureEdgeTerminationPolicy: Redirect
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 70
+    env:
+      - name: NEXT_PUBLIC_API_URL
+        value: "https://vpcp-api.i3platform.io/v1"
+      - name: NEXT_PUBLIC_KEYCLOAK_URL
+        value: "https://keycloak.i3platform.io"
+      - name: NEXT_PUBLIC_KEYCLOAK_REALM
+        value: "vpcp"
+      - name: NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
+        value: "vpcp-web"
+      # No DEV_BYPASS_AUTH — HC-7
+    livenessProbe:
+      httpGet:
+        path: /api/health
+        port: 3000
+      initialDelaySeconds: 15
+      periodSeconds: 20
+    readinessProbe:
+      httpGet:
+        path: /api/health
+        port: 3000
+      initialDelaySeconds: 5
+      periodSeconds: 10
+
+# ────────────────────────────────────────────────────────────────────────────
+# Namespace: vpcp-collab
+# ────────────────────────────────────────────────────────────────────────────
+vpcpCollab:
+  namespace: vpcp-collab
+
+  resourceQuota:
+    enabled: true
+    hard:
+      requests.cpu: "2"
+      requests.memory: "2Gi"
+      limits.cpu: "4"
+      limits.memory: "4Gi"
+      pods: "6"
+
+  networkPolicy:
+    enabled: true
+    # Collab is internal only — no public internet ingress
+    allowIngressFrom:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: i3-ingress
+    allowEgressTo:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: vpcp-core
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: i3-auth
+
+  collabPortal:
+    enabled: true
+    replicaCount: 1
+    image:
+      repository: "vpcp/vpcp-collab-portal"
+      tag: "1.0.0"
+    service:
+      type: ClusterIP
+      port: 3001
+    route:
+      enabled: true
+      host: "vpcp-collab.i3platform.io"
+      tls:
+        termination: edge
+        insecureEdgeTerminationPolicy: Redirect
+      # Internal-only: annotate with router.openshift.io/cookie_name for session affinity
+      annotations:
+        haproxy.router.openshift.io/ip_whitelist: "10.0.0.0/8"
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+    autoscaling:
+      enabled: false
+    env:
+      - name: NEXT_PUBLIC_API_URL
+        value: "https://vpcp-api.i3platform.io/v1"
+      - name: NEXT_PUBLIC_KEYCLOAK_URL
+        value: "https://keycloak.i3platform.io"
+      - name: NEXT_PUBLIC_KEYCLOAK_REALM
+        value: "vpcp"
+      - name: NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
+        value: "vpcp-collab"
+      # No DEV_BYPASS_AUTH — HC-7
+    livenessProbe:
+      httpGet:
+        path: /api/health
+        port: 3001
+      initialDelaySeconds: 15
+      periodSeconds: 20
+    readinessProbe:
+      httpGet:
+        path: /api/health
+        port: 3001
+      initialDelaySeconds: 5
+      periodSeconds: 10
+
+# ────────────────────────────────────────────────────────────────────────────
+# Observability (shared across all three namespaces)
+# ────────────────────────────────────────────────────────────────────────────
+observability:
+  otelCollector:
+    enabled: true
+    endpoint: "http://otel-collector.i3-observability.svc.cluster.local:4317"
+  serviceMonitors:
+    enabled: true   # Prometheus ServiceMonitor CRs for each service
+  logLevel: "INFO"

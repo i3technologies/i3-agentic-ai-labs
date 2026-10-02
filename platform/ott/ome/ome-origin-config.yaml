@@ -1,0 +1,132 @@
+# ============================================================
+# OvenMediaEngine Origin (Ingest) Server Config — OME v0.21+
+# Separate ConfigMap from ome-config (which serves the live ome pod)
+# Namespace: i3-ott
+#
+# Apply: oc apply -f ome-origin-config.yaml -n i3-ott
+#
+# IMPORTANT: AccessToken is inlined because OME v0.21 does NOT expand
+# Kubernetes env vars via $(...) in XML. Rotate by patching this ConfigMap
+# and restarting ome-origin: oc rollout restart deployment/ome-origin -n i3-ott
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ome-origin-config
+  namespace: i3-ott
+  labels:
+    app: ome-origin
+    app.kubernetes.io/part-of: i3-platform
+data:
+  Server.xml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Server version="8">
+      <Name>i3-ome-ingest</Name>
+      <IP>*</IP>
+      <Type>origin</Type>
+
+      <!-- Port bindings: Managers (API), Providers (ingest), Publishers (output) -->
+      <Bind>
+        <Managers>
+          <API>
+            <Port>8081</Port>
+            <WorkerCount>1</WorkerCount>
+          </API>
+        </Managers>
+        <Providers>
+          <RTMP>
+            <Port>1935</Port>
+          </RTMP>
+          <SRT>
+            <Port>9999</Port>
+          </SRT>
+        </Providers>
+        <Publishers>
+          <LLHLS>
+            <Port>8080</Port>
+            <WorkerCount>1</WorkerCount>
+          </LLHLS>
+          <WebRTC>
+            <Signalling>
+              <Port>3333</Port>
+            </Signalling>
+            <IceCandidates>
+              <IceCandidate>*:10000-10004/udp</IceCandidate>
+            </IceCandidates>
+          </WebRTC>
+        </Publishers>
+      </Bind>
+
+      <!-- API auth token — MUST match ome-api-secret/OME_API_TOKEN -->
+      <!-- OME v0.21 AccessToken must be literal; env expansion not supported here -->
+      <Managers>
+        <API>
+          <AccessToken>i3-ome-0b9e2f0ba07f264ce16d9c9b43202c36</AccessToken>
+        </API>
+      </Managers>
+
+      <VirtualHosts>
+        <VirtualHost include="VHost.xml"/>
+      </VirtualHosts>
+    </Server>
+
+  VHost.xml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <VirtualHost>
+      <Name>i3-live</Name>
+      <Host>
+        <Names>
+          <Name>*</Name>
+        </Names>
+      </Host>
+      <Applications>
+        <Application>
+          <Name>live</Name>
+          <Type>live</Type>
+          <OutputProfiles>
+            <OutputProfile>
+              <Name>abr_ladder</Name>
+              <OutputStreamName>${OriginStreamName}</OutputStreamName>
+              <Encodes>
+                <Video>
+                  <Codec>h264</Codec><Width>1920</Width><Height>1080</Height>
+                  <Bitrate>4000000</Bitrate><Framerate>30</Framerate>
+                </Video>
+                <Video>
+                  <Codec>h264</Codec><Width>1280</Width><Height>720</Height>
+                  <Bitrate>2000000</Bitrate><Framerate>30</Framerate>
+                </Video>
+                <Video>
+                  <Codec>h264</Codec><Width>854</Width><Height>480</Height>
+                  <Bitrate>800000</Bitrate><Framerate>25</Framerate>
+                </Video>
+                <Audio>
+                  <Codec>aac</Codec><Bitrate>128000</Bitrate><Samplerate>44100</Samplerate>
+                </Audio>
+              </Encodes>
+            </OutputProfile>
+          </OutputProfiles>
+          <Providers>
+            <RTMP/>
+            <SRT/>
+          </Providers>
+          <Publishers>
+            <AppWorkerCount>1</AppWorkerCount>
+            <StreamWorkerCount>4</StreamWorkerCount>
+            <WebRTC>
+              <Timeout>30000</Timeout>
+            </WebRTC>
+            <LLHLS>
+              <ChunkDuration>0.5</ChunkDuration>
+              <SegmentDuration>6</SegmentDuration>
+              <SegmentCount>10</SegmentCount>
+              <CrossDomains>
+                <Url>https://tv.i3technologies.co.ke</Url>
+                <Url>https://stream.i3technologies.co.ke</Url>
+                <Url>https://hls.i3technologies.co.ke</Url>
+              </CrossDomains>
+            </LLHLS>
+          </Publishers>
+        </Application>
+      </Applications>
+    </VirtualHost>

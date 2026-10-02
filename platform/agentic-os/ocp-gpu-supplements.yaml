@@ -1,0 +1,360 @@
+# ============================================================
+# OpenShift GPU Deployment Supplements — i3 Agentic AI OS
+# File: platform/agentic-os/ocp-gpu-supplements.yaml
+#
+# These manifests complement vllm-deploy.yaml with OpenShift-
+# specific resources needed on ROKS (IBM Cloud Red Hat OpenShift):
+#
+#   1. Namespace with node-selector annotation
+#   2. OPA ConfigMap (financial_tools.rego policy bundle)
+#   3. OPA sidecar Deployment co-located with MCP Gateway
+#   4. OPA Service (cluster-internal policy endpoint)
+#   5. Granite-3B CPU Deployment (Ollama — no GPU)
+#   6. LimitRange: GPU quota guard per pod
+#   7. KEDA ScaledObject: Qwen-72B autoscale on Kafka lag
+#   8. ResourceQuota: hard GPU ceiling for the namespace
+#
+# GPU node profile (IBM Cloud):
+#   Worker pool:  gpu-ai-pool
+#   Node label:   workload=gpu-inference
+#   GPU flavour:  gx3.8x40x1l40s  (1× NVIDIA L40S 48 GB per node, 2 nodes)
+#   NVIDIA GPU Operator: installed via OLM (nvidia-gpu-operator namespace)
+#
+# HC-3: autonomy_tier logged per invocation; model routing decision logged
+# HC-4: tenant_id passed in LiteLLM metadata header on every call
+# HC-5: vLLM / Ollama are inference backends only — no external API calls
+# ============================================================
+
+# ── 1. Namespace ─────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-agentic-os
+  annotations:
+    # Force all pods in this namespace onto GPU worker nodes by default.
+    # Individual pods that don't need a GPU (e.g. OPA sidecar) override
+    # this with their own nodeSelector.
+    scheduler.alpha.kubernetes.io/node-selector: "workload=gpu-inference"
+  labels:
+    app.kubernetes.io/part-of: i3-agentic-os
+    i3.platform/tenant-scope: multi-tenant
+---
+# ── 2. OPA Policy ConfigMap (financial_tools.rego) ───────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opa-policy-agentic
+  namespace: i3-agentic-os
+  labels:
+    app: opa-agentic
+    component: policy
+data:
+  financial_tools.rego: |
+    package agentic.financial_tools
+
+    default financial_tool_allow = false
+    default requires_supervisor   = false
+    default denial_reason         = null
+
+    financial_threshold_usd := 500
+
+    financial_tool_names := {
+        "vpcp.ibm_sales_cloud.sync",
+        "postgres.members.write",
+        "odoo.crm.create",
+    }
+
+    tenant_id_present {
+        input.tenant_id != ""
+        count(input.tenant_id) > 0
+    }
+
+    valid_autonomy_tier { input.agent_autonomy_tier == "L0" }
+    valid_autonomy_tier { input.agent_autonomy_tier == "L1" }
+
+    approval_already_granted {
+        input.approval_id != null
+        count(input.approval_id) > 0
+    }
+
+    requires_supervisor {
+        input.tool_name in financial_tool_names
+        input.estimated_value_usd >= financial_threshold_usd
+        not approval_already_granted
+    }
+
+    financial_tool_allow {
+        tenant_id_present
+        valid_autonomy_tier
+        not input.tool_name in financial_tool_names
+    }
+
+    financial_tool_allow {
+        tenant_id_present
+        valid_autonomy_tier
+        input.tool_name in financial_tool_names
+        input.estimated_value_usd < financial_threshold_usd
+    }
+
+    financial_tool_allow {
+        tenant_id_present
+        valid_autonomy_tier
+        input.tool_name in financial_tool_names
+        input.estimated_value_usd >= financial_threshold_usd
+        approval_already_granted
+    }
+
+    denial_reason = reason {
+        not tenant_id_present
+        reason := "HC-4: tenant_id is missing or empty"
+    }
+
+    denial_reason = reason {
+        tenant_id_present
+        not valid_autonomy_tier
+        reason := sprintf("HC-3: autonomy_tier=%v exceeds L1 ceiling", [input.agent_autonomy_tier])
+    }
+
+    denial_reason = reason {
+        tenant_id_present
+        valid_autonomy_tier
+        requires_supervisor
+        reason := sprintf(
+            "Financial threshold exceeded: %.2f >= %v USD — supervisor approval required (HC-5)",
+            [input.estimated_value_usd, financial_threshold_usd],
+        )
+    }
+---
+# ── 3. OPA Sidecar Deployment (co-located with MCP Gateway) ──────────────────
+# The OPA server runs as a separate pod in i3-agent-mesh.  The MCP Gateway
+# queries it via cluster-internal DNS before dispatching financial tools.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opa-agentic
+  namespace: i3-agentic-os
+  labels:
+    app: opa-agentic
+    component: policy-engine
+spec:
+  replicas: 2                          # HA — 2 policy replicas
+  selector:
+    matchLabels:
+      app: opa-agentic
+  template:
+    metadata:
+      labels:
+        app: opa-agentic
+        component: policy-engine
+    spec:
+      # OPA does not need a GPU — override namespace default node selector
+      nodeSelector:
+        node-role.kubernetes.io/worker: ""
+      tolerations: []
+      containers:
+        - name: opa
+          image: openpolicyagent/opa:0.68.0-rootless
+          args:
+            - run
+            - --server
+            - --addr=0.0.0.0:8181
+            - --log-format=json
+            - --log-level=info
+            - /policies
+          ports:
+            - name: http
+              containerPort: 8181
+              protocol: TCP
+          resources:
+            limits:
+              memory: 256Mi
+              cpu: "500m"
+            requests:
+              memory: 128Mi
+              cpu: "100m"
+          volumeMounts:
+            - name: policies
+              mountPath: /policies
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8181
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8181
+            initialDelaySeconds: 10
+            periodSeconds: 20
+      volumes:
+        - name: policies
+          configMap:
+            name: opa-policy-agentic
+---
+# ── 4. OPA Service ────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: opa-agentic
+  namespace: i3-agentic-os
+  labels:
+    app: opa-agentic
+spec:
+  selector:
+    app: opa-agentic
+  ports:
+    - name: http
+      port: 8181
+      targetPort: 8181
+      protocol: TCP
+  type: ClusterIP
+---
+# ── 5. Granite-3B CPU Deployment (Ollama — no GPU required) ──────────────────
+# Serves ibm-granite-3b-instruct for simple/fast routing path.
+# Runs on standard worker nodes — explicitly overrides namespace GPU selector.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama-granite
+  namespace: i3-agentic-os
+  labels:
+    app: ollama-granite
+    component: llm-backend
+    model: ibm-granite-3b
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama-granite
+  template:
+    metadata:
+      labels:
+        app: ollama-granite
+        component: llm-backend
+        model: ibm-granite-3b
+    spec:
+      # CPU-only — do NOT schedule on GPU nodes (GPU nodes are expensive)
+      nodeSelector:
+        node-role.kubernetes.io/worker: ""
+      tolerations: []
+      containers:
+        - name: ollama
+          image: ollama/ollama:0.3.12
+          env:
+            - name: OLLAMA_MODELS
+              value: /models
+          command:
+            - sh
+            - -c
+            - |
+              ollama serve &
+              sleep 10
+              ollama pull ibm-granite/granite-3.0-3b-instruct:q4_K_M
+              wait
+          ports:
+            - name: http
+              containerPort: 11434
+              protocol: TCP
+          resources:
+            limits:
+              memory: 8Gi
+              cpu: "4"
+            requests:
+              memory: 6Gi
+              cpu: "2"
+          volumeMounts:
+            - name: ollama-models
+              mountPath: /models
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 11434
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 8
+      volumes:
+        - name: ollama-models
+          emptyDir:
+            sizeLimit: 10Gi
+---
+# ── Service: Ollama Granite ───────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama-granite
+  namespace: i3-agentic-os
+  labels:
+    app: ollama-granite
+spec:
+  selector:
+    app: ollama-granite
+  ports:
+    - name: http
+      port: 11434
+      targetPort: 11434
+  type: ClusterIP
+---
+# ── 6. LimitRange: GPU quota guard ───────────────────────────────────────────
+# Prevents any single pod from claiming more than 2 GPUs.
+# The L40S worker pool has 2 nodes × 1 GPU = 2 GPUs total.
+# Both are consumed by either vllm-inference (Llama-70B) or vllm-qwen (Qwen-72B)
+# — never both simultaneously in the default config.
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: gpu-limit-range
+  namespace: i3-agentic-os
+spec:
+  limits:
+    - type: Container
+      max:
+        nvidia.com/gpu: "2"
+      default:
+        nvidia.com/gpu: "0"
+      defaultRequest:
+        nvidia.com/gpu: "0"
+---
+# ── 7. ResourceQuota: hard GPU ceiling for the namespace ─────────────────────
+# Prevents accidental over-provisioning: total GPU claims in i3-agentic-os
+# are hard-capped at 2 (the full L40S worker pool).
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: gpu-resource-quota
+  namespace: i3-agentic-os
+spec:
+  hard:
+    requests.nvidia.com/gpu: "2"
+    limits.nvidia.com/gpu: "2"
+---
+# ── 8. KEDA ScaledObject: Qwen-72B autoscale on Kafka lag ────────────────────
+# vllm-qwen starts at replicas=0 (defined in vllm-deploy.yaml).
+# KEDA scales it to 1 when the financial_routing Kafka topic has messages
+# (i.e., when high-risk/financial tasks are queued), and back to 0 after idle.
+#
+# Prerequisite: KEDA operator installed via OLM in keda namespace.
+# Topic:  i3.agentic.financial.routing  (Kafka CloudEvent queue)
+# Consumer group: vllm-qwen-scaler
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: vllm-qwen-scaler
+  namespace: i3-agentic-os
+spec:
+  scaleTargetRef:
+    name: vllm-qwen
+    kind: Deployment
+  minReplicaCount: 0         # Scale to zero when no financial tasks pending
+  maxReplicaCount: 1         # Only 1 Qwen replica (uses both L40S GPUs via tensor-parallel)
+  cooldownPeriod: 300        # 5 min cool-down before scale-down (avoid thrash)
+  pollingInterval: 30
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka.i3-platform.svc.cluster.local:9092
+        consumerGroup: vllm-qwen-scaler
+        topic: i3.agentic.financial.routing
+        lagThreshold: "1"    # Scale up when ≥ 1 message waiting
+        offsetResetPolicy: latest

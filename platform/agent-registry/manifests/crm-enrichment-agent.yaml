@@ -1,0 +1,61 @@
+# ============================================================
+# Agent Manifest: crm-enrichment-agent
+# Registry:   i3 Agent Registry (i3-agent-mesh)
+# Version:    1.0.0
+# HC-3:       autonomy_tier = L0 (propose only — no direct execution)
+# HC-4:       tenant_id required on every tool invocation
+# HC-5:       all tool calls route through MCP Gateway
+# HC-6:       no raw NID/email; all hashing via crm crawler module
+# ============================================================
+
+agent_id:   crm-enrichment-agent
+name:       "CRM Intelligence Enrichment Agent"
+version:    "1.0.0"
+owner:      "i3-platform-team"
+
+# HC-3: L0 = read + propose only. No write execution without human approval.
+autonomy_tier: L0
+
+# HC-4: must be set from Keycloak JWT tenant_id claim at invocation time
+tenant_id: "00000000-0000-0000-0000-000000000002"   # default; overridden per session
+
+state: active
+
+# Tools this agent may invoke (all route through MCP Gateway)
+allowed_tools:
+  - chroma.search              # Tier 0: read existing knowledge base
+  - litellm.chat               # Tier 1: LLM reasoning for entity resolution
+  - crm.domain.resolver        # Tier 2: DNS-based domain resolution
+  - crm.contact.verifier       # Tier 2: MX record + OPA source policy check
+
+# Tools this agent may NEVER invoke
+forbidden_tools:
+  - postgres.members.write     # Tier 3 — CRM agent must not write member records
+  - github.pr.create           # Tier 3 — no code autonomy
+  - vpcp.ibm_sales_cloud.sync  # Tier 3 — not in CRM agent scope
+
+# Token budget per session (L0 agents are strictly cost-bounded)
+cost_budget_tokens: 20000
+
+# Guardrail policy (Lobster Trap 12-pattern prompt injection firewall)
+guardrail_policy: "lobster-trap-v1"
+
+# Risk classification
+risk_tier: 1
+approval_policy: auto            # IMP-12: L0 low-risk; no human gate required
+side_effect_class: propose       # L0: proposes actions, does not execute state-mutating calls
+
+# Description of purpose and explicit non-goals (best practice from guide)
+description: >
+  Enriches MEA TAM account records by resolving missing domains via licensed
+  DNS checks, verifying email deliverability, and extracting public business
+  contacts from OPA-permitted sources. Attaches keyed HMAC-SHA256 provenance
+  hashes (HC-6) to every evidence record and checks suppression lists before
+  any data leaves the system.
+
+  NON-GOALS (explicit scope boundaries):
+  - Does NOT generate synthetic email patterns (Rule 2).
+  - Does NOT write to suppression_records directly — proposes suppression to human.
+  - Does NOT export contact data to CRM — export is triggered by human operator.
+  - Does NOT scrape authenticated portals or social networks.
+  - Does NOT have access to FORD voter data or financial transaction records.

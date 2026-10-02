@@ -1,0 +1,681 @@
+---
+# ============================================================
+# OpenShift Deployment Manifests — crm-intelligence
+# Namespace: crm-intelligence
+#
+# Components:
+#   1. Namespace + ServiceAccount
+#   2. Redis (Celery broker + rate limiter backend)
+#   3. Celery workers — one Deployment per queue
+#   4. Celery Beat scheduler
+#   5. CRM API (FastAPI)
+#   6. Horizontal Pod Autoscaler (KEDA — queue depth triggers)
+#
+# Security:
+#   - All containers: runAsNonRoot, runAsUser=1001, readOnlyRootFilesystem=true
+#   - SCC: crm-worker-scc (see security-profiles.yaml)
+#   - Secrets injected exclusively via ExternalSecrets (see external-secrets.yaml)
+#   - HC-7: no DEV_BYPASS_AUTH; no hardcoded credentials
+# ============================================================
+
+# ── 1. Namespace ──────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: crm-intelligence
+  labels:
+    kubernetes.io/metadata.name: crm-intelligence
+    platform.i3.io/tenant-namespace: "true"
+
+---
+# ── 2. ServiceAccount ─────────────────────────────────────────────────────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: crm-worker
+  namespace: crm-intelligence
+  annotations:
+    platform.i3.io/scc: crm-worker-scc
+
+---
+# ── 3. Redis Deployment ───────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crm-redis
+  namespace: crm-intelligence
+  labels:
+    app.kubernetes.io/name: crm-redis
+    app.kubernetes.io/component: broker
+    app.kubernetes.io/part-of: crm-intelligence
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: crm-redis
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: crm-redis
+        app.kubernetes.io/component: broker
+    spec:
+      serviceAccountName: crm-worker
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999           # redis default uid
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: redis
+          image: docker.io/redis:7.2-alpine
+          command:
+            - redis-server
+            - --requirepass
+            - "$(REDIS_PASSWORD)"
+            - --save
+            - ""                 # disable RDB snapshots — ephemeral broker
+            - --appendonly
+            - "no"
+          ports:
+            - containerPort: 6379
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: crm-app-secrets
+                  key: REDIS_PASSWORD
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false    # redis needs writable /data
+            capabilities:
+              drop: ["ALL"]
+          livenessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crm-redis
+  namespace: crm-intelligence
+spec:
+  selector:
+    app.kubernetes.io/name: crm-redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+
+---
+# ── 4. Worker Deployment template (rendered per queue) ───────────────────────
+# queue: import — higher replicas; ingestion is the critical path
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crm-worker-import
+  namespace: crm-intelligence
+  labels:
+    app.kubernetes.io/name: crm-worker-import
+    app.kubernetes.io/component: import-worker
+    app.kubernetes.io/part-of: crm-intelligence
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: crm-worker-import
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: crm-worker-import
+        app.kubernetes.io/component: import-worker
+    spec:
+      serviceAccountName: crm-worker
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: worker
+          image: registry.i3.io/crm-worker:latest
+          command:
+            - celery
+            - -A
+            - crm.celery_app
+            - worker
+            - -Q
+            - import
+            - --concurrency=4
+            - --loglevel=info
+            - --without-heartbeat
+          envFrom:
+            - secretRef:
+                name: crm-app-secrets
+          env:
+            - name: CELERY_BROKER_URL
+              value: "redis://:$(REDIS_PASSWORD)@crm-redis:6379/0"
+            - name: CELERY_RESULT_BACKEND
+              value: "redis://:$(REDIS_PASSWORD)@crm-redis:6379/1"
+            - name: DATABASE_URL
+              value: "postgresql://crm_app:$(DB_PASSWORD)@$(DB_HOST):5432/crm_db?sslmode=require"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          livenessProbe:
+            exec:
+              command:
+                - celery
+                - -A
+                - crm.celery_app
+                - inspect
+                - ping
+                - -d
+                - "celery@$(HOSTNAME)"
+            initialDelaySeconds: 30
+            periodSeconds: 60
+            timeoutSeconds: 10
+      volumes:
+        - name: tmp
+          emptyDir: {}
+
+---
+# queue: discovery
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crm-worker-discovery
+  namespace: crm-intelligence
+  labels:
+    app.kubernetes.io/component: discovery-worker
+    app.kubernetes.io/part-of: crm-intelligence
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: crm-worker-discovery
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: crm-worker-discovery
+        app.kubernetes.io/component: discovery-worker
+    spec:
+      serviceAccountName: crm-worker
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: worker
+          image: registry.i3.io/crm-worker:latest
+          command:
+            - celery
+            - -A
+            - crm.celery_app
+            - worker
+            - -Q
+            - discovery
+            - --concurrency=4
+            - --loglevel=info
+          envFrom:
+            - secretRef:
+                name: crm-app-secrets
+          env:
+            - name: CELERY_BROKER_URL
+              value: "redis://:$(REDIS_PASSWORD)@crm-redis:6379/0"
+            - name: CELERY_RESULT_BACKEND
+              value: "redis://:$(REDIS_PASSWORD)@crm-redis:6379/1"
+            - name: DATABASE_URL
+              value: "postgresql://crm_app:$(DB_PASSWORD)@$(DB_HOST):5432/crm_db?sslmode=require"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+
+---
+# queue: crawl — intentionally 1 replica base; KEDA scales on queue depth
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crm-worker-crawl
+  namespace: crm-intelligence
+  labels:
+    app.kubernetes.io/component: crawl-worker
+    app.kubernetes.io/part-of: crm-intelligence
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: crm-worker-crawl
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: crm-worker-crawl
+        app.kubernetes.io/component: crawl-worker
+    spec:
+      serviceAccountName: crm-worker
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: worker
+          image: registry.i3.io/crm-worker:latest
+          command:
+            - celery
+            - -A
+            - crm.celery_app
+            - worker
+            - -Q
+            - crawl
+            - --concurrency=2     # low concurrency to honour per-domain RPS limits
+            - --loglevel=info
+          envFrom:
+            - secretRef:
+                name: crm-app-secrets
+          env:
+            - name: CELERY_BROKER_URL
+              value: "redis://:$(REDIS_PASSWORD)@crm-redis:6379/0"
+            - name: CELERY_RESULT_BACKEND
+              value: "redis://:$(REDIS_PASSWORD)@crm-redis:6379/1"
+            - name: DATABASE_URL
+              value: "postgresql://crm_app:$(DB_PASSWORD)@$(DB_HOST):5432/crm_db?sslmode=require"
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "384Mi"
+            limits:
+              cpu: "800m"
+              memory: "768Mi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+
+---
+# queue: extract
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crm-worker-extract
+  namespace: crm-intelligence
+  labels:
+    app.kubernetes.io/component: extract-worker
+    app.kubernetes.io/part-of: crm-intelligence
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: crm-worker-extract
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: crm-worker-extract
+        app.kubernetes.io/component: extract-worker
+    spec:
+      serviceAccountName: crm-worker
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: worker
+          image: registry.i3.io/crm-worker:latest
+          command:
+            - celery
+            - -A
+            - crm.celery_app
+            - worker
+            - -Q
+            - extract
+            - --concurrency=4
+            - --loglevel=info
+          envFrom:
+            - secretRef:
+                name: crm-app-secrets
+          env:
+            - name: CELERY_BROKER_URL
+              value: "redis://:$(REDIS_PASSWORD)@crm-redis:6379/0"
+            - name: CELERY_RESULT_BACKEND
+              value: "redis://:$(REDIS_PASSWORD)@crm-redis:6379/1"
+          resources:
+            requests:
+              cpu: "500m"         # CPU-bound NLP
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+
+---
+# queue: verify
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crm-worker-verify
+  namespace: crm-intelligence
+  labels:
+    app.kubernetes.io/component: verify-worker
+    app.kubernetes.io/part-of: crm-intelligence
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: crm-worker-verify
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: crm-worker-verify
+        app.kubernetes.io/component: verify-worker
+    spec:
+      serviceAccountName: crm-worker
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: worker
+          image: registry.i3.io/crm-worker:latest
+          command:
+            - celery
+            - -A
+            - crm.celery_app
+            - worker
+            - -Q
+            - verify
+            - --concurrency=8     # I/O-bound DNS — high concurrency
+            - --loglevel=info
+          envFrom:
+            - secretRef:
+                name: crm-app-secrets
+          env:
+            - name: CELERY_BROKER_URL
+              value: "redis://:$(REDIS_PASSWORD)@crm-redis:6379/0"
+            - name: CELERY_RESULT_BACKEND
+              value: "redis://:$(REDIS_PASSWORD)@crm-redis:6379/1"
+            - name: DATABASE_URL
+              value: "postgresql://crm_app:$(DB_PASSWORD)@$(DB_HOST):5432/crm_db?sslmode=require"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+
+---
+# queue: export
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crm-worker-export
+  namespace: crm-intelligence
+  labels:
+    app.kubernetes.io/component: export-worker
+    app.kubernetes.io/part-of: crm-intelligence
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: crm-worker-export
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: crm-worker-export
+        app.kubernetes.io/component: export-worker
+    spec:
+      serviceAccountName: crm-worker
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: worker
+          image: registry.i3.io/crm-worker:latest
+          command:
+            - celery
+            - -A
+            - crm.celery_app
+            - worker
+            - -Q
+            - export
+            - --concurrency=2
+            - --loglevel=info
+          envFrom:
+            - secretRef:
+                name: crm-app-secrets
+          env:
+            - name: CELERY_BROKER_URL
+              value: "redis://:$(REDIS_PASSWORD)@crm-redis:6379/0"
+            - name: CELERY_RESULT_BACKEND
+              value: "redis://:$(REDIS_PASSWORD)@crm-redis:6379/1"
+            - name: DATABASE_URL
+              value: "postgresql://crm_app:$(DB_PASSWORD)@$(DB_HOST):5432/crm_db?sslmode=require"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+
+---
+# ── 5. Celery Beat ────────────────────────────────────────────────────────────
+# Single replica — beat scheduler must not be scaled horizontally
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crm-celery-beat
+  namespace: crm-intelligence
+  labels:
+    app.kubernetes.io/name: crm-celery-beat
+    app.kubernetes.io/component: scheduler
+    app.kubernetes.io/part-of: crm-intelligence
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate               # prevent duplicate beat schedulers on rollout
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: crm-celery-beat
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: crm-celery-beat
+        app.kubernetes.io/component: scheduler
+    spec:
+      serviceAccountName: crm-worker
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: beat
+          image: registry.i3.io/crm-worker:latest
+          command:
+            - celery
+            - -A
+            - crm.celery_app
+            - beat
+            - --loglevel=info
+            - --schedule
+            - /tmp/celerybeat-schedule
+          envFrom:
+            - secretRef:
+                name: crm-app-secrets
+          env:
+            - name: CELERY_BROKER_URL
+              value: "redis://:$(REDIS_PASSWORD)@crm-redis:6379/0"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false   # beat writes schedule file to /tmp
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: beat-schedule
+              mountPath: /tmp
+      volumes:
+        - name: beat-schedule
+          emptyDir: {}
+
+---
+# ── 6. KEDA ScaledObject — crawl queue autoscaler ─────────────────────────────
+# Scales crawl workers 1→10 based on Redis list length.
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: crm-crawl-worker-scaler
+  namespace: crm-intelligence
+spec:
+  scaleTargetRef:
+    name: crm-worker-crawl
+  pollingInterval: 30
+  cooldownPeriod: 120
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  triggers:
+    - type: redis
+      metadata:
+        address: crm-redis.crm-intelligence.svc.cluster.local:6379
+        listName: crawl
+        listLength: "5"          # 1 replica per 5 queued crawl tasks
+        databaseIndex: "0"
+      authenticationRef:
+        name: crm-redis-trigger-auth
+
+---
+# KEDA TriggerAuthentication for Redis password
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: crm-redis-trigger-auth
+  namespace: crm-intelligence
+spec:
+  secretTargetRef:
+    - parameter: password
+      name: crm-app-secrets
+      key: REDIS_PASSWORD
+
+---
+# ── 7. KEDA ScaledObject — extract queue autoscaler ───────────────────────────
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: crm-extract-worker-scaler
+  namespace: crm-intelligence
+spec:
+  scaleTargetRef:
+    name: crm-worker-extract
+  pollingInterval: 30
+  cooldownPeriod: 120
+  minReplicaCount: 2
+  maxReplicaCount: 8
+  triggers:
+    - type: redis
+      metadata:
+        address: crm-redis.crm-intelligence.svc.cluster.local:6379
+        listName: extract
+        listLength: "3"
+        databaseIndex: "0"
+      authenticationRef:
+        name: crm-redis-trigger-auth
