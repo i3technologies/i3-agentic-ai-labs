@@ -322,6 +322,9 @@ export async function POST(
     })
 
     // ── SAGA Step 4: persist grade result + integrity scores ────────────────
+    // WHERE status = 'grading' guards against double-write on retry:
+    // if the pod crashed after writing 'submitted' but before returning the
+    // response, the client may retry — the guard makes this safe (no-op).
     await client.query(
       `UPDATE quiz_attempts
        SET status               = 'submitted',
@@ -337,7 +340,7 @@ export async function POST(
            integrity_confidence = $8,
            trust_score          = $9,
            requires_review      = $10
-       WHERE id = $11`,
+       WHERE id = $11 AND status = 'grading'`,
       [
         score,
         max_score,

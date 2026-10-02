@@ -1,22 +1,38 @@
-import pool from '@/lib/db'
+import pool, { setTenantContext } from '@/lib/db'
 import Link from 'next/link'
 import Image from 'next/image'
 
+// Next.js 15: params is a Promise — must be awaited
 interface VerifyPageProps {
-  params: { code: string }
+  params: Promise<{ code: string }>
 }
 
+// Platform-default tenant — all EvalOS certificates are issued under this tenant.
+// This is a public verification endpoint (no session required), so we use the
+// platform tenant UUID to satisfy RLS without needing a logged-in user.
+const PLATFORM_TENANT = '00000000-0000-0000-0000-000000000002'
+
 async function lookupCertificate(code: string) {
-  const { rows } = await pool.query(
-    `SELECT student_name, student_email, exam_code, exam_title, pct_score, issued_at
-     FROM certificates WHERE verify_code = $1`,
-    [code.toUpperCase()]
-  )
-  return rows[0] ?? null
+  const client = await pool.connect()
+  try {
+    // HC-4: set RLS context to platform tenant so the policy evaluates correctly.
+    // Certificate verification is intentionally public — any visitor may look up a code.
+    await setTenantContext(client, PLATFORM_TENANT)
+    const { rows } = await client.query(
+      `SELECT student_name, student_email, exam_code, exam_title,
+              pct_score, pass_threshold, issued_at, verify_code
+       FROM certificates WHERE verify_code = $1`,
+      [code.toUpperCase()]
+    )
+    return rows[0] ?? null
+  } finally {
+    client.release()
+  }
 }
 
 export default async function VerifyPage({ params }: VerifyPageProps) {
-  const cert = await lookupCertificate(params.code)
+  const { code } = await params
+  const cert = await lookupCertificate(code)
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-slate-50 flex items-center justify-center px-4 py-12">
@@ -78,14 +94,14 @@ export default async function VerifyPage({ params }: VerifyPageProps) {
                 <div>
                   <dt className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Verification Code</dt>
                   <dd className="font-mono text-sm font-bold text-slate-700 tracking-widest">
-                    {params.code.toUpperCase()}
+                    {code.toUpperCase()}
                   </dd>
                 </div>
               </dl>
             ) : (
               <div className="text-center py-4">
                 <p className="text-slate-600 text-sm mb-2">
-                  The code <span className="font-mono font-bold text-slate-800">{params.code.toUpperCase()}</span> was not found.
+                  The code <span className="font-mono font-bold text-slate-800">{code.toUpperCase()}</span> was not found.
                 </p>
                 <p className="text-slate-400 text-xs">
                   Ensure you have entered the full code exactly as shown on the certificate.

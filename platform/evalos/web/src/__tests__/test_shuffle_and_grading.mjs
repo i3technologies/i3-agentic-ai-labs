@@ -462,7 +462,99 @@ test('MR questions in Set 7 with shuffle are graded correctly', () => {
   assert.equal(result.score, 1)
 })
 
-// ── Summary ──────────────────────────────────────────────────────────────────
+// ── Suite 4: isAnswerCorrect (study-coach logic) ──────────────────────────────
+// Mirror of the isAnswerCorrect() helper added to study-coach/[attemptId]/route.ts
+
+function isAnswerCorrect(q, ans) {
+  const isMultiple =
+    (q.type && q.type.toUpperCase() === 'MR') ||
+    ['mr', 'multiple_response', 'multi_select'].includes((q.question_type || '').toLowerCase())
+
+  if (isMultiple) {
+    if (!Array.isArray(ans) || ans.length === 0) return false
+    const given    = [...ans].map((s) => String(s).toUpperCase()).sort()
+    const expected = [...q.correct_answers].map((s) => s.toUpperCase()).sort()
+    return JSON.stringify(given) === JSON.stringify(expected)
+  } else {
+    if (!ans || typeof ans !== 'string') return false
+    return ans.toUpperCase() === (q.correct_answers[0] ?? '').toUpperCase()
+  }
+}
+
+console.log('\n── Suite 4: isAnswerCorrect (study-coach) ──')
+
+test('SC correct answer (exact case) → true', () => {
+  const q = { type: 'SC', question_type: 'mcq', correct_answers: ['B'] }
+  assert.equal(isAnswerCorrect(q, 'B'), true)
+})
+
+test('SC correct answer (lowercase) → true', () => {
+  const q = { type: 'SC', question_type: 'mcq', correct_answers: ['B'] }
+  assert.equal(isAnswerCorrect(q, 'b'), true)
+})
+
+test('SC wrong answer → false', () => {
+  const q = { type: 'SC', question_type: 'mcq', correct_answers: ['B'] }
+  assert.equal(isAnswerCorrect(q, 'A'), false)
+})
+
+test('SC undefined answer → false', () => {
+  const q = { type: 'SC', question_type: 'mcq', correct_answers: ['B'] }
+  assert.equal(isAnswerCorrect(q, undefined), false)
+})
+
+test('SC empty string answer → false', () => {
+  const q = { type: 'SC', question_type: 'mcq', correct_answers: ['B'] }
+  assert.equal(isAnswerCorrect(q, ''), false)
+})
+
+test('MR all correct (same order) → true', () => {
+  const q = { type: 'MR', question_type: 'multi_select', correct_answers: ['A', 'C'] }
+  assert.equal(isAnswerCorrect(q, ['A', 'C']), true)
+})
+
+test('MR all correct (different order) → true', () => {
+  const q = { type: 'MR', question_type: 'multi_select', correct_answers: ['A', 'C'] }
+  assert.equal(isAnswerCorrect(q, ['C', 'A']), true)
+})
+
+test('MR all correct (lowercase) → true', () => {
+  const q = { type: 'MR', question_type: 'multi_select', correct_answers: ['A', 'C'] }
+  assert.equal(isAnswerCorrect(q, ['a', 'c']), true)
+})
+
+test('MR partial selection → false', () => {
+  const q = { type: 'MR', question_type: 'multi_select', correct_answers: ['A', 'C'] }
+  assert.equal(isAnswerCorrect(q, ['A']), false)
+})
+
+test('MR empty array → false', () => {
+  const q = { type: 'MR', question_type: 'multi_select', correct_answers: ['A', 'C'] }
+  assert.equal(isAnswerCorrect(q, []), false)
+})
+
+test('MR string instead of array → false', () => {
+  const q = { type: 'MR', question_type: 'multi_select', correct_answers: ['A', 'C'] }
+  assert.equal(isAnswerCorrect(q, 'A'), false)
+})
+
+test('multi_response question_type detection → treated as MR', () => {
+  const q = { type: 'MC', question_type: 'multiple_response', correct_answers: ['B', 'D'] }
+  assert.equal(isAnswerCorrect(q, ['B', 'D']), true)
+})
+
+test('PRE-FIX study-coach bug: ans === correct_answers[0] was case-sensitive', () => {
+  // The old code: isCorrect = ans === q.correct_answers[0]
+  // With shuffled answers stored as uppercase but correct_answers also uppercase,
+  // this should work — but demonstrates the fix handles mixed case too
+  const q = { type: 'SC', question_type: 'mcq', correct_answers: ['C'] }
+  // Old code: 'c' === 'C' → false (BUG). New code: 'c'.toUpperCase() === 'C' → true
+  assert.equal(isAnswerCorrect(q, 'c'), true, 'lowercase answer should match uppercase correct_answers')
+  // Verify old behavior was indeed wrong
+  assert.equal('c' === 'C', false, 'Old case-sensitive comparison was broken')
+})
+
+// ── Final Summary ─────────────────────────────────────────────────────────────
 
 console.log(`\n── Results: ${passed} passed, ${failed} failed ──\n`)
 

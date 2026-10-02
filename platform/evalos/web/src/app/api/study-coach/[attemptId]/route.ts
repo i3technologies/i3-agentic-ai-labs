@@ -39,6 +39,25 @@ interface WrongQuestion {
   explanation: string
 }
 
+function isAnswerCorrect(
+  q: QuestionSnap,
+  ans: string | string[] | undefined
+): boolean {
+  const isMultiple =
+    q.type?.toUpperCase() === 'MR' ||
+    ['mr', 'multiple_response', 'multi_select'].includes(q.question_type?.toLowerCase() ?? '')
+
+  if (isMultiple) {
+    if (!Array.isArray(ans) || ans.length === 0) return false
+    const given    = [...ans].map((s) => String(s).toUpperCase()).sort()
+    const expected = [...q.correct_answers].map((s) => s.toUpperCase()).sort()
+    return JSON.stringify(given) === JSON.stringify(expected)
+  } else {
+    if (!ans || typeof ans !== 'string') return false
+    return ans.toUpperCase() === (q.correct_answers[0] ?? '').toUpperCase()
+  }
+}
+
 function buildWrongAnswers(
   snapshot: QuestionSnap[],
   answers: Record<string, string | string[]>
@@ -47,16 +66,7 @@ function buildWrongAnswers(
 
   for (const q of snapshot) {
     const ans = answers[q.id]
-    const isMultiple = q.type === 'MR' || q.question_type === 'MR' || q.question_type === 'multiple_response'
-
-    let isCorrect: boolean
-    if (isMultiple) {
-      const given = ((ans as string[]) ?? []).slice().sort()
-      const expected = [...q.correct_answers].sort()
-      isCorrect = JSON.stringify(given) === JSON.stringify(expected)
-    } else {
-      isCorrect = ans === q.correct_answers[0]
-    }
+    const isCorrect = isAnswerCorrect(q, ans)
 
     if (!isCorrect) {
       const studentLabels = Array.isArray(ans) ? ans : ans ? [ans] : ['(no answer)']
@@ -90,18 +100,7 @@ function buildDomainSummary(
     if (!map.has(key)) map.set(key, { correct: 0, total: 0 })
     const e = map.get(key)!
     e.total++
-
-    const ans = answers[q.id]
-    const isMultiple = q.type === 'MR' || q.question_type === 'MR' || q.question_type === 'multiple_response'
-    let isCorrect: boolean
-    if (isMultiple) {
-      const given = ((ans as string[]) ?? []).slice().sort()
-      const expected = [...q.correct_answers].sort()
-      isCorrect = JSON.stringify(given) === JSON.stringify(expected)
-    } else {
-      isCorrect = ans === q.correct_answers[0]
-    }
-    if (isCorrect) e.correct++
+    if (isAnswerCorrect(q, answers[q.id])) e.correct++
   }
 
   return Array.from(map.entries())
@@ -208,7 +207,8 @@ export async function GET(
               e.code AS exam_code, e.title AS exam_title
        FROM quiz_attempts qa
        JOIN exams e ON e.id = qa.exam_id
-       WHERE qa.id = $1 AND qa.student_id = $2 AND qa.status = 'submitted'`,
+       WHERE qa.id = $1 AND qa.student_id = $2
+         AND qa.status IN ('submitted', 'graded')`,
       [attemptId, userId]
     )
     rows = result.rows
