@@ -51,8 +51,8 @@ CREATE TABLE IF NOT EXISTS exams (
     -- Alias for compatibility with db/schema.sql which uses passing_score
     passing_score        NUMERIC(5,2) GENERATED ALWAYS AS (pass_threshold) STORED,
     -- Maximum attempts a student may make
-    max_attempts         INTEGER NOT NULL DEFAULT 5,
-    -- If set, student must re-attempt within this window (hours) after first attempt
+    max_attempts         INTEGER NOT NULL DEFAULT 3,
+    -- Deprecated: no retake window enforced. Students may retake at any time within max_attempts.
     retake_window_hours  INTEGER,
     -- set_number is parsed from code (e.g. "SET1" → 1); used by question_count subquery
     set_number           INTEGER GENERATED ALWAYS AS (

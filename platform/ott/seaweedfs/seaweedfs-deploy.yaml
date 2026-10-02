@@ -36,7 +36,7 @@ spec:
             - master
             - -port=9333
             - -mdir=/data
-            - -defaultReplication=000
+            - -defaultReplication=001
             - -metricsPort=9327
           ports:
             - name: http

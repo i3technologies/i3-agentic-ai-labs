@@ -40,17 +40,114 @@ interface GradeResponse {
   detailed_results: { question_id: string; correct: boolean; correct_option: number }[]
 }
 
+// Minimal question shape needed by the inline grader (subset of stored snapshot)
+interface QuestionSnap {
+  id: string
+  type: string
+  question_type: string
+  correct_answers: string[]
+  domain_number: number
+  domain_name: string
+}
+
+/**
+ * Inline fallback grader — pure TypeScript, no external I/O.
+ * Mirrors the Python grading logic in platform/grading/main.py exactly.
+ * Used when the grading-service pod is unreachable so attempts are never
+ * permanently stuck in 'grading' status.
+ */
+function gradeInline(
+  snapshot: QuestionSnap[],
+  answersRaw: Record<string, unknown>,
+  passThreshold: number
+): GradeResponse {
+  const domainMap = new Map<number, { domain_name: string; correct: number; total: number }>()
+  const detailed: GradeResponse['detailed_results'] = []
+  let correctCount = 0
+
+  for (const q of snapshot) {
+    const dn = q.domain_number
+    if (!domainMap.has(dn)) {
+      domainMap.set(dn, { domain_name: q.domain_name, correct: 0, total: 0 })
+    }
+    const bucket = domainMap.get(dn)!
+    bucket.total += 1
+
+    const selected = answersRaw[q.id] ?? null
+    const isMr = q.type?.toUpperCase() === 'MR' ||
+      ['mr', 'multiple_response', 'multi_select'].includes(q.question_type?.toLowerCase() ?? '')
+
+    let isCorrect = false
+    if (isMr) {
+      if (Array.isArray(selected) && selected.length > 0) {
+        const given = [...selected].map(String).map(s => s.toUpperCase()).sort()
+        const expected = [...q.correct_answers].map(s => s.toUpperCase()).sort()
+        isCorrect = JSON.stringify(given) === JSON.stringify(expected)
+      }
+    } else {
+      if (selected !== null && selected !== undefined) {
+        if (typeof selected === 'string') {
+          isCorrect = selected.toUpperCase() === (q.correct_answers[0] ?? '').toUpperCase()
+        } else if (typeof selected === 'number') {
+          isCorrect = selected === parseInt(q.correct_answers[0] ?? '-1', 10)
+        }
+      }
+    }
+
+    if (isCorrect) {
+      correctCount += 1
+      bucket.correct += 1
+    }
+
+    const correctLabel = q.correct_answers[0] ?? ''
+    let correctIdx = 0
+    const parsed = parseInt(correctLabel, 10)
+    if (!isNaN(parsed)) {
+      correctIdx = parsed
+    } else {
+      correctIdx = Math.max(0, (correctLabel.toUpperCase().charCodeAt(0) || 65) - 65)
+    }
+    detailed.push({ question_id: q.id, correct: isCorrect, correct_option: correctIdx })
+  }
+
+  const total = snapshot.length
+  const pct = total > 0 ? (correctCount / total) * 100 : 0
+
+  const domain_breakdown: DomainBreakdown[] = Array.from(domainMap.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([, v]) => ({
+      domain: v.domain_name,
+      score: v.correct,
+      max: v.total,
+      pct: v.total > 0 ? Math.round((v.correct / v.total) * 100 * 100) / 100 : 0,
+    }))
+
+  return {
+    score: correctCount,
+    max_score: total,
+    pct_score: Math.round(pct * 10000) / 10000,
+    passed: pct >= passThreshold,
+    domain_breakdown,
+    detailed_results: detailed,
+  }
+}
+
 async function callGradingService(
   examId: string,
   attemptId: string,
   tenantId: string,
   snapshot: unknown[],
-  answersRaw: Record<string, unknown>
+  answersRaw: Record<string, unknown>,
+  passThreshold: number
 ): Promise<GradeResponse> {
-  // Re-shape legacy answers map { question_id: selected_option_index }
+  // Re-shape answers map { question_id: label_string_or_array_or_index }
+  // The client stores answers as label strings ("A","B","C","D") for SC
+  // questions and string arrays (["A","C"]) for MR questions.
+  // The grading service expects { question_id, selected_option: label }.
   const answers = Object.entries(answersRaw).map(([question_id, val]) => ({
     question_id,
-    selected_option: typeof val === 'number' ? val : -1,
+    // Pass the raw value — grading service handles both string labels and arrays.
+    selected_option: val ?? null,
   }))
 
   const res = await fetch(`${GRADING_SERVICE_URL}/grade`, {
@@ -62,6 +159,7 @@ async function callGradingService(
       tenant_id: tenantId,
       question_snapshot: snapshot,
       answers,
+      pass_threshold: passThreshold,
     }),
     signal: AbortSignal.timeout(30_000),
   })
@@ -116,7 +214,9 @@ export async function POST(
     // ── SAGA Step 1: fetch attempt (must be in_progress or grading_failed) ────
     // HC-4: extract tenant_id from the joined exam row, then set RLS context.
     const { rows } = await client.query(
-      `SELECT qa.id, qa.question_snapshot, qa.answers, e.pass_threshold, e.tenant_id,
+      `SELECT qa.id, qa.question_snapshot, qa.answers,
+              COALESCE(e.pass_threshold, e.passing_score, 68) AS pass_threshold,
+              e.tenant_id,
               COALESCE(qa.focus_lost_count, 0)   AS focus_lost_count,
               COALESCE(qa.fullscreen_exits, 0)    AS fullscreen_exits,
               COALESCE(qa.clipboard_events, 0)    AS clipboard_events,
@@ -127,7 +227,7 @@ export async function POST(
        FROM quiz_attempts qa
        JOIN exams e ON e.id = qa.exam_id
        WHERE qa.id = $1 AND qa.student_id = $2 AND qa.exam_id = $3
-         AND qa.status IN ('in_progress', 'grading_failed')`,
+         AND qa.status IN ('in_progress', 'grading', 'grading_failed')`,
       [attemptId, userId, examId]
     )
 
@@ -154,39 +254,57 @@ export async function POST(
     await setTenantContext(client, tenantId)
 
     // ── SAGA Step 2: mark attempt as 'grading' ──────────────────────────────
+    // Also covers pod-restart recovery: if status is already 'grading' we still
+    // proceed — the previous pod died before completing; we retry here.
     await client.query(
-      `UPDATE quiz_attempts SET status = 'grading', submitted_at = NOW()
-       WHERE id = $1 AND status IN ('in_progress', 'grading_failed')`,
+      `UPDATE quiz_attempts SET status = 'grading', submitted_at = COALESCE(submitted_at, NOW())
+       WHERE id = $1 AND status IN ('in_progress', 'grading', 'grading_failed')`,
       [attemptId]
     )
 
-    // ── SAGA Step 3: call grading-service ───────────────────────────────────
+    // ── SAGA Step 3: call grading-service (with inline fallback) ────────────
     try {
       gradeResult = await callGradingService(
         examId,
         attemptId,
         tenantId,
         attempt.question_snapshot,
-        attempt.answers
+        attempt.answers,
+        attempt.pass_threshold ?? 68
       )
     } catch (gradingErr) {
-      await client.query(
-        `UPDATE quiz_attempts
-         SET status        = 'grading_failed',
-             proctor_flags = proctor_flags || $1::jsonb
-         WHERE id = $2`,
-        [JSON.stringify({ grading_error: String(gradingErr), failed_at: new Date().toISOString() }), attemptId]
-      )
-      console.error(`[evalos-submit] grading_failed attemptId=${attemptId}:`, gradingErr)
-      return NextResponse.json(
-        {
-          error: 'grading_service_unavailable',
-          message: 'Grading is temporarily unavailable. Your answers are saved — please resubmit in a few minutes.',
-          attempt_id: attemptId,
-          retryable: true,
-        },
-        { status: 503 }
-      )
+      // ── Inline fallback grader ──────────────────────────────────────────
+      // When the external grading service is unreachable we grade in-process
+      // so the attempt is never left permanently stuck. This is a pure
+      // calculation (no external I/O) identical to the Python grading logic.
+      console.warn(`[evalos-submit] grading service unreachable — using inline fallback. attemptId=${attemptId}:`, gradingErr)
+      try {
+        gradeResult = gradeInline(
+          attempt.question_snapshot as QuestionSnap[],
+          attempt.answers,
+          attempt.pass_threshold ?? 68
+        )
+      } catch (fallbackErr) {
+        // Both external and inline grading failed — mark as grading_failed so
+        // the student can resubmit. This should never happen in practice.
+        await client.query(
+          `UPDATE quiz_attempts
+           SET status        = 'grading_failed',
+               proctor_flags = proctor_flags || $1::jsonb
+           WHERE id = $2`,
+          [JSON.stringify({ grading_error: String(gradingErr), fallback_error: String(fallbackErr), failed_at: new Date().toISOString() }), attemptId]
+        )
+        console.error(`[evalos-submit] both graders failed attemptId=${attemptId}:`, fallbackErr)
+        return NextResponse.json(
+          {
+            error: 'grading_service_unavailable',
+            message: 'Grading is temporarily unavailable. Your answers are saved — please resubmit in a few minutes.',
+            attempt_id: attemptId,
+            retryable: true,
+          },
+          { status: 503 }
+        )
+      }
     }
 
     const { score, max_score, pct_score, passed, domain_breakdown } = gradeResult
@@ -207,6 +325,8 @@ export async function POST(
     await client.query(
       `UPDATE quiz_attempts
        SET status               = 'submitted',
+           submitted_at         = COALESCE(submitted_at, NOW()),
+           graded_at            = NOW(),
            score                = $1,
            max_score            = $2,
            pct_score            = $3,

@@ -1,9 +1,11 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci --production=false
+# Copy source first (excluding node_modules via .dockerignore)
 COPY . .
-RUN npm run build
+# Install deps fresh on Linux so binaries have correct execute bits
+RUN npm install --legacy-peer-deps
+# Build using node directly — no reliance on .bin symlink permissions
+RUN node node_modules/next/dist/bin/next build
 
 FROM node:20-alpine AS runner
 WORKDIR /app

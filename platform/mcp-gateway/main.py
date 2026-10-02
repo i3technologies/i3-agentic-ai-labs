@@ -118,6 +118,11 @@ async def lifespan(app: FastAPI):
         directus_tasks,
         postgres_members_write,
         github_pr_create,
+        # App 2 — VPCP: IBM Sales Cloud sync (HC-5: Tier 3 execute-gated)
+        vpcp_ibm_sales_cloud_sync,
+        # App 1 — CRM Intelligence tools
+        crm_domain_resolver,
+        crm_contact_verifier,
     )
 
     log.info("MCP Gateway started — %d tools registered", len(_TOOL_CATALOGUE))
@@ -144,6 +149,7 @@ app.add_middleware(
         "https://evalos.i3technologies.co.ke",
         "https://pmaas.i3technologies.co.ke",
         "https://admissions.i3technologies.co.ke",
+        "https://partners.i3technologies.co.ke",   # App 2: VPCP Partner Portal
     ],
     allow_methods=["POST", "GET", "PATCH"],
     allow_headers=["Authorization", "Content-Type", "X-Agent-Id", "X-Tenant-Id", "X-Correlation-Id"],

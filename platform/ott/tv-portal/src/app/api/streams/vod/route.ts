@@ -20,8 +20,8 @@ export interface VodItem {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const limit = Math.min(parseInt(searchParams.get('limit') ?? '12', 10), 50)
-  const offset = parseInt(searchParams.get('offset') ?? '0', 10)
+  const limit = Math.min(Math.max(0, parseInt(searchParams.get('limit') ?? '12', 10)), 50)
+  const offset = Math.max(0, parseInt(searchParams.get('offset') ?? '0', 10))
 
   try {
     const params = new URLSearchParams({

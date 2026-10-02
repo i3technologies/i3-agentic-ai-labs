@@ -304,6 +304,7 @@ interface CertProps {
   examCode: string
   examTitle: string
   pctScore: number
+  passThreshold?: number
   verifyCode: string
   issuedAt: Date
 }
@@ -315,6 +316,7 @@ export function CertificatePDF({
   examCode,
   examTitle,
   pctScore,
+  passThreshold = 90,
   verifyCode,
   issuedAt,
 }: CertProps) {
@@ -401,7 +403,7 @@ export function CertificatePDF({
               </View>
               <View style={s.metaCard}>
                 <Text style={s.metaKey}>Pass Threshold</Text>
-                <Text style={s.metaVal}>90%</Text>
+                <Text style={s.metaVal}>{passThreshold}%</Text>
               </View>
               <View style={s.metaCard}>
                 <Text style={s.metaKey}>Date Issued</Text>

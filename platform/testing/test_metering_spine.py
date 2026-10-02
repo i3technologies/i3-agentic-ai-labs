@@ -19,12 +19,19 @@ Environment variables required (same as metering jobs):
     BILLING_TENANT_ID        00000000-0000-0000-0000-000000000001
     LITELLM_TEST_KEY         a valid project virtual key (not master_key) for quota test
     KEY_HMAC_SECRET          from OpenBao i3/litellm/key-hmac-secret
+
+Tests that require a live PostgreSQL instance are skipped automatically when
+LITELLM_BILLING_DB_URL resolves to a host that is not reachable.  Set the env
+var to a real billing DB connection string to enable them in CI or on the cluster.
 """
 
 import hashlib
 import hmac as _hmac
 import os
 import uuid
+
+import socket
+from urllib.parse import urlparse
 
 import asyncpg
 import httpx
@@ -47,6 +54,24 @@ def _hmac_key(raw: str) -> str:
     return _hmac.new(
         KEY_HMAC_SECRET.encode(), raw.encode(), hashlib.sha256
     ).hexdigest()  # type: ignore[attr-defined]  # hmac.new is valid stdlib
+
+
+def _db_reachable() -> bool:
+    """Return True only if the billing DB host:port is TCP-reachable."""
+    try:
+        parsed = urlparse(BILLING_DB_URL)
+        host = parsed.hostname or "localhost"
+        port = parsed.port or 5432
+        with socket.create_connection((host, port), timeout=1):
+            return True
+    except OSError:
+        return False
+
+
+_SKIP_NO_DB = pytest.mark.skipif(
+    not _db_reachable(),
+    reason="Billing PostgreSQL not reachable — set LITELLM_BILLING_DB_URL to enable",
+)
 
 
 # ── Fixtures ─────────────────────────────────────────────────────────────
@@ -73,6 +98,7 @@ async def db_other_tenant():
 
 # ── 1. Migration integrity ───────────────────────────────────────────────
 
+@_SKIP_NO_DB
 @pytest.mark.asyncio
 async def test_tables_exist(db: asyncpg.Connection) -> None:
     """All four metering tables must be present in the billing schema."""
@@ -91,6 +117,7 @@ async def test_tables_exist(db: asyncpg.Connection) -> None:
     assert "key_rotation_log" in names, "billing.key_rotation_log missing"
 
 
+@_SKIP_NO_DB
 @pytest.mark.asyncio
 async def test_tenant_id_not_null(db: asyncpg.Connection) -> None:
     """HC-4: inserting a row without tenant_id must raise an error."""
@@ -104,6 +131,7 @@ async def test_tenant_id_not_null(db: asyncpg.Connection) -> None:
         )
 
 
+@_SKIP_NO_DB
 @pytest.mark.asyncio
 async def test_required_columns(db: asyncpg.Connection) -> None:
     """Verify column presence and NOT NULL constraints for key tables."""
@@ -132,6 +160,7 @@ async def test_required_columns(db: asyncpg.Connection) -> None:
 
 # ── 2. HC-4 RLS enforcement ──────────────────────────────────────────────
 
+@_SKIP_NO_DB
 @pytest.mark.asyncio
 async def test_rls_blocks_cross_tenant_reads(
     db: asyncpg.Connection,
@@ -231,6 +260,7 @@ async def test_over_quota_returns_429() -> None:
 
 # ── 4. monthly_usage upsert idempotency ──────────────────────────────────
 
+@_SKIP_NO_DB
 @pytest.mark.asyncio
 async def test_monthly_usage_upsert(db: asyncpg.Connection) -> None:
     """Duplicate (project_id, year_month) must UPDATE, not INSERT a second row."""
@@ -288,6 +318,7 @@ async def test_monthly_usage_upsert(db: asyncpg.Connection) -> None:
 
 # ── 5. api_key key_hash is HMAC, not plaintext ───────────────────────────
 
+@_SKIP_NO_DB
 @pytest.mark.asyncio
 async def test_key_hash_is_hmac(db: asyncpg.Connection) -> None:
     """key_hash stored in billing.api_keys must be a 64-char hex HMAC string."""
@@ -336,6 +367,7 @@ async def test_key_hash_is_hmac(db: asyncpg.Connection) -> None:
 
 # ── 6. key_rotation_log audit trail ──────────────────────────────────────
 
+@_SKIP_NO_DB
 @pytest.mark.asyncio
 async def test_rotation_log_written(db: asyncpg.Connection) -> None:
     """After key rotation, key_rotation_log must contain one row per rotated key."""

@@ -50,13 +50,20 @@ def _grade(req: GradeRequest) -> GradeResponse:
 
     Rules
     -----
-    * Multiple-response (MR): all selected options must exactly match
-      correct_answers (order-independent).
-    * Single-choice (SC / default): the single selected option index must
-      match correct_answers[0].
-    * An answer with selected_option == -1 is treated as skipped (wrong).
+    * Multiple-response (MR): the set of selected labels must exactly match
+      correct_answers (order-independent, case-insensitive).
+    * Single-choice (SC / default): the selected label must match
+      correct_answers[0] (case-insensitive).
+    * A null / missing answer is treated as skipped (wrong).
+
+    Answer format
+    -------------
+    The client stores answers as label strings ("A", "B", "C", "D") for SC
+    questions and lists of label strings (["A", "C"]) for MR questions.
+    Legacy integer-index format is also accepted for backwards compatibility.
     """
-    answer_map: dict[str, int] = {
+    # Build a lookup: question_id → raw selected value
+    answer_map: dict[str, object] = {
         str(a.question_id): a.selected_option for a in req.answers
     }
 
@@ -74,28 +81,45 @@ def _grade(req: GradeRequest) -> GradeResponse:
 
         domain_map[dn]["total"] += 1
 
-        selected = answer_map.get(qid, -1)
-        is_mr = q.type.upper() == "MR" or q.question_type.upper() in ("MR", "MULTIPLE_RESPONSE")
+        selected = answer_map.get(qid)  # None if not answered
+        is_mr = q.type.upper() == "MR" or q.question_type.upper() in ("MR", "MULTIPLE_RESPONSE", "MULTI_SELECT")
 
         if is_mr:
-            # For MR we expect selected_option to encode a bitmask; client
-            # should send a synthetic single int.  Treat mismatch as wrong.
-            is_correct = False
+            # MR: selected must be a list of labels matching correct_answers exactly.
+            if isinstance(selected, list) and len(selected) > 0:
+                given  = sorted(str(s).upper() for s in selected)
+                expect = sorted(str(c).upper() for c in q.correct_answers)
+                is_correct = given == expect
+            else:
+                is_correct = False
         else:
-            # For SC: selected_option is the 0-based index of the chosen answer.
-            # correct_answers[0] may be an index string ("0", "1", …) or the
-            # literal answer text.  We compare index-to-index first.
-            correct_raw = q.correct_answers[0] if q.correct_answers else ""
-            try:
-                is_correct = selected != -1 and selected == int(correct_raw)
-            except ValueError:
+            # SC: selected is either a label string ("A") or a legacy integer index.
+            if selected is None or selected == -1:
+                is_correct = False
+            elif isinstance(selected, str):
+                # Label-string comparison (primary path for all current clients)
+                correct_label = str(q.correct_answers[0]).upper() if q.correct_answers else ""
+                is_correct = selected.upper() == correct_label
+            elif isinstance(selected, int):
+                # Legacy integer-index path
+                correct_raw = q.correct_answers[0] if q.correct_answers else ""
+                try:
+                    is_correct = selected == int(correct_raw)
+                except ValueError:
+                    # correct_answers[0] is a label, not an index — can't compare
+                    is_correct = False
+            else:
                 is_correct = False
 
+        # Represent the first correct answer as its label for the detailed result.
+        # Keep as 0 (legacy default) when correct_answers is empty.
+        correct_label_for_detail = q.correct_answers[0] if q.correct_answers else ""
         correct_idx = 0
         try:
-            correct_idx = int(q.correct_answers[0]) if q.correct_answers else 0
-        except ValueError:
-            correct_idx = 0
+            correct_idx = int(correct_label_for_detail)
+        except (ValueError, TypeError):
+            # Label string like "A" — store its ordinal offset from 'A'
+            correct_idx = max(0, ord(str(correct_label_for_detail).upper()[:1] or "A") - ord("A"))
 
         detailed.append(
             DetailedResult(
@@ -114,7 +138,7 @@ def _grade(req: GradeRequest) -> GradeResponse:
 
     # Use per-exam threshold carried in the request if provided by the caller;
     # fall back to service-level environment default.
-    threshold = PASS_THRESHOLD
+    threshold = req.pass_threshold if req.pass_threshold is not None else PASS_THRESHOLD
 
     domain_breakdown = [
         DomainBreakdown(

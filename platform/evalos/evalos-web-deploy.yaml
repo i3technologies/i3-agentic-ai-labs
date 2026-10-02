@@ -132,6 +132,9 @@ spec:
           env:
             - name: PG_CA_CERT_PATH
               value: /etc/ssl/certs/postgres-ca.crt
+            # Grading service — cluster-internal DNS; must match the Service name in evalos-services-deploy.yaml
+            - name: GRADING_SERVICE_URL
+              value: "http://grading-service.i3-evalos.svc.cluster.local:8000"
             # LITELLM_KEY injected from the shared litellm-api-secret (OpenBao path: i3/litellm/api-key)
             - name: LITELLM_KEY
               valueFrom:

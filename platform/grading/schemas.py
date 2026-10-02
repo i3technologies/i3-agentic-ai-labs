@@ -4,13 +4,18 @@ Grading Service — Pydantic schemas (request / response)
 from __future__ import annotations
 
 import uuid
-from typing import List, Optional
+from typing import Any, List, Optional, Union
 from pydantic import BaseModel, Field
 
 
 class Answer(BaseModel):
     question_id: uuid.UUID
-    selected_option: int  # 0-based index; -1 for skipped
+    # Accepts:
+    #   - a label string  "A" | "B" | "C" | "D"          (SC questions)
+    #   - a list of label strings  ["A", "C"]             (MR questions)
+    #   - None / null                                      (skipped)
+    # Legacy integer index format is also accepted for backwards compatibility.
+    selected_option: Union[str, List[str], int, None] = None
 
 
 class QuestionSnapshot(BaseModel):
@@ -28,6 +33,9 @@ class GradeRequest(BaseModel):
     tenant_id: uuid.UUID
     question_snapshot: List[QuestionSnapshot]
     answers: List[Answer]
+    # Per-exam pass threshold supplied by the caller (e.g. 90.0 for Set 7).
+    # Falls back to the service-level PASS_THRESHOLD env var when omitted.
+    pass_threshold: Optional[float] = None
 
 
 class DetailedResult(BaseModel):

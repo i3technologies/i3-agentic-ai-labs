@@ -113,6 +113,12 @@ spec:
       storage: 5Gi
 
 ---
+# ── Secret (placeholder — injected by OpenBao agent on pod start) ────────────
+# To patch manually:
+#   oc patch secret n8n-secrets -n i3-ott \
+#     -p '{"stringData":{"DB_USER":"...","DB_PASSWORD":"...","ENCRYPTION_KEY":"..."}}'
+# To retrieve from vault:
+#   bao kv get i3/ott/n8n
 apiVersion: v1
 kind: Secret
 metadata:
@@ -123,9 +129,9 @@ metadata:
     openbao.org/role: "ott"
 type: Opaque
 stringData:
-  DB_USER: "REPLACE_FROM_VAULT"
-  DB_PASSWORD: "REPLACE_FROM_VAULT"
-  ENCRYPTION_KEY: "REPLACE_FROM_VAULT"
+  DB_USER: ""
+  DB_PASSWORD: ""
+  ENCRYPTION_KEY: ""
 
 ---
 apiVersion: v1

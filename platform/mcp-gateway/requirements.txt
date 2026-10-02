@@ -7,3 +7,4 @@ redis[asyncio]>=5.0.3
 chromadb>=0.5.0
 google-auth>=2.29.0
 google-api-python-client>=2.128.0
+dnspython>=2.6.0        # crm.domain.resolver + crm.contact.verifier (MX record checks)

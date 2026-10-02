@@ -44,6 +44,15 @@
       "parameters": {
         "method": "POST",
         "url": "http://ott-pipeline.i3-ott.svc.cluster.local:8090/webhook/stream-end",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-OME-Signature",
+              "value": "=sha256={{$env.PIPELINE_WEBHOOK_SECRET_HMAC}}"
+            }
+          ]
+        },
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
@@ -63,15 +72,20 @@
       }
     },
     {
-      "id": "wait-for-pipeline",
-      "name": "Wait 5 Minutes",
-      "type": "n8n-nodes-base.wait",
+      "id": "wait-for-callback",
+      "name": "Wait for Pipeline Callback",
+      "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [850, 300],
       "parameters": {
-        "unit": "minutes",
-        "amount": 5
-      }
+        "httpMethod": "POST",
+        "path": "pipeline-complete",
+        "responseMode": "onReceived",
+        "options": {
+          "noResponseBody": true
+        }
+      },
+      "notes": "Pipeline calls back to https://n8n.i3technologies.co.ke/webhook/pipeline-complete when done. Set N8N_CALLBACK_URL=https://n8n.i3technologies.co.ke/webhook/pipeline-complete in the pipeline deployment."
     },
     {
       "id": "update-directus",
@@ -94,14 +108,22 @@
             {
               "name": "recording_available",
               "value": "true"
+            },
+            {
+              "name": "hls_master_url",
+              "value": "={{$json.hls_master_url}}"
+            },
+            {
+              "name": "subtitle_url",
+              "value": "={{$json.subtitle_url}}"
             }
           ]
         }
       }
     },
     {
-      "id": "notify-cohort",
-      "name": "Notify Cohort via Kafka",
+      "id": "generate-recap",
+      "name": "Generate AI Recap",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [1250, 300],
@@ -126,7 +148,7 @@
             },
             {
               "name": "messages",
-              "value": "=[{\"role\": \"user\", \"content\": \"Generate a 2-sentence recap of today's AI class session titled {{$json.streamName}}\"}]"
+              "value": "=[{\"role\": \"user\", \"content\": \"Generate a 2-sentence recap of today's AI class session titled {{$node['Extract Stream Info'].json.streamName}}\"}]"
             },
             {
               "name": "max_tokens",
@@ -137,11 +159,56 @@
       }
     },
     {
+      "id": "notify-cohort-engage",
+      "name": "Notify Cohort via Engage",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1450, 300],
+      "notes": "Send AI recap as a notification through the i3 Engage messaging service (Kafka-backed). Replaced the previous mislabelled LiteLLM node.",
+      "parameters": {
+        "method": "POST",
+        "url": "http://engage-api.i3-engage.svc.cluster.local:8000/api/v1/notifications/broadcast",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.ENGAGE_SERVICE_TOKEN}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "stream_name",
+              "value": "={{$node['Extract Stream Info'].json.streamName}}"
+            },
+            {
+              "name": "message",
+              "value": "={{$json.choices[0].message.content}}"
+            },
+            {
+              "name": "channel",
+              "value": "class-recordings"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      }
+    },
+    {
       "id": "respond-webhook",
       "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1450, 300],
+      "position": [1650, 300],
       "parameters": {
         "respondWith": "json",
         "responseBody": "={\"status\": \"pipeline_complete\", \"stream\": \"{{$node['Extract Stream Info'].json.streamName}}\"}"
@@ -156,15 +223,18 @@
       "main": [[{"node": "Call OTT Pipeline API", "type": "main", "index": 0}]]
     },
     "Call OTT Pipeline API": {
-      "main": [[{"node": "Wait 5 Minutes", "type": "main", "index": 0}]]
+      "main": [[{"node": "Wait for Pipeline Callback", "type": "main", "index": 0}]]
     },
-    "Wait 5 Minutes": {
+    "Wait for Pipeline Callback": {
       "main": [[{"node": "Update Directus Class Status", "type": "main", "index": 0}]]
     },
     "Update Directus Class Status": {
-      "main": [[{"node": "Notify Cohort via Kafka", "type": "main", "index": 0}]]
+      "main": [[{"node": "Generate AI Recap", "type": "main", "index": 0}]]
     },
-    "Notify Cohort via Kafka": {
+    "Generate AI Recap": {
+      "main": [[{"node": "Notify Cohort via Engage", "type": "main", "index": 0}]]
+    },
+    "Notify Cohort via Engage": {
       "main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]
     }
   },

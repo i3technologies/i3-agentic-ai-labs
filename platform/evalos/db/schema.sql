@@ -13,28 +13,45 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";    -- for fuzzy text search on questio
 -- ── Question Bank ─────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS questions (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    topic           TEXT NOT NULL,
+    -- HC-4: tenant isolation (NULL = shared/system question visible to all tenants)
+    tenant_id       UUID,
+    topic           TEXT NOT NULL DEFAULT 'General',
     subtopic        TEXT,
-    difficulty      SMALLINT NOT NULL CHECK (difficulty BETWEEN 1 AND 5),
-    question_type   TEXT NOT NULL CHECK (question_type IN ('mcq', 'multi_select', 'code', 'short_answer', 'drag_order')),
-    stem            TEXT NOT NULL,
+    difficulty      TEXT NOT NULL DEFAULT 'intermediate',
+    question_type   TEXT NOT NULL DEFAULT 'mcq',
+    -- stem = canonical field; text = application alias (kept in sync by trigger)
+    stem            TEXT NOT NULL DEFAULT '',
+    text            TEXT,   -- alias for stem; synced by trg_sync_question_text trigger
+    -- type = 'SC' | 'MR' shorthand; synced from question_type
+    type            TEXT,
     explanation     TEXT,
-    -- MCQ options stored as JSONB: [{"id":"a","text":"..","is_correct":true}, ...]
+    -- MCQ options stored as JSONB array of {label, text} objects
     options         JSONB,
+    -- correct_answers: TEXT[] of correct option labels (e.g. ['B'] or ['A','C'])
+    correct_answers TEXT[] NOT NULL DEFAULT '{}',
+    -- Domain organisation (C1000-207 uses domain_number 1–7)
+    domain_number   INT NOT NULL DEFAULT 1,
+    domain_name     TEXT NOT NULL DEFAULT 'General',
+    -- Set organisation (1–7 for C1000-207 practice sets)
+    set_number      INT NOT NULL DEFAULT 1,
+    question_number INT NOT NULL DEFAULT 0,
     -- Code questions: expected output / test harness
     test_harness    JSONB,
     tags            TEXT[] DEFAULT '{}',
-    bloom_level     TEXT CHECK (bloom_level IN ('remember','understand','apply','analyze','evaluate','create')),
+    bloom_level     TEXT,
     source          TEXT,   -- curriculum reference
     moss_hash       TEXT,   -- normalized AST hash for plagiarism baseline
+    ai_generated    BOOLEAN NOT NULL DEFAULT FALSE,
     is_active       BOOLEAN NOT NULL DEFAULT TRUE,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_questions_topic        ON questions (topic);
-CREATE INDEX idx_questions_difficulty   ON questions (difficulty);
 CREATE INDEX idx_questions_type         ON questions (question_type);
+CREATE INDEX idx_questions_set_number   ON questions (set_number);
+CREATE INDEX idx_questions_domain       ON questions (domain_number);
+CREATE INDEX idx_questions_set_q        ON questions (set_number, question_number);
 CREATE INDEX idx_questions_tags         ON questions USING GIN (tags);
 CREATE INDEX idx_questions_stem_trgm    ON questions USING GIN (stem gin_trgm_ops);
 
@@ -45,16 +62,22 @@ CREATE TABLE IF NOT EXISTS exams (
     description          TEXT,
     -- Exam code displayed in UI (e.g. "C1000-207-SET1")
     code                 VARCHAR(50),
+    -- tags: JSONB array of topic tags
+    tags                 JSONB NOT NULL DEFAULT '[]',
+    -- HC-4: tenant isolation
+    tenant_id            UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000002',
     -- Draw spec: [{"topic":"..","count":5,"difficulty_min":2,"difficulty_max":4}, ...]
-    draw_spec            JSONB NOT NULL,
-    duration_secs        INT NOT NULL DEFAULT 3600,
+    -- NULL = draw all active questions for the set (backward-compatible)
+    draw_spec            JSONB DEFAULT NULL,
+    duration_secs        INT NOT NULL DEFAULT 5400,
     -- Derived convenience column used by dashboard query (duration_secs / 60)
     duration_minutes     INTEGER GENERATED ALWAYS AS (duration_secs / 60) STORED,
-    passing_score        NUMERIC(5,2) NOT NULL DEFAULT 70.0,
-    -- Alias so queries can use either column name interchangeably
-    pass_threshold       NUMERIC(5,2) GENERATED ALWAYS AS (passing_score) STORED,
-    -- Maximum attempts a student may make
-    max_attempts         INTEGER NOT NULL DEFAULT 5,
+    -- pass_threshold is the authoritative column (NOT generated); passing_score is
+    -- a backward-compat alias used in some older queries.
+    pass_threshold       NUMERIC(5,2) NOT NULL DEFAULT 68.0,
+    passing_score        NUMERIC(5,2) GENERATED ALWAYS AS (pass_threshold) STORED,
+    -- Maximum attempts a student may make (1 initial + 2 retakes = 3 total)
+    max_attempts         INTEGER NOT NULL DEFAULT 3,
     -- set_number parsed from code (e.g. "SET1" → 1) for question_count subquery
     set_number           INTEGER GENERATED ALWAYS AS (
                              CASE WHEN code ~ 'SET[0-9]+$'
@@ -63,13 +86,13 @@ CREATE TABLE IF NOT EXISTS exams (
                          ) STORED,
     -- Prerequisite: student must pass this exam before attempting this one
     prerequisite_exam_id UUID REFERENCES exams(id),
-    -- Retake window: hours from first attempt in which retakes are permitted
+    -- Deprecated: no retake window enforced. Students may retake at any time within max_attempts.
     retake_window_hours  INTEGER,
     -- Whether to shuffle question order per attempt
     randomize_order      BOOLEAN NOT NULL DEFAULT TRUE,
     profile              CHAR(1) CHECK (profile IN ('A','B','C','D')),
     is_published         BOOLEAN NOT NULL DEFAULT FALSE,
-    created_by           TEXT NOT NULL,
+    created_by           TEXT,
     created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -78,6 +101,8 @@ CREATE TABLE IF NOT EXISTS quiz_attempts (
     id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     exam_id             UUID NOT NULL REFERENCES exams(id),
     student_id          TEXT NOT NULL,   -- Keycloak subject
+    -- HC-4: tenant isolation
+    tenant_id           UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000002',
     cohort_id           TEXT,
     -- Randomized question order + shuffled options snapshot
     question_snapshot   JSONB NOT NULL,
@@ -89,18 +114,22 @@ CREATE TABLE IF NOT EXISTS quiz_attempts (
     tab_switch_events   JSONB NOT NULL DEFAULT '[]',
     keystroke_entropy   NUMERIC(6,4),   -- anomaly detection
     proctor_flags       JSONB NOT NULL DEFAULT '[]',
+    device_fingerprint  TEXT,
     -- Timing
     started_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     submitted_at        TIMESTAMPTZ,
     graded_at           TIMESTAMPTZ,
-    -- Scores
-    raw_score           NUMERIC(5,2),
-    percentage          NUMERIC(5,2),
-    -- Aliased columns used by results/page.tsx and dashboard/page.tsx queries
-    score               NUMERIC(5,2) GENERATED ALWAYS AS (raw_score) STORED,
-    max_score           NUMERIC(5,2),
-    pct_score           NUMERIC(5,2) GENERATED ALWAYS AS (percentage) STORED,
+    -- Scores (written directly by the submit route; NOT generated columns)
+    score               INT,
+    max_score           INT,
+    pct_score           NUMERIC(7,4),
     passed              BOOLEAN,
+    -- Integrity scores (written by submit route)
+    identity_score      NUMERIC(5,2),
+    behavior_score      NUMERIC(5,2),
+    integrity_confidence NUMERIC(5,2),
+    trust_score         NUMERIC(5,2),
+    requires_review     BOOLEAN NOT NULL DEFAULT FALSE,
     -- MOSS plagiarism
     moss_similarity     NUMERIC(5,2),   -- 0–100%
     moss_report_url     TEXT,

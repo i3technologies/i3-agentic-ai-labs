@@ -354,3 +354,176 @@ spec:
     requests:
       storage: 2Gi
 
+
+---
+# ── PrometheusRule: §7.2 SLO Burn-Rate & Chaos Engineering Alerts ─────────────
+# Targets the four scenarios in platform/testing/chaos/chaos_runbook.sh:
+#   S1  PostgreSQL failover  → AsyncpgPoolExhausted (existing) + PG replica lag
+#   S2  Worker pod eviction  → KafkaConsumerLagHigh (existing) + pod restart guard
+#   S3  Kafka broker partition → KafkaBrokerCountLow (new)
+#   S4  SLO burn rate        → SLOErrorBudgetBurning + SLOErrorBudgetCritical (new)
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: i3-slo-burn-rate-alerts
+  namespace: i3-monitoring
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    # ── §7.2 S4: SLO Error Budget Burn Rate (HTTP 5xx across all i3 namespaces) ──
+    - name: i3.slo.burn_rate
+      interval: 60s
+      rules:
+
+        # 1-hour burn: fire when error ratio over 5 m exceeds 1 % (warning)
+        - alert: SLOErrorBudgetBurning
+          expr: |
+            (
+              sum(rate(http_requests_total{namespace=~"crm-intelligence|vpcp-core|i3-agent-mesh",status=~"5.."}[5m]))
+              /
+              sum(rate(http_requests_total{namespace=~"crm-intelligence|vpcp-core|i3-agent-mesh"}[5m]))
+            ) * 100 > 1.0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            slo: "http_availability_99.5"
+          annotations:
+            summary: "i3 platform SLO error budget burning (>1% 5xx rate)"
+            description: >
+              The 5-minute HTTP 5xx error rate across i3 application namespaces
+              (crm-intelligence, vpcp-core, i3-agent-mesh) is {{ $value | humanizePercentage }}.
+              This exceeds the 1 % warning threshold and indicates SLO burn.
+              Run the chaos runbook SLO check:
+                bash platform/testing/chaos/chaos_runbook.sh --scenario 4
+
+        # Fast burn: error ratio exceeds 5 % over 1 m — potential outage
+        - alert: SLOErrorBudgetCritical
+          expr: |
+            (
+              sum(rate(http_requests_total{namespace=~"crm-intelligence|vpcp-core|i3-agent-mesh",status=~"5.."}[1m]))
+              /
+              sum(rate(http_requests_total{namespace=~"crm-intelligence|vpcp-core|i3-agent-mesh"}[1m]))
+            ) * 100 > 5.0
+          for: 2m
+          labels:
+            severity: critical
+            team: platform
+            slo: "http_availability_99.5"
+          annotations:
+            summary: "i3 platform CRITICAL SLO error budget burn (>5% 5xx rate)"
+            description: >
+              Fast-burn detected: the 1-minute HTTP 5xx rate is {{ $value | humanizePercentage }}.
+              At this rate the monthly error budget will be exhausted within 1 hour.
+              Immediate action required. Check pods in affected namespaces:
+                oc get pods -n crm-intelligence
+                oc get pods -n vpcp-core
+                oc get pods -n i3-agent-mesh
+
+        # Per-namespace burn breakdown — alerts when a single namespace drives > 2 %
+        - alert: NamespaceSLOBurnHigh
+          expr: |
+            (
+              sum by(namespace)(rate(http_requests_total{namespace=~"crm-intelligence|vpcp-core|i3-agent-mesh",status=~"5.."}[5m]))
+              /
+              sum by(namespace)(rate(http_requests_total{namespace=~"crm-intelligence|vpcp-core|i3-agent-mesh"}[5m]))
+            ) * 100 > 2.0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Namespace {{ $labels.namespace }} HTTP 5xx rate above 2%"
+            description: >
+              Namespace {{ $labels.namespace }} has a 5xx error rate of
+              {{ $value | humanizePercentage }} over the last 5 minutes.
+              This namespace is the primary contributor to the platform SLO burn.
+
+    # ── §7.2 S1: PostgreSQL replica lag (CloudNativePG failover) ───────────────
+    - name: i3.chaos.postgres
+      interval: 30s
+      rules:
+
+        # Alert when CloudNativePG primary is unavailable (no ready primary pod)
+        - alert: CloudNativePGPrimaryUnavailable
+          expr: |
+            kube_pod_status_ready{namespace="crm-intelligence",
+              pod=~"postgres-cluster-.*",
+              condition="true"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            team: platform
+            chaos_scenario: "S1-PG-FAILOVER"
+          annotations:
+            summary: "CloudNativePG primary unavailable in crm-intelligence"
+            description: >
+              No ready PostgreSQL primary pod found in namespace crm-intelligence.
+              This may follow a chaos injection (S1) or a real AZ failure.
+              Check cluster status:
+                oc cnpg status postgres-cluster -n crm-intelligence
+              Resume observation:
+                bash platform/testing/chaos/chaos_runbook.sh --scenario 1 --dry-run
+
+        # CRM API readyz failure — pool not reconnected after failover
+        - alert: CRMApiReadyzFailing
+          expr: |
+            probe_success{job="crm-readyz", namespace="crm-intelligence"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: platform
+            chaos_scenario: "S1-PG-FAILOVER"
+          annotations:
+            summary: "CRM API /readyz probe failing — database pool may be disconnected"
+            description: >
+              The CRM API /readyz probe has been failing for over 2 minutes.
+              After a PostgreSQL failover (S1), asyncpg should reconnect automatically.
+              If this persists, check pool settings and CloudNativePG cluster health.
+
+    # ── §7.2 S3: Kafka broker partition (Strimzi scale-down) ───────────────────
+    - name: i3.chaos.kafka
+      interval: 30s
+      rules:
+
+        # Alert when Strimzi broker StatefulSet drops below 3 ready replicas
+        - alert: KafkaBrokerCountLow
+          expr: |
+            kube_statefulset_status_replicas_ready{
+              namespace="vpcp-core",
+              statefulset="strimzi-kafka-broker"
+            } < 3
+          for: 2m
+          labels:
+            severity: warning
+            team: platform
+            chaos_scenario: "S3-KAFKA-PARTITION"
+          annotations:
+            summary: "Strimzi Kafka broker count below minimum (3) in vpcp-core"
+            description: >
+              Only {{ $value }} Strimzi Kafka broker replica(s) are ready in vpcp-core.
+              Expected: 3. This may follow a chaos injection (S3) or a real broker failure.
+              Restore with:
+                oc scale statefulset/strimzi-kafka-broker -n vpcp-core --replicas=3
+              Monitor consumer groups:
+                bash platform/testing/chaos/chaos_runbook.sh --scenario 3 --dry-run
+
+        # Consumer group rebalancing for more than 5 min — likely partition aftermath
+        - alert: KafkaConsumerGroupRebalancing
+          expr: |
+            kafka_consumergroup_members{state="PreparingRebalance"} > 0
+          for: 5m
+          labels:
+            severity: warning
+            team: platform
+            chaos_scenario: "S3-KAFKA-PARTITION"
+          annotations:
+            summary: "Kafka consumer group {{ $labels.consumergroup }} rebalancing > 5 min"
+            description: >
+              Consumer group {{ $labels.consumergroup }} has been in PreparingRebalance
+              state for over 5 minutes in namespace {{ $labels.namespace }}.
+              This indicates a persistent partition or a failed broker rejoining.
+              Check Strimzi operator logs and broker pod status.

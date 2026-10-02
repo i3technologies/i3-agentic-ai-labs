@@ -139,6 +139,12 @@ spec:
             periodSeconds: 15
 
 ---
+# ── Secret (placeholder — injected by OpenBao agent on pod start) ────────────
+# To patch manually before apply:
+#   oc patch secret directus-secrets -n i3-ott \
+#     -p '{"stringData":{"DB_USER":"...","DB_PASSWORD":"...","KEY":"...","SECRET":"...","ADMIN_PASSWORD":"...","KEYCLOAK_CLIENT_SECRET":"...","SEAWEEDFS_ACCESS_KEY":"...","SEAWEEDFS_SECRET_KEY":"..."}}'
+# To retrieve from vault:
+#   bao kv get i3/ott/directus
 apiVersion: v1
 kind: Secret
 metadata:
@@ -147,16 +153,21 @@ metadata:
   annotations:
     openbao.org/agent-inject: "true"
     openbao.org/role: "ott"
+    openbao.org/agent-inject-secret-directus: "i3/ott/directus"
+    openbao.org/agent-inject-template-directus: |
+      {{- with secret "i3/ott/directus" -}}
+      {{ .Data.data.DB_USER }}
+      {{- end }}
 type: Opaque
 stringData:
-  DB_USER: "REPLACE_FROM_VAULT"
-  DB_PASSWORD: "REPLACE_FROM_VAULT"
-  KEY: "REPLACE_FROM_VAULT"
-  SECRET: "REPLACE_FROM_VAULT"
-  ADMIN_PASSWORD: "REPLACE_FROM_VAULT"
-  KEYCLOAK_CLIENT_SECRET: "REPLACE_FROM_VAULT"
-  SEAWEEDFS_ACCESS_KEY: "REPLACE_FROM_VAULT"
-  SEAWEEDFS_SECRET_KEY: "REPLACE_FROM_VAULT"
+  DB_USER: ""
+  DB_PASSWORD: ""
+  KEY: ""
+  SECRET: ""
+  ADMIN_PASSWORD: ""
+  KEYCLOAK_CLIENT_SECRET: ""
+  SEAWEEDFS_ACCESS_KEY: ""
+  SEAWEEDFS_SECRET_KEY: ""
 
 ---
 apiVersion: v1

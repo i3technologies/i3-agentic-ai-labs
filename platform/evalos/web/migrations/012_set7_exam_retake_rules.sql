@@ -1,4 +1,4 @@
-﻿-- ============================================================
+-- ============================================================
 -- Migration: 012_set7_exam_retake_rules.sql
 --
 -- 1. Add retake_window_hours column to exams table to enforce
@@ -54,7 +54,7 @@ VALUES (
   5400,
   90.0,
   3,
-  48,
+  NULL,  -- no retake window: students may retake at any time (migration 016)
   true,
   ARRAY['C1000-207','watsonx-orchestrate','advanced','set-7'],
   true,
@@ -63,7 +63,7 @@ VALUES (
 ON CONFLICT (code) DO UPDATE
   SET pass_threshold      = EXCLUDED.pass_threshold,
       max_attempts        = EXCLUDED.max_attempts,
-      retake_window_hours = EXCLUDED.retake_window_hours,
+      retake_window_hours = NULL,  -- always clear: no 48-hour window
       description         = EXCLUDED.description,
       is_published        = true;
 

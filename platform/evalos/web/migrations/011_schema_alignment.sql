@@ -57,9 +57,9 @@ ALTER TABLE exams
 -- Backfill from passing_score if present
 UPDATE exams SET pass_threshold = passing_score WHERE pass_threshold IS NULL AND passing_score IS NOT NULL;
 
--- max_attempts
+-- max_attempts (3 total: 1 initial + 2 retakes)
 ALTER TABLE exams
-  ADD COLUMN IF NOT EXISTS max_attempts INT NOT NULL DEFAULT 5;
+  ADD COLUMN IF NOT EXISTS max_attempts INT NOT NULL DEFAULT 3;
 
 -- randomize_order
 ALTER TABLE exams

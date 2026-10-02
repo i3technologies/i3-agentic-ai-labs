@@ -25,6 +25,24 @@
 #       (FIXED: component is now async and awaits params)
 #   (h) Next.js 15: viewport in metadata is deprecated — causes build warning/failure
 #       (FIXED: exported as separate viewport const in layout.tsx)
+#   (i) OME REST API port 8081 not explicitly bound in Server.xml — implicit default unreliable
+#       (FIXED: explicit <Managers><API><Port>8081 added; ome-api-secret created)
+#   (j) directus-secrets / n8n-secrets all literal REPLACE_FROM_VAULT — CrashLoopBackOff
+#       (FIXED: empty string placeholders; OpenBao inject annotations updated)
+#   (k) SeaweedFS replication=000 — single-pod data loss risk
+#       (FIXED: changed to 001 on both master defaultReplication and volume -replication)
+#   (l) Wildcard CORS (*) on OME VHost.xml and nginx-hls
+#       (FIXED: restricted to tv/stream/hls.i3technologies.co.ke origins)
+#   (m) Pipeline webhook had no authentication
+#       (FIXED: HMAC-SHA256 X-OME-Signature verification; PIPELINE_WEBHOOK_SECRET from vault)
+#   (n) FFmpeg ran as blocking subprocess.run in async FastAPI handler
+#       (FIXED: replaced with asyncio.create_subprocess_exec; Whisper/S3 in thread pool)
+#   (o) n8n workflow hard-coded 5-min wait before Directus update
+#       (FIXED: replaced with pipeline-complete callback webhook; n8n waits for real signal)
+#   (p) VOD API offset param could be negative
+#       (FIXED: Math.max(0, offset) in vod/route.ts)
+#   (q) Back button in watch page used plain <a> (full SSR reload)
+#       (FIXED: replaced with next/link <Link>)
 
 ## ── 2. PRE-FLIGHT: Verify DNS (already working) ─────────────
 #
@@ -79,20 +97,39 @@
 # Wait for pods to be Ready:
 #   oc rollout status deployment/tv-portal -n i3-ott --timeout=3m
 
-## ── 6. STEP 4: Inject the Directus Token ────────────────────
+## ── 6. STEP 4: Inject All Secrets from OpenBao ──────────────
 #
-# The Secret was deployed with an empty DIRECTUS_TOKEN.
-# Patch it with the real token from OpenBao / Directus admin:
+# All secrets use empty-string placeholders and require vault injection.
+# Run these BEFORE applying any deployments (or patch after apply):
 #
+# TV Portal (Directus token):
 #   oc patch secret tv-portal-secrets -n i3-ott \
-#     -p '{"stringData":{"DIRECTUS_TOKEN":"<your-directus-static-token>"}}'
+#     -p '{"stringData":{"DIRECTUS_TOKEN":"<directus-static-token>"}}'
+#   bao kv get i3/ott/directus  (field: static_token)
 #
-# Then restart the pods to pick up the new secret:
-#   oc rollout restart deployment/tv-portal -n i3-ott
-#   oc rollout status  deployment/tv-portal -n i3-ott --timeout=2m
+# Directus CMS:
+#   oc patch secret directus-secrets -n i3-ott \
+#     -p '{"stringData":{"DB_USER":"...","DB_PASSWORD":"...","KEY":"...","SECRET":"...","ADMIN_PASSWORD":"...","KEYCLOAK_CLIENT_SECRET":"...","SEAWEEDFS_ACCESS_KEY":"...","SEAWEEDFS_SECRET_KEY":"..."}}'
+#   bao kv get i3/ott/directus
 #
-# To get the Directus token from OpenBao:
-#   bao kv get i3/ott/directus  (field: admin_token or static_token)
+# n8n Workflow Engine:
+#   oc patch secret n8n-secrets -n i3-ott \
+#     -p '{"stringData":{"DB_USER":"...","DB_PASSWORD":"...","ENCRYPTION_KEY":"..."}}'
+#   bao kv get i3/ott/n8n
+#
+# OME REST API token:
+#   oc patch secret ome-api-secret -n i3-ott \
+#     -p '{"stringData":{"OME_API_TOKEN":"<strong-random-token>"}}'
+#   bao kv put i3/ott/ome api_token=<same-token>
+#
+# OTT Pipeline:
+#   oc patch secret ott-pipeline-secrets -n i3-ott \
+#     -p '{"stringData":{"PIPELINE_WEBHOOK_SECRET":"<32-char-random>","AWS_ACCESS_KEY_ID":"...","AWS_SECRET_ACCESS_KEY":"...","DIRECTUS_TOKEN":"..."}}'
+#   bao kv get i3/ott/pipeline
+#
+# After patching, restart all deployments:
+#   oc rollout restart deployment/tv-portal deployment/directus deployment/n8n deployment/ott-pipeline -n i3-ott
+#   oc rollout status  deployment/tv-portal deployment/directus deployment/n8n deployment/ott-pipeline -n i3-ott --timeout=5m
 
 ## ── 7. STEP 5: Get OME Ingest External IP ───────────────────
 #
@@ -179,6 +216,7 @@
 
 ## ── 12. Files Changed ───────────────────────────────────────
 #
+# ── Original fixes (Phase 1) ───────────────────────────────
 #  FIX: platform/ott/tv-portal/Dockerfile               — public/ dir handling
 #  FIX: platform/ott/tv-portal/next.config.js           — images + serverExternalPackages
 #  FIX: platform/ott/tv-portal/src/app/layout.tsx       — viewport exported separately
@@ -186,3 +224,17 @@
 #  FIX: platform/ott/tv-portal/tv-portal-build.yaml     — correct Git URI casing
 #  FIX: platform/ott/tv-portal/tv-portal-deploy.yaml    — Secret placeholder removed
 #  FIX: platform/ott/ome/ome-deploy.yaml                — added port 8081 to ome-origin ClusterIP
+#
+# ── Full remediation (Phase 2 — all blockers resolved) ─────
+#  FIX: platform/ott/seaweedfs/seaweedfs-deploy.yaml    — replication 000→001 (CRITICAL)
+#  FIX: platform/ott/directus/directus-deploy.yaml      — secrets REPLACE_FROM_VAULT→"" + runbook (CRITICAL)
+#  FIX: platform/ott/n8n/n8n-deploy.yaml                — secrets REPLACE_FROM_VAULT→"" + runbook
+#  FIX: platform/ott/ome/ome-deploy.yaml                — explicit API port 8081 in Server.xml + ome-api-secret (CRITICAL)
+#  FIX: platform/ott/ome/ome-deploy.yaml                — CORS restricted to portal origins (VHost.xml)
+#  FIX: platform/ott/nginx/nginx-hls.yaml               — CORS restricted to portal origins (not wildcard)
+#  FIX: platform/ott/tv-portal/src/app/api/streams/vod/route.ts — Math.max(0,offset) + Math.max(0,limit)
+#  FIX: platform/ott/tv-portal/src/app/watch/[streamName]/page.tsx — back button uses next/link
+#  NEW: platform/ott/tv-portal/.eslintrc.json           — ESLint config added
+#  FIX: platform/ott/pipeline/pipeline.py               — HMAC auth + async FFmpeg + n8n callback (v1.1.0)
+#  FIX: platform/ott/pipeline/n8n-workflow.json         — callback webhook replaces 5-min wait; cohort notify fixed
+#  NEW: platform/ott/pipeline/pipeline-deploy.yaml      — pipeline Deployment + Service + Secret manifest

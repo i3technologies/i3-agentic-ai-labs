@@ -31,7 +31,8 @@ export async function POST(
 
     // Verify the attempt is a passing submission
     const { rows: attemptRows } = await client.query(
-      `SELECT qa.id, qa.pct_score, qa.passed, e.code AS exam_code, e.title AS exam_title
+      `SELECT qa.id, qa.pct_score, qa.passed, e.code AS exam_code, e.title AS exam_title,
+              COALESCE(e.pass_threshold, e.passing_score, 68) AS pass_threshold
        FROM quiz_attempts qa
        JOIN exams e ON e.id = qa.exam_id
        WHERE qa.id = $1 AND qa.student_id = $2
@@ -58,9 +59,11 @@ export async function POST(
     const studentEmail = session.user.email || userId
 
     await client.query(
-      `INSERT INTO certificates (student_id, student_name, student_email, exam_code, exam_title, pct_score, attempt_id, verify_code, tenant_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-      [userId, studentName, studentEmail, attempt.exam_code, attempt.exam_title, attempt.pct_score, attemptId, verifyCode, tenantId]
+      `INSERT INTO certificates (student_id, student_name, student_email, exam_code, exam_title, pct_score, pass_threshold, attempt_id, verify_code, tenant_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       ON CONFLICT (attempt_id) DO UPDATE
+         SET verify_code = EXCLUDED.verify_code`,
+      [userId, studentName, studentEmail, attempt.exam_code, attempt.exam_title, attempt.pct_score, attempt.pass_threshold ?? 90, attemptId, verifyCode, tenantId]
     )
 
     return NextResponse.json({ verifyCode })
@@ -99,6 +102,8 @@ export async function GET(
   if (rows.length === 0) return NextResponse.json({ error: 'Certificate not found' }, { status: 404 })
 
   const cert = rows[0]
+  // pass_threshold stored at issuance time (column added in migration 019);
+  // fall back to 90 for certs issued before that migration ran.
   const pdfBuffer = await renderToBuffer(
     CertificatePDF({
       studentName: cert.student_name,
@@ -106,6 +111,7 @@ export async function GET(
       examCode: cert.exam_code,
       examTitle: cert.exam_title,
       pctScore: Number(cert.pct_score),
+      passThreshold: cert.pass_threshold != null ? Number(cert.pass_threshold) : 90,
       verifyCode: cert.verify_code,
       issuedAt: new Date(cert.issued_at),
     })

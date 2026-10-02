@@ -1,5 +1,6 @@
 // Watch page: /watch/[streamName]
 import { Suspense } from 'react'
+import Link from 'next/link'
 import VideoPlayer from '@/components/VideoPlayer'
 import styles from './page.module.css'
 
@@ -20,7 +21,7 @@ export default async function WatchPage({ params }: Props) {
   return (
     <div className={styles.page}>
       <nav className={styles.nav}>
-        <a href="/" className={styles.back}>← Back to i3 TV</a>
+        <Link href="/" className={styles.back}>← Back to i3 TV</Link>
         <span className={styles.title}>{decodeURIComponent(streamName)}</span>
       </nav>
 

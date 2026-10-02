@@ -28,11 +28,19 @@ data:
         tcp_nopush    on;
         tcp_nodelay   on;
 
-        # HLS segment cache (4GB RAM disk)
+        # CORS origin map — restricts to i3 TV portal and CDN origins only
+        map $http_origin $cors_origin {
+            default                                   "";
+            "https://tv.i3technologies.co.ke"        $http_origin;
+            "https://stream.i3technologies.co.ke"    $http_origin;
+            "https://hls.i3technologies.co.ke"       $http_origin;
+        }
+
+        # HLS segment cache (512Mi RAM disk — fits namespace quota)
         proxy_cache_path /var/cache/nginx/hls
             levels=1:2
-            keys_zone=hls_cache:32m
-            max_size=4g
+            keys_zone=hls_cache:16m
+            max_size=400m
             inactive=30m
             use_temp_path=off;
 
@@ -48,37 +56,36 @@ data:
             listen 80;
             server_name _;
 
-            # CORS for video players
-            add_header Access-Control-Allow-Origin "*" always;
-            add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
-            add_header Access-Control-Allow-Headers "Range" always;
-
-            # HLS from OME
+            # HLS from OME — live segments (.ts segments: cache 30m)
             location /hls/ {
-                proxy_pass http://ome-origin.i3-ott.svc.cluster.local:8080/;
+                proxy_pass http://ome-origin.i3-ott.svc.cluster.local:8080;
                 proxy_cache hls_cache;
                 proxy_cache_key "$scheme$request_uri";
-
-                # Cache TS segments for 30 minutes
                 proxy_cache_valid 200 30m;
-                # Don't cache m3u8 playlists (they update live)
-                proxy_cache_valid 0 0;
-                add_header X-Cache-Status $upstream_cache_status;
-
-                # HLS-specific headers
+                proxy_cache_valid any   0s;
+                # CORS — must be in each location that has its own add_header (nginx inheritance rule)
+                add_header Access-Control-Allow-Origin  $cors_origin always;
+                add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
+                add_header Access-Control-Allow-Headers "Range" always;
+                add_header Vary                         "Origin" always;
+                add_header X-Cache-Status               $upstream_cache_status always;
                 proxy_set_header Host $host;
                 proxy_buffering on;
                 proxy_buffer_size 128k;
                 proxy_buffers 4 256k;
                 proxy_busy_buffers_size 256k;
+            }
 
-                # Don't cache m3u8
-                location ~* \.m3u8$ {
-                    proxy_pass http://ome-origin.i3-ott.svc.cluster.local:8080/;
-                    proxy_no_cache 1;
-                    proxy_cache_bypass 1;
-                    add_header Cache-Control "no-cache, no-store";
-                }
+            # m3u8 playlists — never cache (live, updates every segment)
+            location /hls/playlist/ {
+                proxy_pass http://ome-origin.i3-ott.svc.cluster.local:8080;
+                proxy_no_cache 1;
+                proxy_cache_bypass 1;
+                add_header Access-Control-Allow-Origin  $cors_origin always;
+                add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
+                add_header Access-Control-Allow-Headers "Range" always;
+                add_header Vary                         "Origin" always;
+                add_header Cache-Control "no-cache, no-store" always;
             }
 
             # VOD from SeaweedFS S3
@@ -87,8 +94,12 @@ data:
                 proxy_cache hls_cache;
                 proxy_cache_key "$scheme$request_uri";
                 proxy_cache_valid 200 2h;
-                add_header X-Cache-Status $upstream_cache_status;
-                add_header Cache-Control "public, max-age=7200";
+                add_header Access-Control-Allow-Origin  $cors_origin always;
+                add_header Access-Control-Allow-Methods "GET, OPTIONS" always;
+                add_header Access-Control-Allow-Headers "Range" always;
+                add_header Vary                         "Origin" always;
+                add_header X-Cache-Status               $upstream_cache_status always;
+                add_header Cache-Control                "public, max-age=7200" always;
                 proxy_hide_header x-amz-id-2;
                 proxy_hide_header x-amz-request-id;
             }
@@ -96,10 +107,11 @@ data:
             # Health check
             location /health {
                 return 200 "OK\n";
-                add_header Content-Type text/plain;
+                add_header Content-Type text/plain always;
+                add_header Access-Control-Allow-Origin $cors_origin always;
             }
 
-            # Metrics
+            # Metrics — internal only
             location /nginx_status {
                 stub_status on;
                 allow 10.0.0.0/8;
@@ -145,7 +157,7 @@ spec:
               memory: 256Mi
             limits:
               cpu: "2"
-              memory: 4Gi    # 4GB cache allocation
+              memory: 512Mi  # reduced to fit namespace quota; cache sizeLimit matches
           livenessProbe:
             httpGet:
               path: /health
@@ -165,7 +177,7 @@ spec:
         - name: cache
           emptyDir:
             medium: Memory
-            sizeLimit: 4Gi
+            sizeLimit: 512Mi
 
 ---
 apiVersion: v1

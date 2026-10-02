@@ -41,6 +41,21 @@ data:
         </Publishers>
       </Bind>
 
+      <!-- REST API & Stats — explicitly bound on 8081 so liveness probe and
+           LiveGrid /v1/stats/current always resolve regardless of OME defaults. -->
+      <Managers>
+        <Host>
+          <Names>
+            <Name>*</Name>
+          </Names>
+        </Host>
+        <API>
+          <Port>8081</Port>
+          <!-- Token sourced from ome-api-secret; rotate via OpenBao i3/ott/ome -->
+          <AccessToken>$(OME_API_TOKEN)</AccessToken>
+        </API>
+      </Managers>
+
       <VirtualHosts>
         <VirtualHost include="VHost.xml"/>
       </VirtualHosts>
@@ -98,8 +113,11 @@ data:
               <SegmentDuration>6</SegmentDuration>
               <SegmentCount>10</SegmentCount>
               <CrossDomains>
-                <Url>*</Url>
-              </CrossDomains>
+                  <!-- Restrict CORS to portal origin; prevents any site embedding our streams -->
+                  <Url>https://tv.i3technologies.co.ke</Url>
+                  <Url>https://stream.i3technologies.co.ke</Url>
+                  <Url>https://hls.i3technologies.co.ke</Url>
+                </CrossDomains>
             </LLHLS>
           </Publishers>
         </Application>
@@ -154,6 +172,13 @@ spec:
             - name: webrtc-4
               containerPort: 10004
               protocol: UDP
+          env:
+            # OME REST API token — injected from ome-api-secret (OpenBao i3/ott/ome)
+            - name: OME_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: ome-api-secret
+                  key: OME_API_TOKEN
           volumeMounts:
             - name: ome-config
               mountPath: /opt/ovenmediaengine/bin/origin_conf
@@ -170,6 +195,9 @@ spec:
             httpGet:
               path: /v1/stats/current
               port: 8081
+              httpHeaders:
+                - name: Authorization
+                  value: "Basic $(OME_API_TOKEN)"
             initialDelaySeconds: 30
             periodSeconds: 30
       volumes:
@@ -179,6 +207,23 @@ spec:
         - name: recordings
           persistentVolumeClaim:
             claimName: ome-recordings
+
+---
+# ── OME API Secret (placeholder — patch from OpenBao i3/ott/ome before deploy) ─
+# oc patch secret ome-api-secret -n i3-ott \
+#   -p '{"stringData":{"OME_API_TOKEN":"<strong-random-token>"}}'
+# bao kv get i3/ott/ome  (field: api_token)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ome-api-secret
+  namespace: i3-ott
+  annotations:
+    openbao.org/agent-inject: "true"
+    openbao.org/role: "ott"
+type: Opaque
+stringData:
+  OME_API_TOKEN: ""
 
 ---
 apiVersion: v1
