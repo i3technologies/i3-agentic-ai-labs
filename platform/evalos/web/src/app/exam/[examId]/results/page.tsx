@@ -98,14 +98,19 @@ function computeDomainBreakdown(
     entry.total += 1
 
     const ans = answers[q.id]
-    const isMultiple = q.type === 'MR' || q.question_type === 'multiple_response' || q.question_type === 'MR'
+    // Normalise to uppercase for comparison — answers may be stored in any case
+    const isMultiple =
+      q.type?.toUpperCase() === 'MR' ||
+      ['mr', 'multiple_response', 'multi_select'].includes(q.question_type?.toLowerCase() ?? '')
 
     if (isMultiple) {
-      const given = ((ans as string[]) ?? []).slice().sort()
-      const expected = [...q.correct_answers].sort()
+      const given = ((ans as string[]) ?? []).map((s) => String(s).toUpperCase()).sort()
+      const expected = [...q.correct_answers].map((s) => s.toUpperCase()).sort()
       if (JSON.stringify(given) === JSON.stringify(expected)) entry.correct += 1
     } else {
-      if (ans === q.correct_answers[0]) entry.correct += 1
+      const givenStr = typeof ans === 'string' ? ans.toUpperCase() : ''
+      const expectedStr = (q.correct_answers[0] ?? '').toUpperCase()
+      if (givenStr && givenStr === expectedStr) entry.correct += 1
     }
   }
 
@@ -279,15 +284,18 @@ export default async function ResultsPage({ params, searchParams }: ResultsPageP
         <div className="space-y-4">
           {attempt.question_snapshot.map((q, idx) => {
             const ans = attempt.answers[q.id]
-            const isMultiple = q.type === 'MR' || q.question_type === 'multiple_response' || q.question_type === 'MR'
+            const isMultipleQ =
+              q.type?.toUpperCase() === 'MR' ||
+              ['mr', 'multiple_response', 'multi_select'].includes(q.question_type?.toLowerCase() ?? '')
 
             let isCorrect: boolean
-            if (isMultiple) {
-              const given = ((ans as string[]) ?? []).slice().sort()
-              const expected = [...q.correct_answers].sort()
+            if (isMultipleQ) {
+              const given = ((ans as string[]) ?? []).map((s) => String(s).toUpperCase()).sort()
+              const expected = [...q.correct_answers].map((s) => s.toUpperCase()).sort()
               isCorrect = JSON.stringify(given) === JSON.stringify(expected)
             } else {
-              isCorrect = ans === q.correct_answers[0]
+              const givenStr = typeof ans === 'string' ? ans.toUpperCase() : ''
+              isCorrect = !!givenStr && givenStr === (q.correct_answers[0] ?? '').toUpperCase()
             }
 
             const givenLabels = Array.isArray(ans) ? ans : ans ? [ans] : []

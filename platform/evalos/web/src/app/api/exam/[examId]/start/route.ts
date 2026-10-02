@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import pool, { setTenantContext } from '@/lib/db'
@@ -100,8 +100,7 @@ export async function POST(
     const { rows: examRows } = await client.query(
       `SELECT id, code, randomize_order,
               COALESCE(pass_threshold, 90)  AS pass_threshold,
-              COALESCE(max_attempts, 5)     AS max_attempts,
-              retake_window_hours,
+              COALESCE(max_attempts, 3)     AS max_attempts,
               prerequisite_exam_id,
               draw_spec
        FROM exams
@@ -113,10 +112,9 @@ export async function POST(
     }
     const exam = examRows[0]
 
-    // ── Rule 1: attempt limit ────────────────────────────────────────────────
+    // ── Rule 1: attempt limit (max 3 attempts per exam) ──────────────────────
     const { rows: countRows } = await client.query(
-      `SELECT COUNT(*)::int AS total,
-              MIN(started_at) AS first_attempt_at
+      `SELECT COUNT(*)::int AS total
        FROM quiz_attempts
        WHERE exam_id = $1 AND student_id = $2
          AND status IN ('submitted', 'graded', 'in_progress', 'grading', 'grading_failed')`,
@@ -133,33 +131,6 @@ export async function POST(
         },
         { status: 403 }
       )
-    }
-
-    // ── Rule 1b: retake window enforcement ─────────────────────────────────
-    // If retake_window_hours is set and this is a retake (attempt > 0),
-    // the new attempt must be started within retake_window_hours of the FIRST attempt.
-    if (exam.retake_window_hours != null && usedAttempts > 0) {
-      const firstAttemptAt: Date | null = countRows[0].first_attempt_at
-        ? new Date(countRows[0].first_attempt_at)
-        : null
-      if (firstAttemptAt) {
-        const windowMs   = exam.retake_window_hours * 60 * 60 * 1000
-        const deadlineMs = firstAttemptAt.getTime() + windowMs
-        const nowMs      = Date.now()
-        if (nowMs > deadlineMs) {
-          const deadline = new Date(deadlineMs).toISOString()
-          return NextResponse.json(
-            {
-              error: 'retake_window_expired',
-              message: `Retake window for this exam has closed. Retakes must be started within ${exam.retake_window_hours} hours of your first attempt (deadline: ${deadline}).`,
-              retake_window_hours: exam.retake_window_hours,
-              first_attempt_at: firstAttemptAt.toISOString(),
-              deadline,
-            },
-            { status: 403 }
-          )
-        }
-      }
     }
 
     // ── Rule 2: prerequisite pass check ─────────────────────────────────────
@@ -272,17 +243,75 @@ export async function POST(
       })
     }
 
+    /**
+     * Shuffle options and remap correct_answers to match the new label positions.
+     *
+     * BUG FIX: when options are shuffled the option *labels* (A/B/C/D) are
+     * reassigned positionally, so the option that was originally labelled 'B'
+     * may become 'D' after the shuffle.  The correct_answers array stores the
+     * label of the correct option — if we shuffle options but keep the old
+     * labels in correct_answers, grading always compares against the wrong
+     * position and every answer scores as incorrect.
+     *
+     * Algorithm:
+     *   1. Build a map from each option's *text* to the original label.
+     *   2. Shuffle the options and re-assign sequential labels A/B/C/D.
+     *   3. Build a new correct_answers by looking up each original label's text
+     *      in the shuffled order to find the new label.
+     */
+    function shuffleAndRemapAnswers(
+      normalised: { label: string; text: string }[],
+      correctAnswers: string[]
+    ): { options: { label: string; text: string }[]; correct_answers: string[] } {
+      // Map original label → option text (needed to find new label after shuffle)
+      const labelToText = new Map(normalised.map((o) => [o.label.toUpperCase(), o.text]))
+
+      // Shuffle the options array
+      const shuffled = shuffle(normalised)
+
+      // Re-assign sequential labels A/B/C/D… to the shuffled positions
+      const relabelled = shuffled.map((o, i) => ({
+        label: LABELS[i] ?? String(i + 1),
+        text: o.text,
+      }))
+
+      // Build a reverse map: text → new label (after relabelling)
+      const textToNewLabel = new Map(relabelled.map((o) => [o.text, o.label]))
+
+      // Remap each correct answer label to the new label via the option text
+      const remappedCorrect = correctAnswers.map((origLabel) => {
+        const text = labelToText.get(origLabel.toUpperCase())
+        if (text === undefined) return origLabel          // fallback: keep original
+        return textToNewLabel.get(text) ?? origLabel      // new label for same text
+      })
+
+      return { options: relabelled, correct_answers: remappedCorrect }
+    }
+
     const questions = rawQuestions.map((q) => {
       const rawOpts = (q.options as unknown[]) ?? []
       const normalised = normaliseOptions(rawOpts)
-      const opts = exam.randomize_order ? shuffle(normalised) : normalised
+      const correctAnswers = (q.correct_answers as string[]) ?? []
+
+      let opts: { label: string; text: string }[]
+      let remappedCorrectAnswers: string[]
+
+      if (exam.randomize_order) {
+        const remapped = shuffleAndRemapAnswers(normalised, correctAnswers)
+        opts = remapped.options
+        remappedCorrectAnswers = remapped.correct_answers
+      } else {
+        opts = normalised
+        remappedCorrectAnswers = correctAnswers
+      }
+
       return {
         id: q.id,
         text: q.text,
         type: q.type,
         question_type: q.question_type,
         options: opts,
-        correct_answers: q.correct_answers,
+        correct_answers: remappedCorrectAnswers,
         explanation: q.explanation,
         domain_number: q.domain_number,
         domain_name: q.domain_name,
