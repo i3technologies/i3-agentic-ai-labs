@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { authOptions } from '@/lib/auth'
 import pool, { setTenantContext } from '@/lib/db'
+import ResetStuckButton from './reset-stuck-button'
 
 // Default tenant for queries that don't have one from session
 const DEFAULT_TENANT = '00000000-0000-0000-0000-000000000002'
@@ -15,8 +16,6 @@ interface Exam {
   duration_minutes: number
   pass_threshold: number
   max_attempts: number
-  retake_window_hours: number | null
-  first_attempt_at: string | null
   question_count: number
   attempt_count: number
   best_score: number | null
@@ -32,6 +31,7 @@ interface RecentAttempt {
   exam_id: string
   exam_title: string
   exam_code: string
+  duration_secs: number
   pct_score: number | null
   passed: boolean | null
   started_at: string
@@ -51,12 +51,7 @@ async function getExamsWithAttempts(userId: string, tenantId: string): Promise<E
          e.description,
          COALESCE(e.duration_minutes, e.duration_secs / 60) AS duration_minutes,
          COALESCE(e.pass_threshold, e.passing_score, 90)    AS pass_threshold,
-         COALESCE(e.max_attempts, 5)                        AS max_attempts,
-         e.retake_window_hours,
-         (SELECT MIN(qa2.started_at) FROM quiz_attempts qa2
-          WHERE qa2.exam_id = e.id AND qa2.student_id = $1
-            AND qa2.status IN ('submitted','graded','in_progress','grading','grading_failed')
-         ) AS first_attempt_at,
+         COALESCE(e.max_attempts, 3)                        AS max_attempts,
          (
            SELECT COUNT(*)::int FROM questions q
            WHERE q.set_number = (
@@ -69,9 +64,11 @@ async function getExamsWithAttempts(userId: string, tenantId: string): Promise<E
          MAX(qa.pct_score) AS best_score,
          (SELECT pct_score FROM quiz_attempts
           WHERE exam_id = e.id AND student_id = $1
+            AND status IN ('submitted','graded')
           ORDER BY started_at DESC LIMIT 1) AS last_score,
          (SELECT passed FROM quiz_attempts
           WHERE exam_id = e.id AND student_id = $1
+            AND status IN ('submitted','graded')
           ORDER BY started_at DESC LIMIT 1) AS last_passed,
          e.prerequisite_exam_id,
          pre.code AS prerequisite_code,
@@ -86,6 +83,7 @@ async function getExamsWithAttempts(userId: string, tenantId: string): Promise<E
        FROM exams e
        LEFT JOIN exams pre ON pre.id = e.prerequisite_exam_id
        LEFT JOIN quiz_attempts qa ON qa.exam_id = e.id AND qa.student_id = $1
+         AND qa.status IN ('submitted','graded','grading','grading_failed')
        WHERE e.is_published = true
        GROUP BY e.id, pre.code
        ORDER BY e.code`,
@@ -107,6 +105,7 @@ async function getRecentAttempts(userId: string, tenantId: string): Promise<Rece
          qa.exam_id,
          e.title AS exam_title,
          e.code  AS exam_code,
+         e.duration_secs,
          qa.pct_score,
          qa.passed,
          qa.started_at,
@@ -116,7 +115,7 @@ async function getRecentAttempts(userId: string, tenantId: string): Promise<Rece
        JOIN exams e ON e.id = qa.exam_id
        WHERE qa.student_id = $1
        ORDER BY qa.started_at DESC
-       LIMIT 10`,
+       LIMIT 15`,
       [userId]
     )
     return rows
@@ -177,20 +176,12 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {exams.map((exam) => {
             const attemptsLeft = Math.max(0, exam.max_attempts - exam.attempt_count)
-              const isExhausted = exam.attempt_count >= exam.max_attempts && !exam.last_passed
-              const isLocked = !exam.prerequisite_passed
-              const isPassed = exam.last_passed === true
-              const isDisabled = isLocked || isExhausted
+                const isExhausted = exam.attempt_count >= exam.max_attempts && !exam.last_passed
+                const isLocked = !exam.prerequisite_passed
+                const isPassed = exam.last_passed === true
+                const isDisabled = isLocked || isExhausted
   
-              // Retake window logic for timed exams (e.g. Set 7: 48h window)
-              let retakeDeadline: Date | null = null
-              let retakeWindowExpired = false
-              if (exam.retake_window_hours && exam.first_attempt_at && exam.attempt_count > 0 && !isPassed) {
-                retakeDeadline = new Date(new Date(exam.first_attempt_at).getTime() + exam.retake_window_hours * 3600_000)
-                retakeWindowExpired = retakeDeadline < new Date()
-              }
-
-            return (
+              return (
               <div
                 key={exam.id}
                 className={`bg-white border rounded-xl p-5 flex flex-col gap-3 transition-colors ${
@@ -241,24 +232,6 @@ export default async function DashboardPage() {
                   </span>
                 </div>
 
-                {/* Retake window badge (Set 7 and similar timed retake exams) */}
-                {exam.retake_window_hours && exam.attempt_count > 0 && !isPassed && (
-                  <div className={`flex items-center gap-2 text-xs rounded-lg px-3 py-1.5 ${
-                    retakeWindowExpired
-                      ? 'bg-red-50 border border-red-200 text-red-700'
-                      : 'bg-amber-50 border border-amber-200 text-amber-800'
-                  }`}>
-                    <span>{retakeWindowExpired ? '⏰' : '⏳'}</span>
-                    <span>
-                      {retakeWindowExpired
-                        ? `Retake window expired`
-                        : `Retake deadline: ${retakeDeadline?.toLocaleString('en-KE', { dateStyle: 'short', timeStyle: 'short' })}`
-                      }
-                      {' '}({exam.retake_window_hours}h window)
-                    </span>
-                  </div>
-                )}
-
                 {/* Attempts tracker */}
                 <div className="flex items-center gap-2">
                   <div className="flex gap-1">
@@ -283,10 +256,6 @@ export default async function DashboardPage() {
                   <div className="mt-auto flex items-center gap-2 bg-slate-50 border border-slate-200 text-slate-500 text-sm font-medium rounded-lg py-2.5 px-4">
                     <span>🔒</span>
                     <span className="text-xs">Pass {exam.prerequisite_code} first</span>
-                  </div>
-                ) : retakeWindowExpired ? (
-                  <div className="mt-auto flex items-center justify-center gap-2 bg-red-50 border border-red-200 text-red-700 text-xs font-medium rounded-lg py-2.5 px-4">
-                    ⏰ Retake window expired
                   </div>
                 ) : isExhausted ? (
                   <div className="mt-auto flex items-center justify-center gap-2 bg-red-50 border border-red-200 text-red-700 text-xs font-medium rounded-lg py-2.5 px-4">
@@ -385,9 +354,65 @@ export default async function DashboardPage() {
         </div>
       </section>
 
+      {/* Stuck-attempt banner — shown whenever any attempt is still in_progress / grading */}
+      {recentAttempts.some(
+        (a) => a.status === 'in_progress' || a.status === 'grading' || a.status === 'grading_failed'
+      ) && (() => {
+        const stuckAttempts = recentAttempts.filter(
+          (a) => a.status === 'in_progress' || a.status === 'grading' || a.status === 'grading_failed'
+        )
+        // Group stuck attempts by exam set so we can show per-set quick actions
+        const setGroups = stuckAttempts.reduce<Record<string, { setNum: number | null; count: number; code: string }>>(
+          (acc, a) => {
+            const match = a.exam_code.match(/SET(\d+)$/i)
+            const setNum = match ? parseInt(match[1], 10) : null
+            const key = a.exam_code
+            if (!acc[key]) acc[key] = { setNum, count: 0, code: a.exam_code }
+            acc[key].count += 1
+            return acc
+          },
+          {}
+        )
+        const uniqueSets = Object.values(setGroups)
+        return (
+          <section className="mt-8 space-y-3">
+            {/* Main banner */}
+            <div className="bg-amber-50 border border-amber-300 rounded-xl px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-amber-900">
+                  ⚠️ You have {stuckAttempts.length} attempt{stuckAttempts.length !== 1 ? 's' : ''} that haven&apos;t been graded yet
+                </p>
+                <p className="text-xs text-amber-700 mt-1">
+                  Your exam sessions are showing as &ldquo;In Progress&rdquo; or &ldquo;Grading Failed&rdquo;.
+                  Click &ldquo;Grade All&rdquo; to score all of them instantly, or use the per-set buttons below.
+                </p>
+              </div>
+              <ResetStuckButton />
+            </div>
+            {/* Per-set quick action rows (shown when > 1 exam set affected) */}
+            {uniqueSets.length > 1 && (
+              <div className="flex flex-wrap gap-2">
+                {uniqueSets.map((g) => (
+                  <div
+                    key={g.code}
+                    className="bg-white border border-amber-200 rounded-lg px-3 py-2 flex items-center gap-3 text-xs"
+                  >
+                    <span className="font-semibold text-slate-700">{g.code}</span>
+                    <span className="text-slate-400">{g.count} stuck</span>
+                    {g.setNum !== null && (
+                      <ResetStuckButton compact setNumber={g.setNum} />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )
+      })()}
+
       {/* Recent attempts */}
       {recentAttempts.length > 0 && (
-        <section className="mt-12">
+        <section className="mt-8">
           <h2 className="text-base font-semibold text-slate-700 mb-4 uppercase tracking-wide text-xs">
             Recent Attempts
           </h2>
@@ -403,7 +428,16 @@ export default async function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {recentAttempts.map((attempt) => (
+                {recentAttempts.map((attempt) => {
+                  // An in_progress attempt whose time has elapsed can be force-graded
+                  const elapsedSecs = Math.floor(
+                    (Date.now() - new Date(attempt.started_at).getTime()) / 1000
+                  )
+                  const isTimedOut =
+                    attempt.status === 'in_progress' &&
+                    elapsedSecs > (attempt.duration_secs ?? 5400)
+
+                  return (
                   <tr key={attempt.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3">
                       <span className="font-medium text-slate-800">{attempt.exam_title}</span>
@@ -427,7 +461,11 @@ export default async function DashboardPage() {
                         </span>
                       ) : attempt.status === 'grading_failed' ? (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-800">
-                          Grading failed — resubmit
+                          Grading failed
+                        </span>
+                      ) : isTimedOut ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                          Timed out — not graded
                         </span>
                       ) : (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
@@ -456,19 +494,22 @@ export default async function DashboardPage() {
                             </Link>
                           )}
                         </div>
-                      ) : attempt.status === 'grading_failed' ? (
+                      ) : attempt.status === 'grading_failed' || attempt.status === 'grading' ? (
+                        <ResetStuckButton compact />
+                      ) : attempt.status === 'in_progress' ? (
                         <Link
                           href={`/exam/${attempt.exam_id}`}
-                          className="text-xs text-orange-600 hover:underline font-medium"
+                          className="text-xs text-blue-600 hover:underline font-medium"
                         >
-                          Resubmit →
+                          Resume →
                         </Link>
                       ) : (
                         <span className="text-xs text-slate-400">—</span>
                       )}
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>
