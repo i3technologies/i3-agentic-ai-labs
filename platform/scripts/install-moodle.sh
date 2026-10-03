@@ -1,7 +1,15 @@
 #!/bin/sh
+# STEP-P1-01: Credentials retrieved at runtime from OpenBao — no plaintext secrets in source.
+# Required OpenBao paths:
+#   i3/edbridge/db-password  → edbridge PostgreSQL password
+#   i3/moodle/admin-password → Moodle admin password
 set -e
 echo "==> Installing Moodle 4.4 via git..."
 cd /tmp
+
+# Retrieve credentials from OpenBao at runtime
+EDBRIDGE_DB_PASSWORD=$(vault kv get -field=password i3/edbridge/db-password)
+MOODLE_ADMIN_PASSWORD=$(vault kv get -field=password i3/moodle/admin-password)
 
 # Download Moodle 4.4 stable
 git clone --depth=1 --branch=MOODLE_404_STABLE https://github.com/moodle/moodle.git /tmp/moodle-src 2>&1 || {
@@ -28,13 +36,13 @@ php /var/www/html/admin/cli/install.php \
   --dbport=5432 \
   --dbname=edbridge_db \
   --dbuser=edbridge \
-  --dbpass=REDACTED-edbridge-db \
+  --dbpass="${EDBRIDGE_DB_PASSWORD}" \
   --dbprefix=mdl_ \
   --fullname=i3EduBridge \
   --shortname=i3edu \
   --summary="i3 Technologies AI-Powered Learning Platform" \
   --adminuser=i3admin \
-  --adminpass=i3-Moodle-Admin-2026! \
+  --adminpass="${MOODLE_ADMIN_PASSWORD}" \
   --adminemail=admin@i3technologies.co.ke \
   --non-interactive \
   --agree-license 2>&1

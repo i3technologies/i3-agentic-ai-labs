@@ -6,11 +6,15 @@
 # Login: email address
 # Password policy: length(8)
 #
-# REGULAR USERS (28 + Dorothy)  password: REDACTED-user-password
-# ADMIN USERS   (3)             password: Uatik@2026!wxz
-#   - Sebastian Njagi  snjagi@i3technologies.co.ke
-#   - Philip Mukiti    philipm@i3technologies.co.ke
-#   - Joseph Maina     josephm@i3technologies.co.ke
+# STEP-P1-01: Passwords are NOT stored in this file.
+# Regular user passwords must be set via Keycloak admin console or a reset flow.
+# Admin passwords are stored in OpenBao and retrieved at provisioning time:
+#   vault kv get -field=password i3/keycloak/admin-users/snjagi
+#   vault kv get -field=password i3/keycloak/admin-users/philipm
+#   vault kv get -field=password i3/keycloak/admin-users/josephm
+#
+# ADMIN USERS (3): snjagi@, philipm@, josephm@ — passwords set via admin console
+# REGULAR USERS: Use KC admin console bulk reset or forced-change-on-first-login
 #
 # Apply: oc apply -f platform/operators/keycloak/evalos-users.yaml
 # ============================================================
@@ -876,7 +880,7 @@ spec:
     emailVerified: true
     credentials:
       - type: password
-        value: "Uatik@2026!wxz"
+        value: "$(vault kv get -field=password i3/keycloak/admin-users/snjagi)"
         temporary: false
     realmRoles:
       - i3-user
@@ -907,7 +911,7 @@ spec:
     emailVerified: true
     credentials:
       - type: password
-        value: "Uatik@2026!wxz"
+        value: "$(vault kv get -field=password i3/keycloak/admin-users/philipm)"
         temporary: false
     realmRoles:
       - i3-user
@@ -938,7 +942,7 @@ spec:
     emailVerified: true
     credentials:
       - type: password
-        value: "Uatik@2026!wxz"
+        value: "$(vault kv get -field=password i3/keycloak/admin-users/josephm)"
         temporary: false
     realmRoles:
       - i3-user

@@ -35,7 +35,7 @@ async function getExamMeta(examId: string, tenantId: string) {
     await setTenantContext(client, tenantId)
     const { rows } = await client.query(
       `SELECT id, title, code, description,
-              COALESCE(duration_secs, 5400) AS duration_secs,
+              COALESCE(duration_secs, 0) AS duration_secs,
               COALESCE(pass_threshold, passing_score, 68) AS pass_threshold,
               COALESCE(randomize_order, true) AS randomize_order
        FROM exams

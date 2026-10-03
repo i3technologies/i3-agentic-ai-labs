@@ -45,12 +45,6 @@ export default function Header() {
                 Dashboard
               </Link>
               <Link
-                href="/leaderboard"
-                className="text-xs text-slate-300 hover:text-white transition-colors"
-              >
-                Leaderboard
-              </Link>
-              <Link
                 href="/interview"
                 className="text-xs text-slate-300 hover:text-white transition-colors"
               >

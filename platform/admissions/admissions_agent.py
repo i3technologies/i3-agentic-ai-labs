@@ -486,21 +486,33 @@ async def ws_chat(websocket: WebSocket):
             session_id,
         )
 
+    # STEP-P1-09: Track the current streaming task so it can be cancelled on
+    # WebSocket disconnect, preventing dangling httpx connections (SC-P1-09-c).
+    _current_task: asyncio.Task | None = None
+
     try:
         # Handle message from the auth packet if present
         first_msg = first.get("message", "").strip()
         if first_msg:
-            await _handle_message(first_msg)
+            _current_task = asyncio.ensure_future(_handle_message(first_msg))
+            await _current_task
 
         while True:
             raw = await websocket.receive_text()
             data = json.loads(raw)
             user_msg = data.get("message", "").strip()
             if user_msg:
-                await _handle_message(user_msg)
+                _current_task = asyncio.ensure_future(_handle_message(user_msg))
+                await _current_task
 
     except WebSocketDisconnect:
         log.info("Session %s disconnected", session_id)
+        if _current_task and not _current_task.done():
+            _current_task.cancel()
+            try:
+                await _current_task
+            except asyncio.CancelledError:
+                pass  # expected — stream cleaned up
     except Exception as e:
         log.error("Session %s error: %s", session_id, e)
         await websocket.close(code=1011)

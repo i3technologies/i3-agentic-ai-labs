@@ -55,7 +55,10 @@ export default function ExamClient({
   const [questions, setQuestions] = useState<Question[]>(existingSnapshot ?? [])
   const [answers, setAnswers] = useState<Record<string, string | string[]>>(existingAnswers ?? {})
   const [currentIndex, setCurrentIndex] = useState(0)
+  // duration_secs === 0 means no time limit; timer is not used in that case.
+  const hasTimeLimit = exam.duration_secs > 0
   const [timeLeft, setTimeLeft] = useState<number>(() => {
+    if (!hasTimeLimit) return 0
     if (existingStartedAt) {
       const elapsed = Math.floor((Date.now() - new Date(existingStartedAt).getTime()) / 1000)
       return Math.max(0, exam.duration_secs - elapsed)
@@ -98,8 +101,9 @@ export default function ExamClient({
     })()
   }, [exam.id, attemptId])
 
-  // ---- Countdown timer ----
+  // ---- Countdown timer (only active when exam has a time limit) ----
   useEffect(() => {
+    if (!hasTimeLimit) return
     if (timeLeft <= 0) {
       handleAutoSubmit()
       return
@@ -107,7 +111,7 @@ export default function ExamClient({
     const id = setTimeout(() => setTimeLeft((t) => t - 1), 1000)
     return () => clearTimeout(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeLeft])
+  }, [timeLeft, hasTimeLimit])
 
   // ---- Anti-cheat setup ----
   useEffect(() => {
@@ -323,9 +327,11 @@ export default function ExamClient({
             </div>
           </div>
 
-          <div className={`font-mono font-bold text-lg tabular-nums ${timerColor}`}>
-            {formatTime(timeLeft)}
-          </div>
+          {hasTimeLimit && (
+            <div className={`font-mono font-bold text-lg tabular-nums ${timerColor}`}>
+              {formatTime(timeLeft)}
+            </div>
+          )}
         </div>
       </div>
 

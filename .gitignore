@@ -88,3 +88,9 @@ engage-token-patch.json
 **/workbox-*.js
 **/sw.js
 **/package-lock.json
+
+# STEP-P1-01 addition: Block Kubernetes Secret patch YAMLs (may contain b64 credentials)
+patch-*-secret.yaml
+*-secret-patch.yaml
+patch-litellm-secret.yaml
+
