@@ -27,8 +27,24 @@ try:
     import httpx
 except ImportError:
     import subprocess
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "httpx", "--quiet"])
-    import httpx
+    # Try pip3 first (Cloud Shell), then pip, then python -m pip
+    for pip_cmd in (
+        ["pip3", "install", "httpx", "--quiet", "--user"],
+        ["pip", "install", "httpx", "--quiet", "--user"],
+        [sys.executable, "-m", "pip", "install", "httpx", "--quiet", "--user"],
+        [sys.executable, "-m", "pip3", "install", "httpx", "--quiet", "--user"],
+    ):
+        try:
+            subprocess.check_call(pip_cmd, stderr=subprocess.DEVNULL)
+            break
+        except Exception:
+            continue
+    try:
+        import httpx
+    except ImportError:
+        print("ERROR: httpx not available and could not be installed.")
+        print("  Run manually: pip3 install httpx")
+        sys.exit(1)
 
 # External-facing URLs as defaults — override with in-cluster DNS when running inside the cluster
 ADMISSIONS_AGENT_URL = os.environ.get(
