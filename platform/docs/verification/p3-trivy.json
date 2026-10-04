@@ -1,79 +1,16 @@
 {
-  "_schema": "i3-p3-trivy-evidence/v1",
-  "_gate": "P3-GATE-14",
-  "_threshold": "zero Critical or High severity CVEs with a fix available",
-  "_instructions": "Replace null values with actual Trivy scan results. Run: bash platform/scripts/p3-gate-14-trivy.sh",
-
-  "images_scanned": [
-    {
-      "image": "image-registry.openshift-image-registry.svc:5000/i3-admissions/admissions-agent:latest",
-      "digest": null,
-      "critical_count": null,
-      "high_count": null,
-      "medium_count": null,
-      "fixable_critical": null,
-      "fixable_high": null,
-      "pass": null,
-      "scan_at": null
+    "_schema":      "i3-p3-trivy-evidence/v1",
+    "_gate":        "P3-GATE-14",
+    "_threshold":   "zero fixable Critical/High CVEs across all platform images",
+    "_instructions": "Populated automatically by p3-run-gates.ps1 Gate-14 block.",
+    "images": {
+        "admissions-agent": { "critical": null, "high": null, "pass": null },
+        "engage-web":        { "critical": null, "high": null, "pass": null },
+        "pmaas-web":         { "critical": null, "high": null, "pass": null },
+        "ford-api":          { "critical": null, "high": null, "pass": null },
+        "ford-ussd":         { "critical": null, "high": null, "pass": null },
+        "litellm-proxy":     { "critical": null, "high": null, "pass": null }
     },
-    {
-      "image": "image-registry.openshift-image-registry.svc:5000/i3-engage/engage-web:latest",
-      "digest": null,
-      "critical_count": null,
-      "high_count": null,
-      "medium_count": null,
-      "fixable_critical": null,
-      "fixable_high": null,
-      "pass": null,
-      "scan_at": null
-    },
-    {
-      "image": "image-registry.openshift-image-registry.svc:5000/i3-pmaas/pmaas-web:latest",
-      "digest": null,
-      "critical_count": null,
-      "high_count": null,
-      "medium_count": null,
-      "fixable_critical": null,
-      "fixable_high": null,
-      "pass": null,
-      "scan_at": null
-    },
-    {
-      "image": "image-registry.openshift-image-registry.svc:5000/i3-ford/ford-api:latest",
-      "digest": null,
-      "critical_count": null,
-      "high_count": null,
-      "medium_count": null,
-      "fixable_critical": null,
-      "fixable_high": null,
-      "pass": null,
-      "scan_at": null
-    },
-    {
-      "image": "image-registry.openshift-image-registry.svc:5000/i3-ussd/ford-ussd:latest",
-      "digest": null,
-      "critical_count": null,
-      "high_count": null,
-      "medium_count": null,
-      "fixable_critical": null,
-      "fixable_high": null,
-      "pass": null,
-      "scan_at": null
-    },
-    {
-      "image": "image-registry.openshift-image-registry.svc:5000/i3-model-gateway/litellm-proxy:latest",
-      "digest": null,
-      "critical_count": null,
-      "high_count": null,
-      "medium_count": null,
-      "fixable_critical": null,
-      "fixable_high": null,
-      "pass": null,
-      "scan_at": null
-    }
-  ],
-  "overall_pass": null,
-  "evidence_source": "trivy image --severity CRITICAL,HIGH --exit-code 1 --ignore-unfixed",
-  "tekton_task": "trivy-scan",
-  "tekton_pipeline": "i3-build-pipeline"
+    "overall_pass": null,
+    "run_at":       null
 }

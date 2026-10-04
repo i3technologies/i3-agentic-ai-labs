@@ -152,9 +152,12 @@ metadata:
     app.kubernetes.io/part-of: i3-platform
     i3.io/tier: "4-ford"
     i3.io/managed-by: argocd
-    i3.io/hc: "HC-2,HC-6,HC-8"
+    i3.io/hc-2: "true"
+    i3.io/hc-6: "true"
+    i3.io/hc-8: "true"
 ---
 # i3-ussd: Africa's Talking USSD bridge (STEP-P3-03 / P3-GATE-08)
+# HC-2: staging by November 2026  HC-6: HMAC tokens only (no raw NIDs)
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -163,7 +166,8 @@ metadata:
     app.kubernetes.io/part-of: i3-platform
     i3.io/tier: "4-ford"
     i3.io/managed-by: argocd
-    i3.io/hc: "HC-2,HC-6"
+    i3.io/hc-2: "true"
+    i3.io/hc-6: "true"
 ---
 # ─── Tier 5: Observability ──────────────────────────────────
 apiVersion: v1

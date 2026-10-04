@@ -28,7 +28,28 @@ import os
 import random
 import time
 
-from locust import HttpUser, between, events, task
+try:
+    from locust import HttpUser, between, events, task
+    _LOCUST_AVAILABLE = True
+except ImportError:
+    # locust is only required for load-test mode; RAGAS / promptfoo paths do not need it.
+    _LOCUST_AVAILABLE = False
+
+    # Provide dummy base classes so the class bodies below can still be parsed
+    # without crashing at module load time.
+    class HttpUser:  # type: ignore[no-redef]
+        wait_time = None
+
+    def between(*_a, **_kw):  # type: ignore[no-redef]
+        return None
+
+    def task(*_a, **_kw):  # type: ignore[no-redef]
+        def _dec(fn):
+            return fn
+        return _dec
+
+    class events:  # type: ignore[no-redef]
+        pass
 
 log = logging.getLogger("i3-tests")
 
@@ -1011,8 +1032,20 @@ if __name__ == "__main__":
             os.environ.setdefault("ONBOARDING_AGENT_URL", f"{staging_url}/onboarding")
         asyncio.run(run_onboarding_ragas_evaluation())
     elif args.promptfoo_config:
-        # Tekton promptfoo-redteam Task entry point
-        # Outputs YAML to stdout; caller runs: npx promptfoo eval --config <file>
+        # Write the three individual YAML config files to platform/testing/ so the
+        # gate runner can pass them directly to npx promptfoo eval --config <file>.
+        # Also prints the combined config to stdout for Tekton Task compatibility.
+        import pathlib
+        testing_dir = pathlib.Path(__file__).parent
+        configs = {
+            "promptfoo-admissions.yaml": PROMPTFOO_CONFIG_ADMISSIONS,
+            "promptfoo-onboarding.yaml": PROMPTFOO_CONFIG_ONBOARDING,
+            "promptfoo-pmaas.yaml":      PROMPTFOO_CONFIG_PMAAS,
+        }
+        for filename, content in configs.items():
+            out_path = testing_dir / filename
+            out_path.write_text(content, encoding="utf-8")
+            print(f"Written: {out_path}", file=sys.stderr)
         print(PROMPTFOO_CONFIG)
         sys.exit(0)
     else:
