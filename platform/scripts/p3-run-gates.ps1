@@ -113,15 +113,27 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-# Use kubectl get nodes as the connectivity check — more reliable than cluster-info
-# on ROKS/IKS where the API discovery endpoint returns 'unknown' harmlessly.
+# Extract IAM bearer token and inject directly so kubectl never prompts for credentials.
+# ibmcloud ks cluster config on ROKS writes an exec: plugin entry that tries to call
+# ibmcloud interactively -- injecting the token bypasses that completely.
+Write-Host "  Injecting IAM bearer token into kubeconfig ..."
+$iamToken = ibmcloud iam oauth-tokens --output json 2>$null | ConvertFrom-Json
+if ($iamToken -and $iamToken.iam_token) {
+    $rawToken = $iamToken.iam_token -replace '^Bearer\s+', ''
+    kubectl config set-credentials "$(kubectl config current-context)" `
+        --token=$rawToken 2>$null | Out-Null
+    Show-Pass "IAM bearer token injected into kubeconfig"
+} else {
+    Write-Host "  WARNING: could not extract IAM token -- kubectl may prompt" -ForegroundColor DarkYellow
+}
+
+# Connectivity check
 Write-Host "  Verifying cluster connectivity ..."
 $nodes = kubectl get nodes --no-headers 2>$null
 if ($LASTEXITCODE -eq 0 -and $nodes) {
     $nodeCount = ($nodes -split "`n" | Where-Object { $_ -match '\S' }).Count
     Show-Pass "Cluster connected -- $nodeCount node(s) ready"
 } else {
-    # Cluster may still work even if get nodes is slow; continue anyway
     Write-Host "  WARNING: kubectl get nodes returned no output -- continuing" -ForegroundColor DarkYellow
     Show-Pass "Cluster authenticated via SSO passcode (node check inconclusive)"
 }
