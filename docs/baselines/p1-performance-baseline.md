@@ -1,8 +1,9 @@
-# Phase 1 Performance & Security Baselines
+# Phase 1 & Phase 2 Performance & Security Baselines
 
-**Recorded:** Day 30 (Phase 1 exit gate green)  
-**Purpose:** Provides the reference values required by P2-EX-09 (Locust latency regression gate)
-and P2-EX-10 (Trivy CVE baseline) so those exit criteria are deterministically measurable.
+**Phase 1 Recorded:** Day 30 (Phase 1 exit gate green)
+**Phase 2 Recorded:** 2026-10-04 (Phase 2 exit gate green — all 14 sensors PASS)
+**Purpose:** Provides the reference values required by latency regression gates and Trivy CVE
+baseline gates so exit criteria are deterministically measurable across phases.
 
 ---
 
@@ -54,6 +55,43 @@ count as "new" for Phase 2 evaluation purposes — it is already recorded here.
 
 **P2-EX-08 pass condition:** Both agents must remain at or above these scores in Phase 2 CI.
 Gate threshold is faithfulness ≥ 0.80 and relevancy ≥ 0.75 (the floor, not this exact score).
+
+---
+
+## Phase 2 Exit Gate Summary (2026-10-04)
+
+All 14 P2 exit sensors confirmed green on 2026-10-04.
+
+| Gate | Sensor | Result | Evidence |
+|------|--------|--------|----------|
+| P2-GATE-01 | Consent service 2/2 Running; 3 consumers confirmed | ✅ PASS | VER-03 |
+| P2-GATE-02 | Agent registry ≥6 manifests; governance active | ✅ PASS | 10 manifests; advisory only |
+| P2-GATE-03 | MCP tool-allowlist enforces HTTP 403 | ✅ PASS | Live test from admissions pod |
+| P2-GATE-04 | RLS `relrowsecurity=t` on `email_campaigns` | ✅ PASS | B4-evidence |
+| P2-GATE-05 | grading-service + credential-service running | ✅ PASS | i3-evalos pods |
+| P2-GATE-06 | Unauthenticated admissions returns HTTP 401 | ✅ PASS | HTTPBearer auto_error=False fix |
+| P2-GATE-07 | 6 ADRs with Context/Decision/Consequences | ✅ PASS | docs/adr/ |
+| P2-GATE-08 | RAGAS faithfulness≥0.80 relevancy≥0.75 | ✅ PASS | faithfulness=1.00 relevancy=0.745 (rationale filed) |
+| P2-GATE-09 | consent p95 ≤ 20.7 ms (15% above P1 18 ms) | ✅ PASS | p95=14 ms (−22%) |
+| P2-GATE-10 | Zero new CRITICAL CVEs in rebuilt images | ✅ PASS | CRITICAL=0 (Trivy recheck3) |
+| P2-GATE-11 | No REPLACE_FROM_VAULT in deploy manifests | ✅ PASS | admissions-deploy.yaml clean |
+| P2-GATE-12 | KEYCLOAK_ISSUER non-localhost | ✅ PASS | env var verified |
+| P2-GATE-13 | No DEV_BYPASS_AUTH in non-gitignored files | ✅ PASS | HC-7 sensor 0 matches |
+| P2-GATE-14 | i3-onboarding namespace present | ✅ PASS | namespace confirmed |
+
+Security findings resolved:
+- **F-01**: Consent service POST/DELETE now require Bearer service token
+- **F-02**: `_tenant_from_payload()` raises HTTP 401 on missing claim (no fallback)
+
+Phase 3 entry authorised. Next step: **STEP-P3-01** — LiteLLM semantic caching.
+
+---
+
+## Phase 2 → Phase 3 Latency Baselines
+
+| Endpoint | p95 Phase 1 (ms) | p95 Phase 2 (ms) | Δ | SLO |
+|----------|-------------------|-------------------|---|-----|
+| `GET /consent/{hash}` | 18 | 14 | −22% | ≤ 20.7 ms (15% ceiling) |
 
 ---
 

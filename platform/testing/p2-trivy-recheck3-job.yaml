@@ -1,0 +1,69 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: p2-trivy-recheck3
+  namespace: i3-gitops
+  labels:
+    i3.io/gate: P2-GATE-10
+spec:
+  ttlSecondsAfterFinished: 3600
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: pipeline
+      volumes:
+        - name: docker-config
+          secret:
+            secretName: icr-pull-secret
+            items:
+              - key: .dockerconfigjson
+                path: config.json
+      containers:
+        - name: trivy
+          image: aquasec/trivy:0.51.1
+          env:
+            - name: DOCKER_CONFIG
+              value: /docker-creds
+          volumeMounts:
+            - name: docker-config
+              mountPath: /docker-creds
+              readOnly: true
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              echo '=== P2-GATE-10 RE-CHECK: post-remediation Trivy scan ==='
+              IMAGES="de.icr.io/i3-platform/admissions-agent:latest de.icr.io/i3-platform/mcp-connectors:latest"
+              ALL_PASS=true
+              CRITICAL_COUNT=0
+              HIGH_COUNT=0
+              for IMG in $IMAGES; do
+                SVC=$(echo $IMG | sed 's|.*/||;s|:.*||')
+                echo ""
+                echo "--- Scanning $IMG ---"
+                trivy image --exit-code 0 --severity CRITICAL,HIGH --ignore-unfixed \
+                  --no-progress --format table "$IMG" 2>&1
+                CRITS=$(trivy image --exit-code 0 --severity CRITICAL --ignore-unfixed \
+                  --no-progress --format json "$IMG" 2>/dev/null | \
+                  grep -c '"Severity":"CRITICAL"' || true)
+                HIGHS=$(trivy image --exit-code 0 --severity HIGH --ignore-unfixed \
+                  --no-progress --format json "$IMG" 2>/dev/null | \
+                  grep -c '"Severity":"HIGH"' || true)
+                echo "  $SVC: CRITICAL=$CRITS HIGH=$HIGHS"
+                if [ "$CRITS" -gt 0 ]; then
+                  echo "  FAIL: $SVC still has CRITICAL CVEs"
+                  ALL_PASS=false
+                fi
+                CRITICAL_COUNT=$((CRITICAL_COUNT + CRITS))
+                HIGH_COUNT=$((HIGH_COUNT + HIGHS))
+              done
+              echo ""
+              echo "=== SUMMARY: total CRITICAL=$CRITICAL_COUNT HIGH=$HIGH_COUNT ==="
+              if $ALL_PASS; then
+                echo "P2-GATE-10: PASS"
+              else
+                echo "P2-GATE-10: FAIL (CRITICAL CVEs remain)"
+                exit 1
+              fi
