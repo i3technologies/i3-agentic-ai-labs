@@ -73,19 +73,15 @@ function Install-PipPackage([string]$Package) {
 Show-Gate "CLUSTER AUTH (SSO Passcode)"
 
 Write-Host ""
-Write-Host "  IBM Cloud SSO login" -ForegroundColor Cyan
-Write-Host "  -------------------" -ForegroundColor DarkGray
-Write-Host "  Step 1: Opening IBM Cloud passcode page in your browser ..."
-Write-Host "          URL: https://iam.cloud.ibm.com/identity/passcode" -ForegroundColor DarkGray
+Write-Host "  IBM Cloud one-time passcode login" -ForegroundColor Cyan
+Write-Host "  Step 1: Get a one-time passcode from the URL below." -ForegroundColor White
+Write-Host "          https://iam.cloud.ibm.com/identity/passcode" -ForegroundColor Cyan
+Write-Host "  Step 2: Paste it below and press Enter." -ForegroundColor White
+Write-Host ""
 Start-Process "https://iam.cloud.ibm.com/identity/passcode"
 
-Write-Host ""
-Write-Host "  Step 2: Copy the one-time passcode from the browser page." -ForegroundColor White
-Write-Host "  Step 3: Paste it below and press Enter." -ForegroundColor White
-Write-Host ""
-
 # Read passcode securely (masked input)
-$passcodeSecure = Read-Host "  Passcode" -AsSecureString
+$passcodeSecure = Read-Host "  One-time passcode" -AsSecureString
 $passcode = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(
     [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($passcodeSecure))
 
@@ -96,9 +92,10 @@ if (-not $passcode) {
 
 Write-Host ""
 Write-Host "  Logging in to IBM Cloud ..."
-# --sso with -p <passcode> is the correct form for this CLI version (2.47)
-# The --passcode flag does not exist; the one-time code is passed via -p
-ibmcloud login --sso -p $passcode -r $CloudRegion -g $ResourceGroup --quiet
+# Do NOT use --sso here: --sso forces an interactive browser flow and ignores -p.
+# The one-time passcode from https://iam.cloud.ibm.com/identity/passcode
+# is passed directly with -p (no --sso flag).
+ibmcloud login -p $passcode -r $CloudRegion -g $ResourceGroup --quiet
 if ($LASTEXITCODE -ne 0) {
     Write-Host "  ERROR: ibmcloud login failed -- passcode may have expired (they last ~60s)" -ForegroundColor Red
     Write-Host "  Get a fresh passcode at: https://iam.cloud.ibm.com/identity/passcode" -ForegroundColor DarkYellow

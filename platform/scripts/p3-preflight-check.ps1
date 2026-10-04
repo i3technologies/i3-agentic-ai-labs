@@ -32,14 +32,17 @@ Write-Host ""
 # =============================================================
 Write-Host "CLUSTER AUTH" -ForegroundColor Yellow
 Write-Host ""
-Write-Host "  Opening IBM Cloud SSO passcode page ..."
+Write-Host "  Get a one-time passcode from the URL below, then paste it here."
+Write-Host "  URL: https://iam.cloud.ibm.com/identity/passcode" -ForegroundColor Cyan
 Start-Process "https://iam.cloud.ibm.com/identity/passcode"
-$passcodeSecure = Read-Host "  Paste SSO passcode" -AsSecureString
+$passcodeSecure = Read-Host "  Paste one-time passcode" -AsSecureString
 $passcode = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(
     [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($passcodeSecure))
 
 Write-Host "  Logging in to IBM Cloud ..."
-ibmcloud login --sso -p $passcode -r $CloudRegion -g $ResourceGroup --quiet
+# Use -p without --sso: --sso forces a browser re-prompt and ignores -p entirely.
+# The one-time passcode from the URL above works directly with just -p.
+ibmcloud login -p $passcode -r $CloudRegion -g $ResourceGroup --quiet
 if ($LASTEXITCODE -ne 0) {
     Write-Host "  ERROR: ibmcloud login failed. Passcode may have expired (60s window)." -ForegroundColor Red
     Write-Host "  Get a new one at: https://iam.cloud.ibm.com/identity/passcode" -ForegroundColor DarkYellow
