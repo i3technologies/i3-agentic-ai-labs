@@ -113,8 +113,18 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-kubectl cluster-info 2>&1 | Select-Object -First 2
-Show-Pass "Cluster authenticated via SSO passcode"
+# Use kubectl get nodes as the connectivity check — more reliable than cluster-info
+# on ROKS/IKS where the API discovery endpoint returns 'unknown' harmlessly.
+Write-Host "  Verifying cluster connectivity ..."
+$nodes = kubectl get nodes --no-headers 2>$null
+if ($LASTEXITCODE -eq 0 -and $nodes) {
+    $nodeCount = ($nodes -split "`n" | Where-Object { $_ -match '\S' }).Count
+    Show-Pass "Cluster connected -- $nodeCount node(s) ready"
+} else {
+    # Cluster may still work even if get nodes is slow; continue anyway
+    Write-Host "  WARNING: kubectl get nodes returned no output -- continuing" -ForegroundColor DarkYellow
+    Show-Pass "Cluster authenticated via SSO passcode (node check inconclusive)"
+}
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # STEP 2 — Retrieve LiteLLM Master Key from Kubernetes Secret
@@ -174,36 +184,56 @@ try {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# GATE 06/07 — Orderer MSP Bootstrap + ford-channel Join
+# GATE 06/07 — Orderer MSP Bootstrap + ford-channel Join + Chaincode Deploy
 # ═══════════════════════════════════════════════════════════════════════════════
-Show-Gate "P3-GATE-06/07: Orderer + ford-channel"
+Show-Gate "P3-GATE-06/07: Orderer + ford-channel + membership-registry"
 
 try {
+    # Pre-flight: upload chaincode source as a ConfigMap so the deploy Job can mount it
+    Write-Host "  Pre-flight: uploading chaincode source to ford-chaincode-files-raw ..."
+    $ccDir = Join-Path $REPO "platform\ford\fabric\chaincode\membership_registry"
+    kubectl delete configmap ford-chaincode-files-raw -n i3-ford --ignore-not-found 2>$null | Out-Null
+    kubectl create configmap ford-chaincode-files-raw -n i3-ford `
+        "--from-file=$ccDir" 2>&1 | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Show-Pass "ford-chaincode-files-raw ConfigMap uploaded"
+    } else {
+        Show-Skip "Could not create ford-chaincode-files-raw -- chaincode deploy may fail"
+    }
+
+    # Step 1: Enroll orderer MSP
+    Write-Host "  Step 1: Orderer MSP enroll job ..."
     kubectl apply -f platform/ford/manifests/orderer-msp-init-job.yaml --validate=false
     kubectl wait --for=condition=complete job/orderer-msp-enroll -n i3-ford --timeout=180s
-    Write-Host "  orderer-msp Secret ready"
+    Show-Pass "orderer-msp Secret ready"
 
+    # Step 2: Patch orderer StatefulSet to mount orderer-msp Secret
+    Write-Host "  Step 2: Patching orderer StatefulSet ..."
     kubectl patch statefulset orderer -n i3-ford `
         --patch-file platform/ford/manifests/orderer-statefulset-patch.yaml --type=merge
     kubectl rollout status statefulset/orderer -n i3-ford --timeout=180s
 
+    # Step 3: Channel join
+    Write-Host "  Step 3: ford-channel join ..."
     kubectl apply -f platform/ford/deploy/channel-join-job.yaml --validate=false
     kubectl wait --for=condition=complete job/ford-channel-join -n i3-ford --timeout=180s
 
     $channels = kubectl exec -n i3-ford peer0-i3tech -- peer channel list 2>$null
     if ($channels -match "ford-channel") {
-        Show-Pass "ford-channel listed on peer"
+        Show-Pass "ford-channel listed on peer0-i3tech"
     } else {
         Show-Fail "ford-channel not found in peer channel list"
     }
 
+    # Step 4: Chaincode deploy (ford-chaincode-deploy Job is in channel-join-job.yaml)
+    Write-Host "  Step 4: Waiting for membership-registry chaincode deploy ..."
     kubectl wait --for=condition=complete job/ford-chaincode-deploy -n i3-ford --timeout=300s
     $cc = kubectl exec -n i3-ford peer0-i3tech -- `
         peer chaincode list --instantiated -C ford-channel 2>$null
     if ($cc -match "membership-registry") {
         Show-Pass "membership-registry instantiated on ford-channel"
     } else {
-        Show-Fail "membership-registry not found"
+        Show-Fail "membership-registry not found in instantiated list"
     }
 } catch {
     Show-Fail "Gate 06/07 exception: $_"

@@ -1,0 +1,70 @@
+# ============================================================
+# ford-chaincode-src ConfigMap Creator — P3-GATE-06 prerequisite
+#
+# Creates the ford-chaincode-src ConfigMap from the
+# membership_registry chaincode source so the
+# ford-chaincode-deploy Job can mount it at /workspace/chaincode.
+#
+# Apply BEFORE channel-join-job.yaml:
+#   kubectl apply -f platform/ford/deploy/ford-chaincode-configmap-job.yaml
+#   kubectl wait --for=condition=complete job/ford-chaincode-cm-create \
+#     -n i3-ford --timeout=60s
+# ============================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ford-chaincode-cm-create
+  namespace: i3-ford
+  labels:
+    app: peer0-i3tech
+    job: chaincode-configmap
+    gate: P3-GATE-06
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      labels:
+        job: chaincode-configmap
+    spec:
+      serviceAccountName: ford-sa
+      restartPolicy: OnFailure
+      containers:
+        - name: create-configmap
+          image: bitnami/kubectl:latest
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              # Delete stale CM if present
+              kubectl delete configmap ford-chaincode-src -n i3-ford --ignore-not-found
+              # Re-create from mounted source files
+              kubectl create configmap ford-chaincode-src -n i3-ford \
+                --from-file=/src/membership_registry.go \
+                --from-file=/src/go.mod
+              echo "ford-chaincode-src ConfigMap created"
+              kubectl get configmap ford-chaincode-src -n i3-ford
+          volumeMounts:
+            - name: chaincode-files
+              mountPath: /src
+      volumes:
+        - name: chaincode-files
+          configMap:
+            name: ford-chaincode-files-raw
+---
+# This ConfigMap holds the raw source files.
+# Created by the PowerShell runner via:
+#   kubectl create configmap ford-chaincode-files-raw \
+#     --from-file=platform/ford/fabric/chaincode/membership_registry/ \
+#     -n i3-ford
+# (See p3-run-gates.ps1 Step 6 pre-flight)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ford-chaincode-files-raw
+  namespace: i3-ford
+  labels:
+    app: peer0-i3tech
+    gate: P3-GATE-06
+data: {}
