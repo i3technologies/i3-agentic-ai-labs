@@ -300,8 +300,9 @@ export async function POST(req: NextRequest) {
     for (const contact of contacts) {
       try {
         // Verify consent before dispatching to this contact (STEP-P2-02).
-        // subject_id_hash MUST be the HMAC-SHA256(email, MEMBER_HMAC_SECRET) column.
-        // HC-6: raw email MUST NOT be sent to the consent service — fail hard if missing.
+        // HC-6: subject_id_hash holds the HMAC-SHA256 of the recipient address,
+        // keyed with MEMBER_HMAC_SECRET from OpenBao — never a raw address value.
+        // Fail-hard if the HMAC column is absent (contact not migrated).
         const subjectHash: string | undefined = contact.subject_id_hash as string | undefined
         if (!subjectHash) {
           // HC-6 violation: contact was not migrated to HMAC column; skip with error record.

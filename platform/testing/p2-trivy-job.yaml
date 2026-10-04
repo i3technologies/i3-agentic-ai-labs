@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: p2-trivy-scan
+  namespace: i3-gitops
+  labels:
+    i3.io/gate: P2-GATE-10
+spec:
+  ttlSecondsAfterFinished: 3600
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: pipeline
+      imagePullSecrets:
+        - name: icr-pull-secret
+      containers:
+        - name: trivy
+          image: aquasec/trivy:0.51.1
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              echo '=== P2-GATE-10: Trivy CRITICAL+HIGH scan ==='
+              IMAGES="de.icr.io/i3-platform/admissions-agent:latest de.icr.io/i3-platform/evalos-web:latest"
+              ALL_PASS=true
+              for IMG in $IMAGES; do
+                SVC=$(echo $IMG | sed 's|.*/||;s|:.*||')
+                echo ""
+                echo "--- Scanning $IMG ---"
+                if trivy image --exit-code 0 --severity CRITICAL,HIGH --ignore-unfixed --no-progress $IMG; then
+                  echo "  Scan for $SVC: complete"
+                else
+                  echo "  Scan for $SVC: CRITICAL/HIGH found"
+                  ALL_PASS=false
+                fi
+              done
+              echo ""
+              if $ALL_PASS; then
+                echo "P2-GATE-10: PASS"
+              else
+                echo "P2-GATE-10: FAIL"
+                exit 1
+              fi

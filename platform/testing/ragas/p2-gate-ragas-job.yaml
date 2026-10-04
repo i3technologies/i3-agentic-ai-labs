@@ -1,0 +1,52 @@
+---
+# P2-GATE-08: RAGAS Evaluation Job
+# Run: kubectl apply -f platform/testing/ragas/p2-gate-ragas-job.yaml
+# Wait: kubectl wait --for=condition=complete job/p2-ragas-eval -n i3-admissions --timeout=600s
+# Logs: kubectl logs -n i3-admissions job/p2-ragas-eval
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: p2-ragas-eval
+  namespace: i3-admissions
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/gate: "P2-GATE-08"
+spec:
+  ttlSecondsAfterFinished: 3600
+  backoffLimit: 1
+  template:
+    spec:
+      restartPolicy: Never
+      imagePullSecrets:
+        - name: icr-pull-secret
+      containers:
+        - name: ragas-eval
+          image: de.icr.io/i3-platform/admissions-agent:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              pip install ragas==0.2.6 langchain-openai datasets --target=/tmp/pylib -q 2>/dev/null || true
+              export PYTHONPATH="/tmp/pylib:${PYTHONPATH}"
+              python /tmp/ragas_eval.py
+          env:
+            - name: LITELLM_BASE_URL
+              value: "http://litellm-proxy.i3-model-gateway.svc.cluster.local:4000/v1"
+            - name: LITELLM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: admissions-secrets
+                  key: LITELLM_KEY
+            - name: RAGAS_FAITHFULNESS_THRESHOLD
+              value: "0.80"
+            - name: RAGAS_RELEVANCY_THRESHOLD
+              value: "0.75"
+          volumeMounts:
+            - name: eval-script
+              mountPath: /tmp/ragas_eval.py
+              subPath: ragas_eval.py
+      volumes:
+        - name: eval-script
+          configMap:
+            name: ragas-eval-script

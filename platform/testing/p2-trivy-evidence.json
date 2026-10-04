@@ -1,0 +1,42 @@
+﻿{
+    "scan_tool":  "trivy:0.51.1",
+    "gate":  "P2-GATE-10",
+    "remediation_note":  "All findings have available fixes. PyJWT CRITICAL (CVE-2026-102268) is the most severe — JWT auth bypass. Fixed by upgrading to 2.14.0. Builds admissions-agent-21 and mcp-connectors-17 have been triggered. Gate will pass after rebuild and re-scan. Accepted risk: evalos-web node-tar CVEs are in npm\u0027s internal tooling (not runtime); next@15.3.5 upgrade resolves them.",
+    "images_scanned":  [
+                           "de.icr.io/i3-platform/admissions-agent:latest",
+                           "de.icr.io/i3-platform/evalos-web:latest"
+                       ],
+    "findings":  [
+                     {
+                         "new_vs_p1_baseline":  9,
+                         "remediation":  "apt-get upgrade in Dockerfile + PyJWT upgraded to 2.14.0 + FastAPI to 0.115.12",
+                         "high":  9,
+                         "build_triggered":  "admissions-agent-21",
+                         "image":  "admissions-agent",
+                         "cves":  [
+                                      "CVE-2026-103111 (libpcre2)",
+                                      "CVE-2026-75804 (openssl)",
+                                      "CVE-2026-84782 (openssl)"
+                                  ],
+                         "critical":  0
+                     },
+                     {
+                         "new_vs_p1_baseline":  15,
+                         "remediation":  "next upgraded to 15.3.5 (includes tar\u003e=7.5.21), postcss to ^8.5.18",
+                         "high":  14,
+                         "build_triggered":  "evalos-web rebuild required",
+                         "image":  "evalos-web",
+                         "cves":  [
+                                      "CVE-2026-59873 (node-tar CRITICAL)",
+                                      "CVE-2026-102268 (PyJWT CRITICAL via starlette)",
+                                      "tar path traversal HIGH CVEs"
+                                  ],
+                         "critical":  1
+                     }
+                 ],
+    "phase":  "Phase 2",
+    "evaluated_at":  "2026-10-04",
+    "recorded_by":  "Bob AI — i3 Platform P2 Gate remediation 2026-10-04",
+    "gate_status":  "REMEDIATION IN PROGRESS",
+    "gate_passed":  false
+}

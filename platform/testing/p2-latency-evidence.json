@@ -1,0 +1,28 @@
+{
+  "gate": "P2-GATE-09",
+  "evaluated_at": "2026-10-04",
+  "phase": "Phase 2",
+  "test_tool": "urllib-based p95 measurement (50 requests, 5 warmup)",
+  "test_namespace": "i3-engage/sms-consumer",
+  "p1_baselines": {
+    "consent_check_p95_ms": 18,
+    "regression_limit_pct": 15,
+    "regression_limit_ms": 20.7
+  },
+  "p2_results": {
+    "consent_check": {
+      "p50_ms": 13,
+      "p95_ms": 14,
+      "p99_ms": 14,
+      "gate_pass": true,
+      "note": "p95 14ms < limit 20.7ms — 22% IMPROVEMENT vs P1 baseline"
+    },
+    "consent_health": {
+      "p50_ms": 4,
+      "p95_ms": 4
+    }
+  },
+  "gate_passed": true,
+  "gate_rationale": "consent_check p95=14ms is 22% FASTER than the P1 baseline of 18ms. Zero regression — well within the 15% tolerance limit of 20.7ms. Connection pool is warm after asyncpg pool creation.",
+  "recorded_by": "Bob AI — i3 Platform P2 Gate remediation 2026-10-04"
+}
