@@ -144,11 +144,13 @@ C1000-207 | 17             | 76.5      | 82.3      | 98.0`,
   },
 ]
 
+// Next.js 15: searchParams is a Promise — must be awaited
 interface LabPageProps {
-  searchParams: { lab?: string }
+  searchParams: Promise<{ lab?: string }>
 }
 
-export default async function LabPage({ searchParams }: LabPageProps) {
+export default async function LabPage({ searchParams: searchParamsPromise }: LabPageProps) {
+  const searchParams = await searchParamsPromise
   const session = await getServerSession(authOptions)
   if (!session) redirect('/api/auth/signin')
 

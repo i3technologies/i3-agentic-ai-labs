@@ -1,15 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
-  // Next.js 14.x: the correct key is experimental.serverComponentsExternalPackages.
-  // (serverExternalPackages is Next.js 15+ only and emits "Unrecognized key" in 14.x)
-  experimental: {
-    serverComponentsExternalPackages: [
-      'pg',
-      '@react-pdf/renderer',
-      '@fingerprintjs/fingerprintjs',
-    ],
-  },
+  // Next.js 15+: serverComponentsExternalPackages moved to serverExternalPackages
+  serverExternalPackages: [
+    'pg',
+    '@react-pdf/renderer',
+    '@fingerprintjs/fingerprintjs',
+  ],
   env: {
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     KEYCLOAK_ISSUER: process.env.KEYCLOAK_ISSUER,

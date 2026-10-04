@@ -74,11 +74,13 @@ async function getQuestions(
   }
 }
 
-export default async function QuestionBankPage({
-  searchParams,
-}: {
-  searchParams: { set?: string; domain?: string; type?: string; search?: string; active?: string; page?: string }
-}) {
+// Next.js 15: searchParams is a Promise — must be awaited
+interface QuestionBankPageProps {
+  searchParams: Promise<{ set?: string; domain?: string; type?: string; search?: string; active?: string; page?: string }>
+}
+
+export default async function QuestionBankPage({ searchParams: searchParamsPromise }: QuestionBankPageProps) {
+  const searchParams = await searchParamsPromise
   const session = await getServerSession(authOptions)
   if (!session?.user.isAdmin) redirect('/dashboard')
 
