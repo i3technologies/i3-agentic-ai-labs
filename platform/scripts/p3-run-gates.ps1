@@ -91,36 +91,42 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-Write-Host "  Fetching kubeconfig for cluster: $ClusterName ..."
-ibmcloud ks cluster config --cluster $ClusterName
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "  ERROR: cluster config failed" -ForegroundColor Red
-    exit 1
-}
+# Download static admin kubeconfig to a temp file -- no exec-plugin, no credential prompts
+Write-Host "  Downloading kubeconfig for cluster: $ClusterName ..."
+$tmpKube = Join-Path $env:TEMP "i3-platform-admin.yaml"
+$env:KUBECONFIG = $tmpKube
 
-# Extract IAM bearer token and inject directly so kubectl never prompts for credentials.
-# ibmcloud ks cluster config on ROKS writes an exec: plugin entry that tries to call
-# ibmcloud interactively -- injecting the token bypasses that completely.
-Write-Host "  Injecting IAM bearer token into kubeconfig ..."
-$iamToken = ibmcloud iam oauth-tokens --output json 2>$null | ConvertFrom-Json
-if ($iamToken -and $iamToken.iam_token) {
-    $rawToken = $iamToken.iam_token -replace '^Bearer\s+', ''
-    kubectl config set-credentials "$(kubectl config current-context)" `
-        --token=$rawToken 2>$null | Out-Null
-    Show-Pass "IAM bearer token injected into kubeconfig"
+ibmcloud ks cluster config --cluster $ClusterName --admin --output yaml 2>$null |
+    Out-File -FilePath $tmpKube -Encoding utf8
+
+if (-not (Test-Path $tmpKube) -or (Get-Item $tmpKube).Length -lt 100) {
+    # --admin not available: fall back, inject token manually
+    Write-Host "  Fallback: standard kubeconfig + manual token injection ..." -ForegroundColor DarkYellow
+    Remove-Item $tmpKube -ErrorAction SilentlyContinue
+    $env:KUBECONFIG = ""
+    ibmcloud ks cluster config --cluster $ClusterName
+    $tok = ibmcloud iam oauth-tokens --output json 2>$null | ConvertFrom-Json
+    if ($tok -and $tok.iam_token) {
+        $raw  = $tok.iam_token -replace '^Bearer\s+',''
+        $ctx  = kubectl config current-context 2>$null
+        $user = kubectl config view -o jsonpath="{.contexts[?(@.name=='$ctx')].context.user}" 2>$null
+        if ($user) {
+            kubectl config set-credentials $user --token=$raw 2>$null | Out-Null
+            Show-Pass "IAM token injected for user: $user"
+        }
+    }
 } else {
-    Write-Host "  WARNING: could not extract IAM token -- kubectl may prompt" -ForegroundColor DarkYellow
+    Show-Pass "Admin kubeconfig ready ($tmpKube)"
 }
 
-# Connectivity check
+# Connectivity check with timeout
 Write-Host "  Verifying cluster connectivity ..."
-$nodes = kubectl get nodes --no-headers 2>$null
+$nodes = kubectl get nodes --no-headers --request-timeout=15s 2>$null
 if ($LASTEXITCODE -eq 0 -and $nodes) {
     $nodeCount = ($nodes -split "`n" | Where-Object { $_ -match '\S' }).Count
     Show-Pass "Cluster connected -- $nodeCount node(s) ready"
 } else {
-    Write-Host "  WARNING: kubectl get nodes returned no output -- continuing" -ForegroundColor DarkYellow
-    Show-Pass "Cluster authenticated via SSO passcode (node check inconclusive)"
+    Write-Host "  WARNING: kubectl get nodes timed out -- continuing" -ForegroundColor DarkYellow
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
