@@ -19,16 +19,7 @@ $ErrorActionPreference = "Continue"
 $REPO = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 Set-Location $REPO
 
-function Check([string]$Label, [scriptblock]$Test) {
-    $result = & $Test 2>$null
-    if ($LASTEXITCODE -eq 0 -and $result) {
-        Write-Host "  OK   $Label" -ForegroundColor Green
-        return $true
-    } else {
-        Write-Host "  MISS $Label" -ForegroundColor DarkYellow
-        return $false
-    }
-}
+$SEP = "-" * 60
 
 Write-Host ""
 Write-Host ("=" * 60) -ForegroundColor Cyan
@@ -57,25 +48,25 @@ if ($LASTEXITCODE -eq 0 -and $nodes) {
 }
 
 Write-Host ""
-Write-Host ("─" * 60) -ForegroundColor DarkGray
-Write-Host "P3-GATE-01 — LiteLLM Redis Cache" -ForegroundColor Yellow
+Write-Host $SEP -ForegroundColor DarkGray
+Write-Host "P3-GATE-01 -- LiteLLM Redis Cache" -ForegroundColor Yellow
 kubectl get configmap litellm-config -n i3-model-gateway `
     -o jsonpath='{.data.config\.yaml}' 2>$null |
     Select-String "cache" | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
 
 Write-Host ""
-Write-Host ("─" * 60) -ForegroundColor DarkGray
-Write-Host "P3-GATE-04 — Kafka Topics" -ForegroundColor Yellow
+Write-Host $SEP -ForegroundColor DarkGray
+Write-Host "P3-GATE-04 -- Kafka Topics" -ForegroundColor Yellow
 kubectl get kafkatopic -n i3-kafka 2>$null | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
 
 Write-Host ""
-Write-Host ("─" * 60) -ForegroundColor DarkGray
-Write-Host "P3-GATE-05 — peer0-i3tech" -ForegroundColor Yellow
+Write-Host $SEP -ForegroundColor DarkGray
+Write-Host "P3-GATE-05 -- peer0-i3tech" -ForegroundColor Yellow
 kubectl get pod -n i3-ford -l app=peer0-i3tech 2>$null | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
 
 Write-Host ""
-Write-Host ("─" * 60) -ForegroundColor DarkGray
-Write-Host "P3-GATE-06 — Orderer + ford-channel" -ForegroundColor Yellow
+Write-Host $SEP -ForegroundColor DarkGray
+Write-Host "P3-GATE-06 -- Orderer + ford-channel" -ForegroundColor Yellow
 Write-Host "  StatefulSet/orderer:" -ForegroundColor DarkGray
 kubectl get statefulset orderer -n i3-ford 2>$null | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
 Write-Host "  Secret/orderer-msp:" -ForegroundColor DarkGray
@@ -88,37 +79,38 @@ Write-Host "  ford-chaincode-files-raw CM:" -ForegroundColor DarkGray
 kubectl get configmap ford-chaincode-files-raw -n i3-ford 2>$null | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
 
 Write-Host ""
-Write-Host ("─" * 60) -ForegroundColor DarkGray
-Write-Host "P3-GATE-07 — ford-api Fabric wiring" -ForegroundColor Yellow
+Write-Host $SEP -ForegroundColor DarkGray
+Write-Host "P3-GATE-07 -- ford-api Fabric wiring" -ForegroundColor Yellow
 kubectl get deployment ford-api -n i3-ford 2>$null | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
 
 Write-Host ""
-Write-Host ("─" * 60) -ForegroundColor DarkGray
-Write-Host "P3-GATE-08 — ford-ussd USSD Bridge" -ForegroundColor Yellow
+Write-Host $SEP -ForegroundColor DarkGray
+Write-Host "P3-GATE-08 -- ford-ussd USSD Bridge" -ForegroundColor Yellow
 kubectl get namespace i3-ussd 2>$null | ForEach-Object { Write-Host "  namespace: $_" -ForegroundColor Gray }
 kubectl get deployment ford-ussd -n i3-ussd 2>$null | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
 kubectl get pod -n i3-ussd -l app=ford-ussd 2>$null | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
 
 Write-Host ""
-Write-Host ("─" * 60) -ForegroundColor DarkGray
-Write-Host "P3-GATE-09 — Tekton Pipeline" -ForegroundColor Yellow
+Write-Host $SEP -ForegroundColor DarkGray
+Write-Host "P3-GATE-09 -- Tekton Pipeline" -ForegroundColor Yellow
 kubectl get pipeline i3-build-pipeline -n i3-tekton 2>$null | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
 kubectl get pipelinerun -n i3-tekton --sort-by=.metadata.creationTimestamp 2>$null |
     Select-Object -Last 3 | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
 
 Write-Host ""
-Write-Host ("─" * 60) -ForegroundColor DarkGray
-Write-Host "P3-GATE-14 — Image Registry" -ForegroundColor Yellow
+Write-Host $SEP -ForegroundColor DarkGray
+Write-Host "P3-GATE-14 -- Image Registry" -ForegroundColor Yellow
 $images = @("admissions-agent","engage-web","pmaas-web","ford-api","ford-ussd","litellm-proxy")
 foreach ($img in $images) {
     $tag = kubectl get imagestream $img -n i3-admissions 2>$null
-    Write-Host "  $img -> $($tag ? 'found' : 'not found in default ns')" -ForegroundColor Gray
+    $found = if ($tag) { "found" } else { "not found in default ns" }
+    Write-Host "  $img -> $found" -ForegroundColor Gray
 }
 
 Write-Host ""
-Write-Host ("═" * 60) -ForegroundColor Cyan
+Write-Host ("=" * 60) -ForegroundColor Cyan
 Write-Host "  Gates that are code-PASS (no cluster action needed):" -ForegroundColor White
-Write-Host "    P3-GATE-01 P3-GATE-03 P3-GATE-04 P3-GATE-05 P3-GATE-09 P3-GATE-15" -ForegroundColor Green
+Write-Host "    P3-GATE-01  P3-GATE-03  P3-GATE-04  P3-GATE-05  P3-GATE-09  P3-GATE-15" -ForegroundColor Green
 Write-Host ""
 Write-Host "  Gates that need cluster execution:" -ForegroundColor White
 Write-Host "    P3-GATE-06/07  orderer + ford-channel + chaincode" -ForegroundColor DarkYellow
@@ -131,4 +123,4 @@ Write-Host "    P3-GATE-13     Locust SLA test (needs Python locust)" -Foregroun
 Write-Host "    P3-GATE-14     Trivy CVE scan (needs trivy installed)" -ForegroundColor DarkYellow
 Write-Host ""
 Write-Host "  Run gates:  .\platform\scripts\p3-run-gates.ps1" -ForegroundColor Cyan
-Write-Host ("═" * 60) -ForegroundColor Cyan
+Write-Host ("=" * 60) -ForegroundColor Cyan
