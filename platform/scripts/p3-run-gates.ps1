@@ -2,20 +2,25 @@
 .SYNOPSIS
     Phase 3 Gate Runner for Windows PowerShell
 .DESCRIPTION
-    Authenticates to IBM Cloud, retrieves the LiteLLM master key automatically,
-    then executes all 15 Phase 3 quality gates.
-.PARAMETER IBMCloudAPIKey
-    Your IBM Cloud API key. Can also be set via $env:IBMCLOUD_API_KEY
+    Authenticates to IBM Cloud using SSO passcode (browser-based one-time code),
+    retrieves the LiteLLM master key automatically, then executes all Phase 3 gates.
+.PARAMETER ClusterName
+    IBM Kubernetes Service cluster name. Default: i3-platform
+.PARAMETER CloudRegion
+    IBM Cloud region. Default: eu-de
+.PARAMETER ResourceGroup
+    IBM Cloud resource group. Default: i3-production
 .EXAMPLE
-    $env:IBMCLOUD_API_KEY = "your-key"
     .\platform\scripts\p3-run-gates.ps1
+
+    The script opens the IBM Cloud SSO URL in your browser.
+    Copy the one-time passcode, paste it when prompted, and all gates run.
 #>
 
 param(
-    [string]$IBMCloudAPIKey = $env:IBMCLOUD_API_KEY,
-    [string]$ClusterName    = "i3-platform",
-    [string]$CloudRegion    = "eu-de",
-    [string]$ResourceGroup  = "i3-production"
+    [string]$ClusterName   = "i3-platform",
+    [string]$CloudRegion   = "eu-de",
+    [string]$ResourceGroup = "i3-production"
 )
 
 $ErrorActionPreference = "Continue"
@@ -63,23 +68,38 @@ function Install-PipPackage([string]$Package) {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# STEP 1 — IBM Cloud Authentication
+# STEP 1 — IBM Cloud SSO Passcode Authentication
 # ═══════════════════════════════════════════════════════════════════════════════
-Show-Gate "CLUSTER AUTH"
+Show-Gate "CLUSTER AUTH (SSO Passcode)"
 
-if (-not $IBMCloudAPIKey) {
-    Write-Host ""
-    Write-Host "  ERROR: IBM Cloud API key not set." -ForegroundColor Red
-    Write-Host "  Set it with:" -ForegroundColor White
-    Write-Host '    $env:IBMCLOUD_API_KEY = "your-key"' -ForegroundColor Cyan
-    Write-Host "  Then re-run the script." -ForegroundColor White
+Write-Host ""
+Write-Host "  IBM Cloud SSO login" -ForegroundColor Cyan
+Write-Host "  -------------------" -ForegroundColor DarkGray
+Write-Host "  Step 1: Opening IBM Cloud passcode page in your browser ..."
+Write-Host "          URL: https://iam.cloud.ibm.com/identity/passcode" -ForegroundColor DarkGray
+Start-Process "https://iam.cloud.ibm.com/identity/passcode"
+
+Write-Host ""
+Write-Host "  Step 2: Copy the one-time passcode from the browser page." -ForegroundColor White
+Write-Host "  Step 3: Paste it below and press Enter." -ForegroundColor White
+Write-Host ""
+
+# Read passcode securely (masked input)
+$passcodeSecure = Read-Host "  Passcode" -AsSecureString
+$passcode = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(
+    [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($passcodeSecure))
+
+if (-not $passcode) {
+    Write-Host "  ERROR: No passcode entered." -ForegroundColor Red
     exit 1
 }
 
+Write-Host ""
 Write-Host "  Logging in to IBM Cloud ..."
-ibmcloud login --apikey $IBMCloudAPIKey -r $CloudRegion -g $ResourceGroup --quiet
+ibmcloud login --sso -r $CloudRegion -g $ResourceGroup --passcode $passcode --quiet
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "  ERROR: ibmcloud login failed" -ForegroundColor Red
+    Write-Host "  ERROR: ibmcloud login failed -- check passcode and try again" -ForegroundColor Red
+    Write-Host "  Get a new passcode at: https://iam.cloud.ibm.com/identity/passcode" -ForegroundColor DarkYellow
     exit 1
 }
 
@@ -91,7 +111,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 kubectl cluster-info 2>&1 | Select-Object -First 2
-Show-Pass "Cluster authenticated"
+Show-Pass "Cluster authenticated via SSO passcode"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # STEP 2 — Retrieve LiteLLM Master Key from Kubernetes Secret
