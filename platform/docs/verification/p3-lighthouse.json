@@ -1,0 +1,51 @@
+{
+  "_schema": "i3-p3-lighthouse-evidence/v1",
+  "_gate": "P3-GATE-11",
+  "_threshold": { "pwa": 0.80, "interactive_ms": 2000 },
+  "_instructions": "Replace this file with actual lhci output. Run: bash platform/scripts/p3-gate-11-lighthouse.sh",
+
+  "engage": {
+    "url": "https://engage.i3technologies.co.ke/dashboard",
+    "runs": 3,
+    "throttling": "3G simulated (rttMs:150, throughputKbps:1638, cpuSlowdown:4x)",
+    "scores": {
+      "pwa": null,
+      "performance": null,
+      "accessibility": null
+    },
+    "audits": {
+      "interactive_ms": null,
+      "first_contentful_paint_ms": null,
+      "service_worker": null,
+      "installable_manifest": null,
+      "is_on_https": null
+    },
+    "pass": null,
+    "lhci_run_at": null,
+    "lhci_report_url": null
+  },
+
+  "pmaas": {
+    "url": "https://pmaas.i3technologies.co.ke/dashboard",
+    "runs": 3,
+    "throttling": "3G simulated (rttMs:150, throughputKbps:1638, cpuSlowdown:4x)",
+    "scores": {
+      "pwa": null,
+      "performance": null,
+      "accessibility": null
+    },
+    "audits": {
+      "interactive_ms": null,
+      "first_contentful_paint_ms": null,
+      "service_worker": null,
+      "installable_manifest": null,
+      "is_on_https": null
+    },
+    "pass": null,
+    "lhci_run_at": null,
+    "lhci_report_url": null
+  },
+
+  "overall_pass": null,
+  "evidence_source": "lhci autorun — Tekton pipeline step lighthouse-ci"
+}

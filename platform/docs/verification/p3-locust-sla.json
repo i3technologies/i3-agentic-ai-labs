@@ -1,0 +1,55 @@
+{
+  "_schema": "i3-p3-locust-evidence/v1",
+  "_gate": "P3-GATE-13",
+  "_thresholds": {
+    "nba_consent_p95_ms": 200,
+    "exam_start_p95_ms": 3000,
+    "campaign_create_p95_ms": 3000
+  },
+  "_instructions": "Replace null values with actual Locust results. Run: bash platform/scripts/p3-gate-13-locust.sh",
+
+  "nba_consent": {
+    "endpoint": "POST /api/v1/nba/consent",
+    "users": 100,
+    "spawn_rate": 10,
+    "duration_s": 300,
+    "p50_ms": null,
+    "p95_ms": null,
+    "p99_ms": null,
+    "rps": null,
+    "error_rate_pct": null,
+    "pass": null
+  },
+
+  "exam_start": {
+    "endpoint": "POST /submit [EvalOS Profile A]",
+    "users": 100,
+    "spawn_rate": 10,
+    "duration_s": 300,
+    "p50_ms": null,
+    "p95_ms": null,
+    "p99_ms": null,
+    "rps": null,
+    "error_rate_pct": null,
+    "pass": null
+  },
+
+  "campaign_create": {
+    "endpoint": "POST /api/campaigns/send",
+    "users": 50,
+    "spawn_rate": 5,
+    "duration_s": 300,
+    "p50_ms": null,
+    "p95_ms": null,
+    "p99_ms": null,
+    "rps": null,
+    "error_rate_pct": null,
+    "pass": null
+  },
+
+  "overall_pass": null,
+  "run_at": null,
+  "evidence_source": "locust -f platform/testing/testing.py --headless",
+  "tekton_task": "p3-sla-locust",
+  "tekton_pipeline": "i3-build-pipeline"
+}

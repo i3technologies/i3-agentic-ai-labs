@@ -1,0 +1,155 @@
+# ============================================================
+# FORD-Asili USSD Bridge — Deployment
+# Namespace: i3-ussd
+# P3-GATE-08: POST /ussd → "CON Welcome to FORD-Asili…"
+#
+# HC-6: MEMBER_HMAC_SECRET injected from OpenBao Secret ford-secrets
+# HC-4: FORD_TENANT_ID injected per-namespace
+# HC-2: Must be deployed to staging by November 2026
+#
+# Africa's Talking webhook: POST https://ussd.i3technologies.co.ke/ussd
+# ============================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ford-ussd
+  namespace: i3-ussd
+  labels:
+    app: ford-ussd
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/hc: "HC-2,HC-6"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ford-ussd
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: ford-ussd
+    spec:
+      serviceAccountName: ford-ussd-sa
+      containers:
+        - name: ford-ussd
+          image: image-registry.openshift-image-registry.svc:5000/i3-ussd/ford-ussd:latest
+          ports:
+            - containerPort: 8000
+              name: http
+          # HC-6: MEMBER_HMAC_SECRET from the same OpenBao-synced secret as ford-api.
+          # HC-4: FORD_TENANT_ID must match the tenant UUID used in ford-api.
+          envFrom:
+            - secretRef:
+                name: ford-ussd-secrets   # must contain MEMBER_HMAC_SECRET, AT_API_KEY, AT_USERNAME
+          env:
+            - name: FORD_API_URL
+              value: "http://ford-api.i3-ford.svc.cluster.local:8000"
+            - name: REDIS_URL
+              value: "redis://redis.i3-data.svc.cluster.local:6379/1"
+            - name: FORD_TENANT_ID
+              value: "00000000-0000-0000-0000-000000000005"
+            - name: AT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: ford-ussd-secrets
+                  key: AT_USERNAME
+                  optional: true
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ford-ussd-sa
+  namespace: i3-ussd
+  labels:
+    app: ford-ussd
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ford-ussd
+  namespace: i3-ussd
+  labels:
+    app: ford-ussd
+spec:
+  selector:
+    app: ford-ussd
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+---
+# OpenShift Route — Africa's Talking webhook callback endpoint
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: ford-ussd
+  namespace: i3-ussd
+  labels:
+    app: ford-ussd
+spec:
+  host: ussd.i3technologies.co.ke
+  to:
+    kind: Service
+    name: ford-ussd
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+---
+# NetworkPolicy: allow only ford-api (i3-ford) to call the USSD bridge's
+# internal callbacks; allow ingress from OpenShift router only externally.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ford-ussd-ingress
+  namespace: i3-ussd
+spec:
+  podSelector:
+    matchLabels:
+      app: ford-ussd
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow OpenShift router (AT webhook callbacks arrive via HTTPS edge route)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              network.openshift.io/policy-group: ingress
+      ports:
+        - port: 8000
+          protocol: TCP
+    # Allow ford-api to call health checks during integration tests
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: i3-ford
+      ports:
+        - port: 8000
+          protocol: TCP

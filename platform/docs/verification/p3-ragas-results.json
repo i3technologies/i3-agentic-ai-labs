@@ -1,0 +1,41 @@
+{
+  "_gate": "P3-GATE-12",
+  "_sensor": "RAGAS faithfulness >= 0.80, relevancy >= 0.75 for all agents",
+  "_status": "PENDING — activate ragas-evaluation skill and run against P3 staging",
+  "_instructions": "Run: python platform/testing/testing.py --ragas --all-agents --staging. Replace placeholder values below with actual scores.",
+  "_run_command": "python platform/testing/testing.py --ragas --all-agents --staging",
+  "_phase": "Phase 3",
+  "run_date": null,
+  "runner": null,
+  "thresholds": {
+    "faithfulness": 0.80,
+    "answer_relevancy": 0.75
+  },
+  "agents": {
+    "admissions-agent-v1": {
+      "faithfulness": null,
+      "answer_relevancy": null,
+      "context_precision": null,
+      "num_questions": null,
+      "gate_pass": null,
+      "phase1_baseline": { "faithfulness": 0.83, "answer_relevancy": 0.79 }
+    },
+    "pmaas-campaign-agent-v1": {
+      "faithfulness": null,
+      "answer_relevancy": null,
+      "context_precision": null,
+      "num_questions": null,
+      "gate_pass": null,
+      "phase1_baseline": { "faithfulness": 0.81, "answer_relevancy": 0.77 }
+    },
+    "onboarding-agent-v1": {
+      "faithfulness": null,
+      "answer_relevancy": null,
+      "context_precision": null,
+      "num_questions": null,
+      "gate_pass": null,
+      "phase1_baseline": null
+    }
+  },
+  "overall_gate_pass": null
+}

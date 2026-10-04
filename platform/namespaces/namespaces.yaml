@@ -130,6 +130,41 @@ metadata:
     i3.io/tier: "4-apps"
     i3.io/managed-by: argocd
 ---
+# i3-onboarding: Onboarding agent workstream (PLN-05-09 / P2-GATE-14)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-onboarding
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "4-apps"
+    i3.io/managed-by: argocd
+---
+# ─── Tier 4b: FORD-Asili (Fabric membership + USSD) ────────
+# HC-2: Staging live by November 2026
+# HC-6: No raw NIDs or phone numbers — HMAC-SHA256 tokens only
+# HC-8: Ballot PDC (voteChoicesCollection) enforces ballot secrecy
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-ford
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "4-ford"
+    i3.io/managed-by: argocd
+    i3.io/hc: "HC-2,HC-6,HC-8"
+---
+# i3-ussd: Africa's Talking USSD bridge (STEP-P3-03 / P3-GATE-08)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: i3-ussd
+  labels:
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/tier: "4-ford"
+    i3.io/managed-by: argocd
+    i3.io/hc: "HC-2,HC-6"
+---
 # ─── Tier 5: Observability ──────────────────────────────────
 apiVersion: v1
 kind: Namespace
@@ -290,6 +325,21 @@ spec:
     persistentvolumeclaims: "5"
     count/pods: "20"
 ---
+# i3-onboarding: Onboarding agent (PLN-05-09 / P2-GATE-14)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: i3-onboarding-quota
+  namespace: i3-onboarding
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    persistentvolumeclaims: "5"
+    count/pods: "20"
+---
 # i3-monitoring: Prometheus + Grafana + Langfuse telemetry
 apiVersion: v1
 kind: ResourceQuota
@@ -332,3 +382,32 @@ spec:
     limits.cpu: "4"
     limits.memory: 8Gi
     count/pods: "20"
+---
+# i3-ford: Fabric peer + ford-api + MSP jobs (HC-2 staging)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: i3-ford-quota
+  namespace: i3-ford
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    persistentvolumeclaims: "10"
+    count/pods: "20"
+---
+# i3-ussd: Africa's Talking USSD bridge (lightweight FastAPI — 1 replica)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: i3-ussd-quota
+  namespace: i3-ussd
+spec:
+  hard:
+    requests.cpu: "500m"
+    requests.memory: 512Mi
+    limits.cpu: "1"
+    limits.memory: 1Gi
+    count/pods: "5"

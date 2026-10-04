@@ -1,0 +1,110 @@
+# ============================================================
+# peer0-i3tech — OpenShift SCC-compliant patch
+# P3-GATE-05 fix: removes hostPath docker-sock volume which is
+# forbidden by all OpenShift SCCs on IBM Cloud.
+#
+# Fabric 2.x uses the External Chaincode Launcher pattern — the
+# peer does NOT need /var/run/docker.sock to run chaincode.
+# Chaincode is built and deployed as a separate container/pod by
+# the operator; the peer connects over gRPC to the launcher.
+#
+# Changes from original:
+#   - Removed CORE_VM_ENDPOINT env var (docker socket not used)
+#   - Removed docker-sock hostPath volume and volumeMount
+#   - Added CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE for safety
+#   - Added securityContext (nonroot UID 7051, matching fabric-peer image)
+#   - Added CORE_CHAINCODE_EXECUTETIMEOUT to support slow starts
+#
+# Apply: kubectl apply -f platform/ford/deploy/peer0-i3tech-patch.yaml
+#        kubectl rollout status deployment/peer0-i3tech -n i3-ford
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: peer0-i3tech
+  namespace: i3-ford
+  labels:
+    app: peer0-i3tech
+    org: i3tech
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: peer0-i3tech
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: peer0-i3tech
+        org: i3tech
+    spec:
+      serviceAccountName: ford-sa
+      # anyuid SCC is already bound to ford-sa (system:openshift:scc:anyuid)
+      securityContext:
+        runAsUser: 7051
+        runAsNonRoot: true
+        fsGroup: 7051
+      containers:
+        - name: peer
+          image: hyperledger/fabric-peer:2.5.9
+          command: ["peer", "node", "start"]
+          env:
+            - name: CORE_PEER_LOCALMSPID
+              value: "FordPeerMSP"
+            - name: CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: peer0-couchdb-creds
+                  key: username
+            - name: CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: peer0-couchdb-creds
+                  key: password
+            - name: CORE_PEER_ID
+              value: "peer0.i3tech.ford"
+            - name: CORE_PEER_ADDRESS
+              value: "peer0-i3tech.i3-ford.svc:7051"
+            - name: CORE_PEER_LISTENADDRESS
+              value: "0.0.0.0:7051"
+            - name: CORE_PEER_CHAINCODELISTENADDRESS
+              value: "0.0.0.0:7052"
+            - name: CORE_PEER_GOSSIP_EXTERNALENDPOINT
+              value: "peer0-i3tech.i3-ford.svc:7051"
+            - name: CORE_PEER_GOSSIP_BOOTSTRAP
+              value: "peer0-i3tech.i3-ford.svc:7051"
+            - name: CORE_PEER_MSPCONFIGPATH
+              value: "/var/hyperledger/production/msp"
+            - name: CORE_PEER_TLS_ENABLED
+              value: "false"
+            - name: CORE_OPERATIONS_LISTENADDRESS
+              value: "0.0.0.0:9443"
+            - name: FABRIC_LOGGING_SPEC
+              value: "INFO"
+            - name: CORE_LEDGER_STATE_STATEDATABASE
+              value: "CouchDB"
+            - name: CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS
+              value: "couchdb-i3tech.i3-ford.svc:5984"
+            # External Chaincode Launcher — no Docker socket required (Fabric 2.x)
+            - name: CORE_CHAINCODE_EXECUTETIMEOUT
+              value: "300s"
+          ports:
+            - containerPort: 7051
+              name: grpc
+            - containerPort: 9443
+              name: operations
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+          volumeMounts:
+            - mountPath: /var/hyperledger/production
+              name: peer-data
+      volumes:
+        - name: peer-data
+          persistentVolumeClaim:
+            claimName: peer0-i3tech-pvc

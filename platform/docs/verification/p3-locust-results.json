@@ -1,0 +1,53 @@
+{
+  "_gate": "P3-GATE-13",
+  "_sensor": "p95 latency: NBA/consent <= 200ms; exam start/campaign create <= 3s",
+  "_status": "PENDING — run Locust suite against P3 staging to populate",
+  "_instructions": "Run: locust -f platform/testing/locust/locustfile.py NBAConsentUser --headless -u 50 --spawn-rate 5 --run-time 180s --host https://staging.i3technologies.co.ke --csv /tmp/p3-nba",
+  "_run_commands": [
+    "locust -f platform/testing/locust/locustfile.py NBAConsentUser --headless -u 50 --spawn-rate 5 --run-time 180s --host https://staging.i3technologies.co.ke --csv /tmp/p3-nba",
+    "locust -f platform/testing/locust/locustfile.py BatchPlanUser --headless -u 20 --spawn-rate 2 --run-time 180s --host https://staging.i3technologies.co.ke --csv /tmp/p3-batch"
+  ],
+  "_phase": "Phase 3",
+  "run_date": null,
+  "runner": null,
+  "thresholds_ms": {
+    "nba_consent_p95": 200,
+    "exam_start_p95": 3000,
+    "campaign_create_p95": 3000
+  },
+  "phase1_baselines_ms": {
+    "nba_consent_p95": null,
+    "exam_start_p95": null,
+    "campaign_create_p95": null
+  },
+  "results": {
+    "nba_consent": {
+      "users": null,
+      "rps": null,
+      "p50_ms": null,
+      "p95_ms": null,
+      "p99_ms": null,
+      "failure_rate_pct": null,
+      "gate_pass": null
+    },
+    "exam_start": {
+      "users": null,
+      "rps": null,
+      "p50_ms": null,
+      "p95_ms": null,
+      "p99_ms": null,
+      "failure_rate_pct": null,
+      "gate_pass": null
+    },
+    "campaign_create": {
+      "users": null,
+      "rps": null,
+      "p50_ms": null,
+      "p95_ms": null,
+      "p99_ms": null,
+      "failure_rate_pct": null,
+      "gate_pass": null
+    }
+  },
+  "overall_gate_pass": null
+}

@@ -1,0 +1,85 @@
+# ============================================================
+# peer0-i3tech MSP config fix — P3-GATE-05
+#
+# Fabric 2.x peers require EITHER:
+#   a) admincerts/ directory in the MSP  OR
+#   b) config.yaml enabling NodeOU classification
+#
+# This job writes config.yaml with NodeOU=true so the
+# peer's enrollment type "peer" acts as the admin OU.
+# It also copies cacerts to admincerts as a fallback.
+#
+# Run ONCE while peer Deployment is scaled to 0.
+# Apply:
+#   kubectl scale deployment peer0-i3tech -n i3-ford --replicas=0
+#   kubectl delete job peer0-msp-config --ignore-not-found=true -n i3-ford
+#   kubectl apply -f platform/ford/deploy/peer0-msp-config-job.yaml
+#   kubectl wait --for=condition=complete job/peer0-msp-config -n i3-ford --timeout=60s
+#   kubectl scale deployment peer0-i3tech -n i3-ford --replicas=1
+# ============================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: peer0-msp-config
+  namespace: i3-ford
+  labels:
+    app: peer0-i3tech
+    job: msp-config
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app: peer0-i3tech
+        job: msp-config
+    spec:
+      serviceAccountName: ford-sa
+      restartPolicy: OnFailure
+      securityContext:
+        runAsUser: 7051
+        runAsNonRoot: true
+        fsGroup: 7051
+      containers:
+        - name: msp-config
+          image: hyperledger/fabric-peer:2.5.9
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              MSP=/var/hyperledger/production/msp
+              CACERT=$(ls ${MSP}/cacerts/*.pem | head -1)
+
+              echo "=== Writing NodeOU config.yaml ==="
+              cat > ${MSP}/config.yaml << EOF
+              NodeOUs:
+                Enable: true
+                ClientOUIdentifier:
+                  Certificate: cacerts/$(basename ${CACERT})
+                  OrganizationalUnitIdentifier: client
+                PeerOUIdentifier:
+                  Certificate: cacerts/$(basename ${CACERT})
+                  OrganizationalUnitIdentifier: peer
+                AdminOUIdentifier:
+                  Certificate: cacerts/$(basename ${CACERT})
+                  OrganizationalUnitIdentifier: admin
+                OrdererOUIdentifier:
+                  Certificate: cacerts/$(basename ${CACERT})
+                  OrganizationalUnitIdentifier: orderer
+              EOF
+
+              echo "=== Creating admincerts dir (copy from signcerts as peer-admin) ==="
+              mkdir -p ${MSP}/admincerts
+              cp ${MSP}/signcerts/cert.pem ${MSP}/admincerts/cert.pem
+
+              echo "=== MSP structure ==="
+              find ${MSP} -type f | sort
+              echo "=== Done ==="
+          volumeMounts:
+            - mountPath: /var/hyperledger/production
+              name: peer-data
+      volumes:
+        - name: peer-data
+          persistentVolumeClaim:
+            claimName: peer0-i3tech-pvc

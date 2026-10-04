@@ -1,0 +1,205 @@
+# ============================================================
+# ford-channel join Job — P3-GATE-06
+#
+# Prerequisite: peer0-msp-init Job must have completed (peer0-i3tech
+# MSP enrolled and config.yaml written) before running this job.
+#
+# Steps:
+#   1. Fetch channel genesis block from orderer
+#   2. peer channel join -b ford-channel.block
+#   3. Verify: peer channel list → ford-channel listed
+#
+# Apply sequence:
+#   kubectl apply -f platform/ford/deploy/channel-join-job.yaml
+#   kubectl wait --for=condition=complete job/ford-channel-join \
+#     -n i3-ford --timeout=180s
+#   kubectl logs job/ford-channel-join -n i3-ford
+#
+# After this job succeeds, run chaincode-deploy-job.yaml.
+# ============================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ford-channel-join
+  namespace: i3-ford
+  labels:
+    app: peer0-i3tech
+    job: channel-join
+    gate: P3-GATE-06
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app: peer0-i3tech
+        job: channel-join
+    spec:
+      serviceAccountName: ford-sa
+      restartPolicy: OnFailure
+      securityContext:
+        runAsUser: 7051
+        runAsNonRoot: true
+        fsGroup: 7051
+      containers:
+        - name: channel-join
+          image: hyperledger/fabric-tools:2.5.9
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+
+              PEER_ADDR="peer0-i3tech.i3-ford.svc.cluster.local:7051"
+              ORDERER_ADDR="orderer-0.i3-ford.svc.cluster.local:7050"
+              CHANNEL_ID="ford-channel"
+              MSP_DIR="/var/hyperledger/production/msp"
+              BLOCK_FILE="/tmp/${CHANNEL_ID}.block"
+
+              export CORE_PEER_LOCALMSPID="FordPeerMSP"
+              export CORE_PEER_MSPCONFIGPATH="${MSP_DIR}"
+              export CORE_PEER_ADDRESS="${PEER_ADDR}"
+              export CORE_PEER_TLS_ENABLED="false"
+              export FABRIC_LOGGING_SPEC="INFO"
+
+              echo "=== Step 1: Fetch ${CHANNEL_ID} genesis block from orderer ==="
+              peer channel fetch 0 "${BLOCK_FILE}" \
+                -c "${CHANNEL_ID}" \
+                -o "${ORDERER_ADDR}" \
+                --tls=false
+
+              echo "=== Step 2: Join peer0-i3tech to ${CHANNEL_ID} ==="
+              peer channel join -b "${BLOCK_FILE}"
+
+              echo "=== Step 3: Verify channel join ==="
+              peer channel list | grep -q "${CHANNEL_ID}" \
+                && echo "P3-GATE-06: PASS — peer0-i3tech joined ${CHANNEL_ID}" \
+                || { echo "P3-GATE-06: FAIL — ${CHANNEL_ID} not in channel list"; exit 1; }
+
+              echo "=== Channel join complete ==="
+          volumeMounts:
+            - mountPath: /var/hyperledger/production
+              name: peer-data
+      volumes:
+        - name: peer-data
+          persistentVolumeClaim:
+            claimName: peer0-i3tech-pvc
+---
+# ============================================================
+# membership-registry Chaincode Deploy Job — P3-GATE-06 / P3-GATE-07
+#
+# Prerequisite: ford-channel-join Job must have completed.
+#
+# Performs Fabric 2.x lifecycle:
+#   1. package → install → approve → commit
+#   2. Verify: peer chaincode list --instantiated -C ford-channel
+#
+# Apply after ford-channel-join completes:
+#   kubectl apply -f platform/ford/deploy/channel-join-job.yaml
+#   kubectl wait --for=condition=complete job/ford-chaincode-deploy \
+#     -n i3-ford --timeout=300s
+# ============================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ford-chaincode-deploy
+  namespace: i3-ford
+  labels:
+    app: peer0-i3tech
+    job: chaincode-deploy
+    gate: P3-GATE-06
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app: peer0-i3tech
+        job: chaincode-deploy
+    spec:
+      serviceAccountName: ford-sa
+      restartPolicy: OnFailure
+      securityContext:
+        runAsUser: 7051
+        runAsNonRoot: true
+        fsGroup: 7051
+      containers:
+        - name: chaincode-deploy
+          image: hyperledger/fabric-tools:2.5.9
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+
+              PEER_ADDR="peer0-i3tech.i3-ford.svc.cluster.local:7051"
+              ORDERER_ADDR="orderer-0.i3-ford.svc.cluster.local:7050"
+              CHANNEL_ID="ford-channel"
+              CC_NAME="membership-registry"
+              CC_VERSION="1.0"
+              CC_SEQUENCE="1"
+              CC_PATH="/workspace/chaincode"
+              CC_PKG="/tmp/${CC_NAME}.tar.gz"
+              MSP_DIR="/var/hyperledger/production/msp"
+
+              export CORE_PEER_LOCALMSPID="FordPeerMSP"
+              export CORE_PEER_MSPCONFIGPATH="${MSP_DIR}"
+              export CORE_PEER_ADDRESS="${PEER_ADDR}"
+              export CORE_PEER_TLS_ENABLED="false"
+              export FABRIC_LOGGING_SPEC="INFO"
+
+              echo "=== Step 1: Package chaincode ==="
+              peer lifecycle chaincode package "${CC_PKG}" \
+                --path "${CC_PATH}" \
+                --lang golang \
+                --label "${CC_NAME}_${CC_VERSION}"
+
+              echo "=== Step 2: Install on peer0-i3tech ==="
+              peer lifecycle chaincode install "${CC_PKG}"
+
+              PKG_ID=$(peer lifecycle chaincode queryinstalled \
+                --output json | python3 -c \
+                "import sys,json; cc=json.load(sys.stdin)['installed_chaincodes']; \
+                 print([c['package_id'] for c in cc if '${CC_NAME}_${CC_VERSION}' in c['package_id']][0])")
+              echo "Package ID: ${PKG_ID}"
+
+              echo "=== Step 3: Approve for FordPeerMSP ==="
+              peer lifecycle chaincode approveformyorg \
+                -o "${ORDERER_ADDR}" \
+                --channelID "${CHANNEL_ID}" \
+                --name "${CC_NAME}" \
+                --version "${CC_VERSION}" \
+                --package-id "${PKG_ID}" \
+                --sequence "${CC_SEQUENCE}" \
+                --tls=false
+
+              echo "=== Step 4: Commit chaincode definition ==="
+              peer lifecycle chaincode commit \
+                -o "${ORDERER_ADDR}" \
+                --channelID "${CHANNEL_ID}" \
+                --name "${CC_NAME}" \
+                --version "${CC_VERSION}" \
+                --sequence "${CC_SEQUENCE}" \
+                --tls=false \
+                --peerAddresses "${PEER_ADDR}"
+
+              echo "=== Step 5: Verify P3-GATE-06 ==="
+              peer chaincode list --instantiated -C "${CHANNEL_ID}" \
+                | grep -q "${CC_NAME}" \
+                && echo "P3-GATE-06 + P3-GATE-07: PASS — ${CC_NAME} committed to ${CHANNEL_ID}" \
+                || { echo "FAIL — chaincode not found in instantiated list"; exit 1; }
+
+              echo "=== Chaincode deploy complete ==="
+          volumeMounts:
+            - mountPath: /var/hyperledger/production
+              name: peer-data
+            - mountPath: /workspace/chaincode
+              name: chaincode-src
+      volumes:
+        - name: peer-data
+          persistentVolumeClaim:
+            claimName: peer0-i3tech-pvc
+        - name: chaincode-src
+          configMap:
+            name: ford-chaincode-src
+            optional: false

@@ -1,0 +1,41 @@
+{
+  "_schema": "i3-p3-ragas-evidence/v1",
+  "_gate": "P3-GATE-12",
+  "_thresholds": { "faithfulness": 0.80, "answer_relevancy": 0.75 },
+  "_instructions": "Replace null values with actual RAGAS results. Run: python platform/testing/testing.py --ragas --all-agents --staging",
+
+  "admissions": {
+    "agent_url": "https://api.i3technologies.co.ke/admissions",
+    "dataset_size": 30,
+    "faithfulness": null,
+    "answer_relevancy": null,
+    "faithfulness_pass": null,
+    "relevancy_pass": null,
+    "run_at": null
+  },
+
+  "pmaas": {
+    "agent_url": "https://api.i3technologies.co.ke/pmaas",
+    "dataset_size": 20,
+    "faithfulness": null,
+    "answer_relevancy": null,
+    "faithfulness_pass": null,
+    "relevancy_pass": null,
+    "run_at": null
+  },
+
+  "onboarding": {
+    "agent_url": "https://onboarding.i3technologies.co.ke",
+    "dataset_size": 4,
+    "faithfulness": null,
+    "answer_relevancy": null,
+    "faithfulness_pass": null,
+    "relevancy_pass": null,
+    "run_at": null
+  },
+
+  "overall_pass": null,
+  "evidence_source": "python platform/testing/testing.py --ragas --all-agents --staging",
+  "tekton_task": "ragas-eval",
+  "tekton_pipeline": "i3-build-pipeline"
+}

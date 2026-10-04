@@ -1,0 +1,105 @@
+# ============================================================
+# peer0-i3tech MSP full-init Job — P3-GATE-05
+#
+# Complete MSP initialisation for peer0-i3tech:
+#   1. Register peer0 identity (idempotent)
+#   2. Enroll peer0 MSP into /var/hyperledger/production/msp
+#   3. Write config.yaml with NodeOU for FordPeerMSP
+#   4. Create admincerts/ as fallback
+#
+# Run with peer Deployment scaled to 0 (RWO PVC).
+# Apply:
+#   kubectl scale deployment peer0-i3tech -n i3-ford --replicas=0
+#   kubectl delete job peer0-msp-init --ignore-not-found=true -n i3-ford
+#   kubectl apply -f platform/ford/deploy/peer0-msp-init-job.yaml
+#   kubectl wait --for=condition=complete job/peer0-msp-init -n i3-ford --timeout=120s
+#   kubectl scale deployment peer0-i3tech -n i3-ford --replicas=1
+# ============================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: peer0-msp-init
+  namespace: i3-ford
+  labels:
+    app: peer0-i3tech
+    job: msp-init
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app: peer0-i3tech
+        job: msp-init
+    spec:
+      serviceAccountName: ford-sa
+      restartPolicy: OnFailure
+      securityContext:
+        runAsUser: 7051
+        runAsNonRoot: true
+        fsGroup: 7051
+      containers:
+        - name: msp-init
+          image: hyperledger/fabric-ca:1.5.9
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+
+              CA_URL="http://ford-ca.i3-ford.svc.cluster.local:7054"
+              MSP="/var/hyperledger/production/msp"
+              ADMIN_HOME="/tmp/admin"
+              export FABRIC_CA_CLIENT_HOME="${ADMIN_HOME}"
+
+              echo "=== Step 1: Enroll CA admin ==="
+              fabric-ca-client enroll \
+                -u "http://admin:adminpw@ford-ca.i3-ford.svc.cluster.local:7054" \
+                --caname ford-ca
+
+              echo "=== Step 2: Register peer0 (idempotent) ==="
+              fabric-ca-client register \
+                --id.name peer0 \
+                --id.secret peer0pw \
+                --id.type peer \
+                --caname ford-ca 2>&1 || echo "(already registered — skipping)"
+
+              echo "=== Step 3: Enroll peer0 MSP into PVC ==="
+              rm -rf "${MSP}"
+              FABRIC_CA_CLIENT_HOME="${MSP}" fabric-ca-client enroll \
+                -u "http://peer0:peer0pw@ford-ca.i3-ford.svc.cluster.local:7054" \
+                --caname ford-ca \
+                -M "${MSP}"
+
+              echo "=== Step 4: Write NodeOU config.yaml for FordPeerMSP ==="
+              CACERT_FILE=$(ls ${MSP}/cacerts/*.pem | head -1 | xargs basename)
+              cat > "${MSP}/config.yaml" << CFGYAML
+              NodeOUs:
+                Enable: true
+                ClientOUIdentifier:
+                  Certificate: cacerts/${CACERT_FILE}
+                  OrganizationalUnitIdentifier: client
+                PeerOUIdentifier:
+                  Certificate: cacerts/${CACERT_FILE}
+                  OrganizationalUnitIdentifier: peer
+                AdminOUIdentifier:
+                  Certificate: cacerts/${CACERT_FILE}
+                  OrganizationalUnitIdentifier: admin
+                OrdererOUIdentifier:
+                  Certificate: cacerts/${CACERT_FILE}
+                  OrganizationalUnitIdentifier: orderer
+              CFGYAML
+
+              echo "=== Step 5: Copy signcert to admincerts ==="
+              mkdir -p "${MSP}/admincerts"
+              cp "${MSP}/signcerts/cert.pem" "${MSP}/admincerts/cert.pem"
+
+              echo "=== MSP init complete — structure: ==="
+              find "${MSP}" -type f | sort
+          volumeMounts:
+            - mountPath: /var/hyperledger/production
+              name: peer-data
+      volumes:
+        - name: peer-data
+          persistentVolumeClaim:
+            claimName: peer0-i3tech-pvc

@@ -1,0 +1,69 @@
+{
+  "_gate": "P3-GATE-14",
+  "_sensor": "Zero open Critical or High security findings",
+  "_status": "PENDING — run trivy image scans at current digests to populate",
+  "_instructions": "Run: trivy image --severity CRITICAL,HIGH --ignore-unfixed --format json <image> for each image below. Replace null values with actual scan results.",
+  "_run_command_template": "trivy image --severity CRITICAL,HIGH --ignore-unfixed --format json --output /tmp/trivy-<service>.json de.icr.io/i3-platform/<service>:latest",
+  "_phase": "Phase 3",
+  "run_date": null,
+  "runner": null,
+  "phase1_baseline_summary": {
+    "critical": 0,
+    "high": 0,
+    "note": "P1 baseline: 0 CRIT / 0 HIGH for 7 of 8 images; 1 accepted HIGH in pmaas-web (waiver on file)"
+  },
+  "images": {
+    "admissions-agent": {
+      "digest": null,
+      "critical": null,
+      "high": null,
+      "gate_pass": null
+    },
+    "ford-api": {
+      "digest": null,
+      "critical": null,
+      "high": null,
+      "gate_pass": null
+    },
+    "ford-ussd": {
+      "digest": null,
+      "critical": null,
+      "high": null,
+      "gate_pass": null
+    },
+    "onboarding-agent": {
+      "digest": null,
+      "critical": null,
+      "high": null,
+      "gate_pass": null
+    },
+    "pmaas-agent": {
+      "digest": null,
+      "critical": null,
+      "high": null,
+      "gate_pass": null
+    },
+    "engage-web": {
+      "digest": null,
+      "critical": null,
+      "high": null,
+      "gate_pass": null
+    },
+    "evalos-web": {
+      "digest": null,
+      "critical": null,
+      "high": null,
+      "gate_pass": null
+    },
+    "consent-service": {
+      "digest": null,
+      "critical": null,
+      "high": null,
+      "gate_pass": null
+    }
+  },
+  "total_critical": null,
+  "total_high": null,
+  "new_findings_vs_p1": null,
+  "overall_gate_pass": null
+}
