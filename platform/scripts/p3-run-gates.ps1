@@ -243,7 +243,7 @@ try {
     if ($LASTEXITCODE -eq 0) {
         Show-Pass "orderer-msp Secret ready"
     } else {
-        Write-Host "  WARNING: orderer-msp-enroll did not complete in 5m — check pod logs:" -ForegroundColor DarkYellow
+        Write-Host "  WARNING: orderer-msp-enroll did not complete in 5m -- check pod logs:" -ForegroundColor DarkYellow
         Write-Host "    kubectl logs -n i3-ford -l job-name=orderer-msp-enroll" -ForegroundColor DarkGray
     }
 
@@ -321,7 +321,7 @@ foreach ($cfgName in $promptfooConfigs) {
     Write-Host "  --- $cfgName ---"
     $cfgPath = Join-Path $REPO "platform\testing\${cfgName}.yaml"
     if (-not (Test-Path $cfgPath)) {
-        Show-Fail "$cfgName: config file not found at $cfgPath"
+        Show-Fail "${cfgName}: config file not found at $cfgPath"
         continue
     }
     npx promptfoo@latest eval --config $cfgPath
