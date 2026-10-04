@@ -23,7 +23,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 export async function POST(
   req: Request,
-  { params }: { params: { examId: string } }
+  { params }: { params: Promise<{ examId: string }> }
 ) {
   const session = await getServerSession(authOptions)
   if (!session) {
@@ -35,7 +35,7 @@ export async function POST(
   const deviceFingerprint =
     req.headers.get('x-device-fingerprint') ?? null
 
-  const examId = params.examId
+  const examId = (await params).examId
   if (!UUID_RE.test(examId)) {
     return NextResponse.json({ error: 'Invalid exam ID' }, { status: 400 })
   }

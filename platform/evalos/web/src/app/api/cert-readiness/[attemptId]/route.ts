@@ -69,12 +69,12 @@ function computeReadiness(
 
 export async function GET(
   _req: Request,
-  { params }: { params: { attemptId: string } }
+  { params }: { params: Promise<{ attemptId: string }> }
 ) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { attemptId } = params
+  const { attemptId } = await params
   if (!UUID_RE.test(attemptId)) {
     return NextResponse.json({ error: 'Invalid attempt ID' }, { status: 400 })
   }

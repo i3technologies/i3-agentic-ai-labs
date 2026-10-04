@@ -13,12 +13,12 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 // POST /api/certificate/[attemptId] — issue or retrieve certificate
 export async function POST(
   _req: Request,
-  { params }: { params: { attemptId: string } }
+  { params }: { params: Promise<{ attemptId: string }> }
 ) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { attemptId } = params
+  const { attemptId } = await params
   if (!UUID_RE.test(attemptId)) return NextResponse.json({ error: 'Invalid attempt ID' }, { status: 400 })
 
   const userId   = session.user.userId || session.user.email || ''
@@ -75,12 +75,12 @@ export async function POST(
 // GET /api/certificate/[attemptId] — download PDF
 export async function GET(
   _req: Request,
-  { params }: { params: { attemptId: string } }
+  { params }: { params: Promise<{ attemptId: string }> }
 ) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { attemptId } = params
+  const { attemptId } = await params
   if (!UUID_RE.test(attemptId)) return NextResponse.json({ error: 'Invalid attempt ID' }, { status: 400 })
 
   const userId   = session.user.userId || session.user.email || ''

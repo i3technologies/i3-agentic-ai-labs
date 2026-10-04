@@ -25,9 +25,9 @@ const UUID_LIKE_RE = /^[a-zA-Z0-9_@.-]{1,128}$/
 
 export async function GET(
   req: Request,
-  { params }: { params: { candidateId: string } }
+  { params }: { params: Promise<{ candidateId: string }> }
 ) {
-  const { candidateId } = params
+  const { candidateId } = await params
   if (!UUID_LIKE_RE.test(candidateId)) {
     return NextResponse.json({ error: 'Invalid candidate ID' }, { status: 400 })
   }

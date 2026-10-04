@@ -16,14 +16,14 @@ const AnswerSchema = z.object({
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { examId: string } }
+  { params }: { params: Promise<{ examId: string }> }
 ) {
   const session = await getServerSession(authOptions)
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const examId = params.examId
+  const examId = (await params).examId
   if (!UUID_RE.test(examId)) {
     return NextResponse.json({ error: 'Invalid exam ID' }, { status: 400 })
   }
