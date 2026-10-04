@@ -96,10 +96,13 @@ if (-not $passcode) {
 
 Write-Host ""
 Write-Host "  Logging in to IBM Cloud ..."
-ibmcloud login --sso -r $CloudRegion -g $ResourceGroup --passcode $passcode --quiet
+# --sso with -p <passcode> is the correct form for this CLI version (2.47)
+# The --passcode flag does not exist; the one-time code is passed via -p
+ibmcloud login --sso -p $passcode -r $CloudRegion -g $ResourceGroup --quiet
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "  ERROR: ibmcloud login failed -- check passcode and try again" -ForegroundColor Red
-    Write-Host "  Get a new passcode at: https://iam.cloud.ibm.com/identity/passcode" -ForegroundColor DarkYellow
+    Write-Host "  ERROR: ibmcloud login failed -- passcode may have expired (they last ~60s)" -ForegroundColor Red
+    Write-Host "  Get a fresh passcode at: https://iam.cloud.ibm.com/identity/passcode" -ForegroundColor DarkYellow
+    Write-Host "  Then re-run the script." -ForegroundColor White
     exit 1
 }
 
