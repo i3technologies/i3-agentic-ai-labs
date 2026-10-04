@@ -81,15 +81,6 @@ data:
       allowed_fails: 3
       cooldown_time: 30
 
-    # ── Redis Semantic Cache (STEP-P3-01) ───────────────────────
-    cache:
-      type: redis
-      host: redis.i3-data.svc.cluster.local
-      port: 6379
-      password: ${REDIS_PASSWORD}
-      ttl: 3600
-      similarity_threshold: 0.95
-
     # ── General settings ────────────────────────────────────────
     general_settings:
       master_key: "os.environ/LITELLM_MASTER_KEY"
@@ -99,7 +90,7 @@ data:
       # Per-tenant virtual key budget enforcement via Agent Registry API.
       # Virtual keys: { max_budget: 10.0, budget_duration: "1d" } per tenant_id.
 
-    # ── Observability ────────────────────────────────────────────
+    # ── Observability + Redis Semantic Cache (STEP-P3-01) ────────
     litellm_settings:
       success_callback: ["langfuse"]
       failure_callback: ["langfuse"]
@@ -108,6 +99,16 @@ data:
       langfuse_secret_key: "os.environ/LANGFUSE_SECRET_KEY"
       langfuse_host: "http://langfuse.i3-model-gateway.svc.cluster.local:3000"
       set_verbose: false
+      # Redis semantic cache — must be under litellm_settings (not top-level)
+      # LiteLLM 1.x only activates cache when litellm_settings.cache == true
+      cache: true
+      cache_params:
+        type: redis
+        host: redis.i3-model-gateway.svc.cluster.local
+        port: 6379
+        ttl: 3600
+        similarity_threshold: 0.95
+        # Redis has no auth on this cluster; REDIS_PASSWORD env var is empty string
       json_logs: true
       # Must be >= the largest per-model timeout (240s) to avoid LiteLLM
       # cancelling the request before Ollama finishes on CPU.
