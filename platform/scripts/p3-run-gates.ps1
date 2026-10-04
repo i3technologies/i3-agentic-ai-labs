@@ -68,38 +68,26 @@ function Install-PipPackage([string]$Package) {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# STEP 1 — IBM Cloud SSO Passcode Authentication
+# STEP 1 — IBM Cloud API Key Authentication
 # ═══════════════════════════════════════════════════════════════════════════════
-Show-Gate "CLUSTER AUTH (SSO Passcode)"
+Show-Gate "CLUSTER AUTH (API Key)"
 
 Write-Host ""
-Write-Host "  IBM Cloud one-time passcode login" -ForegroundColor Cyan
-Write-Host "  Step 1: Get a one-time passcode from the URL below." -ForegroundColor White
-Write-Host "          https://iam.cloud.ibm.com/identity/passcode" -ForegroundColor Cyan
-Write-Host "  Step 2: Paste it below and press Enter." -ForegroundColor White
-Write-Host ""
-Start-Process "https://iam.cloud.ibm.com/identity/passcode"
-
-# Read passcode securely (masked input)
-$passcodeSecure = Read-Host "  One-time passcode" -AsSecureString
-$passcode = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(
-    [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($passcodeSecure))
-
-if (-not $passcode) {
-    Write-Host "  ERROR: No passcode entered." -ForegroundColor Red
-    exit 1
+# Use $env:IBMCLOUD_API_KEY if already set (e.g. from shell), otherwise prompt once
+if (-not $env:IBMCLOUD_API_KEY) {
+    Write-Host "  IBMCLOUD_API_KEY is not set." -ForegroundColor DarkYellow
+    Write-Host "  Tip: set it permanently with:" -ForegroundColor DarkGray
+    Write-Host '    $env:IBMCLOUD_API_KEY="<your-api-key>"' -ForegroundColor Cyan
+    $apiKeySecure = Read-Host "  Paste API key now" -AsSecureString
+    $env:IBMCLOUD_API_KEY = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(
+        [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($apiKeySecure))
 }
 
-Write-Host ""
-Write-Host "  Logging in to IBM Cloud ..."
-# Do NOT use --sso here: --sso forces an interactive browser flow and ignores -p.
-# The one-time passcode from https://iam.cloud.ibm.com/identity/passcode
-# is passed directly with -p (no --sso flag).
-ibmcloud login -p $passcode -r $CloudRegion -g $ResourceGroup --quiet
+Write-Host "  Logging in to IBM Cloud with API key ..."
+ibmcloud login --apikey $env:IBMCLOUD_API_KEY -r $CloudRegion -g $ResourceGroup --quiet
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "  ERROR: ibmcloud login failed -- passcode may have expired (they last ~60s)" -ForegroundColor Red
-    Write-Host "  Get a fresh passcode at: https://iam.cloud.ibm.com/identity/passcode" -ForegroundColor DarkYellow
-    Write-Host "  Then re-run the script." -ForegroundColor White
+    Write-Host "  ERROR: ibmcloud login failed. Check IBMCLOUD_API_KEY." -ForegroundColor Red
+    Write-Host "  Verify the key is valid at: https://cloud.ibm.com/iam/apikeys" -ForegroundColor DarkYellow
     exit 1
 }
 

@@ -28,24 +28,25 @@ Write-Host ("=" * 60) -ForegroundColor Cyan
 Write-Host ""
 
 # =============================================================
-# STEP 1 -- IBM Cloud SSO Auth + bearer token injection
+# STEP 1 -- IBM Cloud API Key Auth
 # =============================================================
 Write-Host "CLUSTER AUTH" -ForegroundColor Yellow
 Write-Host ""
-Write-Host "  Get a one-time passcode from the URL below, then paste it here."
-Write-Host "  URL: https://iam.cloud.ibm.com/identity/passcode" -ForegroundColor Cyan
-Start-Process "https://iam.cloud.ibm.com/identity/passcode"
-$passcodeSecure = Read-Host "  Paste one-time passcode" -AsSecureString
-$passcode = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(
-    [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($passcodeSecure))
 
-Write-Host "  Logging in to IBM Cloud ..."
-# Use -p without --sso: --sso forces a browser re-prompt and ignores -p entirely.
-# The one-time passcode from the URL above works directly with just -p.
-ibmcloud login -p $passcode -r $CloudRegion -g $ResourceGroup --quiet
+# Use $env:IBMCLOUD_API_KEY if already set, otherwise prompt
+if (-not $env:IBMCLOUD_API_KEY) {
+    Write-Host "  IBMCLOUD_API_KEY not set." -ForegroundColor DarkYellow
+    Write-Host "  Set it once with:  " -NoNewline
+    Write-Host '$env:IBMCLOUD_API_KEY="<your-api-key>"' -ForegroundColor Cyan
+    $apiKeySecure = Read-Host "  Paste API key now" -AsSecureString
+    $env:IBMCLOUD_API_KEY = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(
+        [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($apiKeySecure))
+}
+
+Write-Host "  Logging in to IBM Cloud with API key ..."
+ibmcloud login --apikey $env:IBMCLOUD_API_KEY -r $CloudRegion -g $ResourceGroup --quiet
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "  ERROR: ibmcloud login failed. Passcode may have expired (60s window)." -ForegroundColor Red
-    Write-Host "  Get a new one at: https://iam.cloud.ibm.com/identity/passcode" -ForegroundColor DarkYellow
+    Write-Host "  ERROR: ibmcloud login failed. Check IBMCLOUD_API_KEY." -ForegroundColor Red
     exit 1
 }
 
