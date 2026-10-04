@@ -46,6 +46,17 @@ spec:
     metadata:
       labels:
         app: consent-service
+      # F-01 (B4-finding): Vault agent sidecar injects CONSENT_SERVICE_TOKEN
+      # from i3/consent/service-token so write endpoints are authenticated.
+      # Provision with: vault kv put i3/consent/service-token token=<256-bit-hex>
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/agent-inject-secret-consent-service-token: "i3/data/consent/service-token"
+        vault.hashicorp.com/agent-inject-template-consent-service-token: |
+          {{- with secret "i3/data/consent/service-token" -}}
+          export CONSENT_SERVICE_TOKEN="{{ .Data.data.token }}"
+          {{- end }}
+        vault.hashicorp.com/role: "consent-service"
     spec:
       serviceAccountName: consent-sa
       containers:

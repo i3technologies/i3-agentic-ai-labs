@@ -81,7 +81,10 @@ async def _get_jwks() -> dict:
 
 # ── JWT validation dependency ────────────────────────────────────────────────
 
-_bearer = HTTPBearer(auto_error=True)
+# F-02 (B4-finding): auto_error=True causes FastAPI to return 403 for a
+# missing Authorization header. Set auto_error=False and raise 401 explicitly
+# so unauthenticated callers receive the correct HTTP 401 per RFC 9110 §15.5.2.
+_bearer = HTTPBearer(auto_error=False)
 
 
 class _CallerCtx:
@@ -93,14 +96,16 @@ class _CallerCtx:
 
 
 async def _require_auth(
-    creds: HTTPAuthorizationCredentials = Depends(_bearer),
+    creds: HTTPAuthorizationCredentials | None = Depends(_bearer),
 ) -> _CallerCtx:
     """Validate Bearer JWT from Keycloak; extract sub, tenant_id, and roles.
 
     HC-7: DEV_BYPASS_AUTH is permanently forbidden.
-    tenant_id is taken from the 'tenant_id' custom claim; falls back to
-    DEFAULT_TENANT_ID only when the claim is absent (single-tenant deployments).
+    F-02: raises HTTP 401 when the Authorization header is absent or when the
+    token payload is missing the mandatory tenant_id claim (HC-4).
     """
+    if creds is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
     token = creds.credentials
     try:
         jwks = await _get_jwks()
@@ -121,7 +126,14 @@ async def _require_auth(
     except pyjwt.InvalidTokenError as exc:
         raise HTTPException(status_code=401, detail=f"Invalid token: {exc}")
 
-    tenant_id = payload.get("tenant_id") or FALLBACK_TENANT
+    # F-02: missing tenant_id claim must be rejected (HC-4), not silently
+    # substituted with a fallback value that could route to the wrong tenant.
+    tenant_id = payload.get("tenant_id")
+    if not tenant_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Token missing required tenant_id claim (HC-4)",
+        )
     realm_roles: list[str] = (
         payload.get("realm_access", {}).get("roles", [])
     )

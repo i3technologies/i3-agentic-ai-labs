@@ -5,8 +5,11 @@ RUN useradd --system --uid 65534 --no-create-home nobody-app 2>/dev/null || true
 
 WORKDIR /app
 
-# System deps — only what uvicorn + grpc need
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# System deps — only what uvicorn + grpc need.
+# `apt-get upgrade` resolves OS-level CVEs: CVE-2026-103111 (libpcre2),
+# CVE-2026-75804/84782 (openssl) flagged by Trivy P2-GATE-10.
+RUN apt-get update && apt-get upgrade -y --no-install-recommends \
+ && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
     curl \

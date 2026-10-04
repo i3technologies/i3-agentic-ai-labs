@@ -13,14 +13,16 @@ Endpoints:
 """
 import logging
 import os
+import secrets
 import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Optional
 
 import asyncpg
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, Header, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from schemas import (
     ConsentAuditResponse,
@@ -34,8 +36,54 @@ from schemas import (
 log = logging.getLogger("consent-service")
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s %(message)s")
 
-DATABASE_URL = os.environ["CONSENT_DB_URL"]
+DATABASE_URL  = os.environ["CONSENT_DB_URL"]
 TENANT_HEADER = "X-Tenant-ID"   # Callers MUST supply this header (HC-4)
+
+# ── F-01 (B4-finding): Service-token auth on write endpoints ─────────────────
+# The consent service previously accepted unauthenticated POST/DELETE requests,
+# relying solely on Kong + network policy for caller identification.  We now
+# require a shared service token (CONSENT_SERVICE_TOKEN from OpenBao) on all
+# state-mutating endpoints so that callers outside the Kong path cannot bypass
+# the consent ledger without credentials.
+#
+# Token rotation: vault kv put i3/consent/service-token token=<new-256-bit-hex>
+# All three authorised consumers (kafka_consumers.py, sit/api/main.py,
+# pmaas/agents/campaign_agent.py) must update their CONSENT_SERVICE_TOKEN env
+# var after rotation.
+_CONSENT_SERVICE_TOKEN: str = os.environ.get("CONSENT_SERVICE_TOKEN", "")
+
+# F-02 / P2-GATE-06: auto_error=False so we can raise 401 instead of 403.
+_bearer = HTTPBearer(auto_error=False)
+
+
+def _require_service_token(
+    creds: HTTPAuthorizationCredentials | None = Depends(_bearer),
+) -> None:
+    """Validate the service token on write endpoints.
+
+    Accepts either:
+      - Authorization: Bearer <CONSENT_SERVICE_TOKEN>   (preferred)
+      - X-Service-Token: <CONSENT_SERVICE_TOKEN>        (legacy / non-Bearer callers)
+
+    Raises HTTP 401 when credentials are absent or invalid.
+    """
+    if not _CONSENT_SERVICE_TOKEN:
+        # Token not yet provisioned — log and deny to avoid open auth.
+        log.error(
+            "CONSENT_SERVICE_TOKEN is unset; all write requests are denied until "
+            "the secret is provisioned at i3/consent/service-token in OpenBao."
+        )
+        raise HTTPException(status_code=503, detail="Service token not provisioned")
+
+    token: str | None = None
+    if creds is not None:
+        token = creds.credentials
+
+    if token is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    if not secrets.compare_digest(token, _CONSENT_SERVICE_TOKEN):
+        raise HTTPException(status_code=401, detail="Invalid service token")
 
 # ── Connection pool ────────────────────────────────────────────────────────────
 
@@ -110,12 +158,14 @@ async def _emit_audit(
 
 # ── POST /consent ──────────────────────────────────────────────────────────────
 
-@app.post("/consent", response_model=ConsentCreatedResponse, status_code=201)
+@app.post("/consent", response_model=ConsentCreatedResponse, status_code=201,
+          dependencies=[Depends(_require_service_token)])
 async def create_consent(body: ConsentCreate):
     """
     Record a consent decision (granted or revoked).
     Emits a consent_audit row within the same transaction.
     HC-4: tenant_id is mandatory in the request body.
+    F-01: requires a valid CONSENT_SERVICE_TOKEN Bearer credential.
     """
     consent_id = uuid.uuid4()
     now = datetime.now(timezone.utc)
@@ -223,12 +273,14 @@ async def check_consent(
 
 # ── DELETE /consent/{subject_id_hash} ──────────────────────────────────────────
 
-@app.delete("/consent/{subject_id_hash}", response_model=ConsentErasureResponse)
+@app.delete("/consent/{subject_id_hash}", response_model=ConsentErasureResponse,
+            dependencies=[Depends(_require_service_token)])
 async def request_erasure(subject_id_hash: str, body: ConsentErasureRequest):
     """
     Right-to-erasure request (GDPR/DPA Art. 17).
     Marks all consent records as 'erased' and queues an erasure job.
     The actual PII wipe is deferred to a background worker (Phase 3).
+    F-01: requires a valid CONSENT_SERVICE_TOKEN Bearer credential.
     """
     erasure_job_id = uuid.uuid4()
 

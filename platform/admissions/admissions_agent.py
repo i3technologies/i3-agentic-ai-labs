@@ -96,17 +96,24 @@ async def _get_jwks() -> dict:
 
 
 # ── JWT Bearer dependency ──────────────────────────────────────────────────
-_bearer = HTTPBearer(auto_error=True)
+# F-02 (B4-finding): auto_error=True causes FastAPI to return 403 when no
+# Authorization header is present. We set auto_error=False and raise 401
+# explicitly so that unauthenticated callers receive the correct status code
+# per P2-GATE-06 and RFC 9110 §15.5.2.
+_bearer = HTTPBearer(auto_error=False)
 
 
 async def _require_auth(
-    creds: HTTPAuthorizationCredentials = Depends(_bearer),
+    creds: HTTPAuthorizationCredentials | None = Depends(_bearer),
 ) -> dict:
     """Validate Keycloak Bearer JWT; return decoded payload.
 
     tenant_id is taken from the 'tenant_id' JWT claim (HC-4).
     HC-7: DEV_BYPASS_AUTH is permanently forbidden.
+    F-02: raises HTTP 401 when the Authorization header is absent.
     """
+    if creds is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
     try:
         jwks = await _get_jwks()
         signing_key = pyjwt.algorithms.RSAAlgorithm.from_jwk(
@@ -129,8 +136,19 @@ async def _require_auth(
 
 
 def _tenant_from_payload(payload: dict) -> str:
-    """Extract tenant_id from JWT claim; fall back to env default."""
-    return payload.get("tenant_id") or FALLBACK_TENANT_ID
+    """Extract tenant_id from JWT claim.
+
+    F-02 (B4-finding): A missing tenant_id claim is a configuration error in
+    a multi-tenant deployment.  Raise 401 so the caller re-authenticates with
+    a properly-scoped token rather than silently inheriting the default tenant.
+    """
+    tid = payload.get("tenant_id")
+    if not tid:
+        raise HTTPException(
+            status_code=401,
+            detail="Token missing required tenant_id claim (HC-4)",
+        )
+    return tid
 
 # ── Lobster Trap — Prompt Injection Firewall (14-pattern canonical set) ─────
 # P13/P14 synced from lobster-trap.ts (P2-MED parity fix).
