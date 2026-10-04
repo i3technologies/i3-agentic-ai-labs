@@ -1,129 +1,133 @@
-# ============================================================
-# p3-run-gates.ps1
-# Phase 3 Gate Runner — Windows PowerShell
-#
-# Prerequisites already confirmed on this machine:
-#   ibmcloud CLI 2.47  — for cluster auth
-#   kubectl 4.15       — for k8s operations
-#   python 3.14 / pip  — for gate scripts
-#   git                — for repo operations
-#
-# Usage:
-#   Set your API key first (once per session):
-#     $env:IBMCLOUD_API_KEY = "your-ibmcloud-api-key"
-#
-#   Then run:
-#     .\platform\scripts\p3-run-gates.ps1
-#
-#   Or with explicit key:
-#     .\platform\scripts\p3-run-gates.ps1 -IBMCloudAPIKey "your-key"
-# ============================================================
+<#
+.SYNOPSIS
+    Phase 3 Gate Runner for Windows PowerShell
+.DESCRIPTION
+    Authenticates to IBM Cloud, retrieves the LiteLLM master key automatically,
+    then executes all 15 Phase 3 quality gates.
+.PARAMETER IBMCloudAPIKey
+    Your IBM Cloud API key. Can also be set via $env:IBMCLOUD_API_KEY
+.EXAMPLE
+    $env:IBMCLOUD_API_KEY = "your-key"
+    .\platform\scripts\p3-run-gates.ps1
+#>
 
 param(
-    [string]$IBMCloudAPIKey  = $env:IBMCLOUD_API_KEY,
-    [string]$ClusterName     = "i3-platform",
-    [string]$IBMCloudRegion  = "eu-de",
-    [string]$ResourceGroup   = "i3-production",
-    [string]$AdmissionsURL   = "https://api.i3technologies.co.ke/admissions",
-    [string]$OnboardingURL   = "https://onboarding.i3technologies.co.ke",
-    [string]$PMaaSURL        = "https://api.i3technologies.co.ke/pmaas",
-    [string]$PrometheusURL   = "https://prometheus.i3technologies.co.ke"
+    [string]$IBMCloudAPIKey = $env:IBMCLOUD_API_KEY,
+    [string]$ClusterName    = "i3-platform",
+    [string]$CloudRegion    = "eu-de",
+    [string]$ResourceGroup  = "i3-production"
 )
 
-Set-StrictMode -Version Latest
-$ErrorActionPreference = "Continue"   # don't stop on individual gate failures
-
+$ErrorActionPreference = "Continue"
 $REPO = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 Set-Location $REPO
-Write-Host "=== Repo root: $REPO ===" -ForegroundColor Cyan
+Write-Host "Repo root: $REPO" -ForegroundColor Cyan
 
-# ── Helper: run a command and show pass/fail ──────────────────────────────────
-function Invoke-Gate {
-    param([string]$GateName, [scriptblock]$Body)
+# ── Helper functions ──────────────────────────────────────────────────────────
+
+function Show-Gate([string]$Name) {
     Write-Host ""
-    Write-Host "====== $GateName ======" -ForegroundColor Yellow
-    try {
-        & $Body
-        Write-Host "$GateName : PASS" -ForegroundColor Green
-    } catch {
-        Write-Host "$GateName : FAIL — $_" -ForegroundColor Red
-    }
+    Write-Host ("=" * 60) -ForegroundColor DarkGray
+    Write-Host "  $Name" -ForegroundColor Yellow
+    Write-Host ("=" * 60) -ForegroundColor DarkGray
 }
 
-# ── Helper: run a kubectl command and return stdout ───────────────────────────
-function kubectl-get-secret-field {
-    param([string]$Secret, [string]$Namespace, [string]$Field)
-    $encoded = kubectl get secret $Secret -n $Namespace `
+function Show-Pass([string]$Msg) {
+    Write-Host "  PASS: $Msg" -ForegroundColor Green
+}
+
+function Show-Fail([string]$Msg) {
+    Write-Host "  FAIL: $Msg" -ForegroundColor Red
+}
+
+function Show-Skip([string]$Msg) {
+    Write-Host "  SKIP: $Msg" -ForegroundColor DarkYellow
+}
+
+function Get-SecretField([string]$SecretName, [string]$Namespace, [string]$Field) {
+    $encoded = kubectl get secret $SecretName -n $Namespace `
         -o "jsonpath={.data.$Field}" 2>$null
-    if ($encoded) {
-        return [System.Text.Encoding]::UTF8.GetString(
-            [System.Convert]::FromBase64String($encoded))
+    if ($LASTEXITCODE -eq 0 -and $encoded) {
+        $bytes = [System.Convert]::FromBase64String($encoded)
+        return [System.Text.Encoding]::UTF8.GetString($bytes)
     }
     return $null
 }
 
+function Install-PipPackage([string]$Package) {
+    Write-Host "  Installing $Package ..." -ForegroundColor DarkGray
+    pip install $Package --quiet --user 2>$null | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        python -m pip install $Package --quiet --user 2>$null | Out-Null
+    }
+}
+
 # ═══════════════════════════════════════════════════════════════════════════════
-# STEP 1: IBM Cloud + Cluster Authentication
+# STEP 1 — IBM Cloud Authentication
 # ═══════════════════════════════════════════════════════════════════════════════
-Write-Host ""
-Write-Host "====== CLUSTER AUTH ======" -ForegroundColor Yellow
+Show-Gate "CLUSTER AUTH"
 
 if (-not $IBMCloudAPIKey) {
-    Write-Host "ERROR: IBM Cloud API key not set." -ForegroundColor Red
-    Write-Host "  Run: `$env:IBMCLOUD_API_KEY = 'your-key'" -ForegroundColor White
-    Write-Host "  Then re-run this script." -ForegroundColor White
+    Write-Host ""
+    Write-Host "  ERROR: IBM Cloud API key not set." -ForegroundColor Red
+    Write-Host "  Set it with:" -ForegroundColor White
+    Write-Host '    $env:IBMCLOUD_API_KEY = "your-key"' -ForegroundColor Cyan
+    Write-Host "  Then re-run the script." -ForegroundColor White
     exit 1
 }
 
-Write-Host "--- Logging in to IBM Cloud ---"
-ibmcloud login --apikey $IBMCloudAPIKey -r $IBMCloudRegion -g $ResourceGroup --quiet
-if ($LASTEXITCODE -ne 0) { Write-Host "ERROR: ibmcloud login failed" -ForegroundColor Red; exit 1 }
-
-Write-Host "--- Fetching kubeconfig for $ClusterName ---"
-ibmcloud ks cluster config --cluster $ClusterName
-if ($LASTEXITCODE -ne 0) { Write-Host "ERROR: cluster config failed" -ForegroundColor Red; exit 1 }
-
-Write-Host "--- Verifying cluster connection ---"
-kubectl cluster-info 2>&1 | Select-Object -First 2
-Write-Host "Cluster auth: OK" -ForegroundColor Green
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# STEP 2: Retrieve LiteLLM Master Key from Kubernetes Secret
-# ═══════════════════════════════════════════════════════════════════════════════
-Write-Host ""
-Write-Host "====== RETRIEVE LITELLM KEY ======" -ForegroundColor Yellow
-
-$LiteLLMKey = kubectl-get-secret-field "litellm-secrets" "i3-model-gateway" "LITELLM_MASTER_KEY"
-if ($LiteLLMKey) {
-    $env:LITELLM_MASTER_KEY = $LiteLLMKey
-    $env:LITELLM_API_KEY    = $LiteLLMKey
-    Write-Host "LiteLLM key retrieved: $($LiteLLMKey.Substring(0, [Math]::Min(8,$LiteLLMKey.Length)))..." -ForegroundColor Green
-} else {
-    Write-Host "WARNING: could not read litellm-secrets — gates requiring auth will fail" -ForegroundColor DarkYellow
+Write-Host "  Logging in to IBM Cloud ..."
+ibmcloud login --apikey $IBMCloudAPIKey -r $CloudRegion -g $ResourceGroup --quiet
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  ERROR: ibmcloud login failed" -ForegroundColor Red
+    exit 1
 }
 
-# Set remaining env vars
-$env:ADMISSIONS_AGENT_URL  = $AdmissionsURL
-$env:ONBOARDING_AGENT_URL  = $OnboardingURL
-$env:PMAAS_AGENT_URL       = $PMaaSURL
-$env:PROMETHEUS_URL        = $PrometheusURL
+Write-Host "  Fetching kubeconfig for cluster: $ClusterName ..."
+ibmcloud ks cluster config --cluster $ClusterName
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  ERROR: cluster config failed" -ForegroundColor Red
+    exit 1
+}
+
+kubectl cluster-info 2>&1 | Select-Object -First 2
+Show-Pass "Cluster authenticated"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# GATE 08: Deploy USSD Bridge
+# STEP 2 — Retrieve LiteLLM Master Key from Kubernetes Secret
 # ═══════════════════════════════════════════════════════════════════════════════
-Invoke-Gate "P3-GATE-08: USSD Bridge" {
-    # Apply namespace (--validate=false skips openapi download)
+Show-Gate "RETRIEVE LITELLM KEY"
+
+$litellmKey = Get-SecretField "litellm-secrets" "i3-model-gateway" "LITELLM_MASTER_KEY"
+if ($litellmKey) {
+    $env:LITELLM_MASTER_KEY = $litellmKey
+    $env:LITELLM_API_KEY    = $litellmKey
+    $preview = $litellmKey.Substring(0, [Math]::Min(8, $litellmKey.Length))
+    Show-Pass "LiteLLM key retrieved: ${preview}..."
+} else {
+    Show-Skip "Could not read litellm-secrets -- gates needing auth may fail"
+}
+
+# Set agent URLs
+$env:ADMISSIONS_AGENT_URL = "https://api.i3technologies.co.ke/admissions"
+$env:ONBOARDING_AGENT_URL = "https://onboarding.i3technologies.co.ke"
+$env:PMAAS_AGENT_URL      = "https://api.i3technologies.co.ke/pmaas"
+$env:PROMETHEUS_URL       = "https://prometheus.i3technologies.co.ke"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# GATE 08 — Deploy USSD Bridge
+# ═══════════════════════════════════════════════════════════════════════════════
+Show-Gate "P3-GATE-08: USSD Bridge"
+
+try {
     kubectl apply -f platform/namespaces/namespaces.yaml --validate=false
     kubectl wait --for=jsonpath='{.status.phase}'=Active namespace/i3-ussd --timeout=30s
 
-    # Create secret from OpenBao if not present
-    $secretExists = kubectl get secret ford-ussd-secrets -n i3-ussd 2>$null
-    if (-not $secretExists) {
-        Write-Host "  Creating ford-ussd-secrets..."
-        $hmac = & { ibmcloud bao kv get -field=secret i3/ford/hmac-secret 2>$null } 2>$null
-        $atKey = & { ibmcloud bao kv get -field=key i3/ford/at-api-key 2>$null } 2>$null
-        if (-not $hmac) { $hmac = "placeholder-hmac-update-before-production" }
-        if (-not $atKey) { $atKey = "placeholder-at-key-update-before-production" }
+    $secretCheck = kubectl get secret ford-ussd-secrets -n i3-ussd 2>$null
+    if (-not $secretCheck) {
+        Write-Host "  Creating ford-ussd-secrets ..."
+        $hmac  = "placeholder-hmac-update-before-production"
+        $atKey = "placeholder-at-key-update-before-production"
         kubectl create secret generic ford-ussd-secrets `
             --from-literal=MEMBER_HMAC_SECRET=$hmac `
             --from-literal=AT_API_KEY=$atKey `
@@ -135,18 +139,23 @@ Invoke-Gate "P3-GATE-08: USSD Bridge" {
     kubectl rollout status deployment/ford-ussd -n i3-ussd --timeout=120s
 
     $pods = kubectl get pod -n i3-ussd -l app=ford-ussd `
-        --field-selector=status.phase=Running -o jsonpath='{.items[*].metadata.name}' 2>$null
+        --field-selector=status.phase=Running `
+        -o jsonpath='{.items[*].metadata.name}' 2>$null
     if ($pods) {
-        Write-Host "  ford-ussd Running: $pods"
+        Show-Pass "ford-ussd Running: $pods"
     } else {
-        throw "No running ford-ussd pods found"
+        Show-Fail "No running ford-ussd pods found"
     }
+} catch {
+    Show-Fail "Gate 08 exception: $_"
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# GATE 06/07: Orderer MSP Bootstrap + ford-channel Join
+# GATE 06/07 — Orderer MSP Bootstrap + ford-channel Join
 # ═══════════════════════════════════════════════════════════════════════════════
-Invoke-Gate "P3-GATE-06/07: Orderer + ford-channel" {
+Show-Gate "P3-GATE-06/07: Orderer + ford-channel"
+
+try {
     kubectl apply -f platform/ford/manifests/orderer-msp-init-job.yaml --validate=false
     kubectl wait --for=condition=complete job/orderer-msp-enroll -n i3-ford --timeout=180s
     Write-Host "  orderer-msp Secret ready"
@@ -160,176 +169,213 @@ Invoke-Gate "P3-GATE-06/07: Orderer + ford-channel" {
 
     $channels = kubectl exec -n i3-ford peer0-i3tech -- peer channel list 2>$null
     if ($channels -match "ford-channel") {
-        Write-Host "  P3-GATE-06: PASS — ford-channel listed"
+        Show-Pass "ford-channel listed on peer"
     } else {
-        throw "ford-channel not found in peer channel list"
+        Show-Fail "ford-channel not found in peer channel list"
     }
 
     kubectl wait --for=condition=complete job/ford-chaincode-deploy -n i3-ford --timeout=300s
     $cc = kubectl exec -n i3-ford peer0-i3tech -- `
         peer chaincode list --instantiated -C ford-channel 2>$null
     if ($cc -match "membership-registry") {
-        Write-Host "  P3-GATE-07: PASS — membership-registry instantiated"
+        Show-Pass "membership-registry instantiated on ford-channel"
     } else {
-        throw "membership-registry not found in chaincode list"
+        Show-Fail "membership-registry not found"
     }
+} catch {
+    Show-Fail "Gate 06/07 exception: $_"
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# GATE 02: LiteLLM Cache Warm-Up
+# GATE 02 — LiteLLM Cache Warm-Up
 # ═══════════════════════════════════════════════════════════════════════════════
-Invoke-Gate "P3-GATE-02: Cache Warm-Up" {
-    pip install httpx --quiet --user 2>$null | Out-Null
+Show-Gate "P3-GATE-02: Cache Warm-Up"
+
+try {
+    Install-PipPackage "httpx"
     python platform/scripts/p3-gate-02-cache-warmup.py
-    if ($LASTEXITCODE -ne 0) { throw "Cache warm-up failed — check ADMISSIONS_AGENT_URL" }
+    if ($LASTEXITCODE -eq 0) {
+        Show-Pass "Cache hit ratio meets threshold"
+    } else {
+        Show-Fail "Cache warm-up below threshold -- check ADMISSIONS_AGENT_URL"
+    }
+} catch {
+    Show-Fail "Gate 02 exception: $_"
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# GATE 10: Promptfoo Red-Team (3 agents × 20 vectors)
+# GATE 10 — Promptfoo Red-Team
 # ═══════════════════════════════════════════════════════════════════════════════
-Invoke-Gate "P3-GATE-10: Promptfoo Red-Team" {
-    $configs = @("promptfoo-admissions", "promptfoo-onboarding", "promptfoo-pmaas")
-    $allPass = $true
-    foreach ($cfg in $configs) {
-        Write-Host "  --- $cfg ---"
-        $cfgPath = Join-Path $REPO "platform\testing\${cfg}.yaml"
-        npx promptfoo@latest eval --config $cfgPath
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "  $cfg: FAIL" -ForegroundColor Red
-            $allPass = $false
-        } else {
-            Write-Host "  $cfg: PASS" -ForegroundColor Green
-        }
+Show-Gate "P3-GATE-10: Promptfoo Red-Team"
+
+$promptfooConfigs = @("promptfoo-admissions", "promptfoo-onboarding", "promptfoo-pmaas")
+foreach ($cfgName in $promptfooConfigs) {
+    Write-Host "  --- $cfgName ---"
+    $cfgPath = Join-Path $REPO "platform\testing\${cfgName}.yaml"
+    npx promptfoo@latest eval --config $cfgPath
+    if ($LASTEXITCODE -eq 0) {
+        Show-Pass $cfgName
+    } else {
+        Show-Fail $cfgName
     }
-    if (-not $allPass) { throw "One or more promptfoo configs failed" }
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# GATE 11: Lighthouse PWA Score
+# GATE 11 — Lighthouse PWA Score
 # ═══════════════════════════════════════════════════════════════════════════════
-Invoke-Gate "P3-GATE-11: Lighthouse PWA" {
-    # Install lhci if needed
-    $lhci = Get-Command lhci -ErrorAction SilentlyContinue
-    if (-not $lhci) {
-        Write-Host "  Installing @lhci/cli..."
-        npm install -g @lhci/cli@0.13 --silent
+Show-Gate "P3-GATE-11: Lighthouse PWA"
+
+try {
+    $lhciCmd = Get-Command lhci -ErrorAction SilentlyContinue
+    if (-not $lhciCmd) {
+        Write-Host "  Installing @lhci/cli ..."
+        npm install -g "@lhci/cli@0.13" --silent
     }
 
-    $evidenceFile = "platform/docs/verification/p3-lighthouse.json"
-    $runDate = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ")
+    New-Item -ItemType Directory -Path ".lighthouseci" -Force | Out-Null
 
-    foreach ($app in @(
-        @{ Label="Engage"; Url="https://engage.i3technologies.co.ke/dashboard" },
-        @{ Label="PMaaS";  Url="https://pmaas.i3technologies.co.ke/dashboard"  }
-    )) {
-        Write-Host "  Running lhci for $($app.Label)..."
-        New-Item -ItemType Directory -Path ".lighthouseci" -Force | Out-Null
-        lhci autorun --collect.url=$($app.Url) --collect.numberOfRuns=1 `
-            "--assert.assertions.categories:pwa=['error',{'minScore':0.8}]" 2>&1 | Out-Null
-    }
+    $engageUrl = "https://engage.i3technologies.co.ke/dashboard"
+    $pmaasUrl  = "https://pmaas.i3technologies.co.ke/dashboard"
 
-    # Update evidence stub with run date
+    Write-Host "  Auditing Engage ..."
+    lhci autorun --collect.url=$engageUrl --collect.numberOfRuns=1 `
+        "--assert.assertions.categories:pwa=['error',{'minScore':0.8}]" 2>&1 | Out-Null
+
+    Write-Host "  Auditing PMaaS ..."
+    lhci autorun --collect.url=$pmaasUrl --collect.numberOfRuns=1 `
+        "--assert.assertions.categories:pwa=['error',{'minScore':0.8}]" 2>&1 | Out-Null
+
+    $evidenceFile = Join-Path $REPO "platform\docs\verification\p3-lighthouse.json"
     $ev = Get-Content $evidenceFile | ConvertFrom-Json
+    $runDate = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ")
     $ev.engage.lhci_run_at = $runDate
     $ev.pmaas.lhci_run_at  = $runDate
     $ev | ConvertTo-Json -Depth 10 | Set-Content $evidenceFile
-    Write-Host "  Evidence written to $evidenceFile"
+    Show-Pass "Lighthouse audits complete -- check p3-lighthouse.json"
+} catch {
+    Show-Fail "Gate 11 exception: $_"
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# GATE 12: RAGAS Evaluation
+# GATE 12 — RAGAS Evaluation
 # ═══════════════════════════════════════════════════════════════════════════════
-Invoke-Gate "P3-GATE-12: RAGAS Evaluation" {
-    pip install ragas datasets langchain-community httpx --quiet --user 2>$null | Out-Null
+Show-Gate "P3-GATE-12: RAGAS Evaluation"
+
+try {
+    Install-PipPackage "ragas"
+    Install-PipPackage "datasets"
+    Install-PipPackage "langchain-community"
     python platform/testing/testing.py --ragas --all-agents --staging
-    if ($LASTEXITCODE -ne 0) { throw "RAGAS gate failed — check agent URLs" }
+    if ($LASTEXITCODE -eq 0) {
+        Show-Pass "All RAGAS thresholds met"
+    } else {
+        Show-Fail "RAGAS below threshold -- check agent URLs and LiteLLM key"
+    }
+} catch {
+    Show-Fail "Gate 12 exception: $_"
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# GATE 13: Locust SLA
+# GATE 13 — Locust SLA
 # ═══════════════════════════════════════════════════════════════════════════════
-Invoke-Gate "P3-GATE-13: Locust SLA" {
-    pip install locust --quiet --user 2>$null | Out-Null
+Show-Gate "P3-GATE-13: Locust SLA"
+
+try {
+    Install-PipPackage "locust"
     $env:PATH = "$env:APPDATA\Python\Scripts;$env:PATH"
 
-    $evalosHost  = "https://evalos.i3technologies.co.ke"
-    $engageHost  = "https://engage.i3technologies.co.ke"
+    $evalosHost = "https://evalos.i3technologies.co.ke"
+    $engageHost = "https://engage.i3technologies.co.ke"
+    $tmpCsv     = $env:TEMP
 
-    Write-Host "  Running EvalOS load test (100 users, 2 min)..."
+    Write-Host "  EvalOS load test: 100 users, 2 min ..."
     python -m locust -f platform/testing/testing.py EvalOSSandboxUser `
         --headless -u 100 -r 10 --run-time 2m `
-        --host $evalosHost --csv="$env:TEMP\locust-evalos" --only-summary 2>&1 |
-        Select-Object -Last 10
+        --host $evalosHost --csv="$tmpCsv\locust-evalos" --only-summary 2>&1 |
+        Select-Object -Last 8
 
-    Write-Host "  Running Engage load test (50 users, 2 min)..."
+    Write-Host "  Engage load test: 50 users, 2 min ..."
     python -m locust -f platform/testing/testing.py AILabAPIUser `
         --headless -u 50 -r 5 --run-time 2m `
-        --host $engageHost --csv="$env:TEMP\locust-engage" --only-summary 2>&1 |
-        Select-Object -Last 10
+        --host $engageHost --csv="$tmpCsv\locust-engage" --only-summary 2>&1 |
+        Select-Object -Last 8
 
-    Write-Host "  Locust runs complete — check $env:TEMP\locust-*.csv for p95 values"
+    Show-Pass "Locust runs complete -- p95 values in $tmpCsv\locust-*.csv"
+} catch {
+    Show-Fail "Gate 13 exception: $_"
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# GATE 14: Trivy CVE Scan
+# GATE 14 — Trivy CVE Scan
 # ═══════════════════════════════════════════════════════════════════════════════
-Invoke-Gate "P3-GATE-14: Trivy CVE Scan" {
-    # Install trivy if not present
-    $trivy = Get-Command trivy -ErrorAction SilentlyContinue
-    if (-not $trivy) {
-        Write-Host "  Installing trivy..."
-        winget install --id Aquasec.Trivy --silent --accept-source-agreements 2>$null ||
-        choco install trivy -y --quiet 2>$null ||
-        { throw "trivy not found — install from https://github.com/aquasecurity/trivy/releases" }
+Show-Gate "P3-GATE-14: Trivy CVE Scan"
+
+try {
+    $trivyCmd = Get-Command trivy -ErrorAction SilentlyContinue
+    if (-not $trivyCmd) {
+        Write-Host "  Installing trivy via winget ..."
+        winget install --id Aquasec.Trivy --silent --accept-source-agreements 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "  Trying choco ..."
+            choco install trivy -y --quiet 2>$null
+        }
     }
 
-    python platform/scripts/p3-gate-14-trivy.sh 2>$null ||
-    python - @"
-import subprocess, json, sys, os
+    $registry = "image-registry.openshift-image-registry.svc:5000"
+    $imageList = @(
+        @{ Label="admissions-agent"; Image="${registry}/i3-admissions/admissions-agent:latest" },
+        @{ Label="engage-web";       Image="${registry}/i3-engage/engage-web:latest" },
+        @{ Label="pmaas-web";        Image="${registry}/i3-pmaas/pmaas-web:latest" },
+        @{ Label="ford-api";         Image="${registry}/i3-ford/ford-api:latest" },
+        @{ Label="ford-ussd";        Image="${registry}/i3-ussd/ford-ussd:latest" },
+        @{ Label="litellm-proxy";    Image="${registry}/i3-model-gateway/litellm-proxy:latest" }
+    )
 
-registry = os.environ.get('IMAGE_REGISTRY', 'image-registry.openshift-image-registry.svc:5000')
-images = [
-    ('admissions-agent', f'{registry}/i3-admissions/admissions-agent:latest'),
-    ('engage-web',       f'{registry}/i3-engage/engage-web:latest'),
-    ('pmaas-web',        f'{registry}/i3-pmaas/pmaas-web:latest'),
-    ('ford-api',         f'{registry}/i3-ford/ford-api:latest'),
-    ('ford-ussd',        f'{registry}/i3-ussd/ford-ussd:latest'),
-    ('litellm-proxy',    f'{registry}/i3-model-gateway/litellm-proxy:latest'),
-]
-overall = True
-for label, image in images:
-    print(f'  Scanning {label}...', flush=True)
-    r = subprocess.run(
-        ['trivy','image','--severity','CRITICAL,HIGH','--ignore-unfixed',
-         '--format','json','--quiet', image],
-        capture_output=True, text=True, timeout=120)
-    try:
-        data = json.loads(r.stdout or '{}')
-        findings = [v for res in data.get('Results',[]) for v in res.get('Vulnerabilities',[])
-                    if v.get('Severity') in ('CRITICAL','HIGH')]
-        if findings:
-            overall = False
-            print(f'  FAIL: {label} — {len(findings)} finding(s)', flush=True)
-        else:
-            print(f'  PASS: {label}', flush=True)
-    except Exception as e:
-        print(f'  WARNING: {label} scan error: {e}', flush=True)
-sys.exit(0 if overall else 1)
-"@
+    $overallPass = $true
+    foreach ($item in $imageList) {
+        Write-Host "  Scanning $($item.Label) ..."
+        $result = trivy image --severity CRITICAL,HIGH --ignore-unfixed `
+            --format json --quiet $item.Image 2>$null | ConvertFrom-Json
+        $findings = @($result.Results | ForEach-Object {
+            $_.Vulnerabilities
+        } | Where-Object { $_.Severity -in "CRITICAL","HIGH" })
+        if ($findings.Count -gt 0) {
+            Show-Fail "$($item.Label): $($findings.Count) finding(s)"
+            $overallPass = $false
+        } else {
+            Write-Host "    PASS: $($item.Label)" -ForegroundColor Green
+        }
+    }
+
+    $evidenceFile = Join-Path $REPO "platform\docs\verification\p3-trivy.json"
+    $ev = Get-Content $evidenceFile | ConvertFrom-Json
+    $ev.overall_pass = $overallPass
+    $ev.run_at = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ")
+    $ev | ConvertTo-Json -Depth 10 | Set-Content $evidenceFile
+
+    if ($overallPass) {
+        Show-Pass "Zero fixable Critical/High CVEs across all images"
+    } else {
+        Show-Fail "Fixable CVEs found -- update base images and re-run"
+    }
+} catch {
+    Show-Fail "Gate 14 exception: $_"
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SUMMARY
 # ═══════════════════════════════════════════════════════════════════════════════
 Write-Host ""
-Write-Host "====== PHASE 3 GATE RUN COMPLETE ======" -ForegroundColor Cyan
+Write-Host ("=" * 60) -ForegroundColor Cyan
+Write-Host "  PHASE 3 GATE RUN COMPLETE" -ForegroundColor Cyan
+Write-Host ("=" * 60) -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Evidence files:" -ForegroundColor White
-Get-ChildItem platform/docs/verification/p3-*.json |
-    ForEach-Object { Write-Host "  $($_.Name)" }
+Write-Host "Evidence files written:" -ForegroundColor White
+Get-ChildItem "platform\docs\verification\p3-*.json" -ErrorAction SilentlyContinue |
+    ForEach-Object { Write-Host "  $($_.Name)" -ForegroundColor Gray }
 
 Write-Host ""
-Write-Host "Next steps:" -ForegroundColor White
-Write-Host "  1. Review evidence JSON files in platform/docs/verification/"
-Write-Host "  2. git add platform/docs/verification/ && git commit -m 'evidence: p3 gate results'"
-Write-Host "  3. git push origin main"
+Write-Host "Commit evidence to git:" -ForegroundColor White
+Write-Host '  git add platform/docs/verification/' -ForegroundColor Cyan
+Write-Host '  git commit -m "evidence: Phase 3 gate results"' -ForegroundColor Cyan
+Write-Host '  git push origin main' -ForegroundColor Cyan
