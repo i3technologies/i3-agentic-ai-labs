@@ -1,0 +1,69 @@
+# ============================================================
+# ford-ussd BuildConfig + ImageStream
+# Namespace: i3-ussd
+#
+# Builds the USSD bridge image from the platform/ford/ussd/
+# source directory and pushes to the internal registry as
+# image-registry.openshift-image-registry.svc:5000/i3-ussd/ford-ussd:latest
+#
+# Usage:
+#   kubectl apply -f platform/ford/ussd/deploy/ussd-buildconfig.yaml
+#   oc start-build ford-ussd -n i3-ussd --from-dir=platform/ford/ussd/ --follow
+#
+# HC-2: Must be built and deployed to staging by November 2026
+# HC-6: MEMBER_HMAC_SECRET injected at runtime — never baked into image
+# ============================================================
+
+# ImageStream — internal registry target
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: ford-ussd
+  namespace: i3-ussd
+  labels:
+    app: ford-ussd
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/hc-2: "true"
+spec:
+  lookupPolicy:
+    local: true
+---
+# BuildConfig — binary source build from local directory
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: ford-ussd
+  namespace: i3-ussd
+  labels:
+    app: ford-ussd
+    app.kubernetes.io/part-of: i3-platform
+    i3.io/hc-2: "true"
+spec:
+  source:
+    type: Binary
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+      # Use Docker Hub slim image — avoids dependency on openshift/python IST
+      # which is not present on all IKS cluster configurations.
+      from:
+        kind: DockerImage
+        name: "python:3.11-slim"
+      noCache: false
+  output:
+    to:
+      kind: ImageStreamTag
+      name: ford-ussd:latest
+  triggers:
+    - type: ConfigChange
+  resources:
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+  successfulBuildsHistoryLimit: 3
+  failedBuildsHistoryLimit: 3

@@ -18,7 +18,8 @@ metadata:
   labels:
     app: ford-ussd
     app.kubernetes.io/part-of: i3-platform
-    i3.io/hc: "HC-2,HC-6"
+    i3.io/hc-2: "true"
+    i3.io/hc-6: "true"
 spec:
   replicas: 1
   selector:
@@ -38,6 +39,9 @@ spec:
       containers:
         - name: ford-ussd
           image: image-registry.openshift-image-registry.svc:5000/i3-ussd/ford-ussd:latest
+          # IfNotPresent avoids repeated pulls from the internal registry on pod
+          # restarts; use Always only after image is confirmed available.
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
               name: http
@@ -63,14 +67,14 @@ spec:
             httpGet:
               path: /health
               port: 8000
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 30
             failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /health
               port: 8000
-            initialDelaySeconds: 5
+            initialDelaySeconds: 15
             periodSeconds: 10
             failureThreshold: 3
           resources:

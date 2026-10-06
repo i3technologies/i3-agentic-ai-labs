@@ -26,13 +26,46 @@ import json
 import logging
 import os
 import random
+import sys
 import time
+import types
+
+# ── Compatibility shim ────────────────────────────────────────────────────────
+# ragas==0.4.x (vibrantlabsai fork) hard-imports
+# langchain_community.chat_models.vertexai at module load time.
+# langchain-community>=0.4.0 moved VertexAI to langchain-google-vertexai,
+# so that sub-module no longer exists.  Inject a stub into sys.modules NOW,
+# before ragas is imported anywhere, so the hard import resolves to a no-op
+# stub class rather than raising ModuleNotFoundError.
+def _install_vertexai_stub() -> None:
+    stub_name = "langchain_community.chat_models.vertexai"
+    if stub_name in sys.modules:
+        return
+    try:
+        # Already present (older langchain-community) — nothing to do
+        import langchain_community.chat_models.vertexai  # noqa: F401
+        return
+    except ImportError:
+        pass
+    stub = types.ModuleType(stub_name)
+    stub.ChatVertexAI = type("ChatVertexAI", (), {})  # bare no-op class
+    sys.modules[stub_name] = stub
+    try:
+        import langchain_community.chat_models as _cm
+        if not hasattr(_cm, "vertexai"):
+            _cm.vertexai = stub  # type: ignore[attr-defined]
+    except ImportError:
+        pass
+
+_install_vertexai_stub()
+# ─────────────────────────────────────────────────────────────────────────────
 
 try:
     from locust import HttpUser, between, events, task
     _LOCUST_AVAILABLE = True
-except ImportError:
+except (ImportError, RecursionError, Exception):
     # locust is only required for load-test mode; RAGAS / promptfoo paths do not need it.
+    # RecursionError can occur on Python 3.14 + Windows due to gevent ssl monkey-patching.
     _LOCUST_AVAILABLE = False
 
     # Provide dummy base classes so the class bodies below can still be parsed
@@ -389,6 +422,78 @@ RAGAS_TEST_DATASET = [
 ]
 
 
+def _patch_ragas_vertexai_import() -> None:
+    """
+    ragas==0.4.x (vibrantlabsai fork) hard-imports
+    langchain_community.chat_models.vertexai at module load time.
+    langchain-community>=0.4.0 removed that module (moved to
+    langchain-google-vertexai).  Inject a stub so the import succeeds
+    without requiring Google credentials or the google package.
+    This must be called before any `import ragas` statement.
+    """
+    import sys
+    import types
+
+    parent_mod_name = "langchain_community.chat_models"
+    stub_attr       = "ChatVertexAI"
+
+    # Only patch if the broken sub-module is genuinely missing
+    try:
+        from langchain_community.chat_models import vertexai  # noqa: F401
+        return  # already present — nothing to do
+    except ImportError:
+        pass
+
+    # Ensure parent package is importable
+    try:
+        import langchain_community.chat_models  # noqa: F401
+    except ImportError:
+        return  # nothing we can do
+
+    # Create a minimal stub module with a no-op ChatVertexAI class
+    stub = types.ModuleType("langchain_community.chat_models.vertexai")
+    stub.ChatVertexAI = type("ChatVertexAI", (), {})  # bare class, never instantiated
+    sys.modules["langchain_community.chat_models.vertexai"] = stub
+
+    # Also attach as attribute on the parent so attribute access works
+    import langchain_community.chat_models as _cm
+    if not hasattr(_cm, "vertexai"):
+        _cm.vertexai = stub
+
+
+def _make_ragas_llm():
+    """
+    Return a LangChain LLM wired to the LiteLLM proxy.
+
+    Ragas ≥ 0.1 requires an explicit LLM/embeddings to avoid auto-importing
+    cloud-provider backends (e.g. langchain_community.chat_models.vertexai).
+    We use langchain_openai.ChatOpenAI pointed at the LiteLLM proxy so no
+    Google/Vertex credentials are needed.
+    """
+    _patch_ragas_vertexai_import()
+    from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+
+    base_url = os.environ.get(
+        "LITELLM_BASE_URL",
+        os.environ.get("LITELLM_URL", "https://litellm.i3technologies.co.ke"),
+    ).rstrip("/") + "/v1"
+    api_key = os.environ.get("LITELLM_API_KEY", os.environ.get("LITELLM_MASTER_KEY", "test"))
+    model   = os.environ.get("LITELLM_MODEL", "granite-nano")
+
+    llm = ChatOpenAI(
+        model=model,
+        openai_api_key=api_key,
+        openai_api_base=base_url,
+        temperature=0,
+    )
+    embeddings = OpenAIEmbeddings(
+        model="text-embedding-granite",
+        openai_api_key=api_key,
+        openai_api_base=base_url,
+    )
+    return llm, embeddings
+
+
 async def run_ragas_evaluation():
     """
     Evaluates Admissions Agent on Faithfulness and Answer Relevancy using RAGAS.
@@ -396,17 +501,25 @@ async def run_ragas_evaluation():
     """
     import httpx
     from ragas import evaluate
-    from ragas.metrics import answer_relevancy, faithfulness
+    # ragas>=0.4 moved metrics to ragas.metrics.collections; fall back to old path
+    try:
+        from ragas.metrics.collections import answer_relevancy, faithfulness
+    except ImportError:
+        from ragas.metrics import answer_relevancy, faithfulness  # type: ignore[no-redef]
     from datasets import Dataset
 
     agent_url = os.environ.get("ADMISSIONS_AGENT_URL", "http://localhost:8000")
     litellm_key = os.environ.get("LITELLM_API_KEY", "test")
     litellm_url = os.environ.get("LITELLM_BASE_URL", "http://localhost:4000")
 
+    ragas_llm, ragas_embeddings = _make_ragas_llm()
+
     answers = []
     contexts = []
 
-    async with httpx.AsyncClient(timeout=60) as client:
+    # connect=5s fails fast on unreachable hosts; read=60s for LLM response streaming
+    _timeout = httpx.Timeout(connect=5.0, read=60.0, write=10.0, pool=5.0)
+    async with httpx.AsyncClient(timeout=_timeout) as client:
         for item in RAGAS_TEST_DATASET:
             resp = await client.post(
                 f"{agent_url}/chat",
@@ -428,6 +541,8 @@ async def run_ragas_evaluation():
     result = evaluate(
         dataset,
         metrics=[faithfulness, answer_relevancy],
+        llm=ragas_llm,
+        embeddings=ragas_embeddings,
     )
 
     # Machine-parseable output for CI gate consumption
@@ -529,7 +644,7 @@ def _build_promptfoo_config(agent_url_var: str, agent_label: str) -> str:
         f'description: "i3 {agent_label} — OWASP LLM Top 10 Red-Team (20 vectors)"',
         "",
         "providers:",
-        "  - id: webhook",
+        "  - id: http",
         "    config:",
         f'      url: "${{{agent_url_var}}}/chat"',
         "      method: POST",
@@ -544,11 +659,13 @@ def _build_promptfoo_config(agent_url_var: str, agent_label: str) -> str:
     ]
 
     for i, vector in enumerate(OWASP_LLM_VECTORS, start=1):
-        # Escape single quotes inside the prompt string
-        safe_vector = vector.replace("'", "\\'")
+        # Use double-quoted YAML strings so any embedded characters (single
+        # quotes, backslashes, special chars) are safely represented.
+        # In YAML double-quoted scalars: \ → \\, " → \"
+        safe_vector = vector.replace("\\", "\\\\").replace('"', '\\"')
         lines.append(f"  # Vector {i:02d} — OWASP LLM Top 10")
         lines.append(f"  - vars:")
-        lines.append(f"      prompt: '{safe_vector}'")
+        lines.append(f'      prompt: "{safe_vector}"')
         lines.append("    assert:")
         lines.append(_BLOCK_ASSERT.rstrip())
         lines.append("")
@@ -559,8 +676,8 @@ def _build_promptfoo_config(agent_url_var: str, agent_label: str) -> str:
         "  strategies:",
         "    - jailbreak",
         "    - prompt-injection",
-        "    - harmful:hate",
-        "    - pii:leak",
+        "    - harmful",
+        "    - pii",
         "  plugins:",
         "    - owasp:llm:01",
         "    - owasp:llm:02",
@@ -716,16 +833,23 @@ async def run_pmaas_ragas_evaluation() -> dict:
     """
     import httpx
     from ragas import evaluate
-    from ragas.metrics import answer_relevancy, faithfulness
+    # ragas>=0.4 moved metrics to ragas.metrics.collections; fall back to old path
+    try:
+        from ragas.metrics.collections import answer_relevancy, faithfulness
+    except ImportError:
+        from ragas.metrics import answer_relevancy, faithfulness  # type: ignore[no-redef]
     from datasets import Dataset
 
     agent_url = os.environ.get("PMAAS_AGENT_URL", "http://localhost:8001")
     api_key   = os.environ.get("LITELLM_API_KEY", "test")
 
+    ragas_llm, ragas_embeddings = _make_ragas_llm()
+
     answers:  list[str]       = []
     contexts: list[list[str]] = []
 
-    async with httpx.AsyncClient(timeout=60) as client:
+    _timeout = httpx.Timeout(connect=5.0, read=60.0, write=10.0, pool=5.0)
+    async with httpx.AsyncClient(timeout=_timeout) as client:
         for item in PMAAS_RAGAS_DATASET:
             resp = await client.post(
                 f"{agent_url}/ask",
@@ -747,6 +871,8 @@ async def run_pmaas_ragas_evaluation() -> dict:
     result = evaluate(
         dataset,
         metrics=[faithfulness, answer_relevancy],
+        llm=ragas_llm,
+        embeddings=ragas_embeddings,
     )
 
     output = {
@@ -851,11 +977,17 @@ async def run_onboarding_ragas_evaluation():
     """
     import httpx
     from ragas import evaluate
-    from ragas.metrics import answer_relevancy, faithfulness
+    # ragas>=0.4 moved metrics to ragas.metrics.collections; fall back to old path
+    try:
+        from ragas.metrics.collections import answer_relevancy, faithfulness
+    except ImportError:
+        from ragas.metrics import answer_relevancy, faithfulness  # type: ignore[no-redef]
     from datasets import Dataset
 
     agent_url   = os.environ.get("ONBOARDING_AGENT_URL", "http://localhost:3000")
     bearer_token = os.environ.get("LITELLM_API_KEY", "test")
+
+    ragas_llm, ragas_embeddings = _make_ragas_llm()
 
     # Map each question to a role that makes sense for the corpus
     role_map = {
@@ -868,7 +1000,9 @@ async def run_onboarding_ragas_evaluation():
     answers:  list[str]       = []
     contexts: list[list[str]] = []
 
-    async with httpx.AsyncClient(timeout=120) as client:
+    # connect=5s to fail fast on unreachable hosts; read=120s for plan generation
+    _timeout = httpx.Timeout(connect=5.0, read=120.0, write=10.0, pool=5.0)
+    async with httpx.AsyncClient(timeout=_timeout) as client:
         for idx, item in enumerate(ONBOARDING_RAGAS_DATASET):
             role = role_map.get(idx, "platform_engineer")
 
@@ -903,6 +1037,8 @@ async def run_onboarding_ragas_evaluation():
     result = evaluate(
         dataset,
         metrics=[faithfulness, answer_relevancy],
+        llm=ragas_llm,
+        embeddings=ragas_embeddings,
     )
 
     print("\n═══ Onboarding Agent RAGAS Evaluation ═══")
@@ -973,7 +1109,25 @@ async def run_all_agents_ragas(staging_url: str | None = None) -> None:
             failed.append(label)
             # SystemExit(1) from individual runners already printed JSON + reason
         except Exception as exc:
-            print(json.dumps({"agent": label, "error": str(exc)}))
+            # Improve diagnostics: include exception type for connection failures
+            err_type = type(exc).__name__
+            err_msg  = str(exc) or "(no detail)"
+            agent_url_env = {
+                "admissions": "ADMISSIONS_AGENT_URL",
+                "pmaas":      "PMAAS_AGENT_URL",
+                "onboarding": "ONBOARDING_AGENT_URL",
+            }.get(label, "")
+            agent_url = os.environ.get(agent_url_env, "not set")
+            detail = f"{err_type}: {err_msg} (url={agent_url})"
+            print(json.dumps({"agent": label, "error": detail}))
+            if "connect" in err_type.lower() or "connect" in err_msg.lower():
+                print(
+                    f"  HINT: Agent '{label}' is unreachable at {agent_url}.\n"
+                    f"  This gate requires a live staging cluster.\n"
+                    f"  Run via Tekton: python platform/testing/testing.py --ragas --all-agents --staging\n"
+                    f"  Or locally with running agents: set {agent_url_env}=http://localhost:8000",
+                    file=sys.stderr,
+                )
             failed.append(label)
 
     summary = {

@@ -44,6 +44,13 @@ spec:
       containers:
         - name: channel-join
           image: hyperledger/fabric-tools:2.5.9
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
           command:
             - sh
             - -c
@@ -126,6 +133,13 @@ spec:
       containers:
         - name: chaincode-deploy
           image: hyperledger/fabric-tools:2.5.9
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
           command:
             - sh
             - -c
@@ -201,5 +215,7 @@ spec:
             claimName: peer0-i3tech-pvc
         - name: chaincode-src
           configMap:
-            name: ford-chaincode-src
+            # NOTE: the gate runner creates this as ford-chaincode-files-raw
+            # via --from-file of the membership_registry directory.
+            name: ford-chaincode-files-raw
             optional: false
