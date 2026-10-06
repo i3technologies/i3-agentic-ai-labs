@@ -27,6 +27,10 @@ spec:
     spec:
       serviceAccountName: ford-sa
       restartPolicy: OnFailure
+      volumes:
+        - name: orderer-tls-ca
+          configMap:
+            name: orderer-tls-ca
       containers:
         - name: channel-join
           image: bitnami/kubectl:latest
@@ -37,23 +41,29 @@ spec:
             limits:
               cpu: "250m"
               memory: "256Mi"
+          volumeMounts:
+            - name: orderer-tls-ca
+              mountPath: /orderer-tls
+              readOnly: true
           command:
             - sh
             - -c
             - >-
               set -e;
               CHANNEL_ID=ford-channel;
-              ORDERER_ADDR=orderer-0.i3-ford.svc.cluster.local:7050;
+              ORDERER_ADDR=orderer.i3-ford.svc.cluster.local:7050;
               PEER_POD=$(kubectl get pod -n i3-ford -l app=peer0-i3tech -o jsonpath='{.items[0].metadata.name}');
               if [ -z "$PEER_POD" ]; then echo ERROR peer0-i3tech not found; exit 1; fi;
               echo "Using peer pod $PEER_POD";
+              kubectl cp /orderer-tls/ca.crt i3-ford/$PEER_POD:/tmp/orderer-tls-ca.crt;
               kubectl exec -n i3-ford "$PEER_POD" -- sh -c
               'export CORE_PEER_LOCALMSPID=FordPeerMSP;
                export CORE_PEER_MSPCONFIGPATH=/var/hyperledger/production/msp;
                export CORE_PEER_ADDRESS=peer0-i3tech.i3-ford.svc.cluster.local:7051;
                export CORE_PEER_TLS_ENABLED=false;
                peer channel fetch 0 /tmp/ford-channel.block -c ford-channel
-               -o orderer-0.i3-ford.svc.cluster.local:7050 --tls=false &&
+               -o orderer.i3-ford.svc.cluster.local:7050
+               --tls=true --cafile /tmp/orderer-tls-ca.crt &&
                peer channel join -b /tmp/ford-channel.block &&
                peer channel list | grep ford-channel &&
                echo P3-GATE-06-PASS'
@@ -86,6 +96,10 @@ spec:
     spec:
       serviceAccountName: ford-sa
       restartPolicy: OnFailure
+      volumes:
+        - name: orderer-tls-ca
+          configMap:
+            name: orderer-tls-ca
       containers:
         - name: chaincode-deploy
           image: bitnami/kubectl:latest
@@ -96,13 +110,17 @@ spec:
             limits:
               cpu: "250m"
               memory: "256Mi"
+          volumeMounts:
+            - name: orderer-tls-ca
+              mountPath: /orderer-tls
+              readOnly: true
           command:
             - sh
             - -c
             - >-
               set -e;
               CHANNEL_ID=ford-channel;
-              ORDERER_ADDR=orderer-0.i3-ford.svc.cluster.local:7050;
+              ORDERER_ADDR=orderer.i3-ford.svc.cluster.local:7050;
               PEER_ADDR=peer0-i3tech.i3-ford.svc.cluster.local:7051;
               CC_NAME=membership-registry;
               CC_VERSION=1.0;
@@ -110,6 +128,7 @@ spec:
               PEER_POD=$(kubectl get pod -n i3-ford -l app=peer0-i3tech -o jsonpath='{.items[0].metadata.name}');
               if [ -z "$PEER_POD" ]; then echo ERROR peer0-i3tech not found; exit 1; fi;
               echo "Using peer pod $PEER_POD";
+              kubectl cp /orderer-tls/ca.crt i3-ford/$PEER_POD:/tmp/orderer-tls-ca.crt;
               kubectl cp /workspace/chaincode-src i3-ford/$PEER_POD:/tmp/chaincode;
               kubectl exec -n i3-ford "$PEER_POD" -- sh -c
               'export CORE_PEER_LOCALMSPID=FordPeerMSP;
@@ -137,16 +156,24 @@ spec:
                export CORE_PEER_TLS_ENABLED=false;
                peer lifecycle chaincode approveformyorg -o $ORDERER_ADDR
                --channelID $CHANNEL_ID --name $CC_NAME --version $CC_VERSION
-               --package-id $PKG_ID --sequence $CC_SEQUENCE --tls=false &&
+               --package-id $PKG_ID --sequence $CC_SEQUENCE
+               --tls=true --cafile /tmp/orderer-tls-ca.crt &&
                peer lifecycle chaincode commit -o $ORDERER_ADDR
                --channelID $CHANNEL_ID --name $CC_NAME --version $CC_VERSION
-               --sequence $CC_SEQUENCE --tls=false --peerAddresses $PEER_ADDR";
+               --sequence $CC_SEQUENCE
+               --tls=true --cafile /tmp/orderer-tls-ca.crt --peerAddresses $PEER_ADDR";
               echo P3-GATE-07-PASS
           volumeMounts:
             - mountPath: /workspace/chaincode-src
               name: chaincode-src
+            - mountPath: /orderer-tls
+              name: orderer-tls-ca
+              readOnly: true
       volumes:
         - name: chaincode-src
           configMap:
             name: ford-chaincode-files-raw
             optional: false
+        - name: orderer-tls-ca
+          configMap:
+            name: orderer-tls-ca
