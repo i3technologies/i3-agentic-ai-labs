@@ -23,7 +23,7 @@ import os
 import random
 import string
 
-import aioredis
+import redis.asyncio as aioredis   # redis[asyncio] replaces aioredis on Python ≥3.11
 import httpx
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import PlainTextResponse

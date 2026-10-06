@@ -37,60 +37,75 @@ spec:
     spec:
       serviceAccountName: ford-sa
       restartPolicy: OnFailure
-      securityContext:
-        runAsUser: 7051
-        runAsNonRoot: true
-        fsGroup: 7051
       containers:
         - name: channel-join
-          image: hyperledger/fabric-tools:2.5.9
+          # Uses kubectl to exec into the running peer pod — avoids RWO PVC multi-attach
+          image: bitnami/kubectl:latest
           resources:
             requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
               cpu: "250m"
               memory: "256Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
           command:
             - sh
             - -c
             - |
               set -e
 
-              PEER_ADDR="peer0-i3tech.i3-ford.svc.cluster.local:7051"
-              ORDERER_ADDR="orderer-0.i3-ford.svc.cluster.local:7050"
               CHANNEL_ID="ford-channel"
-              MSP_DIR="/var/hyperledger/production/msp"
+              ORDERER_ADDR="orderer-0.i3-ford.svc.cluster.local:7050"
               BLOCK_FILE="/tmp/${CHANNEL_ID}.block"
 
-              export CORE_PEER_LOCALMSPID="FordPeerMSP"
-              export CORE_PEER_MSPCONFIGPATH="${MSP_DIR}"
-              export CORE_PEER_ADDRESS="${PEER_ADDR}"
-              export CORE_PEER_TLS_ENABLED="false"
-              export FABRIC_LOGGING_SPEC="INFO"
+              # Locate the running peer pod
+              PEER_POD=$(kubectl get pod -n i3-ford -l app=peer0-i3tech \
+                           -o jsonpath='{.items[0].metadata.name}')
+              if [ -z "${PEER_POD}" ]; then
+                echo "ERROR: peer0-i3tech pod not found in i3-ford"
+                exit 1
+              fi
+              echo "Using peer pod: ${PEER_POD}"
 
               echo "=== Step 1: Fetch ${CHANNEL_ID} genesis block from orderer ==="
-              peer channel fetch 0 "${BLOCK_FILE}" \
-                -c "${CHANNEL_ID}" \
-                -o "${ORDERER_ADDR}" \
-                --tls=false
+              kubectl exec -n i3-ford "${PEER_POD}" -- sh -c "
+                set -e
+                BLOCK_FILE=/tmp/${CHANNEL_ID}.block
+                ORDERER_ADDR=${ORDERER_ADDR}
+                export CORE_PEER_LOCALMSPID=FordPeerMSP
+                export CORE_PEER_MSPCONFIGPATH=/var/hyperledger/production/msp
+                export CORE_PEER_ADDRESS=peer0-i3tech.i3-ford.svc.cluster.local:7051
+                export CORE_PEER_TLS_ENABLED=false
+                export FABRIC_LOGGING_SPEC=INFO
+                peer channel fetch 0 \${BLOCK_FILE} -c ${CHANNEL_ID} -o \${ORDERER_ADDR} --tls=false
+                echo Step1 done
+              "
 
               echo "=== Step 2: Join peer0-i3tech to ${CHANNEL_ID} ==="
-              peer channel join -b "${BLOCK_FILE}"
+              kubectl exec -n i3-ford "${PEER_POD}" -- sh -c "
+                set -e
+                BLOCK_FILE=/tmp/${CHANNEL_ID}.block
+                export CORE_PEER_LOCALMSPID=FordPeerMSP
+                export CORE_PEER_MSPCONFIGPATH=/var/hyperledger/production/msp
+                export CORE_PEER_ADDRESS=peer0-i3tech.i3-ford.svc.cluster.local:7051
+                export CORE_PEER_TLS_ENABLED=false
+                export FABRIC_LOGGING_SPEC=INFO
+                peer channel join -b \${BLOCK_FILE}
+                echo Step2 done
+              "
 
               echo "=== Step 3: Verify channel join ==="
-              peer channel list | grep -q "${CHANNEL_ID}" \
+              kubectl exec -n i3-ford "${PEER_POD}" -- sh -c "
+                export CORE_PEER_LOCALMSPID=FordPeerMSP
+                export CORE_PEER_MSPCONFIGPATH=/var/hyperledger/production/msp
+                export CORE_PEER_ADDRESS=peer0-i3tech.i3-ford.svc.cluster.local:7051
+                export CORE_PEER_TLS_ENABLED=false
+                peer channel list
+              " | grep -q "${CHANNEL_ID}" \
                 && echo "P3-GATE-06: PASS — peer0-i3tech joined ${CHANNEL_ID}" \
                 || { echo "P3-GATE-06: FAIL — ${CHANNEL_ID} not in channel list"; exit 1; }
 
               echo "=== Channel join complete ==="
-          volumeMounts:
-            - mountPath: /var/hyperledger/production
-              name: peer-data
-      volumes:
-        - name: peer-data
-          persistentVolumeClaim:
-            claimName: peer0-i3tech-pvc
 ---
 # ============================================================
 # membership-registry Chaincode Deploy Job — P3-GATE-06 / P3-GATE-07
@@ -126,96 +141,110 @@ spec:
     spec:
       serviceAccountName: ford-sa
       restartPolicy: OnFailure
-      securityContext:
-        runAsUser: 7051
-        runAsNonRoot: true
-        fsGroup: 7051
       containers:
         - name: chaincode-deploy
-          image: hyperledger/fabric-tools:2.5.9
+          # Uses kubectl to exec into running peer pod — avoids RWO PVC multi-attach.
+          # Chaincode source is uploaded via configmap, then copied into the peer via exec.
+          image: bitnami/kubectl:latest
           resources:
             requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
               cpu: "250m"
               memory: "256Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
           command:
             - sh
             - -c
             - |
               set -e
 
-              PEER_ADDR="peer0-i3tech.i3-ford.svc.cluster.local:7051"
-              ORDERER_ADDR="orderer-0.i3-ford.svc.cluster.local:7050"
               CHANNEL_ID="ford-channel"
+              ORDERER_ADDR="orderer-0.i3-ford.svc.cluster.local:7050"
+              PEER_ADDR="peer0-i3tech.i3-ford.svc.cluster.local:7051"
               CC_NAME="membership-registry"
               CC_VERSION="1.0"
               CC_SEQUENCE="1"
-              CC_PATH="/workspace/chaincode"
-              CC_PKG="/tmp/${CC_NAME}.tar.gz"
-              MSP_DIR="/var/hyperledger/production/msp"
 
-              export CORE_PEER_LOCALMSPID="FordPeerMSP"
-              export CORE_PEER_MSPCONFIGPATH="${MSP_DIR}"
-              export CORE_PEER_ADDRESS="${PEER_ADDR}"
-              export CORE_PEER_TLS_ENABLED="false"
-              export FABRIC_LOGGING_SPEC="INFO"
+              PEER_POD=$(kubectl get pod -n i3-ford -l app=peer0-i3tech \
+                           -o jsonpath='{.items[0].metadata.name}')
+              if [ -z "${PEER_POD}" ]; then
+                echo "ERROR: peer0-i3tech pod not found"
+                exit 1
+              fi
+              echo "Using peer pod: ${PEER_POD}"
 
-              echo "=== Step 1: Package chaincode ==="
-              peer lifecycle chaincode package "${CC_PKG}" \
-                --path "${CC_PATH}" \
-                --lang golang \
-                --label "${CC_NAME}_${CC_VERSION}"
+              echo "=== Step 1: Copy chaincode source into peer pod ==="
+              # Chaincode files are in /workspace/chaincode-src (mounted configmap)
+              kubectl cp /workspace/chaincode-src i3-ford/${PEER_POD}:/tmp/chaincode
 
-              echo "=== Step 2: Install on peer0-i3tech ==="
-              peer lifecycle chaincode install "${CC_PKG}"
+              echo "=== Step 2: Package + Install chaincode in peer pod ==="
+              kubectl exec -n i3-ford "${PEER_POD}" -- sh -c "
+                set -e
+                export CORE_PEER_LOCALMSPID=FordPeerMSP
+                export CORE_PEER_MSPCONFIGPATH=/var/hyperledger/production/msp
+                export CORE_PEER_ADDRESS=${PEER_ADDR}
+                export CORE_PEER_TLS_ENABLED=false
+                export FABRIC_LOGGING_SPEC=INFO
+                CC_PKG=/tmp/${CC_NAME}.tar.gz
+                peer lifecycle chaincode package \${CC_PKG} \
+                  --path /tmp/chaincode \
+                  --lang golang \
+                  --label ${CC_NAME}_${CC_VERSION}
+                peer lifecycle chaincode install \${CC_PKG}
+                echo Install done
+              "
 
-              PKG_ID=$(peer lifecycle chaincode queryinstalled \
-                --output json | python3 -c \
-                "import sys,json; cc=json.load(sys.stdin)['installed_chaincodes']; \
-                 print([c['package_id'] for c in cc if '${CC_NAME}_${CC_VERSION}' in c['package_id']][0])")
+              echo "=== Step 3: Approve + Commit ==="
+              PKG_ID=$(kubectl exec -n i3-ford "${PEER_POD}" -- sh -c "
+                export CORE_PEER_LOCALMSPID=FordPeerMSP
+                export CORE_PEER_MSPCONFIGPATH=/var/hyperledger/production/msp
+                export CORE_PEER_ADDRESS=${PEER_ADDR}
+                export CORE_PEER_TLS_ENABLED=false
+                peer lifecycle chaincode queryinstalled --output json
+              " | python3 -c "
+import sys,json
+cc=json.load(sys.stdin).get('installed_chaincodes',[])
+pkgs=[c['package_id'] for c in cc if '${CC_NAME}_${CC_VERSION}' in c.get('package_id','')]
+print(pkgs[0] if pkgs else '')
+")
               echo "Package ID: ${PKG_ID}"
 
-              echo "=== Step 3: Approve for FordPeerMSP ==="
-              peer lifecycle chaincode approveformyorg \
-                -o "${ORDERER_ADDR}" \
-                --channelID "${CHANNEL_ID}" \
-                --name "${CC_NAME}" \
-                --version "${CC_VERSION}" \
-                --package-id "${PKG_ID}" \
-                --sequence "${CC_SEQUENCE}" \
-                --tls=false
+              kubectl exec -n i3-ford "${PEER_POD}" -- sh -c "
+                set -e
+                export CORE_PEER_LOCALMSPID=FordPeerMSP
+                export CORE_PEER_MSPCONFIGPATH=/var/hyperledger/production/msp
+                export CORE_PEER_ADDRESS=${PEER_ADDR}
+                export CORE_PEER_TLS_ENABLED=false
+                peer lifecycle chaincode approveformyorg \
+                  -o ${ORDERER_ADDR} --channelID ${CHANNEL_ID} \
+                  --name ${CC_NAME} --version ${CC_VERSION} \
+                  --package-id ${PKG_ID} --sequence ${CC_SEQUENCE} --tls=false
+                peer lifecycle chaincode commit \
+                  -o ${ORDERER_ADDR} --channelID ${CHANNEL_ID} \
+                  --name ${CC_NAME} --version ${CC_VERSION} \
+                  --sequence ${CC_SEQUENCE} --tls=false \
+                  --peerAddresses ${PEER_ADDR}
+                echo Commit done
+              "
 
-              echo "=== Step 4: Commit chaincode definition ==="
-              peer lifecycle chaincode commit \
-                -o "${ORDERER_ADDR}" \
-                --channelID "${CHANNEL_ID}" \
-                --name "${CC_NAME}" \
-                --version "${CC_VERSION}" \
-                --sequence "${CC_SEQUENCE}" \
-                --tls=false \
-                --peerAddresses "${PEER_ADDR}"
-
-              echo "=== Step 5: Verify P3-GATE-06 ==="
-              peer chaincode list --instantiated -C "${CHANNEL_ID}" \
-                | grep -q "${CC_NAME}" \
-                && echo "P3-GATE-06 + P3-GATE-07: PASS — ${CC_NAME} committed to ${CHANNEL_ID}" \
-                || { echo "FAIL — chaincode not found in instantiated list"; exit 1; }
+              echo "=== Step 4: Verify P3-GATE-07 ==="
+              kubectl exec -n i3-ford "${PEER_POD}" -- sh -c "
+                export CORE_PEER_LOCALMSPID=FordPeerMSP
+                export CORE_PEER_MSPCONFIGPATH=/var/hyperledger/production/msp
+                export CORE_PEER_ADDRESS=${PEER_ADDR}
+                export CORE_PEER_TLS_ENABLED=false
+                peer chaincode list --instantiated -C ${CHANNEL_ID}
+              " | grep -q "${CC_NAME}" \
+                && echo "P3-GATE-07: PASS — ${CC_NAME} committed to ${CHANNEL_ID}" \
+                || { echo "FAIL — chaincode not found"; exit 1; }
 
               echo "=== Chaincode deploy complete ==="
           volumeMounts:
-            - mountPath: /var/hyperledger/production
-              name: peer-data
-            - mountPath: /workspace/chaincode
+            - mountPath: /workspace/chaincode-src
               name: chaincode-src
       volumes:
-        - name: peer-data
-          persistentVolumeClaim:
-            claimName: peer0-i3tech-pvc
         - name: chaincode-src
           configMap:
-            # NOTE: the gate runner creates this as ford-chaincode-files-raw
-            # via --from-file of the membership_registry directory.
             name: ford-chaincode-files-raw
             optional: false
