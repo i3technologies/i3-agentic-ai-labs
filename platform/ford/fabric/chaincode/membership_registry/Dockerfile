@@ -1,8 +1,9 @@
 FROM golang:1.21-alpine AS builder
 WORKDIR /chaincode
-COPY membership_registry.go .
 COPY go.mod .
 COPY go.sum .
+RUN go mod download && go mod tidy
+COPY membership_registry.go .
 RUN go build -o /chaincode/membership-registry .
 
 FROM alpine:3.19
