@@ -1,0 +1,111 @@
+---
+# ============================================================
+# membership-registry Chaincode as a Service (CCaaS) — P3-GATE-07
+# HC-2: Fabric staging must be live by November 2026
+# HC-6: No raw NIDs — HMAC tokens only
+# HC-8: No ballot data in this chaincode
+# ============================================================
+
+# ── ImageStream ──────────────────────────────────────────────────────────────
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: membership-registry-cc
+  namespace: i3-ford
+  labels:
+    app: membership-registry-cc
+    i3.io/hc-2: "true"
+spec:
+  lookupPolicy:
+    local: true
+---
+# ── BuildConfig ──────────────────────────────────────────────────────────────
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: membership-registry-cc
+  namespace: i3-ford
+  labels:
+    app: membership-registry-cc
+    gate: P3-GATE-07
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/i3technologies/i3-agentic-ai-labs.git
+      ref: main
+    contextDir: platform/ford/fabric/chaincode/membership_registry
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: membership-registry-cc:latest
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+---
+# ── Deployment ───────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: membership-registry-cc
+  namespace: i3-ford
+  labels:
+    app: membership-registry-cc
+    gate: P3-GATE-07
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: membership-registry-cc
+  template:
+    metadata:
+      labels:
+        app: membership-registry-cc
+    spec:
+      serviceAccountName: ford-sa
+      containers:
+        - name: chaincode
+          image: image-registry.openshift-image-registry.svc:5000/i3-ford/membership-registry-cc:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+              name: chaincode
+          env:
+            - name: CHAINCODE_SERVER_ADDRESS
+              value: "0.0.0.0:9999"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            tcpSocket:
+              port: 9999
+            initialDelaySeconds: 10
+            periodSeconds: 30
+---
+# ── Service ──────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: membership-registry-cc
+  namespace: i3-ford
+  labels:
+    app: membership-registry-cc
+spec:
+  selector:
+    app: membership-registry-cc
+  ports:
+    - name: chaincode
+      port: 9999
+      targetPort: 9999

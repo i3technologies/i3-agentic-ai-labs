@@ -1,0 +1,240 @@
+---
+# ============================================================
+# Channel Bootstrap Job — P3-GATE-06 prerequisite
+# Creates ford-channel genesis block using configtxgen
+# and submits it to the orderer Channel Participation API.
+#
+# HC-2: Fabric staging must be live by November 2026
+# HC-8: voteChoicesCollection PDC — ballot secrecy preserved
+# ============================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ford-channel-create
+  namespace: i3-ford
+  labels:
+    app: ford-bootstrap
+    job: channel-create
+    gate: P3-GATE-06
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app: ford-bootstrap
+        job: channel-create
+    spec:
+      serviceAccountName: ford-sa
+      restartPolicy: OnFailure
+      volumes:
+        - name: orderer-msp
+          secret:
+            secretName: orderer-msp
+            defaultMode: 292
+        - name: orderer-tls
+          secret:
+            secretName: orderer-tls
+            defaultMode: 292
+        - name: configtx-work
+          emptyDir: {}
+      initContainers:
+        - name: prep-msp
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              mkdir -p /work/msp/cacerts /work/msp/tlscacerts /work/msp/signcerts /work/msp/keystore /work/msp/admincerts /work/tls
+              cp /orderer-msp/cacerts-ca.pem /work/msp/cacerts/ca.crt
+              # TLS CA cert must be the same CA cert (ford-ca signs both MSP and TLS certs)
+              cp /orderer-msp/cacerts-ca.pem /work/msp/tlscacerts/ca.crt
+              cp /orderer-msp/signcerts-cert.pem /work/msp/signcerts/cert.pem
+              cp /orderer-msp/keystore-server.key /work/msp/keystore/server.key
+              cp /orderer-msp/admincerts-admin.pem /work/msp/admincerts/admin.crt
+              cp /orderer-tls/ca.crt /work/tls/ca.crt
+              cp /orderer-tls/tls.crt /work/tls/tls.crt
+              cp /orderer-tls/tls.key /work/tls/tls.key
+              echo "MSP prep done"
+              ls -la /work/msp/cacerts/ /work/msp/tlscacerts/ /work/msp/signcerts/
+          volumeMounts:
+            - name: orderer-msp
+              mountPath: /orderer-msp
+              readOnly: true
+            - name: orderer-tls
+              mountPath: /orderer-tls
+              readOnly: true
+            - name: configtx-work
+              mountPath: /work
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+      containers:
+        - name: channel-create
+          image: hyperledger/fabric-tools:2.5.9
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts:
+            - name: configtx-work
+              mountPath: /work
+          env:
+            - name: FABRIC_CFG_PATH
+              value: /work
+            - name: ORDERER_ADMIN_URL
+              value: "http://orderer.i3-ford.svc.cluster.local:8443"
+            - name: CHANNEL_ID
+              value: "ford-channel"
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              echo "=== Creating configtx.yaml ==="
+              # Base64-encode the CA cert for embedding in configtx.yaml
+              CA_CERT_B64=$(base64 -w 0 /work/tls/ca.crt)
+              cat > /work/configtx.yaml << TXEOF
+              Organizations:
+                - &OrdererOrg
+                  Name: i3TechMSP
+                  ID: i3TechMSP
+                  MSPDir: /work/msp
+                  Policies:
+                    Readers:
+                      Type: Signature
+                      Rule: "OR('i3TechMSP.member')"
+                    Writers:
+                      Type: Signature
+                      Rule: "OR('i3TechMSP.member')"
+                    Admins:
+                      Type: Signature
+                      Rule: "OR('i3TechMSP.admin')"
+                    Endorsement:
+                      Type: Signature
+                      Rule: "OR('i3TechMSP.member')"
+                - &PeerOrg
+                  Name: FordPeerMSP
+                  ID: FordPeerMSP
+                  MSPDir: /work/msp
+                  Policies:
+                    Readers:
+                      Type: Signature
+                      Rule: "OR('FordPeerMSP.admin', 'FordPeerMSP.peer', 'FordPeerMSP.client')"
+                    Writers:
+                      Type: Signature
+                      Rule: "OR('FordPeerMSP.admin', 'FordPeerMSP.client')"
+                    Admins:
+                      Type: Signature
+                      Rule: "OR('FordPeerMSP.admin')"
+                    Endorsement:
+                      Type: Signature
+                      Rule: "OR('FordPeerMSP.peer')"
+              Capabilities:
+                Channel: &ChannelCapabilities
+                  V2_0: true
+                Orderer: &OrdererCapabilities
+                  V2_0: true
+                Application: &ApplicationCapabilities
+                  V2_5: true
+              Application: &ApplicationDefaults
+                Organizations:
+                ACLs: {}
+                Policies:
+                  Readers:
+                    Type: ImplicitMeta
+                    Rule: "ANY Readers"
+                  Writers:
+                    Type: ImplicitMeta
+                    Rule: "ANY Writers"
+                  Admins:
+                    Type: ImplicitMeta
+                    Rule: "MAJORITY Admins"
+                  LifecycleEndorsement:
+                    Type: ImplicitMeta
+                    Rule: "MAJORITY Endorsement"
+                  Endorsement:
+                    Type: ImplicitMeta
+                    Rule: "MAJORITY Endorsement"
+                Capabilities:
+                  <<: *ApplicationCapabilities
+              Orderer: &OrdererDefaults
+                OrdererType: etcdraft
+                EtcdRaft:
+                  Consenters:
+                    - Host: orderer.i3-ford.svc.cluster.local
+                      Port: 7050
+                      ClientTLSCert: /work/tls/tls.crt
+                      ServerTLSCert: /work/tls/tls.crt
+                Addresses:
+                  - orderer.i3-ford.svc.cluster.local:7050
+                BatchTimeout: 2s
+                BatchSize:
+                  MaxMessageCount: 10
+                  AbsoluteMaxBytes: 99 MB
+                  PreferredMaxBytes: 512 KB
+                Organizations:
+                Policies:
+                  Readers:
+                    Type: Signature
+                    Rule: "OR('i3TechMSP.member', 'FordPeerMSP.member')"
+                  Writers:
+                    Type: Signature
+                    Rule: "OR('i3TechMSP.member', 'FordPeerMSP.member')"
+                  Admins:
+                    Type: Signature
+                    Rule: "OR('i3TechMSP.admin', 'FordPeerMSP.admin')"
+                  BlockValidation:
+                    Type: Signature
+                    Rule: "OR('i3TechMSP.member', 'FordPeerMSP.member')"
+                Capabilities:
+                  <<: *OrdererCapabilities
+              Channel: &ChannelDefaults
+                Policies:
+                  Readers:
+                    Type: ImplicitMeta
+                    Rule: "ANY Readers"
+                  Writers:
+                    Type: ImplicitMeta
+                    Rule: "ANY Writers"
+                  Admins:
+                    Type: ImplicitMeta
+                    Rule: "MAJORITY Admins"
+                Capabilities:
+                  <<: *ChannelCapabilities
+              Profiles:
+                FordChannel:
+                  <<: *ChannelDefaults
+                  Orderer:
+                    <<: *OrdererDefaults
+                    Organizations:
+                      - <<: *OrdererOrg
+                  Application:
+                    <<: *ApplicationDefaults
+                    Organizations:
+                      - <<: *PeerOrg
+              TXEOF
+              echo "=== configtx.yaml written ==="
+              cat /work/configtx.yaml | head -10
+              echo "=== Generating genesis block ==="
+              configtxgen -profile FordChannel -channelID ford-channel -outputBlock /work/ford-channel.block 2>&1
+              ls -la /work/ford-channel.block
+              echo "=== Removing existing channel if present ==="
+              osnadmin channel remove --channelID ford-channel -o orderer.i3-ford.svc.cluster.local:8443 2>&1 || echo "Channel not present, continuing"
+              echo "=== Submitting genesis block to orderer admin API ==="
+              osnadmin channel join \
+                --channelID ford-channel \
+                --config-block /work/ford-channel.block \
+                -o orderer.i3-ford.svc.cluster.local:8443 2>&1
+              # Verify channel appears
+              echo "=== Listing orderer channels ==="
+              osnadmin channel list -o orderer.i3-ford.svc.cluster.local:8443 2>&1
+              echo "=== P3-GATE-06-PREREQ-PASS: genesis block submitted ==="

@@ -1,0 +1,184 @@
+---
+# ============================================================
+# Chaincode Deploy Job — P3-GATE-07
+# Packages, installs, approves and commits membership-registry
+# chaincode on ford-channel using fabric-tools image.
+#
+# Prerequisites:
+#   - ford-channel-create job must have completed
+#   - peer0-i3tech must be joined to ford-channel
+#   - ford-chaincode-files-raw ConfigMap must exist
+#
+# HC-2: Fabric staging must be live by November 2026
+# HC-6: Chaincode only accepts HMAC tokens — never raw NIDs
+# HC-8: voteChoicesCollection PDC — ballot secrecy preserved
+# ============================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ford-chaincode-lifecycle
+  namespace: i3-ford
+  labels:
+    app: ford-bootstrap
+    job: chaincode-lifecycle
+    gate: P3-GATE-07
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 7200
+  template:
+    metadata:
+      labels:
+        app: ford-bootstrap
+        job: chaincode-lifecycle
+    spec:
+      serviceAccountName: ford-sa
+      restartPolicy: OnFailure
+      volumes:
+        - name: orderer-msp
+          secret:
+            secretName: orderer-msp
+            defaultMode: 292
+        - name: orderer-tls
+          secret:
+            secretName: orderer-tls
+            defaultMode: 292
+        - name: chaincode-src
+          configMap:
+            name: ford-chaincode-files-raw
+        - name: work
+          emptyDir: {}
+      initContainers:
+        - name: prep
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              mkdir -p /work/tls /work/chaincode/membership_registry /work/msp/cacerts /work/msp/tlscacerts /work/msp/signcerts /work/msp/keystore /work/msp/admincerts
+              cp /orderer-tls/ca.crt /work/tls/ca.crt
+              cp /chaincode-src/membership_registry.go /work/chaincode/membership_registry/
+              cp /chaincode-src/go.mod /work/chaincode/membership_registry/
+              cp /chaincode-src/go.sum /work/chaincode/membership_registry/
+              cp /orderer-msp/cacerts-ca.pem /work/msp/cacerts/ca.crt
+              cp /orderer-msp/cacerts-ca.pem /work/msp/tlscacerts/ca.crt
+              cp /orderer-msp/signcerts-cert.pem /work/msp/signcerts/cert.pem
+              cp /orderer-msp/keystore-server.key /work/msp/keystore/server.key
+              cp /orderer-msp/admincerts-admin.pem /work/msp/admincerts/admin.crt
+              printf 'NodeOUs:\n  Enable: false\n' > /work/msp/config.yaml
+              echo "Prep complete"
+              ls -la /work/msp/cacerts/ /work/chaincode/membership_registry/
+          volumeMounts:
+            - name: orderer-msp
+              mountPath: /orderer-msp
+              readOnly: true
+            - name: orderer-tls
+              mountPath: /orderer-tls
+              readOnly: true
+            - name: chaincode-src
+              mountPath: /chaincode-src
+              readOnly: true
+            - name: work
+              mountPath: /work
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+      containers:
+        - name: chaincode-lifecycle
+          image: hyperledger/fabric-tools:2.5.9
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+          volumeMounts:
+            - name: orderer-msp
+              mountPath: /orderer-msp
+              readOnly: true
+            - name: work
+              mountPath: /work
+          env:
+            - name: CORE_PEER_LOCALMSPID
+              value: i3TechMSP
+            - name: CORE_PEER_MSPCONFIGPATH
+              value: /work/msp
+            - name: CORE_PEER_ADDRESS
+              value: peer0-i3tech.i3-ford.svc.cluster.local:7051
+            - name: CORE_PEER_TLS_ENABLED
+              value: "false"
+            - name: ORDERER_ADDR
+              value: orderer.i3-ford.svc.cluster.local:7050
+            - name: CHANNEL_ID
+              value: ford-channel
+            - name: CC_NAME
+              value: membership-registry
+            - name: CC_VERSION
+              value: "1.0"
+            - name: CC_SEQUENCE
+              value: "1"
+            - name: GOPATH
+              value: /go
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              echo "=== Package membership-registry chaincode ==="
+              cd /work/chaincode
+              peer lifecycle chaincode package /work/membership-registry.tar.gz \
+                --path ./membership_registry \
+                --lang golang \
+                --label ${CC_NAME}_${CC_VERSION} 2>&1
+              ls -la /work/membership-registry.tar.gz
+              echo "=== Install chaincode on peer ==="
+              peer lifecycle chaincode install /work/membership-registry.tar.gz 2>&1
+              echo "=== Query installed chaincodes ==="
+              PKG_ID=$(peer lifecycle chaincode queryinstalled --output json 2>&1 | \
+                python3 -c "
+              import sys,json
+              data=json.load(sys.stdin)
+              cc=data.get('installed_chaincodes',[])
+              pkgs=[c['package_id'] for c in cc if '${CC_NAME}_${CC_VERSION}' in c.get('package_id','')]
+              print(pkgs[0] if pkgs else '')
+              ")
+              echo "Package ID: $PKG_ID"
+              if [ -z "$PKG_ID" ]; then echo "ERROR: package_id empty"; exit 1; fi
+              echo "=== Approve chaincode for org ==="
+              peer lifecycle chaincode approveformyorg \
+                -o $ORDERER_ADDR \
+                --channelID $CHANNEL_ID \
+                --name $CC_NAME \
+                --version $CC_VERSION \
+                --package-id $PKG_ID \
+                --sequence $CC_SEQUENCE \
+                --tls=true \
+                --cafile /work/tls/ca.crt 2>&1
+              echo "=== Check commit readiness ==="
+              peer lifecycle chaincode checkcommitreadiness \
+                --channelID $CHANNEL_ID \
+                --name $CC_NAME \
+                --version $CC_VERSION \
+                --sequence $CC_SEQUENCE \
+                --output json 2>&1
+              echo "=== Commit chaincode ==="
+              peer lifecycle chaincode commit \
+                -o $ORDERER_ADDR \
+                --channelID $CHANNEL_ID \
+                --name $CC_NAME \
+                --version $CC_VERSION \
+                --sequence $CC_SEQUENCE \
+                --tls=true \
+                --cafile /work/tls/ca.crt \
+                --peerAddresses peer0-i3tech.i3-ford.svc.cluster.local:7051 2>&1
+              echo "=== Query committed chaincodes ==="
+              peer lifecycle chaincode querycommitted \
+                --channelID $CHANNEL_ID \
+                --name $CC_NAME \
+                --output json 2>&1
+              echo "=== P3-GATE-07-PASS: membership-registry committed on ford-channel ==="

@@ -17,8 +17,8 @@ metadata:
     job: channel-join
     gate: P3-GATE-06
 spec:
-  backoffLimit: 2
-  ttlSecondsAfterFinished: 600
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 3600
   template:
     metadata:
       labels:
