@@ -4,11 +4,12 @@ ENV GONOSUMDB=*
 ENV GOFLAGS=-mod=mod
 ENV GONOPROXY=*
 ENV GONOSUMCHECK=*
+ENV CGO_ENABLED=0
+ENV GOOS=linux
 WORKDIR /chaincode
 COPY go.mod .
 COPY membership_registry.go .
-RUN go mod download -x 2>&1 | tail -5 || true
-RUN CGO_ENABLED=0 GOOS=linux go build -v -o /chaincode/membership-registry .
+RUN go build -o /chaincode/membership-registry .
 
 FROM debian:bookworm-slim
 RUN addgroup -S fabric && adduser -S fabric -G fabric

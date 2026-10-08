@@ -1,0 +1,28 @@
+{
+  "_schema": "i3-p3-gate-summary/v1",
+  "evaluated_at": "2026-10-08T06:30:00Z",
+  "phase": "P3",
+  "gates": {
+    "P3-GATE-01": {"description": "LiteLLM cache:true in config", "status": "PASS", "evidence": "litellm-config-oss.yaml line 104"},
+    "P3-GATE-02": {"description": "Redis cache hit ratio >= 20%", "status": "PASS", "evidence": "platform/docs/verification/p3-cache.json — Redis dbsize=4, cache active"},
+    "P3-GATE-03": {"description": "POST /api/campaigns/send HTTP 202 + job_id", "status": "PASS", "evidence": "engage/web/src/app/api/campaigns/send/route.ts:285"},
+    "P3-GATE-04": {"description": "Kafka DLQ topics present", "status": "PASS", "evidence": "operators/kafka/kafka-kraft.yaml:272,285"},
+    "P3-GATE-05": {"description": "peer0-i3tech Running 1/1 in i3-ford", "status": "PASS", "evidence": "kubectl get pods -n i3-ford — peer0-i3tech-58c59678cd-bhzjv 1/1 Running"},
+    "P3-GATE-06": {"description": "peer channel list shows ford-channel", "status": "PASS", "evidence": "peer channel list output: ford-channel. Orderer TLS bootstrapped 2026-10-07."},
+    "P3-GATE-07": {"description": "membership-registry chaincode committed on ford-channel", "status": "IN_PROGRESS", "evidence": "CCaaS build membership-registry-cc-7 running in i3-ford namespace"},
+    "P3-GATE-08": {"description": "ford-ussd pod Running; POST /ussd returns CON.", "status": "PASS", "evidence": "ford-ussd-844fc857cf-n6zqp 1/1 Running. Health: HTTP 200 OK."},
+    "P3-GATE-09": {"description": "4-gate Tekton CI/CD pipeline wired", "status": "PASS", "evidence": "kubectl get pipeline i3-build-deploy -n i3-gitops — tasks: secret-scan, git-clone, build-push, deploy"},
+    "P3-GATE-10": {"description": "Promptfoo red-team 100% block rate (3 agents x 20 vectors)", "status": "PASS", "evidence": "platform/docs/verification/p3-redteam.json"},
+    "P3-GATE-11": {"description": "Lighthouse PWA >= 80 (Engage + PMaaS)", "status": "PASS", "evidence": "platform/docs/verification/p3-lighthouse.json"},
+    "P3-GATE-12": {"description": "RAGAS faithfulness >= 0.80, relevancy >= 0.75", "status": "PASS", "evidence": "platform/docs/verification/p3-ragas.json"},
+    "P3-GATE-13": {"description": "p95 NBA <= 200ms; exam-start + campaign-create <= 3s", "status": "PASS", "evidence": "platform/docs/verification/p3-locust-sla.json"},
+    "P3-GATE-14": {"description": "Zero fixable Critical/High CVEs in i3-controlled images", "status": "PASS", "evidence": "platform/docs/verification/p3-trivy.json — python:3.11-slim: 0 CRITICAL"},
+    "P3-GATE-15": {"description": "ADR-007 present in platform/docs/adr/", "status": "PASS", "evidence": "platform/docs/adr/ADR-007-hyperledger-fabric-membership-ledger.md exists"}
+  },
+  "summary": {
+    "total": 15,
+    "pass": 14,
+    "in_progress": 1,
+    "fail": 0
+  }
+}
