@@ -1,12 +1,12 @@
-FROM golang:1.21-alpine AS builder
+FROM golang:1.21 AS builder
 WORKDIR /chaincode
 COPY go.mod .
 COPY go.sum .
-RUN go mod download && go mod tidy
+RUN go mod download
 COPY membership_registry.go .
-RUN go build -o /chaincode/membership-registry .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /chaincode/membership-registry .
 
-FROM alpine:3.19
+FROM debian:bookworm-slim
 RUN addgroup -S fabric && adduser -S fabric -G fabric
 COPY --from=builder /chaincode/membership-registry /usr/local/bin/membership-registry
 RUN chown fabric:fabric /usr/local/bin/membership-registry
