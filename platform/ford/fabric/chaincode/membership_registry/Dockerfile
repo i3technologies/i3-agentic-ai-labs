@@ -1,9 +1,10 @@
 FROM golang:1.21 AS builder
+ENV GONOSUMCHECK=*
+ENV GOFLAGS=-mod=mod
 WORKDIR /chaincode
 COPY go.mod .
-COPY go.sum .
-RUN go mod download
 COPY membership_registry.go .
+RUN go mod tidy && go mod download
 RUN CGO_ENABLED=0 GOOS=linux go build -o /chaincode/membership-registry .
 
 FROM debian:bookworm-slim
