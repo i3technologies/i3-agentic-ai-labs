@@ -83,8 +83,6 @@ spec:
               value: "0.0.0.0:9999"
             - name: CORE_CHAINCODE_ID_NAME
               value: "membership-registry_1.0"
-            - name: CORE_PEER_ADDRESS
-              value: "peer0-i3tech.i3-ford.svc.cluster.local:7052"
           resources:
             requests:
               cpu: "100m"

@@ -10,8 +10,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 
+	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
@@ -211,6 +213,27 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("error creating MembershipRegistry chaincode: %v", err))
 	}
+
+	// CCaaS (server mode): when CHAINCODE_SERVER_ADDRESS is set the chaincode
+	// acts as a gRPC server that the peer connects to.
+	serverAddr := os.Getenv("CHAINCODE_SERVER_ADDRESS")
+	ccID := os.Getenv("CORE_CHAINCODE_ID_NAME")
+	if serverAddr != "" && ccID != "" {
+		srv := &shim.ChaincodeServer{
+			CCID:    ccID,
+			Address: serverAddr,
+			CC:      cc,
+			TLSProps: shim.TLSProperties{
+				Disabled: true,
+			},
+		}
+		if err := srv.Start(); err != nil {
+			panic(fmt.Sprintf("error starting CCaaS server: %v", err))
+		}
+		return
+	}
+
+	// Fallback: client mode (peer dials the chaincode)
 	if err := cc.Start(); err != nil {
 		panic(fmt.Sprintf("error starting MembershipRegistry chaincode: %v", err))
 	}
