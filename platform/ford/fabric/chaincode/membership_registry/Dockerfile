@@ -12,7 +12,7 @@ COPY membership_registry.go .
 RUN go build -o /chaincode/membership-registry .
 
 FROM debian:bookworm-slim
-RUN addgroup -S fabric && adduser -S fabric -G fabric
+RUN groupadd -r fabric && useradd -r -g fabric fabric
 COPY --from=builder /chaincode/membership-registry /usr/local/bin/membership-registry
 RUN chown fabric:fabric /usr/local/bin/membership-registry
 USER fabric
